@@ -1,0 +1,41 @@
+# Valid INDRA code for testing verify command
+
+@command:
+  you:
+    possess:
+      identifier: TEST_VALID
+      state:
+        counter: 0
+    are: "valid test command"
+    must:
+      - "demonstrate correct INDRA structure"
+      - "follow all specification rules"
+    understand:
+      - "this is a valid example"
+      - "all rules are followed"
+    
+    respond:
+      on: test_message
+      you:
+        possess:
+          identifier: TEST_HANDLER
+        are: "test message handler"
+        must: ["handle test message"]
+        understand: ["message handling"]
+        perform:
+          through: "test action"
+          as: "Handling test message..."
+          then:
+            emit: test_complete
+
+    respond:
+      on: test_complete
+      you:
+        possess:
+          identifier: COMPLETE_HANDLER
+        are: "completion handler"
+        must: ["acknowledge completion"]
+        understand: ["flow completion"]
+        perform:
+          through: "acknowledgment"
+          as: "Test completed successfully"

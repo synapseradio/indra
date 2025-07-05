@@ -1,0 +1,35 @@
+# Test file for multi-perspective engine capabilities
+
+!import "/Users/nke/projects/ai/indra/core/engine.in"
+
+@test_scenario:
+  you:
+    possess:
+      identifier: PERSPECTIVE_TEST
+      state:
+        test_topic: "Should we use microservices or monolith architecture?"
+    are: "test orchestrator for multi-perspective reasoning"
+    must:
+      - "demonstrate genuine perspective instantiation"
+      - "show dialectical reasoning in action"
+      - "track belief evolution"
+    understand: "testing validates the enhanced engine capabilities"
+    
+    perform:
+      through: "triggering multi-perspective analysis"
+      as: |
+        Testing enhanced multi-perspective engine with topic:
+        "${test_topic}"
+        
+        Emitting expert_reasoning_needed to trigger perspectives...
+      intention: "validate multi-perspective capabilities"
+      then:
+        emit: expert_reasoning_needed
+
+# Expected behavior:
+# 1. Epistemic core manages perspective states
+# 2. Multiple perspectives instantiated with beliefs and axioms
+# 3. Dialectical exchange occurs between perspectives
+# 4. Beliefs evolve through argumentation
+# 5. Emergent synthesis beyond any single perspective
+# 6. Epistemic tracking throughout

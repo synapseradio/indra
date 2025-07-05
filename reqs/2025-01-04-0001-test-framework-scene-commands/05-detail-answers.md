@@ -1,6 +1,6 @@
 # Detail Answers
 
-## Q1: Should the framework validate CALCULATE_EXACT behavioral patterns from engine.yaml?
+## Q1: Should the framework validate CALCULATE_EXACT behavioral patterns from engine.in?
 **Answer:** Yes
 
 ## Q2: Will the framework need to parse and validate the canonical you: blocks (are/must/understand)?

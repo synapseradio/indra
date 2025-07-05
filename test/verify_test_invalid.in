@@ -1,0 +1,56 @@
+# Invalid INDRA code for testing verify command
+# This file intentionally contains multiple violations
+
+@command:
+  you:
+    # VIOLATION: Missing possess: block (Rule 4)
+    are: "invalid test command"
+    must:
+      - "demonstrate violations"
+    # VIOLATION: Missing understand: block (Rule 4)
+    
+    # VIOLATION: perform: and respond: in same you: block (Rule 8)
+    perform:
+      through: "direct action"
+      as: "This violates mutual exclusion"
+    
+    respond:
+      on: test_message
+      # VIOLATION: Missing nested you: block (Rule 7)
+      perform:
+        through: "invalid structure"
+        as: "This is wrong"
+
+# VIOLATION: emit without handler (Rule 10)
+some_block:
+  you:
+    possess:
+      identifier: EMITTER
+    are: "message emitter"
+    must: ["emit messages"]
+    understand: ["emission"]
+    perform:
+      through: "emission"
+      as: "Emitting..."
+      then:
+        emit: orphaned_message  # No handler for this
+
+# VIOLATION: state: in non-topmost you: block (Rule 6)
+nested_state:
+  you:
+    possess:
+      identifier: OUTER
+    are: "outer context"
+    must: ["contain nested"]
+    understand: ["nesting"]
+    
+    respond:
+      on: something
+      you:
+        possess:
+          identifier: INNER
+          state:  # VIOLATION: state not allowed here
+            invalid: "state placement"
+        are: "inner context"
+        must: ["be nested"]
+        understand: ["invalid state"]

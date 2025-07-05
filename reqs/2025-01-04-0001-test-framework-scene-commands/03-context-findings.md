@@ -4,7 +4,7 @@
 
 ### Architecture Overview
 - SCENE (Sequenced Contexts Enabling Narrative Execution) is a behavioral DSL system
-- Commands inherit from a unified engine (`engine.yaml`) with specialized overlays
+- Commands inherit from a unified engine (`engine.in`) with specialized overlays
 - The system uses a recursive state machine that manifests through language output
 - Key commands found: consider, confer, ponder, reason, requirements
 
@@ -66,7 +66,7 @@
 
 ### Integration Points
 - Commands are in `/reason/command-overlays/`
-- Engine specification in `/reason/command-overlays/engine.yaml`
+- Engine specification in `/reason/command-overlays/engine.in`
 - Test results stored in `/test_results/`
 - No existing automated framework detected
 

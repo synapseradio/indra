@@ -1,6 +1,6 @@
 # Detail Questions
 
-## Q1: Should the framework validate CALCULATE_EXACT behavioral patterns from engine.yaml?
+## Q1: Should the framework validate CALCULATE_EXACT behavioral patterns from engine.in?
 **Default if unknown:** Yes (calculation performances are core behavioral contracts in SCENE)
 
 ## Q2: Will the framework need to parse and validate the canonical you: blocks (are/must/understand)?

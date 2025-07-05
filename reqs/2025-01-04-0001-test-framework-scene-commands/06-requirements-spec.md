@@ -15,7 +15,7 @@ Before diving into requirements, it's essential to understand what SCENE command
 2. **Commands are YAML files** that follow the SCENE grammar specification v1.2 (EBNF + Behavioral Semantics)
 3. **These files are designed for AI models** to parse and execute as behavioral overlays
 4. **The YAML syntax enables AI models** to manifest specific behaviors through structured language patterns
-5. **Commands inherit from engine.yaml** and specialize behavior through canonical `you:` blocks
+5. **Commands inherit from engine.in** and specialize behavior through canonical `you:` blocks
 
 ## Functional Requirements
 
@@ -24,7 +24,7 @@ Before diving into requirements, it's essential to understand what SCENE command
 - Validate conformance to SCENE grammar specification v1.2 (EBNF+B)
 - Extract canonical `you:` blocks (are/must/understand) for AI behavioral validation
 - Parse state definitions, behavioral contracts, and output requirements per SCENE grammar
-- Support inheritance from engine.yaml with dot-notation overrides
+- Support inheritance from engine.in with dot-notation overrides
 
 ### FR2: Behavioral Output Validation
 - Validate that commands produce required language outputs for each state
@@ -93,15 +93,15 @@ Before diving into requirements, it's essential to understand what SCENE command
 
 ### Existing Patterns to Leverage
 - Binary criteria structure from `/test_suites/test_suite_*.md`
-- State flow patterns from `engine.yaml` (AI behavioral engine)
+- State flow patterns from `engine.in` (AI behavioral engine)
 - Scene modification logic from `SCENE_PROPOSAL.md`
 - Calculation patterns from `behavioral_contracts` section
 - SCENE grammar validation from `/docs/scene-grammar-spec-v1.2.txt`
 - AI behavioral manifestation patterns from canonical `you:` blocks
 
 ### Key Files to Reference
-- `/reason/command-overlays/engine.yaml` - Core AI behavioral engine specification
-- `/reason/command-overlays/consider.yaml` - Example AI command overlay implementation
+- `/reason/command-overlays/engine.in` - Core AI behavioral engine specification
+- `/reason/command-overlays/consider.in` - Example AI command overlay implementation
 - `/docs/scene-grammar-spec-v1.2.txt` - Formal SCENE grammar (EBNF+B) for AI parsing
 - `/test_suites/test_suite_01_medical_diagnosis.md` - Test structure example
 - Command overlays are YAML files that AI models parse to manifest specific behaviors
