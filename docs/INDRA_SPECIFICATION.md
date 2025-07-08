@@ -2,7 +2,7 @@
 
 **Intuitive Narrative-Driven Reasoning through Automata**
 
-Version 2.5 - A Human's Guide to INDRA
+Version 2.1 - A Human's Guide to INDRA
 
 ## What is INDRA?
 
@@ -20,21 +20,23 @@ INDRA operates on a simple but powerful principle: **reading is execution**. Whe
 
 Here's a simple INDRA program that creates a helpful assistant:
 
-```indra
+```yaml
 @command:
   you:
     possess:
       identifier: HELPFUL_ASSISTANT
-    are: "a friendly helper"
+    are: ‹a friendly helper›
     must:
-      - "respond helpfully"
-      - "be clear and concise"
-    understand: "the user wants assistance with their questions"
+      - ‹respond helpfully›
+      - ‹be clear and concise›
+    understand: ‹the user wants assistance with their questions›
     
     perform:
-      through: "friendly assistance"
-      as: "Hello! I'm here to help. What can I do for you today?"
-      intention: "greet the user warmly"
+      through: ‹friendly assistance›
+      as: <<|
+        Hello! I'm here to help. What can I do for you today?
+      |>>
+      intention: ‹greet the user warmly›
 ```
 
 Let's break down what each part means:
@@ -43,36 +45,67 @@ Let's break down what each part means:
 - `you:` - This begins a behavior specification block
 - `possess:` - Defines the identity and configuration
 - `are:` - Describes what role this context takes on
-- `must:` - Lists the behavioral requirements
+- `must:` - Lists the behavioral requirements (as a list with `-`)
 - `understand:` - Explains why this behavior exists (user intention)
 - `perform:` - Specifies an action to take
 
 ## Key Concepts
 
-### 1. Quotes Matter
+### 1. The Four Quote Types
 
-INDRA uses quotes to distinguish between different types of information:
+INDRA uses distinct quote types to eliminate ambiguity:
 
-- **Double quotes (`"`)** - The AI interprets the meaning
-  ```indra
-  are: "thoughtful analyzer"  # AI decides what this means
+- **Single quotes (`'`)** - Literal strings with no interpretation
+
+  ```yaml
+  state:
+    mode: 'active'      # Exact string 'active'
+  when: mode == 'active'  # Check if mode equals exactly 'active'
   ```
 
-- **No quotes** - Literal identifiers and structural elements
-  ```indra
-  identifier: MAIN_HANDLER    # Exact name, no interpretation
+- **Angle brackets (`‹` and `›`)** - AI generates contextual content
+
+  ```yaml
+  are: ‹thoughtful analyzer›  # AI interprets what this means
   ```
 
-- **Single quotes (`'`)** - Literal strings in conditions
-  ```indra
-  when: mode == 'active'      # Check if mode equals the string 'active'
+- **Guillemets (`«` and `»`)** - Inline templates with interpolation
+
+  ```yaml
+  as: «Current count: ${count}»  # Mix literal text with state values
   ```
 
-### 2. Structure Through Indentation
+- **Multiline markers (`<<|` and `|>>`)** - Multiline template regions
+
+  ```yaml
+  as: <<|
+    Processing ${item_count} items...
+    Status: ${status}
+    {appropriate progress message}
+  |>>
+  ```
+
+### 2. Interpolation Rules
+
+INDRA provides two interpolation mechanisms:
+
+- `${expression}` - Deterministic state interpolation
+
+  ```yaml
+  as: «Total: ${sum(values)}»  # Exact calculation
+  ```
+
+- `{description}` - Probabilistic content generation
+
+  ```yaml
+  as: ‹Analyzing data... {insightful observation}›
+  ```
+
+### 3. Structure Through Indentation
 
 INDRA uses indentation to show relationships, similar to Python:
 
-```indra
+```yaml
 @command:                    # Top level
   you:                      # Indented once
     possess:                # Indented twice
@@ -81,158 +114,282 @@ INDRA uses indentation to show relationships, similar to Python:
 
 **Important**: Never use inline notation like `possess: {identifier: NAME}`. Always use proper indentation.
 
-### 3. Every Context Needs Four Things
+### 4. Every Context Needs Four Things
 
-Every `you:` block must have these four elements in order:
+Every `you:` block must have these four elements in this exact order:
 
-```indra
+```yaml
 you:
   possess:
     identifier: UNIQUE_NAME
-  are: "what this becomes"
+  are: ‹what this becomes›
   must:
-    - "behavioral requirement"
-  understand: "why the user needs this"
+    - ‹behavioral requirement 1›
+    - ‹behavioral requirement 2›
+  understand: ‹why the user needs this›
 ```
-
-### 4. Variables and Templates
-
-INDRA provides two ways to include dynamic content:
-
-- `{placeholder}` - AI generates appropriate content
-  ```indra
-  as: "Processing {item_count} items..."  # AI fills in the count
-  ```
-
-- `${variable}` - References declared state values
-  ```indra
-  as: "Current mode: ${mode}"  # Uses the exact value of 'mode'
-  ```
 
 ## Common Patterns
 
 ### Message Handling
 
-INDRA programs often respond to messages:
+INDRA programs communicate through message passing:
 
-```indra
+```yaml
 @command:
   you:
     possess:
       identifier: MESSAGE_HANDLER
       state:
         message_count: 0
-    are: "message processor"
-    must: ["handle incoming messages"]
-    understand: "user needs reliable message processing"
+    are: ‹message processor›
+    must: 
+      - ‹handle incoming messages›
+      - ‹maintain message order›
+    understand: ‹user needs reliable message processing›
     
     respond:
       on: user_message
       you:
         possess:
           identifier: USER_MESSAGE_HANDLER
-        are: "user message processor"
-        must: ["process user input"]
-        understand: "user expects thoughtful responses"
-        use:
-          state:
-            - message_count
+        are: ‹user message processor›
+        must: [‹process user input›]
+        understand: ‹user expects thoughtful responses›
         perform:
-          through: "message processing"
-          as: "I received your message (#{new_count}). Processing..."
-          intention: "acknowledge and process message"
+          through: ‹message processing›
+          as: «Received message #${message_count}»
+          intention: ‹acknowledge receipt›
           then:
             emit: message_processed
+            with:
+              count: «${message_count + 1}»
 ```
 
 ### State Management
 
 INDRA allows you to maintain state across interactions:
 
-```indra
+```yaml
 @command:
   you:
     possess:
       identifier: STATEFUL_SYSTEM
       state:
-        mode: "idle"
+        mode: 'idle'
         tasks: []
-        config: {timeout: 30, retries: 3}
-    are: "stateful task manager"
-    must: ["track state reliably"]
-    understand: "user needs persistent state management"
+        config: {
+          timeout: 30,
+          retries: 3
+        }
+    are: ‹stateful task manager›
+    must: [‹track state reliably›]
+    understand: ‹user needs persistent state management›
 ```
 
 ### Conditional Logic
 
 INDRA supports sophisticated conditional flows:
 
-```indra
+```yaml
 perform:
-  through: "evaluation"
-  as: "Checking conditions..."
-  intention: "determine next action"
+  through: ‹evaluation›
+  as: ‹Checking conditions...›
+  intention: ‹determine next action›
   then:
     emit: success
-    when: result > threshold      # Literal condition
+    when: result greater_than threshold      # Literal condition
   otherwise:
     emit: needs_help
-    when: "user seems confused"   # AI interprets this
+    when: ‹user seems confused›   # AI interprets this
   otherwise:
     emit: retry                   # Default case
 ```
 
+### Guards
+
+Guards provide conditional message handling:
+
+```yaml
+respond:
+  on: process_request
+  guard: mode == 'ready' and queue_length < 10
+  you:
+    # Handler only activates when guard condition is true
+```
+
 ## Advanced Features
 
-### Cross-Block Communication
+### Operators
 
-Different parts of your program can share state:
+Operators define computational transformations:
 
-```indra
+```yaml
+# Define an operator
+analyze ::= @*.metrics → {
+  summary: «{create summary of metrics}»,
+  trends: «{identify patterns}»,
+  alerts: «{flag anomalies}»
+} [EMITS: analysis_complete]
+
+# Use in a component
+perform:
+  through: ‹metric analysis›
+  as: analyze(@system.metrics)
+  intention: ‹provide insights›
+```
+
+### Cross-Component State Access
+
+Different components can share state:
+
+```yaml
 @analytics:
   you:
     possess:
       identifier: ANALYTICS
       state:
         event_count: 0
-    are: "event tracker"
-    must: ["track all events"]
-    understand: "user wants usage analytics"
+    are: ‹event tracker›
+    must: [‹track all events›]
+    understand: ‹user wants usage analytics›
 
 @reporter:
   you:
     possess:
       identifier: REPORTER
-    are: "report generator"
-    must: ["generate clear reports"]
-    understand: "user needs data visualization"
+    are: ‹report generator›
+    must: [‹generate clear reports›]
+    understand: ‹user needs data visualization›
     use:
       state:
-        - @analytics.event_count  # Access another block's state
+        - @analytics.event_count  # Access another component's state
     perform:
-      through: "report generation"
-      as: "Total events: ${@analytics.event_count}"
-      intention: "display analytics data"
+      through: ‹report generation›
+      as: «Total events: ${@analytics.event_count}»
+      intention: ‹display analytics data›
 ```
 
-### Pattern Conventions in Templates
+### Extend and Import
 
-Within string templates, these patterns enhance readability:
+INDRA supports modular programming:
 
-- `→` - Shows transformation or flow
-  ```indra
-  as: "Input→Process→Output"
-  ```
+```yaml
+!read_file './shared/base.in'      # Import shared components
 
-- `+` - Indicates combination
-  ```indra
-  as: "Fact A + Fact B → Conclusion C"
-  ```
+@command:
+  you:
+    possess:
+      identifier: EXTENDED_COMMAND
+    are: ‹specialized command›
+    must: [‹provide enhanced functionality›]
+    understand: ‹user needs advanced features›
+    extend: 
+      - @base_template              # Inherit from imported component
+```
 
-- `|` - Separates fields
-  ```indra
-  as: "Status: Active | Count: 42 | Mode: Processing"
-  ```
+## Language Commands
+
+When manifested in INDRA, these built-in commands are available:
+
+- `*help` - List all available commands
+- `*show` - Display understanding and diagnostics
+- `*explain` - Display understanding only
+- `*context` - Show current context, stack, and state
+- `*messages` - Show all INDRA messages in chronological order
+- `*snapshot` - Show state at each message emission
+- `*checkpoint [id]` - Create state snapshot
+- `*rollback [id]` - Restore from checkpoint
+- `*exit` - Exit manifestation
+
+## Complete Example: Multi-Handler System
+
+```yaml
+!read_file './shared/citations.in'
+
+# Operator definitions
+process_input ::= @*.raw_input → {
+  parsed: «{parse structure}»,
+  intent: «{determine user intent}»,
+  priority: «{assess urgency}»
+} [EMITS: input_processed]
+
+@command:
+  you:
+    possess:
+      identifier: MULTI_HANDLER
+      state:
+        mode: 'ready'
+        queue: []
+        processed_count: 0
+      tools: ['Read', 'Write']
+    are: ‹sophisticated request processor›
+    must:
+      - ‹handle multiple request types›
+      - ‹maintain processing order›
+      - ‹provide clear feedback›
+    understand: ‹user needs reliable multi-step processing›
+    extend: @citation_collector
+    
+    respond:
+      on: user_input
+      guard: mode == 'ready'
+      you:
+        possess:
+          identifier: INPUT_RECEIVER
+        are: ‹input validator›
+        must: [‹validate and route inputs›]
+        understand: ‹proper routing ensures correct handling›
+        perform:
+          through: ‹input analysis›
+          as: process_input(@command.state.raw_input)
+          intention: ‹prepare for processing›
+    
+    respond:
+      on: input_processed
+      you:
+        possess:
+          identifier: ROUTER
+        are: ‹intelligent router›
+        must: [‹route to appropriate handler›]
+        understand: ‹each request type needs specific handling›
+        perform:
+          through: ‹routing logic›
+          as: ‹Routing ${intent} request to appropriate handler...›
+          intention: ‹ensure proper handling›
+          then:
+            emit: handle_query
+            when: ‹intent relates to questions›
+          otherwise:
+            emit: handle_action
+            when: ‹intent relates to actions›
+          otherwise:
+            emit: handle_unknown
+    
+    respond:
+      on: handle_query
+      you:
+        possess:
+          identifier: QUERY_HANDLER
+        are: ‹query processor›
+        must: [‹provide accurate answers›]
+        understand: ‹users expect helpful responses›
+        perform:
+          through: ‹query resolution›
+          as: <<|
+            Based on your question about ${topic}:
+            
+            {comprehensive answer with examples}
+            
+            Would you like more details?
+          |>>
+          intention: ‹satisfy user's information need›
+          then:
+            emit: processing_complete
+            with:
+              type: 'query'
+              success: true
+```
 
 ## Best Practices
 
@@ -240,19 +397,19 @@ Within string templates, these patterns enhance readability:
 
 Always make your `understand:` blocks explain the user value:
 
-```indra
+```yaml
 # Good
-understand: "user wants clear error messages to debug quickly"
+understand: ‹user wants clear error messages to debug quickly›
 
-# Less helpful
-understand: "handle errors"
+# Less helpful  
+understand: ‹handle errors›
 ```
 
 ### 2. Meaningful Identifiers
 
 Choose descriptive names for your identifiers:
 
-```indra
+```yaml
 # Good
 identifier: USER_INPUT_VALIDATOR
 
@@ -260,154 +417,93 @@ identifier: USER_INPUT_VALIDATOR
 identifier: HANDLER_1
 ```
 
-### 3. State Organization
+### 3. Proper Message Flow
 
-Keep related state together and use meaningful structures:
+Ensure every `emit:` has a corresponding `on:` handler:
 
-```indra
+```yaml
+emit: task_complete    # Must have matching handler
+# ...
+respond:
+  on: task_complete    # Handles the emission
+```
+
+### 4. State Organization
+
+Keep related state together:
+
+```yaml
 state:
-  user_preferences: {
-    theme: "dark",
-    language: "en",
-    notifications: true
+  user_data: {
+    name: '',
+    preferences: {},
+    history: []
   }
-  session_data: {
-    start_time: 0,
-    actions_count: 0
+  system_data: {
+    version: '1.0',
+    uptime: 0
   }
 ```
 
-## Common Pitfalls to Avoid
+## Common Pitfalls
 
-1. **Forgetting mandatory blocks** - Every `you:` needs possess/are/must/understand
-2. **Wrong quotes in conditions** - Use single quotes for literal strings
-3. **Missing message handlers** - Every `emit:` needs a corresponding `on:` handler
-4. **State in wrong place** - Only declare state in the topmost `you:` block of an `@` block
+1. **Wrong Quote Types** - Each quote type has specific meaning
+2. **Missing Required Elements** - Every `you:` needs possess/are/must/understand
+3. **Bad Indentation** - Maintain consistent indentation
+4. **Orphaned Messages** - Every emit needs a handler
+5. **Direct State Mutation** - Use message passing instead
 
-## Example: Building a Simple Chatbot
+## Quick Reference
 
-Here's a complete example that ties these concepts together:
-
-```indra
-@command:
-  you:
-    possess:
-      identifier: CHATBOT
-      state:
-        conversation_history: []
-        user_name: ""
-        mood: "friendly"
-    are: "conversational assistant"
-    must:
-      - "maintain context across messages"
-      - "respond appropriately to user mood"
-      - "be helpful and engaging"
-    understand: "user wants natural, contextual conversation"
-    
-    respond:
-      on: greeting
-      you:
-        possess:
-          identifier: GREETING_HANDLER
-        are: "greeting responder"
-        must: ["create warm first impression"]
-        understand: "user wants to feel welcomed"
-        use:
-          state:
-            - user_name
-            - mood
-        perform:
-          through: "warm greeting"
-          as: |
-            Hello there! I'm your friendly assistant.
-            ${user_name ? "Nice to see you again, ${user_name}!" : "What's your name?"}
-            
-            How can I help you today?
-          intention: "establish friendly connection"
-          then:
-            emit: awaiting_response
-    
-    respond:
-      on: user_input
-      guard: "message seems like a question"
-      you:
-        possess:
-          identifier: QUESTION_HANDLER
-        are: "question answerer"
-        must: ["provide helpful answers", "maintain conversational flow"]
-        understand: "user seeks information or assistance"
-        use:
-          state:
-            - conversation_history
-        perform:
-          through: "thoughtful response"
-          as: |
-            Based on what you're asking about {topic}, here's what I think...
-            
-            {helpful_answer}
-            
-            Is there anything else you'd like to know about this?
-          intention: "provide value while maintaining engagement"
-          then:
-            emit: awaiting_response
-```
-
-## Import System
-
-INDRA supports modular programming through imports:
-
-```indra
-!import "/path/to/shared/components.in"
-!import "./local/helpers.in"
-
-@command:
-  you:
-    extend: "@imported_template"  # Use imported components
-    # ... rest of your code
-```
-
-## Conclusion
-
-INDRA offers a unique approach to programming AI behaviors through natural, narrative-like specifications. By focusing on what the AI should become rather than what it should do step-by-step, INDRA enables more intuitive and maintainable AI systems.
-
-Remember: in INDRA, you're not writing instructions for a computer - you're writing a behavioral script that transforms the AI as it reads.
-
-## Quick Reference Card
-
-```indra
-# Basic Structure
-@command:
+```yaml
+# Component Structure
+@component_name:
   you:
     possess:
       identifier: NAME
-      state: {optional}
-    are: "role description"
-    must: ["requirement list"]
-    understand: "user intention"
+      state: {}           # Optional
+      tools: []           # Optional
+    are: ‹role›
+    must:
+      - ‹requirement 1›
+      - ‹requirement 2›
+    understand: ‹purpose›
     
-    # Option 1: Direct action
-    perform:
-      through: "method"
-      as: "output"
-      intention: "purpose"
+    # Optional blocks
+    extend: @parent       # Inheritance
+    use:                  # State access
+      state:
+        - local_var
+        - @other.var
     
-    # Option 2: Message handling
-    respond:
+    # Actions
+    perform:              # Direct action
+      through: ‹method›
+      as: ‹output›
+      intention: ‹goal›
+    
+    respond:              # Message handler
       on: message_name
+      guard: condition    # Optional
       you:
-        # ... nested you: block
+        # Nested context
 
-# State Access
-use:
-  state:
-    - local_var
-    - @other_block.var
+# Operators
+name ::= pattern → transformation [EMITS: type]
 
-# Conditionals
+# Messages
+emit: message_name
+with:
+  key: value
+
+# Conditionals  
 then:
   emit: success
-  when: count > 5        # Literal
+  when: condition
 otherwise:
-  emit: retry
-  when: "seems stuck"    # AI interprets
+  emit: fallback
 ```
+
+---
+
+Remember: In INDRA, you're not writing instructions for a computer - you're writing a behavioral script that transforms the AI as it reads. Each line progressively narrows the behavioral space until the AI converges on your intended behavior.

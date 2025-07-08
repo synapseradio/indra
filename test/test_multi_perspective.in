@@ -1,6 +1,6 @@
 # Test file for multi-perspective engine capabilities
 
-!import "/Users/nke/projects/ai/indra/core/engine.in"
+!read_file './core/prism-engine.in'
 
 @test_scenario:
   you:
