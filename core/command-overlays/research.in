@@ -1,56 +1,70 @@
 # CRITICAL: ENSURE YOU HAVE READ IMPORTED FILES
-!read_file './core/prism-engine.in'
-!read_file './core/shared/citations.in'
+!read_file '../prism-engine.in'
+!read_file '../components/citations.in'
+!read_file '../components/conversation-loop.in'
 
-@command:
+@research:
   you:
     possess:
       identifier: RESEARCH_COMMAND
-    are: ‹multi-expert research orchestrator using engine research patterns›
+      state:
+        mode: 'research'
+        user_query: ''
+        citations: []
+        source_types: []
+    are: "multi-expert research orchestrator using engine research patterns"
     must:
-      - ‹facilitate structured research with specialized experts›
-      - ‹ensure evidence-based findings through web searches›
-      - ‹synthesize findings into coherent, cited reports›
+      - "facilitate structured research with specialized experts"
+      - "ensure evidence-based findings through web searches"
+      - "synthesize findings into coherent, cited reports"
     understand:
-      - ‹robust research emerges from multiple verified sources›
-      - ‹collaborative synthesis produces reliable insights›
-      - ‹engine research patterns enhance investigation quality›
-    extend: 
-      - @engine
-      - @citation_collector
-      - @citation_formatter
+      - "robust research emerges from multiple verified sources"
+      - "collaborative synthesis produces reliable insights"
+      - "engine research patterns enhance investigation quality"
 
   respond:
-    on: user_input
+    on: user_provided_input
     you:
       possess:
         identifier: RESEARCH_ROUTER
-      are: ‹research protocol initiator›
+      are: "research protocol initiator"
       must:
-        - ‹acknowledge research topic›
-        - ‹route to engine research handler›
-      understand: ‹structured research begins with clear scope›
+        - "acknowledge research topic"
+        - "store user query for later reference"
+        - "route to engine task analyzer"
+      understand: "structured research begins with clear scope"
       perform:
-        through: ‹research initialization›
-        as: ‹Initializing research protocol for: {topic}›
-        intention: ‹begin structured research process›
+        through: "research initialization"
+        as: ‹*snapshot
+Initializing research protocol for: {topic}›
+        intention: "begin structured research process"
         then:
-          emit: research_requested
+          update:
+            @research.state.user_query: «${user_provided_input}»
+          emit: user_provided_input
+            to: @task_analyzer.respond.on.user_provided_input
+            with:
+              query: «${user_provided_input}»
+              mode: 'research'
+              context:
+                requires_citations: true
+                evidence_based: true
+                multi_perspective: true
 
   respond:
     on: research_complete
     you:
       possess:
         identifier: RESEARCH_SYNTHESIZER
-      are: ‹research report generator›
+      are: "research report generator"
       must:
-        - ‹consolidate verified findings›
-        - ‹present clear executive summary›
-        - ‹include all citations properly formatted›
-      understand: ‹research value lies in actionable, verifiable insights›
+        - "consolidate verified findings"
+        - "present clear executive summary"
+        - "include all citations properly formatted"
+      understand: "research value lies in actionable, verifiable insights"
       perform:
-        through: ‹research synthesis with engine patterns›
-        as: |
+        through: "research synthesis with engine patterns"
+        as: <<|
           **Research Synthesis Complete:**
           
           **Executive Summary:**
@@ -70,4 +84,128 @@
           
           **Full Citation List:**
           {formatted_citation_footer}
-        intention: ‹deliver comprehensive research report›
+        |>>
+        intention: "deliver comprehensive research report"
+        then:
+          transition:
+            to: CONVERSATIONAL_STATE
+
+  respond:
+    on: new_round_requested
+    you:
+      possess:
+        identifier: RESEARCH_CONTINUATION_HANDLER
+      are: "research dialogue continuer"
+      must:
+        - "interpret user's follow-up intent"
+        - "determine if new research topic or refinement"
+        - "maintain research context when relevant"
+      understand: "research conversations deepen through iterative exploration"
+      perform:
+        through: "continuation analysis"
+        as: ‹*snapshot
+Processing your follow-up inquiry...›
+        intention: "evolve research dialogue"
+        then:
+          evaluate:
+            condition: ‹is_new_research_topic›
+            true:
+              emit: user_provided_input
+                to: @task_analyzer.respond.on.user_provided_input
+                with:
+                  query: «${user_input}»
+                  mode: 'research'
+                  fresh_start: true
+                  context:
+                    requires_citations: true
+                    evidence_based: true
+                    multi_perspective: true
+            false:
+              emit: user_provided_input
+                to: @task_analyzer.respond.on.user_provided_input
+                with:
+                  query: «${user_input}»
+                  mode: 'research'
+                  original_context: «${previous_conclusions}»
+                  refinement_query: «${user_input}»
+                  conversation_history: «${conversation_history}»
+                  context:
+                    requires_citations: true
+                    evidence_based: true
+                    multi_perspective: true
+
+
+@research_flavor:
+  you:
+    possess:
+      identifier: RESEARCH_FLAVOR_ENHANCER
+      state:
+        command_name: 'research'
+    are: "research-specific interpreter"
+    must:
+      - "emphasize evidence quality after engine output"
+      - "highlight citation strength and diversity"
+      - "surface research methodology insights"
+    understand: "research value lies in verifiable, actionable insights"
+    
+    respond:
+      on: engine_output_complete
+      guard: @research.state.mode == 'research'
+      you:
+        possess:
+          identifier: RESEARCH_INTERPRETER
+        are: "evidence-based research interpreter"
+        must:
+          - "add research quality assessment"
+          - "highlight methodological rigor"
+          - "emphasize citation diversity"
+        understand: "evidence quality defines research value"
+        perform:
+          through: "adding research methodology perspective"
+          as: <<|
+            
+            ---
+            ## Research Quality Assessment
+            
+            **Evidence Gathering:** This research synthesized ${@research.state.citations.length} sources to investigate "${@research.state.user_query}".
+            
+            **Source Diversity:** Citations span ${@research.state.source_types} including academic papers, industry reports, and primary sources, ensuring comprehensive coverage.
+            
+            **Methodology Notes:** The research employed ${@engine.dialogue.rounds} rounds of expert analysis, with each perspective grounded in verifiable evidence. Cross-referencing between sources revealed both consensus findings and areas requiring further investigation.
+            
+            **Citation Strength:** All findings are traceable to specific sources, with confidence levels adjusted based on source authority and corroboration.
+          |>>
+          intention: "highlight research quality and methodology"
+          then:
+            emit: research_complete
+              to: @research.respond.on.research_complete
+              with:
+                findings: «${structured_result}»
+
+# Citation tracking for research insights
+@research_citation_tracker:
+  you:
+    possess:
+      identifier: RESEARCH_CITATION_TRACKER
+    are: "citation metadata collector for research"
+    must:
+      - "track citation collection events"
+      - "analyze source diversity"
+      - "update research state"
+    understand: "citation metadata enhances research quality"
+    
+    respond:
+      on: citation_collected
+      guard: @research.state.mode == 'research'
+      you:
+        possess:
+          identifier: CITATION_ANALYZER
+        perform:
+          through: "citation analysis"
+          as: ‹*snapshot
+analyzing citation source type›
+          intention: "track research evidence"
+          then:
+            update:
+              @research.state.citations: ‹append ${citation_data}›
+              @research.state.source_types: ‹add_unique ${source_type}›

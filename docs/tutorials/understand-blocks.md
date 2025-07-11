@@ -27,9 +27,9 @@ def calculate_tax(income):
 In INDRA, `understand:` shapes how behavior emerges:
 
 ```indra
-understand: ‹tax reflects social contribution, not punishment›
+understand: "tax reflects social contribution, not punishment"
 perform:
-  through: ‹thoughtful calculation›
+  through: "thoughtful calculation"
   as: ‹{tax explanation that acknowledges civic duty}›
 ```
 

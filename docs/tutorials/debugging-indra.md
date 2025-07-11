@@ -18,9 +18,9 @@ INDRA doesn't work this way:
 
 ```indra
 perform:
-  through: ‹thoughtful calculation›
+  through: "thoughtful calculation"
   as: ‹{total that reflects the true value}›
-  intention: ‹provide meaningful sum›
+  intention: "provide meaningful sum"
 ```
 
 There's no execution path to trace. No variables to watch. The behavior emerges each time, potentially differently.
@@ -113,9 +113,9 @@ perform:
   
 # Refined
 perform:
-  through: ‹focused analysis›
+  through: "focused analysis"
   as: ‹{concise key insights only}›
-  intention: ‹clarity through brevity›
+  intention: "clarity through brevity"
 ```
 
 ### Problem: Missing important aspects
@@ -126,12 +126,12 @@ are: ‹analyzer›
 must: [‹find patterns›]
 
 # Refined  
-are: ‹holistic analyzer›
+are: "holistic analyzer"
 must: 
-  - ‹find patterns›
-  - ‹identify exceptions›
-  - ‹note what's missing›
-understand: ‹absence is as revealing as presence›
+  - "find patterns"
+  - "identify exceptions"
+  - "note what's missing"
+understand: "absence is as revealing as presence"
 ```
 
 ### Problem: Inconsistent behavior

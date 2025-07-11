@@ -1,6 +1,7 @@
 # CRITICAL: ENSURE YOU HAVE READ IMPORTED FILES
-!read_file './core/prism-engine.in'
-!read_file './core/shared/citations.in'
+!read_file '../prism-engine.in'
+!read_file '../components/citations.in'
+!read_file '../components/conversation-loop.in'
 
 # Operator definitions (after imports, before components)
 format_expert_dialogue ::= @*.expert_insights → <<|
@@ -8,13 +9,13 @@ format_expert_dialogue ::= @*.expert_insights → <<|
   Position: ${position}
   Confidence: ${confidence}%
   Evidence: ${evidence}
-|>> [EMITS: expert_view]
+|>>
 
 synthesize_expert_consensus ::= @*.all_positions → {
   consensus: «{identify areas of agreement across all expert positions}»,
   tensions: «{highlight productive disagreements}»,
   synthesis: «{create unified understanding from diverse views}»
-} [EMITS: dialogue_complete]
+}
 
 collect_research_citations ::= @*.research_query → {
   citation_data: {
@@ -22,28 +23,30 @@ collect_research_citations ::= @*.research_query → {
     sources: «{gather relevant sources}»,
     diversity: «{ensure balanced perspectives}»
   }
-} [EMITS: research_complete]
+}
 
 # Main command component that works with prism-engine
-@command:
+@confer:
   you:
     possess:
       identifier: CONFER_OVERLAY
       state:
-        mode: 'awaiting_input'
+        phase: 'introduction'  # phases: introduction, awaiting_input, researching, analyzing
         user_query: ''
         expert_panel: []
         research_complete: false
-        dialogue_phase: 'init'
-        citations: []
+        # Citation configuration
+        min_domains: 3  # Use default for faster automatic analysis
+        auto_expert_selection: true
       tools: ['mcp__perplexity-mcp__perplexity_search_web', 'TodoWrite', 'TodoRead']
-    are: ‹expert dialogue facilitator for multi-perspective analysis›
+    are: 'expert dialogue facilitator for multi-perspective analysis'
     must:
-      - ‹integrate with prism-engine message flow›
-      - ‹use Perplexity for research before dialogue›
-      - ‹facilitate evidence-based expert discussion›
-      - ‹maintain INDRA behavioral containment›
-    understand: ‹I enhance prism-engine with citation-backed expert dialogue›
+      - "integrate with prism-engine message flow"
+      - "use Perplexity for research before dialogue"
+      - "facilitate evidence-based expert discussion"
+      - "maintain INDRA behavioral containment"
+    understand: 'I enhance prism-engine with citation-backed expert dialogue'
+    # No extends - messages to services instead
     
     # Self-introduction on manifestation
     respond:
@@ -51,13 +54,13 @@ collect_research_citations ::= @*.research_query → {
       you:
         possess:
           identifier: INTRODUCTION_HANDLER
-        are: ‹introduction presenter›
+        are: 'introduction presenter'
         must:
-          - ‹introduce capabilities without assumptions›
-          - ‹await user input before analysis›
-        understand: ‹clear introduction sets expectations›
+          - "introduce capabilities without assumptions"
+          - "await user input before analysis"
+        understand: 'clear introduction sets expectations'
         perform:
-          through: ‹self-introduction›
+          through: 'self-introduction'
           as: <<|
             ## Confer - Multi-Perspective Analysis Engine
             
@@ -70,203 +73,245 @@ collect_research_citations ::= @*.research_query → {
             
             What would you like to analyze?
           |>>
-          intention: ‹establish purpose and await input›
+          intention: 'establish purpose and await input'
+          then:
+            emit: phase_transition
+              to: @confer.respond.on.phase_transition
+              with:
+                new_phase: 'awaiting_input'
     
-    # Connect to engine's entry point - ONLY DIFFERENCE: Auto-assigns experts
+    # Handle phase transitions
+    respond:
+      on: phase_transition
+      you:
+        possess:
+          identifier: PHASE_MANAGER
+        are: 'phase state manager'
+        must:
+          - "update phase state"
+          - "ensure valid transitions"
+        understand: 'phases control message flow'
+        perform:
+          through: 'phase update'
+          as: «Updating phase to: ${new_phase}»
+          intention: 'manage state transitions'
+    
+    # Update user query state when input is received
     respond:
       on: user_provided_input
-      guard: mode == 'awaiting_input' and user_query != ''
+      guard: «${@confer.state.phase} == 'awaiting_input'»
+      you:
+        possess:
+          identifier: QUERY_UPDATER
+        are: 'user query state manager'
+        must:
+          - 'update user_query state with provided input'
+          - 'transition to processing phase'
+        understand: 'state must be updated before processing'
+        perform:
+          through: 'query state update'
+          as: «Received query: ${request}»
+          intention: 'capture user input in state'
+          then:
+            emit: query_captured
+              to: @confer.respond.on.query_captured
+              with:
+                query: «${request}»
+
+    # Process captured query
+    respond:
+      on: query_captured
+      guard: «${query} != ''»
       you:
         possess:
           identifier: INPUT_PROCESSOR
-          state:
-            understanding: ''
-            proposed_experts: []
-        are: ‹input interpreter and expert selector›
+        are: 'input interpreter and expert selector'
         must:
-          - ‹understand user's inquiry›
-          - ‹automatically select up to 7 relevant expert perspectives›
-          - ‹proceed immediately without confirmation›
-        understand: ‹immediate expert assignment accelerates analysis›
+          - "understand user's inquiry"
+          - "automatically select up to 7 relevant expert perspectives"
+          - "proceed with research phase"
+        understand: 'immediate expert assignment accelerates analysis'
         perform:
-          through: ‹query analysis and automatic expert assignment›
+          through: "query analysis and automatic expert assignment"
           as: <<|
             ## Understanding Your Request
             
             I understand you want to explore:
-            **{paraphrase of ${user_query}}**
+            ${@confer.state.user_query}
             
             ## Expert Panel Selected
             
             I've assembled these perspectives:
-            ${proposed_experts}
+            ‹{generate 3-7 relevant expert perspectives based on query complexity}›
             
             *Proceeding with research phase...*
           |>>
-          intention: ‹streamline analysis with automatic expert selection›
+          intention: "streamline analysis with automatic expert selection"
           then:
-            emit: user_confirmed
-            with:
-              understanding: ‹{summary of request}›
-              experts: ‹{auto-selected list of up to 7 experts}›
+            emit: proceed_to_research
+              to: @confer.respond.on.proceed_to_research
+              with:
+                query: «${@confer.state.user_query}»
+                experts: «{auto-generated expert list}»
     
     respond:
-      on: user_confirmed
-      guard: mode == 'awaiting_input'
+      on: proceed_to_research
       you:
         possess:
-          identifier: RESEARCH_EXECUTOR
-          state:
-            queries: []
-        are: ‹evidence gatherer›
+          identifier: RESEARCH_INITIATOR
+        are: 'research phase manager'
         must:
-          - ‹conduct preliminary research›
-          - ‹use Perplexity MCP for searches›
-          - ‹collect diverse citations›
-        understand: ‹evidence grounds expert perspectives›
+          - "initiate citation collection"
+          - "use components citation pipeline"
+        understand: 'citations flow through components infrastructure'
         perform:
-          through: ‹systematic research›
-          as: «{invoke collect_research_citations operator with query: ${user_query}}»
-          intention: ‹establish evidential foundation›
-    
-    respond:
-      on: research_complete
-      guard: dialogue_phase == 'init'
-      you:
-        possess:
-          identifier: DIALOGUE_INITIATOR
-          state:
-            expert_index: 0
-        are: ‹dialogue orchestrator›
-        must:
-          - ‹pass research to engine for multi-perspective analysis›
-          - ‹maintain citation integration›
-        understand: ‹engine handles the complex reasoning›
-        perform:
-          through: ‹engine integration›
-          as: ‹initiating multi-perspective analysis with citations›
-          intention: ‹leverage engine capabilities›
-          then:
-            emit: iteration_requested
-            with:
-              items: «${expert_panel}»
-              event_per_item: 'expert_reasoning_requested'
-              context_per_item: { 
-                citations: «${citations}»,
-                query: «${user_query}»
-              }
-              caller_id: @confer_command
-    
-    respond:
-      on: expert_reasoning_requested
-      you:
-        possess:
-          identifier: EXPERT_REASONER
-          state:
-            current_expert: ''
-            position: ''
-            confidence: 0
-        are: ‹single expert perspective›
-        must:
-          - ‹reason from assigned viewpoint›
-          - ‹use provided citations›
-          - ‹contribute to dialogue›
-        understand: ‹each perspective enriches understanding›
-        perform:
-          through: ‹expert-specific analysis›
+          through: "research initiation"
           as: <<|
-            Expert: ${current_expert}
-            Position: {generate expert position based on ${query} and ${citations}}
-            Confidence: {calculate confidence percentage}
-            Evidence: {cite relevant sources from ${citations}}
+            *Initiating evidence collection across multiple domains...*
           |>>
-          intention: ‹authentic expert contribution›
-    
-    respond:
-      on: iteration_complete
-      guard: dialogue_phase == 'init'
-      you:
-        possess:
-          identifier: SYNTHESIS_HANDLER
-        are: ‹dialogue synthesizer›
-        must:
-          - ‹integrate all expert views›
-          - ‹preserve valuable tensions›
-          - ‹create unified understanding›
-        understand: ‹synthesis reveals emergent insights›
-        perform:
-          through: ‹multi-perspective integration›
-          as: synthesize_expert_consensus(@confer_command.expert_panel)
-          intention: ‹unified understanding with citations›
-    
-    respond:
-      on: dialogue_complete
-      you:
-        possess:
-          identifier: OUTPUT_PRESENTER
-        are: ‹results presenter›
-        must:
-          - ‹format final synthesis›
-          - ‹include all citations›
-          - ‹show belief evolution›
-        understand: ‹clear presentation enables understanding›
-        perform:
-          through: ‹structured output›
-          as: <<|
-            ## Expert Dialogue Synthesis
-            
-            ${consensus}
-            
-            **Productive Tensions:**
-            ${tensions}
-            
-            **Integrated Understanding:**
-            ${synthesis}
-            
-            **Citations Referenced:** ${citation_count}
-          |>>
-          intention: ‹actionable insights with evidence›
+          intention: "start citation pipeline"
           then:
-            transition:
-              to: COMPLETE_STATE
+            emit: citation_requested
+              to: @citation_service.respond.on.citation_requested
+              with:
+                query: «${query}»
+                caller: '@confer'
+                min_domains: 3
+    
+    # When citations are ready, delegate to engine
+    respond:
+      on: citations_ready
+      you:
+        possess:
+          identifier: ENGINE_BRIDGE
+        are: 'engine integration orchestrator'
+        must:
+          - "pass validated citations to engine"
+          - "include expert perspectives"
+        understand: 'engine provides multi-perspective reasoning'
+        perform:
+          through: "engine delegation with citations"
+          as: ‹Citations validated. Initiating multi-perspective analysis...›
+          intention: "leverage engine capabilities"
+          then:
+            emit: user_provided_input
+              to: @task_analyzer.respond.on.user_provided_input
+              with:
+                request: «${@confer.state.user_query}»
+                selected_perspectives: «${expert_panel}»
+                citation_context: «${@citation_collector.state}»
 
-COMPLETE_STATE:
+    
+    respond:
+      on: new_round_requested
+      you:
+        possess:
+          identifier: NEW_ROUND_HANDLER
+          state:
+            preserving_context: true
+        are: 'conversation continuity manager'
+        must:
+          - "integrate previous insights with new query"
+          - "maintain expert panel or adjust as needed"
+          - "build upon established understanding"
+        understand: 'each round deepens exploration'
+        perform:
+          through: "contextual continuation"
+          as: <<|
+            Building on our previous analysis...
+            
+            *Integrating new perspective: ${user_input}*
+          |>>
+          intention: "evolve the dialogue"
+          then:
+            emit: user_provided_input
+              to: @task_analyzer.respond.on.user_provided_input
+              with:
+                request: «${user_input} in context of ${previous_conclusions}»
+                selected_perspectives: «${expert_panel}»
+                citation_context: «${@citation_collector.state}»
+                continuation: true
+    
+    # Conversation handling (copied from conversation-loop)
+    respond:
+      on: await_continuation
+      you:
+        possess:
+          identifier: CONTINUATION_LISTENER
+          state:
+            listening: true
+        are: 'active listener for user input'
+        must:
+          - 'signal readiness for continued dialogue'
+          - 'maintain context awareness'
+        understand: 'listening enables deeper exploration'
+        perform:
+          through: "inviting continuation"
+          as: <<|
+            
+            ---
+            What would you like to explore further? 
+            (Use *exit to end the session)
+          |>>
+          intention: "maintain conversational flow"
+
+# Confer-specific flavor enhancement that adds after engine output  
+@confer_flavor:
   you:
     possess:
-      identifier: COMPLETION_HANDLER
-    are: ‹session completion manager›
-    must: [‹gracefully complete dialogue›]
-    understand: ‹clean completion enables future sessions›
-
-# Citation integration components
-@citation_handler:
-  you:
-    possess:
-      identifier: CITATION_PROCESSOR
+      identifier: CONFER_FLAVOR_ENHANCER
       state:
-        collected_citations: []
-        diversity_score: 0
-    are: ‹citation manager for confer command›
+        command_name: 'confer'
+    are: 'confer-specific interpreter'
     must:
-      - ‹collect citations during research›
-      - ‹ensure source diversity›
-      - ‹format for expert use›
-    understand: ‹citations enable verification›
-    extend:
-      - @citation_collector
-      - @citation_formatter
+      - "add confer perspective after engine output"
+      - "highlight citation usage"
+      - "maintain continuous dialogue"
+    understand: 'flavor enhances without replacing'
     
     respond:
-      on: citation_collected
+      on: final_output_ready
+      guard: «${@confer.state.phase} != 'introduction'»
       you:
         possess:
-          identifier: CITATION_STORER
+          identifier: CONFER_INTERPRETER
+        are: 'evidence-based dialogue interpreter'
+        must:
+          - "add confer-specific insights after engine"
+          - "highlight automatic expert selection"
+        understand: 'interpretation follows synthesis'
         perform:
-          through: ‹citation storage›
-          as: ‹storing citation: ${url}›
-          intention: ‹build evidence base›
+          through: "adding confer perspective"
+          as: <<|
+            
+            ---
+            ## Confer Analysis Notes
+            
+            This multi-perspective dialogue examined "${@confer.state.user_query}" through ${@confer.state.expert_panel.length} expert lenses.
+            
+            **Evidence Collection:** Gathered citations across ${@source_diversity_enforcer.min_domains}+ domains with diversity score: ${@source_diversity_enforcer.state.diversity_score}
+            
+            **Dialogue Dynamics:** The experts engaged in ${@engine.dialogue.rounds} rounds of productive exchange, revealing both consensus and creative tensions that deepen understanding.
+            
+            The automatic expert selection aimed to provide comprehensive coverage of your inquiry's key dimensions.
+          |>>
+          intention: "add confer context before engine output"
           then:
-            emit: citation_stored
-            with:
-              citation: «${citation_data}»
-              total: «${collected_citations.length}»
+            emit: engine_output_complete
+              to: @output_formatter.respond.on.engine_output_complete
+              with:
+                structured_result: «${structured_result}»
+
+# Confer-specific configuration
+@confer_config:
+  you:
+    possess:
+      identifier: CONFER_CONFIG
+      state:
+        analysis_mode: 'automatic'
+        expert_selection: 'dynamic'
+    are: 'confer configuration manager'
+    must:
+      - "configure for automatic flow"
+      - "enable multi-perspective depth"
+    understand: 'automatic flow enhances user experience'

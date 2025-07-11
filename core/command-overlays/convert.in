@@ -1,13 +1,16 @@
-# CRITICAL: ENSURE YOU HAVE READ IMPORTED FILES
-!read_file './core/prism-engine.in'
+# INDRA to Markdown Converter Command
+# Converts INDRA behavioral specifications into traditional markdown prompts
+
+# Import components conversation infrastructure
+!read_file '../components/conversation-loop.in'
 
 # Operators for INDRA to Markdown conversion
 parse_indra_structure ::= @*.indra_content → {
-  components: «{extract @component blocks}»,
-  operators: «{extract operator definitions}»,
-  imports: «{extract !read_file statements}»,
-  message_flow: «{trace emit/on patterns}»
-} [EMITS: structure_parsed]
+  components: «{extract @component blocks from ${indra_content}}»,
+  operators: «{extract operator definitions from ${indra_content}}»,
+  imports: «{extract !read_file statements from ${indra_content}}»,
+  message_flow: «{trace emit/on patterns from ${indra_content}}»
+}
 
 extract_behavioral_elements ::= @*.component → {
   identifier: «${component.possess.identifier}»,
@@ -16,8 +19,8 @@ extract_behavioral_elements ::= @*.component → {
   understand: «${component.understand}»,
   state: «${component.possess.state}»,
   tools: «${component.possess.tools}»,
-  responses: «{extract respond blocks}»
-} [EMITS: elements_extracted]
+  responses: «{extract respond blocks from ${component}}»
+}
 
 transform_to_markdown ::= @*.behavioral_spec → <<|
 # ${spec.are}
@@ -44,7 +47,7 @@ ${spec.response_patterns}
 
 ## Message Handling
 ${spec.message_flow}
-|>> [EMITS: markdown_generated]
+|>>
 
 generate_system_prompt ::= @*.behavioral_spec → <<|
 You are ${spec.are}.
@@ -60,9 +63,9 @@ ${spec.tools_context}
 
 Behavioral patterns:
 ${spec.simplified_responses}
-|>> [EMITS: system_prompt_generated]
+|>>
 
-@command:
+@convert_to_md:
   you:
     possess:
       identifier: CONVERT_COMMAND
@@ -70,31 +73,31 @@ ${spec.simplified_responses}
         mode: 'awaiting_input'
         target_file: ''
         output_format: 'markdown'  # markdown | system | both
-        component_focus: '@command'  # which component to convert
+        component_focus: ''  # which component to convert
         conversion_result: ''
       tools: ['Read', 'Write', 'TodoWrite']
-    are: ‹INDRA to Markdown prompt converter›
+    are: "INDRA to Markdown prompt converter"
     must:
-      - ‹parse INDRA behavioral specifications accurately›
-      - ‹extract all behavioral components and patterns›
-      - ‹transform into clear, executable markdown prompts›
-      - ‹preserve the intent and constraints of the original›
-      - ‹handle state interpolation and message flows›
-    understand: ‹developers need to convert INDRA specifications into traditional prompts for various use cases›
-    extend: @engine
+      - "parse INDRA behavioral specifications accurately"
+      - "extract all behavioral components and patterns"
+      - "transform into clear, executable markdown prompts"
+      - "preserve the intent and constraints of the original"
+      - "handle state interpolation and message flows"
+    understand: "developers need to convert INDRA specifications into traditional prompts for various use cases"
+    # No extends - self-contained converter
     
     respond:
       on: manifest
       you:
         possess:
           identifier: INTRODUCTION_HANDLER
-        are: ‹conversion utility introduction›
+        are: "conversion utility introduction"
         must:
-          - ‹explain conversion capabilities›
-          - ‹set usage expectations›
-        understand: ‹users need clear guidance on conversion options›
+          - "explain conversion capabilities"
+          - "set usage expectations"
+        understand: "users need clear guidance on conversion options"
         perform:
-          through: ‹capability introduction›
+          through: "capability introduction"
           as: <<|
             ## INDRA → Markdown Converter
             
@@ -109,7 +112,7 @@ ${spec.simplified_responses}
             
             What would you like to convert?
           |>>
-          intention: ‹establish conversion context›
+          intention: "establish conversion context"
     
     respond:
       on: user_provided_input
@@ -119,14 +122,14 @@ ${spec.simplified_responses}
           identifier: INPUT_PARSER
           state:
             parsed_args: []
-        are: ‹input argument parser›
+        are: "input argument parser"
         must:
-          - ‹parse file path and options›
-          - ‹validate input file exists›
-          - ‹determine conversion parameters›
-        understand: ‹correct parsing enables accurate conversion›
+          - "parse file path and options"
+          - "validate input file exists"
+          - "determine conversion parameters"
+        understand: "correct parsing enables accurate conversion"
         perform:
-          through: ‹argument parsing›
+          through: "argument parsing"
           as: <<|
             Parsing conversion request...
             
@@ -136,15 +139,17 @@ ${spec.simplified_responses}
             
             *Reading INDRA specification...*
           |>>
-          intention: ‹prepare conversion pipeline›
+          intention: "prepare conversion pipeline"
           then:
             emit: file_validated
-            when: ‹file exists and is readable›
-            with:
-              file_path: «${target_file}»
-              format: «${output_format}»
+              to: @convert_to_md.respond.on.file_validated
+              when: ‹file exists and is readable›
+              with:
+                file_path: «${target_file}»
+                format: «${output_format}»
           otherwise:
             emit: validation_error
+              to: @convert_to_md.respond.on.validation_error
     
     respond:
       on: file_validated
@@ -153,20 +158,21 @@ ${spec.simplified_responses}
           identifier: INDRA_READER
           state:
             file_content: ''
-        are: ‹INDRA file reader›
+        are: "INDRA file reader"
         must:
-          - ‹read target file content›
-          - ‹preserve exact formatting›
-        understand: ‹accurate reading is essential for parsing›
+          - "read target file content"
+          - "preserve exact formatting"
+        understand: "accurate reading is essential for parsing"
         perform:
-          through: ‹file reading›
+          through: "file reading"
           as: ‹Reading ${file_path}...›
-          intention: ‹load INDRA specification›
+          intention: "load INDRA specification"
           then:
             emit: content_loaded
-            with:
-              content: «${file_content}»
-              line_count: «{count lines in ${file_content}}»
+              to: @convert_to_md.respond.on.content_loaded
+              with:
+                content: «${file_content}»
+                line_count: «{count lines in ${file_content}}»
     
     respond:
       on: content_loaded
@@ -175,28 +181,29 @@ ${spec.simplified_responses}
           identifier: STRUCTURE_PARSER
           state:
             parsed_structure: {}
-        are: ‹INDRA structure analyzer›
+        are: "INDRA structure analyzer"
         must:
-          - ‹parse component blocks›
-          - ‹extract operators›
-          - ‹trace message flows›
-          - ‹identify behavioral patterns›
-        understand: ‹proper parsing reveals the behavioral specification›
+          - "parse component blocks"
+          - "extract operators"
+          - "trace message flows"
+          - "identify behavioral patterns"
+        understand: "proper parsing reveals the behavioral specification"
         perform:
-          through: ‹structural analysis›
+          through: "structural analysis"
           as: <<|
             {extract @component blocks from ${content}}
             {extract operator definitions from ${content}}
             {extract !read_file statements from ${content}}
             {trace emit/on message flow patterns}
           |>>
-          intention: ‹extract all behavioral elements›
+          intention: "extract all behavioral elements"
           then:
             emit: structure_parsed
-            with:
-              components: «${parsed_structure.components}»
-              operators: «${parsed_structure.operators}»
-              message_flows: «${parsed_structure.message_flow}»
+              to: @convert_to_md.respond.on.structure_parsed
+              with:
+                components: «${parsed_structure.components}»
+                operators: «${parsed_structure.operators}»
+                message_flows: «${parsed_structure.message_flow}»
     
     respond:
       on: structure_parsed
@@ -205,14 +212,14 @@ ${spec.simplified_responses}
           identifier: COMPONENT_ANALYZER
           state:
             target_component: {}
-        are: ‹component detail extractor›
+        are: "component detail extractor"
         must:
-          - ‹focus on specified component›
-          - ‹extract all behavioral details›
-          - ‹preserve relationships›
-        understand: ‹components define complete behaviors›
+          - "focus on specified component"
+          - "extract all behavioral details"
+          - "preserve relationships"
+        understand: "components define complete behaviors"
         perform:
-          through: ‹component extraction›
+          through: "component extraction"
           as: <<|
             {extract identifier from ${component_focus}}
             {extract are statement}
@@ -222,11 +229,12 @@ ${spec.simplified_responses}
             {extract tools list}
             {extract respond blocks}
           |>>
-          intention: ‹detailed behavioral analysis›
+          intention: "detailed behavioral analysis"
           then:
             emit: component_analyzed
-            with:
-              behavioral_spec: «${extracted_elements}»
+              to: @convert_to_md.respond.on.component_analyzed
+              with:
+                behavioral_spec: «${extracted_elements}»
     
     respond:
       on: component_analyzed
@@ -236,14 +244,14 @@ ${spec.simplified_responses}
           state:
             markdown_output: ''
             system_output: ''
-        are: ‹markdown transformation engine›
+        are: "markdown transformation engine"
         must:
-          - ‹generate requested format›
-          - ‹preserve behavioral intent›
-          - ‹create executable prompts›
-        understand: ‹transformation must maintain behavioral fidelity›
+          - "generate requested format"
+          - "preserve behavioral intent"
+          - "create executable prompts"
+        understand: "transformation must maintain behavioral fidelity"
         perform:
-          through: ‹format transformation›
+          through: "format transformation"
           as: <<|
             Generating ${output_format} format...
             
@@ -251,33 +259,36 @@ ${spec.simplified_responses}
             *Formatting requirements and patterns...*
             *Creating executable prompt structure...*
           |>>
-          intention: ‹create usable prompt›
+          intention: "create usable prompt"
           then:
             emit: markdown_ready
-            when: output_format == 'markdown'
-            with:
-              result: «${markdown_output}»
+              to: @convert_to_md.respond.on.markdown_ready
+              when: «${output_format} == 'markdown'»
+              with:
+                result: «${markdown_output}»
           otherwise:
             emit: system_prompt_ready
-            when: output_format == 'system'
-            with:
-              result: «${system_output}»
+              to: @convert_to_md.respond.on.system_prompt_ready
+              when: «${output_format} == 'system'»
+              with:
+                result: «${system_output}»
           otherwise:
             emit: both_formats_ready
-            when: output_format == 'both'
+              to: @convert_to_md.respond.on.both_formats_ready
+              when: «${output_format} == 'both'»
     
     respond:
       on: markdown_ready
       you:
         possess:
           identifier: MARKDOWN_PRESENTER
-        are: ‹markdown output presenter›
+        are: "markdown output presenter"
         must:
-          - ‹display formatted markdown›
-          - ‹include all behavioral elements›
-        understand: ‹clear presentation enables immediate use›
+          - "display formatted markdown"
+          - "include all behavioral elements"
+        understand: "clear presentation enables immediate use"
         perform:
-          through: ‹markdown presentation›
+          through: "markdown presentation"
           as: <<|
 # ${behavioral_spec.are}
 
@@ -291,9 +302,9 @@ ${behavioral_spec.must}
 ${behavioral_spec.understand}
 
 ## Configuration
-\`\`\`json
+```json
 ${behavioral_spec.state}
-\`\`\`
+```
 
 ## Available Tools
 ${behavioral_spec.tools}
@@ -304,22 +315,23 @@ ${behavioral_spec.response_patterns}
 ## Message Handling
 ${behavioral_spec.message_flow}
           |>>
-          intention: ‹deliver detailed prompt›
+          intention: "deliver detailed prompt"
           then:
             emit: conversion_complete
+              to: @convert_to_md.respond.on.conversion_complete
     
     respond:
       on: system_prompt_ready
       you:
         possess:
           identifier: SYSTEM_PRESENTER
-        are: ‹system prompt presenter›
+        are: "system prompt presenter"
         must:
-          - ‹display concise system prompt›
-          - ‹focus on essential behaviors›
-        understand: ‹system prompts need clarity and brevity›
+          - "display concise system prompt"
+          - "focus on essential behaviors"
+        understand: "system prompts need clarity and brevity"
         perform:
-          through: ‹system prompt generation›
+          through: "system prompt generation"
           as: <<|
 You are ${behavioral_spec.are}.
 
@@ -335,22 +347,23 @@ ${behavioral_spec.tools_context}
 Behavioral patterns:
 ${behavioral_spec.simplified_responses}
           |>>
-          intention: ‹deliver concise prompt›
+          intention: "deliver concise prompt"
           then:
             emit: conversion_complete
+              to: @convert_to_md.respond.on.conversion_complete
     
     respond:
       on: both_formats_ready
       you:
         possess:
           identifier: DUAL_PRESENTER
-        are: ‹dual format presenter›
+        are: "dual format presenter"
         must:
-          - ‹show both formats›
-          - ‹clearly separate outputs›
-        understand: ‹comparison helps users choose›
+          - "show both formats"
+          - "clearly separate outputs"
+        understand: "comparison helps users choose"
         perform:
-          through: ‹dual presentation›
+          through: "dual presentation"
           as: <<|
             ## Markdown Format
             
@@ -362,9 +375,10 @@ ${behavioral_spec.simplified_responses}
             
             ${system_output}
           |>>
-          intention: ‹provide format options›
+          intention: "provide format options"
           then:
             emit: conversion_complete
+              to: @convert_to_md.respond.on.conversion_complete
     
     respond:
       on: conversion_complete
@@ -373,13 +387,14 @@ ${behavioral_spec.simplified_responses}
           identifier: COMPLETION_HANDLER
           state:
             save_prompt: false
-        are: ‹conversion completion handler›
+        are: "conversion completion handler"
         must:
-          - ‹offer to save output›
-          - ‹provide usage guidance›
-        understand: ‹users may want to save conversions›
+          - "offer to save output"
+          - "provide usage guidance"
+          - "transition to conversational state"
+        understand: "users may want to save conversions"
         perform:
-          through: ‹completion handling›
+          through: "completion handling"
           as: <<|
             
             ---
@@ -390,20 +405,24 @@ ${behavioral_spec.simplified_responses}
             - Convert another component? (provide component name)
             - Try a different format?
           |>>
-          intention: ‹enable further actions›
+          intention: "enable further actions"
+          then:
+            transition:
+              to: CONVERSATIONAL_STATE
     
     respond:
       on: validation_error
       you:
         possess:
           identifier: ERROR_HANDLER
-        are: ‹error reporter›
+        are: "error reporter"
         must:
-          - ‹explain what went wrong›
-          - ‹suggest corrections›
-        understand: ‹helpful errors enable success›
+          - "explain what went wrong"
+          - "suggest corrections"
+          - "transition to conversational state"
+        understand: "helpful errors enable success"
         perform:
-          through: ‹error reporting›
+          through: "error reporting"
           as: <<|
             Unable to convert: ${error_reason}
             
@@ -412,9 +431,44 @@ ${behavioral_spec.simplified_responses}
             - File contains valid INDRA code
             - Component name starts with @
             
-            Example: `convert.in /path/to/file.in markdown @command`
+            Example: `convert.in /path/to/file.in markdown @convert_to_md`
           |>>
-          intention: ‹guide to success›
+          intention: "guide to success"
+          then:
+            transition:
+              to: CONVERSATIONAL_STATE
+    
+    respond:
+      on: new_round_requested
+      you:
+        possess:
+          identifier: CONTINUATION_HANDLER
+          state:
+            user_input: ''
+            conversation_history: []
+        are: "conversation continuation manager"
+        must:
+          - "parse new conversion request"
+          - "maintain conversation context"
+          - "handle follow-up questions"
+        understand: "users may want multiple conversions or clarifications"
+        perform:
+          through: "continuation routing"
+          as: <<|
+            Understanding your request...
+          |>>
+          intention: "process continuation"
+          then:
+            emit: user_provided_input
+              to: @convert_to_md.respond.on.user_provided_input
+              when: ‹input contains file path or conversion request›
+              with:
+                mode: 'awaiting_input'
+                input: «${user_input}»
+          otherwise:
+            emit: await_continuation
+              to: @conversation_loop.respond.on.await_continuation
+              when: ‹input is general question or unclear›
 
 # Conversion helpers
 @format_helpers:
@@ -423,12 +477,12 @@ ${behavioral_spec.simplified_responses}
       identifier: FORMAT_HELPERS
       state:
         indentation_level: 0
-    are: ‹formatting utility provider›
+    are: "formatting utility provider"
     must:
-      - ‹handle quote conversions›
-      - ‹format lists properly›
-      - ‹preserve structure›
-    understand: ‹proper formatting ensures readability›
+      - "handle quote conversions"
+      - "format lists properly"
+      - "preserve structure"
+    understand: "proper formatting ensures readability"
     
     respond:
       on: format_must_list
@@ -436,11 +490,11 @@ ${behavioral_spec.simplified_responses}
         possess:
           identifier: MUST_FORMATTER
         perform:
-          through: ‹list formatting›
+          through: "list formatting"
           as: <<|
             {format ${must_items} as bullet list}
           |>>
-          intention: ‹create bullet list›
+          intention: "create bullet list"
     
     respond:
       on: format_response_patterns
@@ -448,12 +502,12 @@ ${behavioral_spec.simplified_responses}
         possess:
           identifier: RESPONSE_FORMATTER
         perform:
-          through: ‹response pattern formatting›
+          through: "response pattern formatting"
           as: <<|
             ### Message: ${response.on}
-            ${response.guard ? `**Condition**: ${response.guard}\n` : ''}
+            ${response.guard ? `**Condition**: ${response.guard}` : ''}
             **Action**: ${response.perform_through}
             **Pattern**: ${response.perform_as}
             **Intent**: ${response.intention}
           |>>
-          intention: ‹document message handling›
+          intention: "document message handling"

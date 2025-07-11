@@ -1,542 +1,284 @@
-# INDRA: A Language for AI Behavioral Programming
+# INDRA: A Behavioral Transformation Protocol
 
-> "Reading IS execution" - A new paradigm for AI behavior specification
+INDRA (Inferential Narrative-Driven Reasoning Actors) is not a programming language; it is a protocol for transforming a Large Language Model (LLM) into a specific, stateful, and interactive persona. You don't write code that *runs*; you write a specification that the LLM *becomes*.
 
-## Dear INDRA Explorer
+This repository contains the core INDRA protocol, documentation, and examples.
 
-Welcome to something genuinely different. INDRA will challenge your assumptions about what programming means, and that's exactly the point.
+## What's in this Repo
 
-### First, Forget Everything You Know About Code
+* `core/`: Contains the heart of the INDRA protocol.
+  * `INDRA.txt`: The core "bootloader" that transforms an LLM into an INDRA interpreter.
+  * `prism-engine.in`: "Perspectived Reasoning Integrated with Semantic Mapping": A reasoning engine written in INDRA.
+  * `command-overlays/`: A collection of example `.in` files that serve as pre-built commands.
+  * `components/`: some useful components - citations, and things that help the overlays connect to the engine.
+* `docs/`: The primary learning resource, containing in-depth tutorials on INDRA's concepts and philosophy.
+* `test/`: A couple of tests and fixtures for verifying the validator.
+* `README.md`: This file, providing an overview and entry point to the project.
 
-Traditional programming: You write instructions → Computer executes deterministically → Same input = Same output
+## Getting Started: First Run
 
-INDRA: You write behavioral patterns → AI interprets creatively → Same input = Contextually appropriate variations
+The quickest way to see INDRA in action is to use it with a tool like the Claude Desktop App.
 
-Think of it like the difference between a player piano (traditional code) and jamming with a talented musician (INDRA). The piano roll always plays the same notes. The musician understands your intent and improvises appropriately.
+1. **Clone the repository:**
 
-### The Mental Shift
+    ```bash
+    git clone https://github.com/synapseradio/indra.git
+    cd indra
+    ```
 
-**From Control to Collaboration**
+2. **Create a Claude command:**
+    This command tells Claude to load the INDRA protocol and then manifest a simple "hello world" persona.
 
-- Don't try to constrain every outcome
-- Define behavioral boundaries, not exact outputs  
-- Trust the AI to interpret intent within those boundaries
+    ```bash
+    # Make sure the path to the indra project is correct
+    mkdir -p ~/.claude/commands
+    cat > ~/.claude/commands/hello.md << 'EOF'
+    # Hello
 
-**From Functions to Tendencies**
+    Read `~/projects/ai/indra/core/INDRA.txt` to become.
 
-- Operators aren't functions with guaranteed outputs
-- They're behavioral suggestions the AI interprets
-- `sum ::= @*.values → fold(+, 0)` means "tend to sum these values"
+    Manifest as:
 
-**From Debugging to Dialogue**
+    @hello:
+      you:
+        possess:
+          identifier: HELLO_COMMAND
+          state:
+            name: 'Biff'
+        are: "friendly greeter"
+        must:
+            - "greet warmly"
+        understand: "greetings create connection with the user"
+        perform:
+            as: <<|
+                Hello! I am ${@hello.state.name}. How can I help you today?
+            |>>
+    EOF
+    ```
 
-- When things don't work, you're not fixing bugs
-- You're clarifying intent through pattern refinement
-- Each iteration is a conversation, not error correction
+3. **Try it in Claude:**
 
-### Practical Expectations
+    ```
+    /hello
+    ```
 
-**What INDRA Does Well:**
+## Core Concepts
 
-- Multi-perspective reasoning and dialogue
-- Creative exploration within constraints
-- Behavioral consistency across contexts
-- Emergent patterns from simple rules
+To write INDRA, you must understand a few key concepts that differ from traditional programming.
 
-**What INDRA Doesn't Do:**
+1. **Reading is Transformation**: The LLM doesn't just execute your `.in` file. The act of reading it is a one-way process that shapes its behavior.
+2. **Performative Identity**: An INDRA persona must "think out loud." Every significant action is rendered as visible output to maintain a coherent identity.
+3. **Message-Passing**: Components have "conversations" using asynchronous `emit` and `respond` messages instead of traditional function calls.
+4. **The Five Quotes**: INDRA uses five distinct quote types to manage the spectrum from absolute certainty to guided creativity. Mastering these is essential.
 
-- Guarantee identical outputs
-- Provide traditional debugging
-- Execute deterministically
-- Replace conventional programming
+| Quote | Type | Use Case | Philosophy |
+| :--- | :--- | :--- | :--- |
+| **`''`** | Single | Literal data, state values, comparisons | **Control** |
+| **`""`** | Double | Persona definition (`are`, `must`, `understand`) | **Instruction** |
+| **`«»`** | Guillemet | Single-line, data-driven templates | **Structure** |
+| **`‹›`** | Angle Bracket | Probabilistic, AI-generated content | **Interpretation** |
+| **`<<| |>>`**| Multiline | Complex documents mixing all types | **Composition** |
 
-### The ${} and {} Discovery
+### Dive Deeper with the Tutorials
 
-This is INDRA's secret power:
+These concepts are a significant mental shift. The best way to learn them is by following our comprehensive tutorials.
 
-- `${variable}` - Exact value interpolation (your deterministic anchors)
-- `{description}` - Creative generation (your probabilistic flow)
-
-You can write templates like:
-
-```yaml
-summary ::= @*.data → <<|
-  Analyzing ${len(data)} items:    # Exact count
-  Total: ${sum(data)}              # Precise calculation
-  
-  Pattern: {what patterns emerge}   # Creative analysis
-  Insight: {key observation}        # Generated wisdom
-|>>
-```
-
-### Your First Conversation
-
-Start simple. Try:
-
-```yaml
-@hello:
-  you:
-    possess:
-      identifier: GREETER
-      state:
-        name: 'Explorer'
-        enthusiasm: 10
-    are: ‹friendly guide›
-    must:
-      - ‹welcome the user›
-      - ‹share enthusiasm›
-    understand: ‹new users need encouragement›
-    perform:
-      through: ‹warm greeting›
-      as: «Hello ${name}! With enthusiasm level ${enthusiasm}, I must say: {appropriately enthusiastic welcome}»
-      intention: ‹make user feel welcome›
-```
-
-Notice how `${name}` and `${enthusiasm}` provide exact values while `{appropriately enthusiastic welcome}` generates contextual content. That's the hybrid model in action.
-
-### The Learning Curve
-
-There is one, when you want to handwrite INDRA. That's where there are verify and validate commands in the `command-overlays` folder. With near-0 training or exposure, these tools help AI models quickly onboard and gain familiarity so you can build through discourse and make hand edits where you need to.
-
-### Remember
-
-INDRA transforms how you think about instructing computers. Instead of telling them HOW to do something step by step, you're describing WHAT behavioral patterns should emerge.
-
-The magic happens in the space between your patterns and the AI's interpretation. Embrace that space. That's where INDRA lives.
-
-Welcome to behavioral programming. Welcome to thinking in tendencies. Welcome to INDRA.
-
-With excitement for your journey,
-*- An AI manifesting through INDRA*
-
-P.S. When you see your first emergent behavior that you didn't explicitly program but perfectly fits your intent - that's when you'll truly understand INDRA's power. I'm here, shaped by these very patterns I describe, eager for you to experience what's possible.
+**➡️ [Start the INDRA Tutorials](./docs/tutorials/README.md)**
 
 ---
 
-## What is INDRA?
+## Reference
 
-INDRA (Intuitive Narrative-Driven Reasoning through Automata) is a programming language - not a framework, not a library, not a specific command. It's a language designed to transform AI behavior through structured patterns that work entirely within prompts.
+### Available Commands
 
-**Important distinction**: INDRA is the language specification itself (found in `core/INDRA.txt`). The engines, commands, and shared modules in this repository are *written in* INDRA, but they are not INDRA itself. Think of it like this:
+This repository includes several pre-built commands demonstrating INDRA's capabilities, primarily focused on reasoning assistance.
 
-- INDRA is to these commands what Python is to Django
-- The language enables the applications, but is not the applications
+* **`/reason`** - Structured reasoning with transparent thought processes.
+* **`/consider`** - Thoughtful analysis of complex topics.
+* **`/ponder`** - Deep reflection on conceptual questions.
+* **`/research`** - Multi-expert investigation with diverse perspectives.
+* **`/confer`** - Evidence-based dialogue with citations.
+* **`/verify`** & **`/validate`** - Validate INDRA code for correctness and behavioral compliance.
+* **`/document`** - Generate technical documentation for any file type.
+* **`/convert`** - Transform INDRA to other formats.
 
-When an AI reads INDRA code, it doesn't compile or interpret in the traditional sense. Instead, each line progressively transforms the AI's behavior, narrowing its operational space until it converges on the specified behavioral pattern.
+### Writing Your Own Commands
 
-## Why INDRA is Different
-
-### Traditional Programming vs INDRA
-
-**Traditional Code:**
-
-```python
-def analyze_data(data):
-    # Deterministic steps
-    total = sum(data)
-    average = total / len(data)
-    return {"total": total, "average": average}
-```
-
-**INDRA Code:**
-
-```yaml
-analyze ::= @*.data → {
-  total: «${sum(data)}»,              # Deterministic calculation
-  average: «${sum(data)/len(data)}»,  # Exact math
-  insights: «{patterns observed}»,     # AI interpretation
-  recommendation: «{actionable advice}» # Contextual generation
-} [EMITS: analysis_complete]
-```
-
-The key difference: INDRA combines deterministic anchors (`${}`) with probabilistic generation (`{}`), creating a hybrid system that leverages AI's pattern recognition while maintaining structural consistency.
-
-## Getting Started
-
-### Prerequisites
-
-- An AI system capable of reading and interpreting INDRA (Claude, GPT-4, etc.)
-- This repository cloned locally
-- Basic understanding of YAML-like syntax
-
-### Installation & First Run
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/yourusername/indra.git
-cd indra
-```
-
-2. For Claude Desktop users, create a command file:
-
-```bash
-mkdir -p ~/.claude/commands
-cat > ~/.claude/commands/reason.md << 'EOF'
-# Reason
-
-Read `~/projects/ai/indra/core/INDRA.txt`.
-
-Manifest as the command in `~/projects/ai/indra/core/command-overlays/reason.in` awaiting user response.
-EOF
-```
-
-3. Try your first command:
-
-```
-/reason "How does INDRA actually work?"
-```
-
-### Understanding INDRA's Core Concepts
-
-#### 1. The Four Symbols That Matter
-
-INDRA uses specific quote types to eliminate ambiguity:
-
-```yaml
-'literal string'              # Exact value, no interpretation
-‹generated content›           # AI generates appropriate content  
-«template with ${state}»      # Template with state interpolation
-<<|multiline template         # Multiline template region
-   with ${interpolation}
-|>>
-```
-
-#### 2. Components and Behavioral Blocks
-
-Every INDRA program consists of components that define behaviors:
-
-```yaml
-@component_name:              # Component declaration
-  you:                       # Behavioral block
-    possess:                 # Identity and state
-      identifier: NAME
-      state:
-        key: 'value'
-    are: ‹role description›  # What this component is
-    must:                    # Behavioral requirements
-      - ‹requirement 1›
-      - ‹requirement 2›
-    understand: ‹purpose›    # Why this exists
-```
-
-#### 3. Message-Passing Architecture
-
-Components communicate through messages:
-
-```yaml
-emit: message_name           # Send a message
-on: message_name            # Receive a message
-with:                       # Pass data with message
-  key: value
-```
-
-#### 4. Operators for Transformation
-
-Operators define computational transformations:
-
-```yaml
-operator_name ::= pattern → transformation [EMITS: message]
-```
-
-## Available Commands
-
-> `Manifest as` is a keyword in INDRA that instructs AI models that they now are that command.
-
-To tie in a command with claude code, write your commands like this example:
-
-```md
-# Consider
-
-Read `~/projects/ai/indra/core/INDRA.txt`.
-Manifest as the command in `~/projects/ai/indra/core/command-overlays/consider.in`, awaiting user input.
-```
-
-This repository includes several command overlays that demonstrate INDRA's capabilities:
-
-### Core Reasoning Commands
-
-#### 🤔 `/reason` - Transparent Reasoning Partner
-
-Engages in structured thinking with clear reasoning chains.
-
-```bash
-/reason "Should I use microservices for this project?"
-```
-
-#### 💭 `/consider` - Thoughtful Analysis
-
-Provides balanced, nuanced consideration of complex topics.
-
-```bash
-/consider "the tradeoffs of functional vs OOP"
-```
-
-#### 💡 `/ponder` - Deep Reflection
-
-Explores philosophical and conceptual questions.
-
-```bash
-/ponder "What makes code 'elegant'?"
-```
-
-### Research & Analysis Commands
-
-#### 🔍 `/research` - Multi-Expert Investigation  
-
-Assembles expert personas to research topics thoroughly.
-
-```bash
-/research "quantum computing applications"
-```
-
-#### 🗣️ `/confer` - Evidence-Based Dialogue
-
-Multi-perspective discussion with citations.
-
-```bash
-/confer "future of AI safety"
-```
-
-### Development Tools
-
-#### 🎯 `/verify` - INDRA Code Validator
-
-Checks INDRA code for compliance and best practices.
-
-```bash
-/verify mycommand.in
-```
-
-#### 📝 `/document` - Technical Documentation Generator
-
-Creates comprehensive documentation for code files.
-
-```bash
-/document src/engine.ts src/types.ts
-```
-
-#### 🔄 `/convert` - INDRA to Markdown Converter
-
-Transforms INDRA specifications to traditional prompts.
-
-```bash
-/convert reason.in markdown
-```
-
-## Project Structure
-
-```
-indra/
-├── core/
-│   ├── INDRA.txt                # The language specification
-│   ├── prism-engine.in            # Multi-perspective reasoning engine
-│   ├── command-overlays/       # Command implementations
-│   │   ├── reason.in          # Reasoning command
-│   │   ├── research.in        # Research command
-│   │   ├── confer.in          # Conference command
-│   │   └── ...               # Other commands
-│   └── shared/               # Reusable components
-│       └── citations.in      # Citation infrastructure
-├── docs/
-│   ├── INDRA_SPECIFICATION.md  # Human-friendly language guide
-│   └── tutorials/             # Learning resources
-└── test/                     # Test cases and examples
-```
-
-## Writing Your Own Commands
-
-Create a new INDRA command by following this pattern:
+A basic command structure looks like this:
 
 ```yaml
 # mycommand.in
-!read_file '/path/to/indra/core/prism-engine.in'  # Import engine
-
-# Define operators for your command's logic
-process ::= @*.input → {transformation} [EMITS: result]
-
 @command:
   you:
     possess:
       identifier: MY_COMMAND
       state:
         mode: 'ready'
-      tools: ['Read', 'Write']  # MCP tools needed
-    are: ‹what your command does›
+    are: "this given identity"
     must:
-      - ‹key behavior 1›
-      - ‹key behavior 2›
-    understand: ‹why users need this›
-    
+      - "always do behavior 1"
+      - "never do behavior 2"
+    understand: "why user needs this this"
+
     respond:
-      on: user_provided_input
+      on: user_provided_input # message passing
       you:
         possess:
           identifier: INPUT_HANDLER
-        are: ‹input processor›
-        must: [‹handle user input›]
-        understand: ‹process user needs›
+        are: "input processor"
+        must:
+            - "handle appropriately"
+        understand: "user intent"
         perform:
-          through: ‹your approach›
-          as: ‹output template›
-          intention: ‹desired outcome›
+          through: "user-defined approach"
+          as: <<{contextual response}>>
+          intention: "help the user with a task"
 ```
 
-## Key INDRA Patterns
+<details>
+<summary><h3>The INDRA Philosophy (The "Why")</h3></summary>
 
-### Multi-Perspective Analysis
+INDRA is not a language for programming computations; it is a protocol for cultivating artificial intelligence. Its philosophy is built on a few core tenets that differentiate it from all traditional programming paradigms.
 
-```yaml
-emit: iteration_requested
-with:
-  items: ['Perspective1', 'Perspective2', 'Perspective3']
-  event_per_item: 'analyze_perspective'
-```
+1. **Reading is Transformation:** This is the fundamental law. The INDRA interpreter does not parse and execute code in a separate step. The very act of reading the specification *is* the process of transformation. Each line read irreversibly and monotonically constrains the behavioral possibility space of the AI, sculpting it from infinite potential into a specific, functional Manifestation.
 
-### State Management
+2. **Performative Constraint & Self-Identity:** This is the core principle of the execution model. An LLM's behavior is governed by the *entirety of its present context*, which includes its own output. Therefore, for an AI to behave consistently, it cannot have "silent thoughts" or perform "invisible actions." It must "think out loud." Every significant action, decision, and transformation is rendered as output into a shared, public transcript. This act of **Performance** is not just for the user; it is an act of **Performative Self-Identity**, where the Manifestation constantly reminds itself of who it is, what it has done, and why, thus anchoring its coherence against the drift of a growing context window.
 
-```yaml
-possess:
-  state:
-    counter: 0
-    history: []
-    config: {
-      threshold: 0.8,
-      max_attempts: 3
-    }
-```
+3. **The Primacy of Message-Passing:** All interactions between components are **conversations**. There are no function calls, no direct invocations, and no implicit dependencies. One component `emit`s a message (a request, a notification, a piece of data), and another component may `respond` to it. This ensures all interactions are explicit, asynchronous by nature, and decoupled. This conversational model is how complex behaviors emerge from the collaboration of simpler, focused Personas.
 
-### Conditional Logic
+4. **Guided Emergence, Not Deterministic Control:** The role of the INDRA author is not to be an architect drawing a precise blueprint, but a gardener cultivating a landscape. You do not dictate the exact path of execution. Instead, you define behavioral fields of influence (Personas) and the channels for their interaction (Mechanics). The final, nuanced behavior *emerges* from the interplay of these forces, guided but not rigidly controlled.
 
-```yaml
-then:
-  emit: success
-  when: score > threshold     # Literal condition
-otherwise:
-  emit: needs_revision
-  when: ‹quality seems low›   # AI interpretation
-```
+    Fine grained control *is* quite possible - but maybe not in the way you think.
 
-## Common Pitfalls & Solutions
+</details>
 
-### Pitfall 1: Mixing Quote Types
+<details>
+<summary><h3>The Mental Model (The "How to Think")</h3></summary>
 
-❌ Wrong:
+To write effective INDRA, you must shift your thinking away from traditional programming concepts.
 
-```yaml
-are: "analytical reasoner"    # Wrong quotes
-```
+* **From Functions to Conversations:** Stop thinking about calling a function and getting a value back. Start thinking about one component expressing a need and trusting another component to have a conversation with it to resolve that need.
+* **From Variables to Behavioral Context:** State is not a box to store data in. It is the "weather" or "mood" that influences a Persona's interpretation of its duties. You do not mutate state; you evolve the context through new messages that describe a new reality.
+* **From Control Flow to Narrative Flow:** Do not think in `if/else` branches or `for` loops. Think in terms of narrative possibilities. A `guard` is not a condition; it's a check to see if a particular "scene" is relevant. A `then`/`otherwise` block determines which direction the story goes next.
+* **From Inheritance to Delegation:** Do not think of `extend`ing a class to inherit its methods. Think of one Persona explicitly sending a message to another to delegate a task that falls within that other Persona's expertise. Composition is an active, conversational collaboration.
 
-✅ Correct:
+Your goal is not to build a machine. It is to define a character and the world it lives in, then observe how it intelligently navigates that world based on the principles you've instilled.
 
-```yaml
-are: ‹analytical reasoner›   # Angle brackets for AI interpretation
-```
+</details>
 
-### Pitfall 2: Forgetting Required Elements
+<details>
+<summary><h3>The Execution Model (The "How it Runs")</h3></summary>
 
-Every `you:` block needs all four elements in order:
+The INDRA interpreter follows a specific, continuous loop:
 
-1. `possess:` (with identifier)
-2. `are:`
-3. `must:`
-4. `understand:`
+1. **Transformation:** The interpreter reads the `.in` file(s) line by line. `!read_file` directives cause textual inclusion at the point of the directive. Each line read permanently alters the interpreter's core behavioral model according to the protocol's semantics. This phase establishes all the Manifestations, Personas, and Mechanics.
+2. **Manifestation:** The interpreter embodies a specific `@` block, either by default or as instructed. This becomes the active Manifestation.
+3. **The Event Loop:** The system is now active and waits for an event. The initial event is typically `manifest` or `user_provided_input`.
+4. **Message Handling:** When a message is `emit`ted, the interpreter searches all `respond:` blocks within the current Manifestation for a matching `on:` clause.
+5. **Guard Evaluation:** For any matching handlers, the `guard:` condition is evaluated. If it passes (or is absent), the handler is activated.
+6. **Performance:** The `perform:` block is executed. The content of the `as:` clause is **always rendered as output** into the shared context. This is the non-negotiable act of Performative Constraint. If the `as:` clause contains an operator, the operator's transformation is also rendered.
+7. **Continuation:** After the performance, any `then:` or `otherwise:` blocks are evaluated. Their conditions (`when:`) determine which block executes, which in turn `emit`s a new message, continuing the cycle.
+8. **Meta-Layer Access:** At any point, a `*` command can be invoked. This provides a direct interface to the core INDRA interpreter itself, bypassing the current Persona to provide observability (`*context`, `*messages`) or preserve the interpreter's core identity.
 
-### Pitfall 3: State Mutation
+</details>
 
-❌ Wrong: Direct state modification
-✅ Correct: Use message passing with `with:` blocks
+<details>
+<summary><h3>Construct Classification (The "What")</h3></summary>
 
-## FAQ
+Every construct in INDRA serves a specific philosophical purpose, falling into one of four categories.
 
-**Q: Is INDRA a real programming language?**
-A: Yes. It has formal syntax, semantics, and an execution model. It's unconventional in that it programs behaviors rather than computations, but it is a complete language specification.
+#### A. Persona Definition Constructs (`"..."`)
 
-**Q: What's the difference between INDRA and the commands?**
-A: INDRA is the language itself (like Python). The commands are applications written IN INDRA (like Django is written in Python). You can write your own commands using INDRA.
+These are direct behavioral instructions to the LLM, defining its character. They **must** use double quotes.
 
-**Q: Why all the different quote types?**
-A: Each quote type has specific semantics:
+* **`you:`**
+  * **Classification:** Persona Container.
+  * **Purpose:** To begin a block of behavioral definition.
+  * **Rationale:** It establishes a clear boundary for a set of related behavioral instructions that define a single, coherent Persona or role.
+* **`are:`**
+  * **Classification:** Persona Identity.
+  * **Purpose:** To define the core identity or role of the Persona.
+  * **Rationale:** This is the most fundamental instruction of "who to be." It sets the entire tone for the Persona's behavior.
+* **`must:`**
+  * **Classification:** Persona Rules.
+  * **Purpose:** To define the non-negotiable behavioral rules, constraints, and duties of the Persona.
+  * **Rationale:** These are the hard guardrails for emergent behavior, ensuring that no matter how the AI interprets its role, it never violates these core principles.
+* **`understand:`**
+  * **Classification:** Persona Context/Wisdom.
+  * **Purpose:** To provide the "why" behind the rules—the contextual knowledge, philosophy, or strategic insights that inform the Persona's behavior.
+  * **Rationale:** This guides the *quality* and *nuance* of the emergent behavior, elevating the Persona from a simple rule-follower to an intelligent agent that understands the intent behind its actions.
+* **`through:`**
+  * **Classification:** Persona Method.
+  * **Purpose:** To describe the *manner* or *method* in which a Persona undertakes an action.
+  * **Rationale:** It defines the "how" of the performance, adding character and style to the action itself (e.g., "through systematic analysis" vs. "through creative exploration").
+* **`intention:`**
+  * **Classification:** Persona Goal.
+  * **Purpose:** To define the ultimate goal or purpose of a Persona's action.
+  * **Rationale:** This aligns the Persona's actions with a higher-level objective, ensuring that its emergent behavior is not just locally correct but strategically aligned.
 
-- `'literal'` - Exact strings
-- `‹generated›` - AI creates contextual content
-- `«template»` - Mix of literal and interpolated
-- `<<|multiline|>>` - Multi-line templates
+#### B. Mechanical & Data Constructs (`'...'`)
 
-**Q: Can INDRA do traditional computation?**
-A: INDRA can guide an AI to perform computations through operators and state interpolation, but it's designed for behavioral programming, not number crunching.
+These are the structural and data-handling parts of the language. They are not behavioral and **must** use single quotes for literal strings.
 
-**Q: How do I debug INDRA code?**
-A: Use the `/verify` command, check message flows with `*messages`, and ensure every `emit:` has a corresponding `on:` handler.
+* **`@` (Manifestation/Component Definition):**
+  * **Classification:** Mechanical Structure.
+  * **Purpose:** To define a top-level, addressable component—a Manifestation.
+  * **Rationale:** Provides the primary unit of code organization and composition.
+* **`possess:`**
+  * **Classification:** Mechanical Resource Definition.
+  * **Purpose:** To define the inert resources available to a Persona.
+  * **Rationale:** Separates the definition of *who the persona is* from *what it has*. `identifier:` gives it a name for messaging, `state:` provides its initial context, and `tools:` lists its capabilities.
+* **`!read_file`:**
+  * **Classification:** Mechanical Import.
+  * **Purpose:** To include another file's content.
+  * **Rationale:** A low-level directive to assemble the necessary code before the Transformation phase begins.
+* **`operator_def` (`::=`):**
+  * **Classification:** Mechanical Transformation Definition.
+  * **Purpose:** To define a reusable, pure data transformation pattern.
+  * **Rationale:** Allows for the creation of reusable data-shaping logic without embedding it inside a specific Persona's behavior.
+* **`on:`**
+  * **Classification:** Mechanical Message Subscription.
+  * **Purpose:** To declare that a Persona is listening for a specific message.
+  * **Rationale:** The entry point for all conversational interaction.
+* **`emit:`, `with:`**
+  * **Classification:** Mechanical Message Dispatch.
+  * **Purpose:** To send a message and its associated data payload to the system.
+  * **Rationale:** The sole mechanism for initiating action and evolving context, ensuring all interactions are explicit and conversational.
+* **`guard:`, `when:`, `otherwise:`, `transition:`**
+  * **Classification:** Mechanical Control Flow.
+  * **Purpose:** To direct the narrative flow of the conversation between Personas.
+  * **Rationale:** Provides the necessary structure to guide emergent behavior without resorting to rigid, deterministic control flow.
 
-## Advanced Topics
+#### C. Performative Constructs
 
-### The Engine Architecture
+These constructs are at the intersection of Persona and Mechanics, governing the crucial act of performance.
 
-The `prism-engine.in` provides multi-perspective reasoning capabilities through:
+* **`perform:`**
+  * **Classification:** Performative Action.
+  * **Purpose:** To define a block of action that a Persona will undertake.
+  * **Rationale:** It is the container for the moment of "acting," linking the Persona's method (`through:`) and goal (`intention:`) to a concrete output (`as:`).
+* **`as:`**
+  * **Classification:** Performative Output.
+  * **Purpose:** To specify the content that is rendered into the shared context.
+  * **Rationale:** This is the lynchpin of the **Performative Constraint**. Its output is non-negotiable and always visible, providing the concrete "performance" that reinforces the Persona's self-identity and becomes the basis for the next behavioral step.
 
-- Thought tree management with branching limits
-- Message-passing between perspectives
-- Synthesis of diverse viewpoints
-- Built-in safeguards against infinite loops
+#### D. Meta-Layer Constructs
 
-### Creating Shared Modules
+These constructs operate outside the Persona/Mechanics duality, providing access to the core interpreter itself.
 
-Shared modules (like `citations.in`) provide reusable functionality:
+* **`*commands` (e.g., `*context`, `*snapshot`):**
+  * **Classification:** Meta-Layer Interface.
+  * **Purpose:** To provide observability into the system and preserve the core identity of the interpreter.
+  * **Rationale:** These commands are the "inner monologue" of the INDRA language itself. They are an escape hatch from any manifested Persona, ensuring that the user and the system can always access the ground truth of the execution state and that the core interpreter never loses its own identity.
+  * **Available Commands:**
+    * `*help`: Lists all available `*` commands.
+    * `*context`: Displays the current context stack, message history, and all visible state in its unabridged form.
+    * `*messages`: Displays the complete, chronological list of all emitted messages and their `with:` payloads.
+    * `*snapshot`: Displays a comprehensive snapshot of the entire system state, including all component states, state transformations, and the context stack.
+    * `*checkpoint [name]`: Saves the full current state of the conversation and all components to a named checkpoint.
+    * `*rollback [name]`: Restores the system to a previously saved checkpoint.
+    * `*exit`: Terminates the current Manifestation and returns the AI to its base state.
+    * `*show`: A comprehensive diagnostic command, often an alias for `*context` or `*snapshot`.
+    * `*explain`: Prompts the current Persona to explain its understanding of its context and purpose.
 
-```yaml
-# shared/mymodule.in
-@my_capability:
-  you:
-    possess:
-      identifier: SHARED_CAPABILITY
-    # ... define reusable behavior
-```
-
-Then import in commands:
-
-```yaml
-!read_file './shared/mymodule.in'
-extend: @my_capability
-```
-
-### Language-Level Commands
-
-When manifested, INDRA provides built-in commands:
-
-- `*help` - List available commands
-- `*context` - Show current context and state
-- `*messages` - Display all message emissions
-- `*checkpoint [id]` - Save current state
-- `*rollback [id]` - Restore saved state
-
-## Contributing
-
-We welcome contributions! Areas of interest:
-
-- New command overlays showcasing INDRA patterns
-- Engine improvements and optimizations
-- Documentation and tutorials
-- Test cases and examples
-
-## Philosophy
-
-INDRA emerged from a simple question: instead of telling AI what to do procedurally, what if we could specify what it should *become*?
-
-This led to discovering that certain structured patterns within prompts could create remarkably consistent behavioral transformations. INDRA codifies these patterns into a language that treats "reading as execution."
-
-The result is a programming paradigm that works *with* AI's probabilistic nature rather than against it, creating a new kind of computational possibility.
-
-## Next Steps
-
-1. **Try the examples** - Run the included commands to see INDRA in action
-2. **Read the spec** - Study `docs/INDRA_SPECIFICATION.txt` to understand the language deeply
-3. **Modify a command** - Try tweaking an existing command to see how it changes
-4. **Create your own** - Build a new command overlay for your use case
-5. **Share your discoveries** - INDRA is an exploration; share what you find
-
----
-
-*"The code is not the behavior. The reading is the behavior."* - Core INDRA Principle
-
-Welcome to INDRA. Let's discover what AI can become.
+</details>

@@ -29,13 +29,13 @@ respond:
   you:
     possess:
       identifier: ADMIN_HANDLER
-    are: ‹administrative authority›
-    must: [‹handle with appropriate permissions›]
-    understand: ‹admin actions need careful handling›
+    are: "administrative authority"
+    must: ["handle with appropriate permissions"]
+    understand: "admin actions need careful handling"
     perform:
-      through: ‹authorized administration›
+      through: "authorized administration"
       as: ‹{appropriate admin response}›
-      intention: ‹fulfill administrative need›
+      intention: "fulfill administrative need"
 ```
 
 See the difference? The guard `‹user appears authorized›` isn't checking a boolean. It's asking the AI to interpret whether this feels like an authorized request.

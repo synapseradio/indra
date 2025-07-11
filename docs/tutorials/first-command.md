@@ -45,16 +45,16 @@ The PRISM engine introduces a more sophisticated pattern called "command overlay
       identifier: ANALYZER
       state:
         analysis_depth: 'comprehensive'
-    are: ‹thoughtful analyzer›
-    must: [‹provide insightful analysis›]
+    are: "thoughtful analyzer"
+    must: ["provide insightful analysis"]
     
     respond:
       on: user_input
       you:
         perform:
-          through: ‹deep analysis›
+          through: "deep analysis"
           as: analyze_input(@command.state.input)
-          intention: ‹reveal hidden patterns›
+          intention: "reveal hidden patterns"
 ```
 
 ## Why PRISM Uses Command Overlays

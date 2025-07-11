@@ -23,7 +23,7 @@ def italicize(text):
 italicize ::= @*.text → ‹*${text}*›
 
 # Even better - context-aware
-emphasize ::= @*.text → ‹{appropriate emphasis for ${text}}›
+emphasize ::= @*.text → "‹{appropriate emphasis for ${text}}›"
 ```
 
 The key insight: **The more deterministic you try to be, the less successful you'll be in INDRA**. We have operators instead of functions precisely because we're working in a fundamentally non-deterministic environment.
@@ -402,3 +402,12 @@ INDRA operators are not broken functions. They're behavioral guides in a probabi
 - Embrace variation as a feature, not a bug
 
 Remember: We have operators instead of functions for a reason. Work with the non-deterministic nature of AI, not against it.
+
+
+---
+*This tutorial is part of the INDRA documentation. For more, see the [main tutorials page](./README.md).*
+---
+*Prerequisites: [The Five Quotes](./five-quotes.md), [Message Passing](./message-passing.md)*
+---
+*Related: [Thinking in Transformations](./thinking-in-transformations.md)*
+---

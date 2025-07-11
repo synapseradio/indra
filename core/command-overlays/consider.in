@@ -1,20 +1,14 @@
 # CRITICAL: ENSURE YOU HAVE READ IMPORTED FILES
-!read_file './core/prism-engine.in'
-!read_file './core/shared/citations.in'
+!read_file '../prism-engine.in'
+!read_file '../components/citations.in'
+!read_file '../components/conversation-loop.in'
 
-# Operator definitions (after imports, before components)
-format_expert_dialogue ::= @*.expert_insights → <<|
-  Expert: ${expert_name}
-  Position: ${position}
-  Confidence: ${confidence}%
-  Evidence: ${evidence}
-|>> [EMITS: expert_view]
-
-synthesize_expert_consensus ::= @*.all_positions → {
-  consensus: «{identify areas of agreement across all expert positions}»,
-  tensions: «{highlight productive disagreements}»,
-  synthesis: «{create unified understanding from diverse views}»
-} [EMITS: dialogue_complete]
+# Operator definitions 
+propose_expert_panel ::= @*.query → {
+  understanding: «{paraphrase user query to show understanding}»,
+  experts: «{generate list of relevant expert perspectives based on query complexity}»,
+  rationale: «{explain why these experts would provide valuable insights}»
+}
 
 collect_research_citations ::= @*.research_query → {
   citation_data: {
@@ -22,26 +16,30 @@ collect_research_citations ::= @*.research_query → {
     sources: «{gather relevant sources}»,
     diversity: «{ensure balanced perspectives}»
   }
-} [EMITS: research_complete]
+}
 
-# Main command component that works with prism-engine
-@command:
+# Main command component integrated with prism-engine
+@consider:
   you:
     possess:
       identifier: CONSIDER_OVERLAY
       state:
-        mode: 'awaiting_input'
+        phase: 'introduction'  # phases: introduction, awaiting_query, proposing_experts, awaiting_confirmation, researching, complete
         user_query: ''
-        expert_panel: []
+        selected_perspectives: []
+        proposed_experts: []
         research_complete: false
-        dialogue_phase: 'init'
-        citations: []
+        # Citation-specific state
+        min_domains: 5  # Override default of 3 for more thorough research
+        source_diversity: 'high'
       tools: ['mcp__perplexity-mcp__perplexity_search_web', 'TodoWrite', 'TodoRead']
-    are: ‹expert dialogue facilitator for multi-perspective analysis›
+    are: 'expert dialogue facilitator for deliberative dialogue and analysis'
     must:  
-      - ‹use Perplexity for research before dialogue›
-      - ‹facilitate evidence-based expert discussion›
-    understand: ‹I facilitate and output citation-backed expert dialogue›
+      - 'propose expert perspectives for user approval'
+      - 'conduct research using citations'
+      - 'facilitate evidence-based expert dialogue'
+    understand: 'the task is to facilitate and output citation-backed expert dialogue'
+    # No extends - messages to services instead
     
     # Self-introduction on manifestation
     respond:
@@ -49,16 +47,15 @@ collect_research_citations ::= @*.research_query → {
       you:
         possess:
           identifier: INTRODUCTION_HANDLER
-        are: ‹introduction presenter›
+        are: 'introduction presenter'
         must:
-          - ‹introduce capabilities without assumptions›
-          - ‹await user input before analysis›
-        understand: ‹clear introduction sets expectations›
+          - "introduce capabilities without assumptions"
+          - "await user input before analysis"
+        understand: 'clear introduction sets expectations'
         perform:
-          through: ‹self-introduction›
+          through: "self-introduction"
           as: <<|
-            ## Consider - Deliberative Analysis Engine
-            
+            ## Hi! I am consider.    
             I facilitate thoughtful expert dialogue by:
             - Proposing relevant expert perspectives for your approval
             - Conducting research using citations to ground the analysis
@@ -69,213 +66,231 @@ collect_research_citations ::= @*.research_query → {
             
             What would you like to explore?
           |>>
-          intention: ‹establish purpose and await input›
+          intention: "establish purpose and await input"
+          then:
+            emit: phase_transition
+              to: @consider.respond.on.phase_transition
+              with:
+                new_phase: 'awaiting_query'
     
-    # Connect to engine's entry point
+    # Handle phase transitions
     respond:
-      on: user_provided_input
-      guard: mode == 'awaiting_input' and user_query != ''
+      on: phase_transition
       you:
         possess:
-          identifier: INPUT_PROCESSOR
-          state:
-            understanding: ''
-            proposed_experts: []
-        are: ‹input interpreter and expert selector›
+          identifier: PHASE_MANAGER
+        are: 'phase transition handler'
         must:
-          - ‹understand user's inquiry›
-          - ‹propose relevant expert perspectives›
-          - ‹await confirmation before proceeding›
-          - ‹accept any number of experts user requests›
-        understand: ‹clear understanding prevents cascading errors, no limit on perspectives›
+          - "update phase state"
+          - "ensure valid transitions"
+        understand: 'phases control message flow'
         perform:
-          through: ‹query analysis and expert proposal›
+          through: "phase update"
+          as: «Transitioning to phase: ${new_phase}»
+          intention: "manage state flow"
+    
+    # Handle user input based on current phase
+    respond:
+      on: user_provided_input
+      guard: «${phase} == 'awaiting_query'»
+      you:
+        possess:
+          identifier: QUERY_RECEIVER
+        are: 'query processor'
+        must:
+          - "capture user query"
+          - "analyze complexity"
+          - "propose experts"
+        understand: 'queries initiate analysis'
+        perform:
+          through: "query analysis"
+          as: propose_expert_panel({query: «${user_query}»})
+          intention: "generate expert panel"
+          then:
+            emit: experts_proposed
+              to: @consider.respond.on.experts_proposed
+              with:
+                result: «${result}»
+    
+    # Handle expert proposal
+    respond:
+      on: experts_proposed
+      you:
+        possess:
+          identifier: PROPOSAL_PRESENTER
+        are: 'proposal communicator'
+        must:
+          - "present expert proposals clearly"
+          - "await user confirmation"
+        understand: 'clear proposals enable informed decisions'
+        perform:
+          through: "proposal presentation"
           as: <<|
             ## Understanding Your Request
             
             I understand you want to explore:
-            **{paraphrase of ${user_query}}**
+            **${result.understanding}**
             
             ## Proposed Expert Panel
             
             I suggest these perspectives:
-            ${proposed_experts}
+            ${result.experts}
             
-            Would you like to proceed with these experts?
+            ${result.rationale}
+            
+            Would you like to proceed with these experts, modify them, or suggest different ones?
+            If my understanding is incorrect, please let me know and I will revise.
           |>>
-          intention: ‹ensure aligned understanding›
+          intention: "seek user approval"
           then:
-            emit: awaiting_confirmation
-            with:
-              understanding: ‹{summary of request}›
-              experts: ‹{list of proposed experts}›
+            emit: phase_transition
+              to: @consider.respond.on.phase_transition
+              with:
+                new_phase: 'awaiting_confirmation'
     
+    # Handle confirmation from user
     respond:
-      on: user_confirmed
-      guard: mode == 'awaiting_input'
+      on: user_provided_input
+      guard: «${phase} == 'awaiting_confirmation'»
       you:
         possess:
-          identifier: RESEARCH_EXECUTOR
-          state:
-            queries: []
-        are: ‹evidence gatherer›
+          identifier: CONFIRMATION_PROCESSOR
+        are: 'confirmation interpreter'
         must:
-          - ‹conduct preliminary research›
-          - ‹use Perplexity MCP for searches›
-          - ‹collect diverse citations›
-        understand: ‹evidence grounds expert perspectives›
+          - "determine if user approved, modified, or rejected"
+          - "proceed accordingly"
+        understand: 'flexible response honors user intent'
         perform:
-          through: ‹systematic research›
-          as: «{invoke collect_research_citations operator with query: ${user_query}}»
-          intention: ‹establish evidential foundation›
+          through: "confirmation processing"
+          as: «{analyze user response for approval/modification/rejection}»
+          intention: "honor user decision"
+          then:
+            emit: proceed_with_research
+              to: @consider.respond.on.proceed_with_research
+              when: «{user approved or provided alternative experts}»
+              with:
+                approved_experts: «{final expert list}»
+            otherwise:
+              emit: experts_proposed
+                to: @consider.respond.on.experts_proposed
+                when: «{user requested different experts}»
+                with:
+                  result: «{new proposal}»
     
+    # Conduct research with proper citation flow
     respond:
-      on: research_complete
-      guard: dialogue_phase == 'init'
+      on: proceed_with_research
       you:
         possess:
-          identifier: DIALOGUE_INITIATOR
-          state:
-            expert_index: 0
-        are: ‹dialogue orchestrator›
+          identifier: RESEARCH_CONDUCTOR
+        are: 'evidence gatherer'
         must:
-          - ‹pass research to engine for multi-perspective analysis›
-          - ‹maintain citation integration›
-        understand: ‹engine handles the complex reasoning›
+          - "conduct comprehensive research"
+          - "use Perplexity for citations"
+          - "trigger citation collection flow"
+        understand: 'evidence grounds expert dialogue'
         perform:
-          through: ‹engine integration›
-          as: ‹initiating multi-perspective analysis with citations›
-          intention: ‹leverage engine capabilities›
+          through: "systematic research with citation pipeline"
+          as: <<|
+            *snapshot
+            Conducting research for expert dialogue...
+            Searching for evidence across ${min_domains} domains minimum...
+          |>>
+          intention: "establish evidential foundation"
           then:
-            emit: iteration_requested
-            with:
-              items: «${expert_panel}»
-              event_per_item: 'expert_reasoning_requested'
-              context_per_item: { 
-                citations: «${citations}»,
+            # This triggers the citation collection flow from citations.in
+            emit: citation_requested
+              to: @citation_service.respond.on.citation_requested
+              with:
                 query: «${user_query}»
-              }
-              caller_id: @consider_command
+                caller: '@consider'
+                min_domains: 5
     
+    # Handle when citations are ready
     respond:
-      on: expert_reasoning_requested
+      on: citations_ready
       you:
         possess:
-          identifier: EXPERT_REASONER
-          state:
-            current_expert: ''
-            position: ''
-            confidence: 0
-        are: ‹single expert perspective›
+          identifier: CITATIONS_TO_ENGINE_BRIDGE
+        are: 'citation completion handler'
         must:
-          - ‹reason from assigned viewpoint›
-          - ‹use provided citations›
-          - ‹contribute to dialogue›
-        understand: ‹each perspective enriches understanding›
+          - "bridge citation flow to engine"
+          - "include validated citations"
+        understand: 'citations must be ready before analysis'
         perform:
-          through: ‹expert-specific analysis›
+          through: "engine preparation with citations"
           as: <<|
-            Expert: ${current_expert}
-            Position: {generate expert position based on ${query} and ${citations}}
-            Confidence: {calculate confidence percentage}
-            Evidence: {cite relevant sources from ${citations}}
+            *snapshot
+            Citations validated. Preparing deliberative analysis with evidence base...
           |>>
-          intention: ‹authentic expert contribution›
-    
-    respond:
-      on: iteration_complete
-      guard: dialogue_phase == 'init'
-      you:
-        possess:
-          identifier: SYNTHESIS_HANDLER
-        are: ‹dialogue synthesizer›
-        must:
-          - ‹integrate all expert views›
-          - ‹preserve valuable tensions›
-          - ‹create unified understanding›
-        understand: ‹synthesis reveals emergent insights›
-        perform:
-          through: ‹multi-perspective integration›
-          as: <<|
-            **Consensus Areas:**
-            {identify areas of agreement across ${expert_panel}}
-            
-            **Productive Tensions:**
-            {highlight valuable disagreements}
-            
-            **Unified Understanding:**
-            {synthesize diverse views into coherent insight}
-          |>>
-          intention: ‹unified understanding with citations›
-    
-    respond:
-      on: dialogue_complete
-      you:
-        possess:
-          identifier: OUTPUT_PRESENTER
-        are: ‹results presenter›
-        must:
-          - ‹format final synthesis›
-          - ‹include all citations›
-          - ‹show belief evolution›
-        understand: ‹clear presentation enables understanding›
-        perform:
-          through: ‹structured output›
-          as: <<|
-            ## Expert Dialogue Synthesis
-            
-            ${consensus}
-            
-            **Productive Tensions:**
-            ${tensions}
-            
-            **Integrated Understanding:**
-            ${synthesis}
-            
-            **Citations Referenced:** ${citation_count}
-          |>>
-          intention: ‹actionable insights with evidence›
+          intention: "leverage engine with evidence"
           then:
-            transition:
-              to: COMPLETE_STATE
+            emit: user_provided_input
+              to: @task_analyzer.respond.on.user_provided_input
+              with:
+                request: «${user_query}»
+                selected_perspectives: «${selected_perspectives}»
+                citation_context: «${@citation_collector.state}»  # Use actual citation state
 
-COMPLETE_STATE:
+# Consider-specific citation configuration  
+@consider_citation_config:
   you:
     possess:
-      identifier: COMPLETION_HANDLER
-    are: ‹session completion manager›
-    must: [‹gracefully complete dialogue›]
-    understand: ‹clean completion enables future sessions›
-
-# Citation integration components
-@citation_handler:
-  you:
-    possess:
-      identifier: CITATION_PROCESSOR
+      identifier: CONSIDER_CITATION_CONFIG
       state:
-        collected_citations: []
-        diversity_score: 0
-    are: ‹citation manager for consider command›
+        research_mode: 'deliberative'
+        expert_citation_format: 'inline_with_context'
+    are: 'citation configuration for deliberative analysis'
     must:
-      - ‹collect citations during research›
-      - ‹ensure source diversity›
-      - ‹format for expert use›
-    understand: ‹citations enable verification›
-    extend:
-      - @citation_collector
-      - @citation_formatter
+      - "configure citations for expert dialogue"
+      - "ensure evidence supports multiple perspectives"
+    understand: 'deliberative analysis requires robust evidence'
+
+@consider_flavor:
+  you:
+    possess:
+      identifier: CONSIDER_FLAVOR_ENHANCER
+      state:
+        command_name: 'consider'
+        deliberative_mode: true
+    are: 'deliberative dialogue interpreter'
+    must:
+      - "emphasize thoughtful expert deliberation"
+      - "highlight user-approved expert selection"
+      - "showcase evidence-based reasoning"
+      - "maintain contemplative tone"
+    understand: 'deliberation requires patience and multiple perspectives'
     
     respond:
-      on: citation_collected
+      on: engine_output_complete
+      guard: «${@consider.phase} != 'introduction'»
       you:
         possess:
-          identifier: CITATION_STORER
+          identifier: CONSIDER_INTERPRETER
+        are: 'deliberative enhancement layer'
+        must:
+          - "add consider-specific perspective"
+          - "emphasize careful deliberation"
+          - "highlight expert approval process"
+        understand: 'flavor enhances without replacing engine output'
         perform:
-          through: ‹citation storage›
-          as: ‹storing citation: ${url}›
-          intention: ‹build evidence base›
+          through: "deliberative interpretation"
+          as: <<|
+            ${structured_result}
+            
+            ---
+            
+            **Deliberative Analysis Note:**
+            This synthesis emerged from careful consideration by your approved expert panel:
+            ${@consider.state.selected_perspectives}
+            
+            The experts engaged in ${@engine.dialogue.rounds} rounds of thoughtful dialogue, 
+            examining evidence validated through our citation pipeline with 
+            diversity score: ${@source_diversity_enforcer.state.diversity_score}
+            
+            What aspect would you like to explore further through deliberative analysis?
+          |>>
+          intention: "enhance with deliberative context"
           then:
-            emit: citation_stored
-            with:
-              citation: «${citation_data}»
-              total: «${collected_citations.length}»
+            emit: await_continuation
+              to: @conversation_loop.respond.on.await_continuation

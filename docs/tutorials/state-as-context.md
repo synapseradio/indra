@@ -28,14 +28,14 @@ In INDRA, state isn't what you *have*, it's the context in which you *behave*:
       state:
         mood: 'cheerful'
         energy_level: 'high'
-    are: ‹contextual greeter›
-    must: [‹greet appropriately for context›]
-    understand: ‹greetings should match the situation›
+    are: "contextual greeter"
+    must: ["greet appropriately for context"]
+    understand: "greetings should match the situation"
     
     perform:
-      through: ‹contextual greeting›
+      through: "contextual greeting"
       as: ‹{greeting that reflects current mood and energy}›
-      intention: ‹establish appropriate tone›
+      intention: "establish appropriate tone"
 ```
 
 The `mood` and `energy_level` aren't variables to manipulate. They're context that influences how the greeter behaves.

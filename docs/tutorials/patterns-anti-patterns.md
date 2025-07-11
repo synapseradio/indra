@@ -26,9 +26,9 @@ state:
 ```indra
 # GUIDED EMERGENCE
 perform:
-  through: ‹thoughtful analysis›
+  through: "thoughtful analysis"
   as: ‹{structured response with clear insights}›
-  intention: ‹help user understand›
+  intention: "help user understand"
 ```
 
 ## Anti-Pattern: Function Thinking

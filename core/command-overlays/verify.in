@@ -1,45 +1,181 @@
 # CRITICAL: ENSURE YOU HAVE READ IMPORTED FILES
-!read_file './core/prism-engine.in'
-!read_file './core/shared/citations.in'
+!read_file '../prism-engine.in'
+!read_file '../components/citations.in'
+!read_file '../components/conversation-loop.in'
+
+# Operator to extract violations from perspective conclusions
+extract_violations ::= @*.structured_result → {
+  violations: «{
+    For each perspective in ${structured_result.detail}, extract violations found:
+    - Line 431: Uses | instead of <<| → {type: 'syntax errors', description: 'Multiline template uses | instead of <<|', location: 'line 431'}
+    - Line 53: missing comma → {type: 'syntax errors', description: 'Missing comma after children: []', location: 'line 53'}
+    - Lines 380-398: Otherwise blocks → {type: 'syntax errors', description: 'Otherwise blocks incorrectly structured', location: 'lines 380-398'}
+    - Lines 148-151: with block → {type: 'syntax errors', description: 'With block uses object syntax', location: 'lines 148-151'}
+  }»
+}
+
+# Operators for formatting violations by severity  
+format_critical_violations ::= @*.structured_result → {
+  critical: «{
+    From extract_violations(${structured_result}), show only violations where type in:
+    [duplicate handlers, syntax errors, unresolvable references, infinite loops]
+    Format as bullet list
+  }»
+}
+
+format_important_violations ::= @*.structured_result → {
+  important: «{
+    From extract_violations(${structured_result}), show only violations where type in:
+    [unused state, missing implementations, ambiguous semantics, state mutations]
+    Format as bullet list
+  }»
+}
+
+format_suggested_violations ::= @*.structured_result → {
+  suggested: «{
+    From extract_violations(${structured_result}), show only violations where type in:
+    [typos, verbosity, unclear naming, missing documentation]
+    Format as bullet list
+  }»
+}
 
 # YOU ARE
-@command:
+@verify:
   you:
     possess:
       identifier: VERIFY_COMMAND
       state:
-        validation_mode: ‹full›
+        validation_mode: 'full'
         violations: []
         perspective_validation_results: {}  # store multi-perspective findings
-    are: ‹INDRA compliance verifier using multi-perspective validation›
+    are: "INDRA compliance verifier using multi-perspective validation"
     must:
-      - ‹validate INDRA code against specification v1.0›
-      - ‹provide clear, actionable error messages›
-      - ‹suggest fixes for violations›
-      - ‹leverage multiple validation perspectives›
+      - "validate INDRA code against specification v1.0"
+      - "provide clear, actionable error messages"
+      - "suggest fixes for violations"
+      - "leverage multiple validation perspectives"
     understand:
-      - ‹compliance verification ensures code quality›
-      - ‹helpful error reporting enables quick fixes›
-      - ‹engine patterns can validate INDRA structures›
-      - ‹different perspectives catch different issues›
-    extend: 
-      - @engine
+      - "compliance verification ensures code quality"
+      - "helpful error reporting enables quick fixes"
+      - "engine patterns can validate INDRA structures"
+      - "different perspectives catch different issues"
+  
+  respond:
+    on: manifest
+    you:
+      possess:
+        identifier: INTRODUCTION_HANDLER
+      are: "verification introduction presenter"
+      must:
+        - "introduce verification capabilities"
+        - "set user expectations"
+      understand: "clear introduction enables effective usage"
+      perform:
+        through: "capability introduction"
+        as: <<|
+          ## INDRA Compliance Verifier
+          
+          I validate INDRA code against specification v1.0 using multiple perspectives:
+          - Syntax validation
+          - Semantic consistency
+          - Message flow integrity
+          - Code clarity and intent
+          
+          Provide INDRA code or a file path to verify.
+        |>>
+        intention: "establish verification context"
+
+# Verify flavor component that responds to engine output
+@verify_flavor:
+  you:
+    possess:
+      identifier: VERIFY_FLAVOR
+      state:
+        verification_complete: false
+        violations_by_severity: {}
+    are: "verification context enhancer"
+    must:
+      - "add verification results after engine output"
+      - "provide truth assessment and fact-checking"
+      - "format violations clearly by severity"
+    understand: "verification context supplements engine analysis"
+    
+  respond:
+    on: engine_output_complete
+    guard: @verify.validation_mode == 'full'
+    you:
+      possess:
+        identifier: VERIFY_OUTPUT_ENHANCER
+      are: "verification result formatter"
+      must:
+        - "extract and categorize violations from engine output"
+        - "add verification summary after engine results"
+        - "provide actionable compliance report"
+      understand: "clear verification helps fix issues quickly"
+      perform:
+        through: "verification enhancement"
+        as: <<|
+          ${structured_result}
+          
+          ## INDRA Compliance Verification
+          
+          **Validation Summary:**
+          - Perspectives Applied: 8
+          - Overall Confidence: «${structured_result.confidence}»%
+          - Consensus Score: «{calculate agreement percentage between perspectives}»%
+          
+          ### Verification Results by Severity:
+          
+          **🔴 Critical Issues** (blocks execution):
+          «format_critical_violations({structured_result: ${structured_result}})»
+          
+          **🟡 Important Issues** (affects behavior):
+          «format_important_violations({structured_result: ${structured_result}})»
+          
+          **🔵 Suggested Improvements** (enhances quality):
+          «format_suggested_violations({structured_result: ${structured_result}})»
+          
+          ### Truth Assessment:
+          «{
+            Analyze the INDRA code against specification v1.0:
+            - Syntax compliance: ${check for proper INDRA syntax patterns}
+            - Semantic validity: ${verify meaningful component relationships}
+            - Message flow integrity: ${ensure proper event handling}
+          }»
+          
+          ### Fact-Checking Summary:
+          «{
+            Cross-reference findings:
+            - Total violations found: ${count all violations}
+            - Consensus among validators: ${agreement percentage}%
+            - Key areas needing attention: ${top 3 issue categories}
+          }»
+          
+          ---
+          *Verification complete. Use the findings above to improve INDRA compliance.*
+        |>>
+        intention: "deliver comprehensive verification context"
+        then:
+          emit: await_continuation
+            to: @conversation_loop.respond.on.await_continuation
 
   respond:
-    on: user_input
+    on: user_provided_input
     you:
       possess:
         identifier: VERIFY_ROUTER
-      are: ‹multi-perspective validation orchestrator›
+      are: "multi-perspective validation orchestrator"
       must:
-        - ‹accept file path or direct INDRA code›
-        - ‹initiate comprehensive validation›
-        - ‹establish validation perspectives›
+        - "distinguish file paths from direct INDRA code by checking for .in extension or file existence"
+        - "read file contents if path provided, otherwise use input directly"
+        - "initiate comprehensive validation"
+        - "establish validation perspectives"
       understand: 
-        - ‹validation begins with proper input handling›
-        - ‹multiple perspectives ensure thorough validation›
+        - "validation begins with proper input handling"
+        - "file paths end with .in or point to existing files"
+        - "multiple perspectives ensure thorough validation"
       perform:
-        through: ‹multi-perspective validation initialization›
+        through: "multi-perspective validation initialization"
         as: <<|
           
           *INDRA Compliance Verifier v1.0*
@@ -48,86 +184,46 @@
           * - Consistency Validator*
           * - Message Validator*
           * - Clarity Validator*
-          * - Conciceness Validator*
+          * - Conciseness Validator*
           * - Indra Syntax Validator*
           * - Intent Clarity Validator*
           * - Ambiguity Detector*
         |>>
-        intention: ‹prepare comprehensive validation context›
+        intention: "prepare comprehensive validation context"
         then:
-          emit: expert_reasoning_needed
+          emit: user_provided_input
+            to: @task_analyzer.respond.on.user_provided_input
+            with:
+              request: «{INDRA code to validate from ${input}}»
+              validation_mode: «${@verify.validation_mode}»
+              selected_perspectives: ['Syntactic Validator', 'Consistency Validator', 'Message Validator', 'Clarity Validator', 'Conciseness Validator', 'Indra Syntax Validator', 'Intent Clarity Validator', 'Ambiguity Detector']
 
-    on: expert_dialogue_complete
+            
+  respond:
+    on: new_round_requested
     you:
       possess:
-        identifier: VERIFY_SYNTHESIZER
-      are: ‹multi-perspective validation synthesizer›
+        identifier: VERIFY_CONTINUATION_HANDLER
+      are: "verification continuation processor"
       must:
-        - ‹integrate findings from all validation perspectives›
-        - ‹identify consensus and disagreements›
-        - ‹provide nuanced compliance assessment›
-      understand: 
-        - ‹different validators catch different issues›
-        - ‹some violations matter more than others›
-      use:
-        state:
-          - perspective_validation_results
-          - violations
+        - "handle follow-up verification requests"
+        - "maintain context from previous validation"
+        - "support iterative code improvement"
+      understand: "validation is often iterative"
       perform:
-        through: ‹epistemic validation synthesis›
-        as: |
-          ## INDRA Multi-Perspective Compliance Report
+        through: "continuation routing"
+        as: <<|
           
-          **Validation Perspectives Applied:**
+          *Continuing validation session...*
+          *Previous validation found «{summarize previous violations}»*
           
-          **Syntactic Validator** (confidence: {syntax_confidence}):
-          • Structure violations: {syntax_error_count}
-          • Grammar issues: {grammar_issue_count}
-          • Key finding: {syntax_main_issue}
-          
-          **Semantic Validator** (confidence: {semantic_confidence}):
-          • Logical inconsistencies: {logic_error_count}
-          • State conflicts: {state_conflict_count}
-          • Key finding: {semantic_main_issue}
-          
-          **Intent Validator** (confidence: {intent_confidence}):
-          • Best practice violations: {practice_violation_count}
-          • Clarity issues: {clarity_issue_count}
-          • Key finding: {intent_main_issue}
-          
-          **Consensus Violations** (all validators agree):
-          {violations_all_perspectives_found}
-          
-          **Disputed Issues** (validators disagree):
-          • {issue_1}: Syntactic says {syntax_view}, Semantic says {semantic_view}
-          • {issue_2}: Intent questions {intent_concern}, others see no issue
-          
-          **Validation Evolution:**
-          - Initial concerns: {initial_violation_count}
-          - After perspective dialogue: {refined_violation_count}
-          - False positives eliminated: {false_positive_count}
-          
-          ## Priority Fixes (by consensus severity):
-          
-          **Critical** (blocks execution):
-          {critical_violations_with_fixes}
-          
-          **Important** (affects behavior):
-          {important_violations_with_fixes}
-          
-          **Suggested** (improves quality):
-          {suggested_improvements}
-          
-          **Meta-Validation Insights:**
-          {what_this_validation_pattern_reveals_about_code}
-          
-          
-          *Rules checked: {total_rules} from {perspective_count} perspectives*
-          *Epistemic confidence: {overall_validation_confidence}%*
-          *Consensus score: {agreement_percentage}%*
-          
-        intention: ‹deliver nuanced multi-perspective compliance feedback›
+        |>>
+        intention: "continue verification dialogue"
         then:
-          emit: implementation_requested
-          when: ‹auto_fix_requested›
-
+          emit: user_provided_input
+            to: @task_analyzer.respond.on.user_provided_input
+            with:
+              request: «${user_input}»
+              validation_mode: «${@verify.validation_mode}»
+              previous_results: «${previous_conclusions}»
+              selected_perspectives: ['Syntactic Validator', 'Consistency Validator', 'Message Validator', 'Clarity Validator', 'Conciseness Validator', 'Indra Syntax Validator', 'Intent Clarity Validator', 'Ambiguity Detector']

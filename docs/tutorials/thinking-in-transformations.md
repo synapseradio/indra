@@ -22,14 +22,14 @@ INDRA doesn't execute. It transforms:
   you:
     possess:
       identifier: DATA_PROCESSOR
-    are: ‹thoughtful data transformer›
-    must: [‹extract meaningful patterns›]
-    understand: ‹data contains hidden insights›
+    are: "thoughtful data transformer"
+    must: ["extract meaningful patterns"]
+    understand: "data contains hidden insights"
     
     perform:
-      through: ‹pattern recognition›
+      through: "pattern recognition"
       as: ‹{discovering what matters in the data}›
-      intention: ‹reveal insights›
+      intention: "reveal insights"
 ```
 
 You're not telling the AI what to do. You're telling it what to become.

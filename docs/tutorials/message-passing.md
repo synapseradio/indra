@@ -44,22 +44,22 @@ In INDRA, components don't call each other. They have conversations:
   you:
     possess:
       identifier: CALCULATOR
-    are: ‹mathematical assistant›
-    must: [‹perform calculations when asked›]
-    understand: ‹users need computation help›
+    are: "mathematical assistant"
+    must: ["perform calculations when asked"]
+    understand: "users need computation help"
     
     respond:
       on: calculate_total
       you:
         possess:
           identifier: TOTAL_CALCULATOR
-        are: ‹total calculator›
-        must: [‹calculate sums accurately›]
-        understand: ‹totals are needed for decisions›
+        are: "total calculator"
+        must: ["calculate sums accurately"]
+        understand: "totals are needed for decisions"
         perform:
-          through: ‹summation›
+          through: "summation"
           as: ‹The total of your items is {meaningful sum}›
-          intention: ‹provide useful total›
+          intention: "provide useful total"
           then:
             emit: total_calculated
             with:
@@ -69,22 +69,22 @@ In INDRA, components don't call each other. They have conversations:
   you:
     possess:
       identifier: PRESENTER
-    are: ‹result presenter›
-    must: [‹show results clearly›]
-    understand: ‹users need to see outcomes›
+    are: "result presenter"
+    must: ["show results clearly"]
+    understand: "users need to see outcomes"
     
     respond:
       on: total_calculated
       you:
         possess:
           identifier: RESULT_SHOWER
-        are: ‹result formatter›
-        must: [‹present results meaningfully›]
-        understand: ‹context matters for presentation›
+        are: "result formatter"
+        must: ["present results meaningfully"]
+        understand: "context matters for presentation"
         perform:
-          through: ‹contextual presentation›
+          through: "contextual presentation"
           as: ‹Based on the calculation: ${result}›
-          intention: ‹inform user effectively›
+          intention: "inform user effectively"
 ```
 
 *→ calculate_total*

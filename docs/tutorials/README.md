@@ -12,11 +12,11 @@ Set it aside. Maybe not forever, but for now.
 
 INDRA isn't just another programming language with different syntax. It's a different way of thinking about computation itself. These tutorials exist because:
 
-1. **You can't learn INDRA by mapping it to concepts you already know** - There is no equivalent of INDRA's behavioral transformation in traditional programming
+1. **You can't learn INDRA by mapping it to concepts you already know** - There is no equivalent of INDRA's behavioral transformation in traditional programming.
 
-2. **Fighting INDRA's nature leads to frustration** - The more you try to make it behave deterministically, the worse your experience will be
+2. **Fighting INDRA's nature leads to frustration** - The more you try to make it behave deterministically, the worse your experience will be.
 
-3. **Embracing uncertainty is the key** - INDRA thrives in the space between rigid control and complete chaos
+3. **Embracing uncertainty is the key** - INDRA thrives in the space between rigid control and complete chaos.
 
 ## The Learning Path
 
@@ -26,23 +26,22 @@ These tutorials are ordered to progressively shift your mental model:
 
 1. **[Message Passing: Conversations, Not Calls](./message-passing.md)** - Learn why INDRA components talk, they don't invoke
 2. **[State as Context, Not Storage](./state-as-context.md)** - Understand why you guide state evolution rather than set values
-3. **[The Four Quotes: A Deep Dive](./four-quotes.md)** - Master the subtle but crucial differences in INDRA's quote system
+3. **[The Five Quotes: A Deep Dive](./five-quotes.md)** - Master the subtle but crucial differences in INDRA's quote system
 
 ### Building Understanding
 
-4. **[Guards and Conditional Behavior](./guards-and-conditions.md)** - Move from if/else thinking to behavioral branching
-5. **[Behavioral Composition with extend:](./behavioral-composition.md)** - Learn to build complex behaviors from simple ones
-6. **[Writing Operators in INDRA](./writing-operators.md)** - Embrace operators as behavioral guides, not functions
+4. **[Guards and Conditional Behavior](./guards-and-conditions.md)** - Move from if/else thinking to behavioral branching.
+5. **[Writing Operators in INDRA](./writing-operators.md)** - Embrace operators as behavioral guides, not functions.
 
 ### Advanced Concepts
 
-7. **[Thinking in Transformations](./thinking-in-transformations.md)** - Understand INDRA's core philosophy of progressive becoming
-8. **[The Art of understand: Blocks](./understand-blocks.md)** - Master intent-driven programming
-9. **[Building Your First Command Overlay](./first-command.md)** - Put it all together in a real project
+6. **[Thinking in Transformations](./thinking-in-transformations.md)** - Understand INDRA's core philosophy of progressive becoming.
+7. **[The Art of understand: Blocks](./understand-blocks.md)** - Master intent-driven programming
+8. **[Building Your First Command Overlay](./first-command.md)** - Put it all together in a real project.
 
 ### Mastery
 
-1. **[Debugging in a Non-Deterministic World](./debugging-indra.md)** - Learn to debug behavior, not code
+9. **[Debugging in a Non-Deterministic World](./debugging-indra.md)** - Learn to debug behavior, not code
   
 ## How to Use These Tutorials
 
