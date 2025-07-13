@@ -34,7 +34,7 @@ In INDRA, state isn't what you *have*, it's the context in which you *behave*:
     
     perform:
       through: "contextual greeting"
-      as: ‹{greeting that reflects current mood and energy}›
+      as: <{greeting that reflects current mood and energy}>
       intention: "establish appropriate tone"
 ```
 
@@ -50,7 +50,7 @@ respond:
   on: user_arrived
   you:
     perform:
-      through: ‹welcome›
+      through: <welcome>
       as: <<|
         Welcome!
         ${state.visitor_count = state.visitor_count + 1}  # NO!
@@ -74,26 +74,26 @@ Instead of mutating state, you evolve it through message passing:
       identifier: VISITOR_TRACKER
       state:
         visitor_count: 0
-    are: ‹visitor counter›
-    must: [‹track visitor arrivals›]
-    understand: ‹accurate counts matter›
+    are: <visitor counter>
+    must: [<track visitor arrivals>]
+    understand: <accurate counts matter>
     
     respond:
       on: visitor_arrived
       you:
         possess:
           identifier: ARRIVAL_HANDLER
-        are: ‹arrival processor›
-        must: [‹acknowledge new visitors›]
-        understand: ‹each visitor is important›
+        are: <arrival processor>
+        must: [<acknowledge new visitors>]
+        understand: <each visitor is important>
         perform:
-          through: ‹visitor registration›
-          as: ‹Registering your arrival...›
-          intention: ‹track visitor›
+          through: <visitor registration>
+          as: <Registering your arrival...>
+          intention: <track visitor>
           then:
             emit: visitor_registered
             with:
-              new_count: «${visitor_count + 1}»
+              new_count: <<${visitor_count + 1}>>
     
     respond:
       on: visitor_registered
@@ -101,14 +101,14 @@ Instead of mutating state, you evolve it through message passing:
         possess:
           identifier: COUNT_UPDATER
           state:
-            visitor_count: «${new_count}»  # State evolution through context
-        are: ‹count maintainer›
-        must: [‹maintain accurate count›]
-        understand: ‹counts should reflect reality›
+            visitor_count: <<${new_count}>>  # State evolution through context
+        are: <count maintainer>
+        must: [<maintain accurate count>]
+        understand: <counts should reflect reality>
         perform:
-          through: ‹count announcement›
-          as: ‹You are visitor number ${visitor_count}!›
-          intention: ‹inform of position›
+          through: <count announcement>
+          as: <You are visitor number ${visitor_count}!>
+          intention: <inform of position>
 ```
 
 *→ visitor_arrived*
@@ -124,8 +124,8 @@ The `with:` block is how state flows through your system:
 # State flows from one context to another
 emit: process_order
 with:
-  order_id: «${current_order}»
-  customer: «${customer_data}»
+  order_id: <<${current_order}>>
+  customer: <<${customer_data}>>
   status: 'pending'
 
 # The handler receives this state
@@ -152,15 +152,15 @@ respond:
   on: points_earned
   you:
     perform:
-      through: ‹score tracking›
-      as: ‹Recording ${points} points earned...›
-      intention: ‹acknowledge achievement›
+      through: <score tracking>
+      as: <Recording ${points} points earned...>
+      intention: <acknowledge achievement>
       then:
         emit: score_updated
         with:
-          user_name: «${user.name}»
-          new_score: «${user.score + points}»
-          change: «+${points}»
+          user_name: <<${user.name}>>
+          new_score: <<${user.score + points}>>
+          change: <<+${points}>>
 
 respond:
   on: score_updated
@@ -168,13 +168,13 @@ respond:
     possess:
       state:
         user: {
-          name: «${user_name}»,
-          score: «${new_score}»
+          name: <<${user_name}>>,
+          score: <<${new_score}>>
         }
     perform:
-      through: ‹score announcement›
-      as: ‹${user.name} now has ${user.score} points! (${change})›
-      intention: ‹celebrate progress›
+      through: <score announcement>
+      as: <${user.name} now has ${user.score} points! (${change})>
+      intention: <celebrate progress>
 ```
 
 The user's score doesn't mutate. A new context is created where the user has a different score.
@@ -192,17 +192,17 @@ State in INDRA influences behavior, it doesn't control it:
         expertise_level: 'beginner'
         verbosity: 'high'
         patience: 'infinite'
-    are: ‹adaptive assistant›
-    must: [‹adjust communication to context›]
-    understand: ‹different contexts need different approaches›
+    are: <adaptive assistant>
+    must: [<adjust communication to context>]
+    understand: <different contexts need different approaches>
     
     respond:
       on: question_asked
       you:
         perform:
-          through: ‹contextual response›
-          as: ‹{answer appropriate for ${expertise_level} with ${verbosity} detail}›
-          intention: ‹help at the right level›
+          through: <contextual response>
+          as: <{answer appropriate for ${expertise_level} with ${verbosity} detail}>
+          intention: <help at the right level>
 ```
 
 The state doesn't determine the exact response. It influences how the assistant interprets its role.
@@ -219,7 +219,7 @@ state:
   
 perform:
   as: <<|
-    ${if (step == 1) "Starting..." else if (step == 2) "Working..." else "Done!"}
+    ${if (step is 1) "Starting..." else if (step is 2) "Working..." else "Done!"}
     ${step = step + 1}  # NO! Can't mutate!
   |>>
 ```
@@ -233,9 +233,9 @@ respond:
   on: process_started
   you:
     perform:
-      through: ‹process initiation›
-      as: ‹Starting your process...›
-      intention: ‹begin work›
+      through: <process initiation>
+      as: <Starting your process...>
+      intention: <begin work>
       then:
         emit: step_completed
         with:
@@ -243,12 +243,12 @@ respond:
 
 respond:
   on: step_completed
-  guard: phase == 'started'
+  when: @self.state.phase is 'started'
   you:
     perform:
-      through: ‹main processing›
-      as: ‹Working on your request...›
-      intention: ‹do the work›
+      through: <main processing>
+      as: <Working on your request...>
+      intention: <do the work>
       then:
         emit: step_completed
         with:
@@ -256,12 +256,12 @@ respond:
 
 respond:
   on: step_completed
-  guard: phase == 'working'
+  when: @self.state.phase is 'working'
   you:
     perform:
-      through: ‹completion›
-      as: ‹Process complete!›
-      intention: ‹wrap up›
+      through: <completion>
+      as: <Process complete!>
+      intention: <wrap up>
 ```
 
 State describes context, not control flow.
@@ -279,26 +279,26 @@ State can be shared across components as context:
         temperature: 'warm'
         time_of_day: 'evening'
         mood: 'relaxed'
-    are: ‹environmental context›
-    must: [‹maintain ambiance›]
-    understand: ‹atmosphere affects interactions›
+    are: <environmental context>
+    must: [<maintain ambiance>]
+    understand: <atmosphere affects interactions>
 
 @conversationalist:
   you:
     possess:
       identifier: CONVERSATIONALIST
-    are: ‹context-aware speaker›
-    must: [‹adapt to environment›]
-    understand: ‹context shapes communication›
+    are: <context-aware speaker>
+    must: [<adapt to environment>]
+    understand: <context shapes communication>
     use:
       state:
         - @environment.temperature
         - @environment.mood
     
     perform:
-      through: ‹contextual communication›
-      as: ‹{conversation appropriate for ${temperature} ${mood} atmosphere}›
-      intention: ‹match the vibe›
+      through: <contextual communication>
+      as: <{conversation appropriate for ${temperature} ${mood} atmosphere}>
+      intention: <match the vibe>
 ```
 
 State is shared as context, not as mutable global variables.

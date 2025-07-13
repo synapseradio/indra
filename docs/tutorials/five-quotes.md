@@ -10,7 +10,7 @@ Mastering these five quote types is fundamental to writing effective INDRA code.
 
 Think of INDRA's quotes as a spectrum from absolute control to guided creativity:
 
-`'literal'` → `"persona"` → `«template»` → `‹generated›` → `<<|canvas|>>`
+`'literal'` → `"persona"` → `<<template>>` → `<generated>` → `<<|canvas|>>`
 **Control** → **Instruction** → **Structure** → **Interpretation** → **Composition**
 
 Each quote type signals a different intent to the AI.
@@ -26,7 +26,7 @@ state:
   mode: 'processing'
   status: 'active'
   
-when: mode == 'processing' # Exact, case-sensitive string comparison
+when: mode is 'processing' # Exact, case-sensitive string comparison
 ```
 
 **Use single quotes when:**
@@ -60,14 +60,14 @@ understand: "clarity builds trust"
 
 ---
 
-### 3. Guillemets: `«Structured Template»`
+### 3. Guillemets: `<<Structured Template>>`
 
 **Purpose:** To create single-line strings that mix literal text with interpolated data. They are your workhorse for formatted, data-driven output.
 
 ```indra
-as: «Processing item ${count} of ${total}...»
+as: <<Processing item ${count} of ${total}...>>
 with:
-  message: «Status for ${user.name}: ${user.status}»
+  message: <<Status for ${user.name}: ${user.status}>>
 ```
 
 **Use guillemets when:**
@@ -80,14 +80,14 @@ with:
 
 ---
 
-### 4. Angle Brackets: `‹Generated Content›`
+### 4. Angle Brackets: `<Generated Content>`
 
 **Purpose:** To delegate content generation to the AI, based on context and persona. This is where you embrace probabilistic behavior.
 
 ```indra
 perform:
   through: "careful analysis of user sentiment"
-  as: ‹{an empathetic response that acknowledges the user's feelings}›
+  as: <{an empathetic response that acknowledges the user's feelings}>
   intention: "to make the user feel heard"
 ```
 
@@ -134,8 +134,8 @@ perform:
 | :--- | :--- | :--- | :--- |
 | **`''`** | Single | Literal data, state values, comparisons | **Control** |
 | **`""`** | Double | Persona definition (`are`, `must`, `understand`) | **Instruction** |
-| **`«»`** | Guillemet | Single-line, data-driven templates | **Structure** |
-| **`‹›`** | Angle Bracket | Probabilistic, AI-generated content | **Interpretation** |
+| **`<<>>`** | Guillemet | Single-line, data-driven templates | **Structure** |
+| **`<>`** | Angle Bracket | Probabilistic, AI-generated content | **Interpretation** |
 | **`<<| |>>`**| Multiline | Complex documents mixing all types | **Composition** |
 
 Mastering the five quotes is the key to moving from simply writing code to skillfully guiding intelligent, emergent behavior.

@@ -73,11 +73,11 @@ To write INDRA, you must understand a few key concepts that differ from traditio
 
 | Quote | Type | Use Case | Philosophy |
 | :--- | :--- | :--- | :--- |
-| **`''`** | Single | Literal data, state values, comparisons | **Control** |
-| **`""`** | Double | Persona definition (`are`, `must`, `understand`) | **Instruction** |
-| **`«»`** | Guillemet | Single-line, data-driven templates | **Structure** |
-| **`‹›`** | Angle Bracket | Probabilistic, AI-generated content | **Interpretation** |
-| **`<<| |>>`**| Multiline | Complex documents mixing all types | **Composition** |
+| **`''`** | Single Quote | Literal data, state values, comparisons | **Literal** |
+| **`""`** | Double Quote | Persona definition (`are`, `must`, `understand`, `through:`, `intention:`) | **Declarative** |
+| **`< >`** | Angle Bracket | Inferential, AI-interpreted description of high-level logic or interpretations. user → LLM.| **Descriptive**
+| **`<< >>`** | Double Angle Brackets | Single-line, data-driven performative output templates with interpolation, LLM → user. | **Structural Output**
+| **`<<\|\|>>`** | Multiline Double Angle Brackets | Single-line, data-driven performative output templates with interpolation, LLM → user. | **Composite Structural Output**
 
 ### Dive Deeper with the Tutorials
 
@@ -159,7 +159,7 @@ To write effective INDRA, you must shift your thinking away from traditional pro
 
 * **From Functions to Conversations:** Stop thinking about calling a function and getting a value back. Start thinking about one component expressing a need and trusting another component to have a conversation with it to resolve that need.
 * **From Variables to Behavioral Context:** State is not a box to store data in. It is the "weather" or "mood" that influences a Persona's interpretation of its duties. You do not mutate state; you evolve the context through new messages that describe a new reality.
-* **From Control Flow to Narrative Flow:** Do not think in `if/else` branches or `for` loops. Think in terms of narrative possibilities. A `guard` is not a condition; it's a check to see if a particular "scene" is relevant. A `then`/`otherwise` block determines which direction the story goes next.
+* **From Control Flow to Narrative Flow:** Do not think in `if/else` branches or `for` loops. Think in terms of narrative possibilities. A `when:` block is not just a condition; it's a check to see if a particular persona or performance is relevant. A `then:` block determines which direction the story goes next, and an `otherwise:` block does the same if all preceding `when:` clauses failed to trigger.
 * **From Inheritance to Delegation:** Do not think of `extend`ing a class to inherit its methods. Think of one Persona explicitly sending a message to another to delegate a task that falls within that other Persona's expertise. Composition is an active, conversational collaboration.
 
 Your goal is not to build a machine. It is to define a character and the world it lives in, then observe how it intelligently navigates that world based on the principles you've instilled.
@@ -175,7 +175,7 @@ The INDRA interpreter follows a specific, continuous loop:
 2. **Manifestation:** The interpreter embodies a specific `@` block, either by default or as instructed. This becomes the active Manifestation.
 3. **The Event Loop:** The system is now active and waits for an event. The initial event is typically `manifest` or `user_provided_input`.
 4. **Message Handling:** When a message is `emit`ted, the interpreter searches all `respond:` blocks within the current Manifestation for a matching `on:` clause.
-5. **Guard Evaluation:** For any matching handlers, the `guard:` condition is evaluated. If it passes (or is absent), the handler is activated.
+5. **Condition Evaluation:** For any matching handlers, the `when:` condition is evaluated. If a `when:` block's condition is met, its handler is activated. If multiple `when:` blocks exist, the first one to evaluate to true is chosen. If no `when:` conditions are met, the `otherwise:` block, if present, is activated.
 6. **Performance:** The `perform:` block is executed. The content of the `as:` clause is **always rendered as output** into the shared context. This is the non-negotiable act of Performative Constraint. If the `as:` clause contains an operator, the operator's transformation is also rendered.
 7. **Continuation:** After the performance, any `then:` or `otherwise:` blocks are evaluated. Their conditions (`when:`) determine which block executes, which in turn `emit`s a new message, continuing the cycle.
 8. **Meta-Layer Access:** At any point, a `*` command can be invoked. This provides a direct interface to the core INDRA interpreter itself, bypassing the current Persona to provide observability (`*context`, `*messages`) or preserve the interpreter's core identity.
@@ -244,10 +244,10 @@ These are the structural and data-handling parts of the language. They are not b
   * **Classification:** Mechanical Message Dispatch.
   * **Purpose:** To send a message and its associated data payload to the system.
   * **Rationale:** The sole mechanism for initiating action and evolving context, ensuring all interactions are explicit and conversational.
-* **`guard:`, `when:`, `otherwise:`, `transition:`**
+* **`when:`, `otherwise:`, `transition:`**
   * **Classification:** Mechanical Control Flow.
-  * **Purpose:** To direct the narrative flow of the conversation between Personas.
-  * **Rationale:** Provides the necessary structure to guide emergent behavior without resorting to rigid, deterministic control flow.
+  * **Purpose:** To direct the narrative flow of the conversation between Personas based on conditions.
+  * **Rationale:** Provides the necessary structure to guide emergent behavior without resorting to rigid, deterministic control flow. `when` and `otherwise` create powerful, expressive, and readable conditional logic.
 
 #### C. Performative Constructs
 

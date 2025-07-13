@@ -24,7 +24,7 @@
         understand: ["message handling"]
         perform:
           through: "test action"
-          as: "Handling test message..."
+          as: <<Handling test message...>>
           then:
             emit: test_complete
 
@@ -38,4 +38,4 @@
         understand: ["flow completion"]
         perform:
           through: "acknowledgment"
-          as: "Test completed successfully"
+          as: <<Test completed successfully>>

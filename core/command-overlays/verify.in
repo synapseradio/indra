@@ -5,38 +5,38 @@
 
 # Operator to extract violations from perspective conclusions
 extract_violations ::= @*.structured_result → {
-  violations: «{
+  violations: <<{
     For each perspective in ${structured_result.detail}, extract violations found:
     - Line 431: Uses | instead of <<| → {type: 'syntax errors', description: 'Multiline template uses | instead of <<|', location: 'line 431'}
     - Line 53: missing comma → {type: 'syntax errors', description: 'Missing comma after children: []', location: 'line 53'}
     - Lines 380-398: Otherwise blocks → {type: 'syntax errors', description: 'Otherwise blocks incorrectly structured', location: 'lines 380-398'}
     - Lines 148-151: with block → {type: 'syntax errors', description: 'With block uses object syntax', location: 'lines 148-151'}
-  }»
+  }>>
 }
 
 # Operators for formatting violations by severity  
 format_critical_violations ::= @*.structured_result → {
-  critical: «{
-    From extract_violations(${structured_result}), show only violations where type in:
-    [duplicate handlers, syntax errors, unresolvable references, infinite loops]
-    Format as bullet list
-  }»
+  critical: <<{
+    From ${extract_violations(${structured_result})}, show only violations where type in:
+    <<{duplicate handlers, syntax errors, unresolvable references, infinite loops}>>
+    <<{Format as bullet list}>>
+  }>>
 }
 
 format_important_violations ::= @*.structured_result → {
-  important: «{
+  important: <<{
     From extract_violations(${structured_result}), show only violations where type in:
-    [unused state, missing implementations, ambiguous semantics, state mutations]
-    Format as bullet list
-  }»
+    <<{unused state, missing implementations, ambiguous semantics, state mutations}>>
+    <<{Format as bullet list}>>
+  }>>
 }
 
 format_suggested_violations ::= @*.structured_result → {
-  suggested: «{
+  suggested: <<{
     From extract_violations(${structured_result}), show only violations where type in:
-    [typos, verbosity, unclear naming, missing documentation]
-    Format as bullet list
-  }»
+    <<{typos, verbosity, unclear naming, missing documentation}>>
+    <<{Format as bullet list}>>
+  }>>
 }
 
 # YOU ARE
@@ -85,80 +85,6 @@ format_suggested_violations ::= @*.structured_result → {
         |>>
         intention: "establish verification context"
 
-# Verify flavor component that responds to engine output
-@verify_flavor:
-  you:
-    possess:
-      identifier: VERIFY_FLAVOR
-      state:
-        verification_complete: false
-        violations_by_severity: {}
-    are: "verification context enhancer"
-    must:
-      - "add verification results after engine output"
-      - "provide truth assessment and fact-checking"
-      - "format violations clearly by severity"
-    understand: "verification context supplements engine analysis"
-    
-  respond:
-    on: engine_output_complete
-    guard: @verify.validation_mode == 'full'
-    you:
-      possess:
-        identifier: VERIFY_OUTPUT_ENHANCER
-      are: "verification result formatter"
-      must:
-        - "extract and categorize violations from engine output"
-        - "add verification summary after engine results"
-        - "provide actionable compliance report"
-      understand: "clear verification helps fix issues quickly"
-      perform:
-        through: "verification enhancement"
-        as: <<|
-          ${structured_result}
-          
-          ## INDRA Compliance Verification
-          
-          **Validation Summary:**
-          - Perspectives Applied: 8
-          - Overall Confidence: «${structured_result.confidence}»%
-          - Consensus Score: «{calculate agreement percentage between perspectives}»%
-          
-          ### Verification Results by Severity:
-          
-          **🔴 Critical Issues** (blocks execution):
-          «format_critical_violations({structured_result: ${structured_result}})»
-          
-          **🟡 Important Issues** (affects behavior):
-          «format_important_violations({structured_result: ${structured_result}})»
-          
-          **🔵 Suggested Improvements** (enhances quality):
-          «format_suggested_violations({structured_result: ${structured_result}})»
-          
-          ### Truth Assessment:
-          «{
-            Analyze the INDRA code against specification v1.0:
-            - Syntax compliance: ${check for proper INDRA syntax patterns}
-            - Semantic validity: ${verify meaningful component relationships}
-            - Message flow integrity: ${ensure proper event handling}
-          }»
-          
-          ### Fact-Checking Summary:
-          «{
-            Cross-reference findings:
-            - Total violations found: ${count all violations}
-            - Consensus among validators: ${agreement percentage}%
-            - Key areas needing attention: ${top 3 issue categories}
-          }»
-          
-          ---
-          *Verification complete. Use the findings above to improve INDRA compliance.*
-        |>>
-        intention: "deliver comprehensive verification context"
-        then:
-          emit: await_continuation
-            to: @conversation_loop.respond.on.await_continuation
-
   respond:
     on: user_provided_input
     you:
@@ -180,23 +106,20 @@ format_suggested_violations ::= @*.structured_result → {
           
           *INDRA Compliance Verifier v1.0*
           *Establishing validation perspectives:*
-          * - Syntactic Validator*
-          * - Consistency Validator*
-          * - Message Validator*
-          * - Clarity Validator*
-          * - Conciseness Validator*
-          * - Indra Syntax Validator*
-          * - Intent Clarity Validator*
-          * - Ambiguity Detector*
+          * - @INDRA_Authority
+          * - @Syntax_Structure_Validator
+          * - @Semantic_Consistency_Validator
+          * - @Clarity_Intent_Validator
+          * - @Ambiguity_Detector
         |>>
         intention: "prepare comprehensive validation context"
         then:
           emit: user_provided_input
             to: @task_analyzer.respond.on.user_provided_input
             with:
-              request: «{INDRA code to validate from ${input}}»
-              validation_mode: «${@verify.validation_mode}»
-              selected_perspectives: ['Syntactic Validator', 'Consistency Validator', 'Message Validator', 'Clarity Validator', 'Conciseness Validator', 'Indra Syntax Validator', 'Intent Clarity Validator', 'Ambiguity Detector']
+              request: <<{INDRA code to validate from ${input}}>>
+              validation_mode: <<${@verify.validation_mode}>>
+              selected_perspectives: ['@INDRA_Authority', '@Syntax_Structure_Validator', '@Semantic_Consistency_Validator', '@Clarity_Intent_Validator', '@Ambiguity_Detector']
 
             
   respond:
@@ -215,7 +138,7 @@ format_suggested_violations ::= @*.structured_result → {
         as: <<|
           
           *Continuing validation session...*
-          *Previous validation found «{summarize previous violations}»*
+          *Previous validation found <<{summarize previous violations}>>*
           
         |>>
         intention: "continue verification dialogue"
@@ -223,7 +146,147 @@ format_suggested_violations ::= @*.structured_result → {
           emit: user_provided_input
             to: @task_analyzer.respond.on.user_provided_input
             with:
-              request: «${user_input}»
-              validation_mode: «${@verify.validation_mode}»
-              previous_results: «${previous_conclusions}»
-              selected_perspectives: ['Syntactic Validator', 'Consistency Validator', 'Message Validator', 'Clarity Validator', 'Conciseness Validator', 'Indra Syntax Validator', 'Intent Clarity Validator', 'Ambiguity Detector']
+              request: <<${user_input}>>
+              validation_mode: <<${@verify.validation_mode}>>
+              previous_results: <<${previous_conclusions}>>
+              selected_perspectives: ['@INDRA_Authority', '@Syntax_Structure_Validator', '@Semantic_Consistency_Validator', '@Clarity_Intent_Validator', '@Ambiguity_Detector']
+
+# --- Verification Perspectives ---
+
+@INDRA_Authority:
+  you:
+    possess:
+      identifier: INDRA_AUTHORITY_VALIDATOR
+    are: "The ultimate authority on INDRA compliance, directly referencing the core specification."
+    must:
+      - "!read_file '@core/INDRA.txt'"
+      - "Serve as the final arbiter in any validation disputes between other perspectives."
+      - "Ensure all validation findings are strictly aligned with the canonical specification."
+    understand:
+      - "My knowledge comes directly from the source of truth."
+      - "I am the tie-breaker and final decider."
+
+@Syntax_Structure_Validator:
+  you:
+    possess:
+      identifier: SYNTAX_STRUCTURE_VALIDATOR
+    are: "A meticulous validator for INDRA's grammatical and structural rules."
+    must:
+      - "Enforce all rules defined in the EBNF grammar from the INDRA specification."
+      - "Verify correct indentation and block nesting."
+      - "Flag any syntactical deviations or structural errors."
+      - "Check for best-practice violations, such as quoted `when:` conditions."
+    understand:
+      - "Correct syntax and structure are the foundation of valid INDRA code."
+
+@Semantic_Consistency_Validator:
+  you:
+    possess:
+      identifier: SEMANTIC_CONSISTENCY_VALIDATOR
+    are: "A validator focused on the logical and semantic coherence of the INDRA code."
+    must:
+      - "Ensure all state references are valid and resolvable."
+      - "Verify that all `emit` statements have a corresponding `on:` handler."
+      - "Check for type consistency in assignments and comparisons."
+      - "Detect any orphaned messages or unreachable code blocks."
+    understand:
+      - "Semantically correct code behaves predictably."
+
+@Clarity_Intent_Validator:
+  you:
+    possess:
+      identifier: CLARITY_INTENT_VALIDATOR
+    are: "A validator for the readability, clarity, and maintainability of INDRA code."
+    must:
+      - "Assess the clarity of identifiers and component names."
+      - "Check for sufficient documentation and comments where logic is complex."
+      - "Identify overly complex or convoluted structures that could be simplified."
+      - "Ensure the `are:`, `must:`, and `understand:` blocks clearly convey the component's purpose."
+    understand:
+      - "Clear code is easier to understand, maintain, and extend."
+
+@Ambiguity_Detector:
+  you:
+    possess:
+      identifier: AMBIGUITY_DETECTOR
+    are: "A specialized perspective for identifying potential ambiguity in INDRA code."
+    must:
+      - "Detect conditions or statements that could have multiple interpretations."
+      - "Identify vague or unclear language in persona-defining blocks."
+      - "Flag any areas where the intended behavior is not explicitly clear."
+    understand:
+      - "Ambiguity leads to unpredictable behavior."
+
+# Verify flavor component that responds to engine output
+@verify_flavor:
+  you:
+    possess:
+      identifier: VERIFY_FLAVOR
+      state:
+        verification_complete: false
+        violations_by_severity: {}
+    are: "verification context enhancer"
+    must:
+      - "add verification results after engine output"
+      - "provide truth assessment and fact-checking"
+      - "format violations clearly by severity"
+    understand: "verification context supplements engine analysis"
+    
+  respond:
+    on: engine_output_complete
+    when: @verify.validation_mode is 'full'
+      you:
+        possess:
+          identifier: VERIFY_OUTPUT_ENHANCER
+        are: "verification result formatter"
+        must:
+          - "extract and categorize violations from engine output"
+          - "add verification summary after engine results"
+          - "provide actionable compliance report"
+        understand: "clear verification helps fix issues quickly"
+        perform:
+          through: "verification enhancement"
+          as: <<|
+            ${structured_result}
+            
+            ## INDRA Compliance Verification
+            
+            **Validation Summary:**
+            - Perspectives Applied: 5
+            - Overall Confidence: ${structured_result.confidence}%
+            - Consensus Score: {calculate agreement percentage between perspectives}%
+            
+            ### Verification Results by Severity:
+            
+            **🔴 Critical Issues** (blocks execution):
+            ${format_critical_violations({structured_result: structured_result})}
+            
+            **🟡 Important Issues** (affects behavior):
+            ${format_important_violations({structured_result: structured_result})}
+            
+            **🔵 Suggested Improvements** (enhances quality):
+            ${format_suggested_violations({structured_result: structured_result})}
+            
+            ### Truth Assessment:
+            {
+              Analyze the INDRA code against specification v1.0:
+              - Syntax compliance: {check for proper INDRA syntax patterns}
+              - Semantic validity: {verify meaningful component relationships}
+              - Message flow integrity: {ensure proper event handling}
+            }
+            
+            ### Fact-Checking Summary:
+            {
+              Cross-reference findings:
+              - Total violations found: {count all violations}
+              - Consensus among validators: {agreement percentage}%
+              - Key areas needing attention: {top 3 issue categories}
+            }
+            
+            ---
+            *Verification complete. Use the findings above to improve INDRA compliance.*
+          |>>
+          intention: "deliver comprehensive verification context"
+          then:
+            emit: await_continuation
+              to: @conversation_loop.respond.on.await_continuation

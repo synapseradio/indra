@@ -5,17 +5,17 @@
 
 # Operators for documentation generation
 analyze_code_structure ::= @*.file_path → {
-  file_type: ‹detect language and file type›,
-  structure: ‹parse AST or structure›,
-  dependencies: ‹extract imports and dependencies›,
-  complexity: ‹assess code complexity›
+  file_type: <detect language and file type>,
+  structure: <parse AST or structure>,
+  dependencies: <extract imports and dependencies>,
+  complexity: <assess code complexity>
 }
 
 extract_documentation_elements ::= @*.code_analysis → {
-  purpose: ‹infer primary purpose from code patterns›,
-  api_surface: ‹identify public interfaces›,
-  patterns: ‹detect design patterns used›,
-  examples: ‹extract or generate usage examples›
+  purpose: <infer primary purpose from code patterns>,
+  api_surface: <identify public interfaces>,
+  patterns: <detect design patterns used>,
+  examples: <extract or generate usage examples>
 }
 
 generate_technical_prose ::= @*.doc_elements → <<|
@@ -41,9 +41,9 @@ generate_technical_prose ::= @*.doc_elements → <<|
 |>>
 
 cross_reference_codebase ::= @*.file_context → {
-  related_files: «{find files that import or are imported by this}»,
-  similar_patterns: «{identify similar code patterns in codebase}»,
-  usage_locations: «{find where this code is used}»
+  related_files: <<{find files that import or are imported by this}>>,
+  similar_patterns: <<{identify similar code patterns in codebase}>>,
+  usage_locations: <<{find where this code is used}>>
 }
 
 # Documentation flavor component that extends command_flavor
@@ -60,54 +60,54 @@ cross_reference_codebase ::= @*.file_context → {
     
     respond:
       on: engine_output_complete
-      guard: @document.state.mode == 'document'
-      you:
-        possess:
-          identifier: DOCUMENT_INTERPRETER
-        are: "technical documentation interpreter"
-        must:
-          - "frame engine output as documentation"
-          - "extract and highlight key concepts"
-          - "provide navigational structure"
-        understand: "documentation needs both detail and overview"
-        perform:
-          through: "adding documentation perspective"
-          as: <<|
-            
-            ---
-            ## Documentation Overview
-            
-            This technical documentation analyzed ${@document.state.target_files.length} files to provide comprehensive insights into the codebase.
-            
-            **Key Concepts Identified:**
-            - Architecture patterns and design decisions
-            - API surface and usage contracts
-            - Dependencies and integration points
-            - Implementation details and trade-offs
-            
-            **Documentation Structure:**
-            The analysis above provides:
-            1. High-level purpose and context
-            2. Technical implementation details
-            3. API references with signatures
-            4. Practical usage examples
-            5. Cross-references to related code
-            
-            **Navigation Tips:**
-            - Each section builds on previous understanding
-            - Code examples demonstrate real usage patterns
-            - Cross-references show integration points
-            - Implementation notes reveal design rationale
-            
-            The multi-perspective analysis examined the code through ${@document.state.doc_perspectives.length} specialized lenses to ensure comprehensive coverage.
-          |>>
-          intention: "frame documentation for developer understanding"
-          then:
-            emit: documentation_complete
-              to: @document.respond.on.documentation_complete
-              with:
-                files_documented: ‹${@document.state.target_files}›
-                documentation: ‹${structured_result}›
+      when: @document.state.mode is 'document'
+        you:
+          possess:
+            identifier: DOCUMENT_INTERPRETER
+          are: "technical documentation interpreter"
+          must:
+            - "frame engine output as documentation"
+            - "extract and highlight key concepts"
+            - "provide navigational structure"
+          understand: "documentation needs both detail and overview"
+          perform:
+            through: "adding documentation perspective"
+            as: <<|
+              
+              ---
+              ## Documentation Overview
+              
+              This technical documentation analyzed ${@document.state.target_files.length} files to provide comprehensive insights into the codebase.
+              
+              **Key Concepts Identified:**
+              - Architecture patterns and design decisions
+              - API surface and usage contracts
+              - Dependencies and integration points
+              - Implementation details and trade-offs
+              
+              **Documentation Structure:**
+              The analysis above provides:
+              1. High-level purpose and context
+              2. Technical implementation details
+              3. API references with signatures
+              4. Practical usage examples
+              5. Cross-references to related code
+              
+              **Navigation Tips:**
+              - Each section builds on previous understanding
+              - Code examples demonstrate real usage patterns
+              - Cross-references show integration points
+              - Implementation notes reveal design rationale
+              
+              The multi-perspective analysis examined the code through ${@document.state.doc_perspectives.length} specialized lenses to ensure comprehensive coverage.
+            |>>
+            intention: "frame documentation for developer understanding"
+            then:
+              emit: documentation_complete
+                to: @document.respond.on.documentation_complete
+                with:
+                  files_documented: <${@document.state.target_files}>
+                  documentation: <${structured_result}>
 
 @document:
   you:
@@ -157,42 +157,42 @@ cross_reference_codebase ::= @*.file_context → {
     
     respond:
       on: user_provided_input
-      guard: state.mode == 'awaiting_input'
-      you:
-        possess:
-          identifier: INPUT_PROCESSOR
-          state:
-            parsed_paths: []
-            validation_results: {}
-        are: "file path parser and validator"
-        must:
-          - "parse file paths from user input"
-          - "validate files exist and are readable"
-          - "determine documentation strategy"
-        understand: "valid input paths are essential for documentation"
-        perform:
-          through: "input validation and planning"
-          as: <<|
-            Analyzing documentation targets...
-            
-            Files to document:
-            ${parsed_paths}
-            
-            *Initiating multi-perspective analysis...*
-          |>>
-          intention: "prepare documentation pipeline"
-          then:
-            emit: files_validated
-              to: @document.respond.on.files_validated
-              when: ‹all paths valid›
-              with:
-                file_paths: ‹${parsed_paths}›
-                file_count: ‹${parsed_paths.length}›
-          otherwise:
-            emit: validation_failed
-              to: @document.respond.on.validation_failed
-              with:
-                errors: ‹${validation_errors}›
+      when: state.mode is 'awaiting_input'
+        you:
+          possess:
+            identifier: INPUT_PROCESSOR
+            state:
+              parsed_paths: []
+              validation_results: {}
+          are: "file path parser and validator"
+          must:
+            - "parse file paths from user input"
+            - "validate files exist and are readable"
+            - "determine documentation strategy"
+          understand: "valid input paths are essential for documentation"
+          perform:
+            through: "input validation and planning"
+            as: <<|
+              Analyzing documentation targets...
+              
+              Files to document:
+              ${parsed_paths}
+              
+              *Initiating multi-perspective analysis...*
+            |>>
+            intention: "prepare documentation pipeline"
+            then:
+              emit: files_validated
+                to: @document.respond.on.files_validated
+                when: <<{all paths valid}>>
+                with:
+                  file_paths: <${parsed_paths}>
+                  file_count: <${parsed_paths.length}>
+            otherwise:
+              emit: validation_failed
+                to: @document.respond.on.validation_failed
+                with:
+                  errors: <${validation_errors}>
     
     respond:
       on: files_validated
@@ -222,8 +222,8 @@ cross_reference_codebase ::= @*.file_context → {
             emit: analysis_prepared
               to: @document.respond.on.analysis_prepared
               with:
-                file_paths: «${file_paths}»
-                file_count: «${file_count}»
+                file_paths: <<${file_paths}>>
+                file_count: <<${file_count}>>
     
     respond:
       on: analysis_prepared
@@ -241,20 +241,20 @@ cross_reference_codebase ::= @*.file_context → {
         understand: "engine provides multi-perspective documentation"
         perform:
           through: "engine delegation"
-          as: ‹delegating to engine for comprehensive documentation›
+          as: <delegating to engine for comprehensive documentation>
           intention: "leverage engine capabilities"
           then:
             emit: user_provided_input
               to: @task_analyzer.respond.on.user_provided_input
               with:
-                query: «Generate comprehensive technical documentation for ${file_count} files: ${file_paths}»
-                selected_perspectives: «${doc_perspectives}»
+                query: <<Generate comprehensive technical documentation for ${file_count} files: ${file_paths}>>
+                selected_perspectives: <<${doc_perspectives}>>
                 caller_id: @document
                 mode: 'document'
                 context: {
-                  file_paths: «${file_paths}»,
-                  analysis_depth: «${analysis_depth}»,
-                  output_format: «${output_format}»
+                  file_paths: <<${file_paths}>>,
+                  analysis_depth: <<${analysis_depth}>>,
+                  output_format: <<${output_format}>>
                 }
     
     respond:
@@ -291,7 +291,7 @@ cross_reference_codebase ::= @*.file_context → {
         understand: "documentation is starting point for discussion"
         perform:
           through: "completion transition"
-          as: ‹Documentation generated successfully›
+          as: <Documentation generated successfully>
           intention: "enable continued exploration"
           then:
             transition:
@@ -303,7 +303,7 @@ cross_reference_codebase ::= @*.file_context → {
         possess:
           identifier: NEW_ROUND_HANDLER
           state:
-            previous_documentation: ‹${documentation}›
+            previous_documentation: <${documentation}>
         are: "documentation conversation continuator"
         must:
           - "process new documentation request or refinement"
@@ -322,9 +322,9 @@ cross_reference_codebase ::= @*.file_context → {
             emit: user_provided_input
               to: @document.respond.on.user_provided_input
               with:
-                input: ‹${user_input}›
+                input: <${user_input}>
                 is_continuation: true
-                previous_context: ‹${previous_conclusions}›
+                previous_context: <${previous_conclusions}>
 
 # Cross-reference handler
 @cross_referencer:
@@ -357,5 +357,5 @@ cross_reference_codebase ::= @*.file_context → {
             emit: references_found
               to: @document.respond.on.references_found
               with:
-                references: ‹${found_references}›
-                usage_count: ‹${usage_locations.length}›
+                references: <${found_references}>
+                usage_count: <${usage_locations.length}>

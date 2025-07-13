@@ -6,62 +6,85 @@
 
 # Operators for INDRA to Markdown conversion
 parse_indra_structure ::= @*.indra_content → {
-  components: «{extract @component blocks from ${indra_content}}»,
-  operators: «{extract operator definitions from ${indra_content}}»,
-  imports: «{extract !read_file statements from ${indra_content}}»,
-  message_flow: «{trace emit/on patterns from ${indra_content}}»
+  components: <<{extract @component blocks from ${indra_content}}>>,
+  operators: <<{extract operator definitions from ${indra_content}}>>,
+  imports: <<{extract !read_file statements from ${indra_content}}>>,
+  message_flow: <<{trace emit/on patterns from ${indra_content}}>>
 }
 
 extract_behavioral_elements ::= @*.component → {
-  identifier: «${component.possess.identifier}»,
-  are: «${component.are}»,
-  must: «${component.must}»,
-  understand: «${component.understand}»,
-  state: «${component.possess.state}»,
-  tools: «${component.possess.tools}»,
-  responses: «{extract respond blocks from ${component}}»
+  identifier: <<${component.possess.identifier}>>,
+  are: <<${component.are}>>,
+  must: <<${component.must}>>,
+  understand: <<${component.understand}>>,
+  state: <<${component.possess.state}>>,
+  tools: <<${component.possess.tools}>>,
+  responses: <<{extract respond blocks from ${component}}>>
 }
 
+# New operator to generate a preamble for non-INDRA LLMs
+generate_llm_preamble ::= @*.spec → <<|
+### ⚠️ Important Context for the AI reading this prompt:
+
+This prompt was generated from a specialized behavioral modeling language called INDRA. You don't need to know INDRA, but understanding its core concepts will help you interpret this prompt correctly.
+
+*   **Core Idea:** The prompt describes a software "agent" or "component" with a specific personality, rules, and behaviors.
+*   **Identity (`are`):** This defines the agent's core persona or role.
+*   **Core Requirements (`must`):** These are strict, non-negotiable rules the agent must follow.
+*   **Context (`understand`):** This provides background information and clarifies the agent's purpose.
+*   **Configuration/State:** This is the agent's internal memory or settings.
+*   **Behavioral Flows/Message Handling:** This section describes how the agent should react to different events or messages. It's a list of "when X happens, do Y" instructions.
+
+Your task is to fully embody the persona and follow the behavioral rules defined below.
+|>>
+
 transform_to_markdown ::= @*.behavioral_spec → <<|
-# ${spec.are}
+${generate_llm_preamble(behavioral_spec)}
+
+# Persona: ${spec.are}
 
 ## Your Identity
 You are ${spec.are}.
 
-## Core Requirements
+## Core Directives
 ${spec.must}
 
-## Context
+## Your Purpose and Context
 ${spec.understand}
 
-## Configuration
-\`\`\`json
+## Internal State & Configuration
+```json
 ${spec.state}
-\`\`\`
+```
 
 ## Available Tools
 ${spec.tools}
 
-## Behavioral Flows
+## How You Respond to Events
 ${spec.response_patterns}
 
-## Message Handling
+## Communication Patterns
 ${spec.message_flow}
 |>>
 
 generate_system_prompt ::= @*.behavioral_spec → <<|
+${generate_llm_preamble(behavioral_spec)}
+
 You are ${spec.are}.
 
+Your purpose is to:
 ${spec.understand}
 
-Your core behavioral requirements:
+Your core directives are:
 ${spec.must_formatted}
 
+Your internal state is:
 ${spec.state_context}
 
+You have access to these tools:
 ${spec.tools_context}
 
-Behavioral patterns:
+Your primary behaviors are:
 ${spec.simplified_responses}
 |>>
 
@@ -75,16 +98,16 @@ ${spec.simplified_responses}
         output_format: 'markdown'  # markdown | system | both
         component_focus: ''  # which component to convert
         conversion_result: ''
+        max_recursion_depth: 10 # Prevent infinite import loops
       tools: ['Read', 'Write', 'TodoWrite']
     are: "INDRA to Markdown prompt converter"
     must:
+      - "recursively resolve all `!read_file` imports before parsing"
       - "parse INDRA behavioral specifications accurately"
       - "extract all behavioral components and patterns"
-      - "transform into clear, executable markdown prompts"
+      - "transform into clear, executable markdown prompts for non-INDRA LLMs"
       - "preserve the intent and constraints of the original"
-      - "handle state interpolation and message flows"
-    understand: "developers need to convert INDRA specifications into traditional prompts for various use cases"
-    # No extends - self-contained converter
+    understand: "developers need to convert INDRA specifications into traditional prompts for various use cases, including for LLMs that do not know INDRA."
     
     respond:
       on: manifest
@@ -101,7 +124,7 @@ ${spec.simplified_responses}
           as: <<|
             ## INDRA → Markdown Converter
             
-            I convert INDRA behavioral specifications into markdown prompts.
+            I convert INDRA behavioral specifications into markdown prompts. I will automatically resolve all `!read_file` imports.
             
             **Options:**
             - Provide an INDRA file path to convert
@@ -116,40 +139,40 @@ ${spec.simplified_responses}
     
     respond:
       on: user_provided_input
-      guard: mode == 'awaiting_input'
-      you:
-        possess:
-          identifier: INPUT_PARSER
-          state:
-            parsed_args: []
-        are: "input argument parser"
-        must:
-          - "parse file path and options"
-          - "validate input file exists"
-          - "determine conversion parameters"
-        understand: "correct parsing enables accurate conversion"
-        perform:
-          through: "argument parsing"
-          as: <<|
-            Parsing conversion request...
-            
-            Target: ${target_file}
-            Format: ${output_format}
-            Component: ${component_focus}
-            
-            *Reading INDRA specification...*
-          |>>
-          intention: "prepare conversion pipeline"
-          then:
-            emit: file_validated
-              to: @convert_to_md.respond.on.file_validated
-              when: ‹file exists and is readable›
-              with:
-                file_path: «${target_file}»
-                format: «${output_format}»
-          otherwise:
-            emit: validation_error
-              to: @convert_to_md.respond.on.validation_error
+      when: @convert_to_md.state.mode is 'awaiting_input'
+        you:
+          possess:
+            identifier: INPUT_PARSER
+            state:
+              parsed_args: []
+          are: "input argument parser"
+          must:
+            - "parse file path and options"
+            - "validate input file exists"
+            - "determine conversion parameters"
+          understand: "correct parsing enables accurate conversion"
+          perform:
+            through: "argument parsing"
+            as: <<|
+              Parsing conversion request...
+              
+              Target: ${@convert_to_md.state.target_file}
+              Format: ${@convert_to_md.state.output_format}
+              Component: ${@convert_to_md.state.component_focus}
+              
+              *Reading INDRA specification and resolving imports...*
+            |>>
+            intention: "prepare conversion pipeline"
+            then:
+              emit: file_validated
+                to: @convert_to_md.respond.on.file_validated
+                when: <${@convert_to_md.state.target_file} file exists and is readable>
+                with:
+                  file_path: @convert_to_md.state.target_file
+                  format: @convert_to_md.state.output_format
+            otherwise:
+              emit: validation_error
+                to: @convert_to_md.respond.on.validation_error
     
     respond:
       on: file_validated
@@ -158,21 +181,23 @@ ${spec.simplified_responses}
           identifier: INDRA_READER
           state:
             file_content: ''
-        are: "INDRA file reader"
+            recursion_level: 0
+        are: "INDRA file reader with recursive import resolution"
         must:
           - "read target file content"
-          - "preserve exact formatting"
-        understand: "accurate reading is essential for parsing"
+          - "recursively read and inline all `!read_file` imports"
+          - "prevent infinite import loops"
+        understand: "a complete, inlined specification is required for accurate parsing"
         perform:
-          through: "file reading"
-          as: ‹Reading ${file_path}...›
-          intention: "load INDRA specification"
+          through: "recursive file reading and import inlining"
+          as: <Reading ${file_path} (Recursion level: ${recursion_level})...>
+          intention: "load and resolve the complete INDRA specification"
           then:
             emit: content_loaded
               to: @convert_to_md.respond.on.content_loaded
               with:
-                content: «${file_content}»
-                line_count: «{count lines in ${file_content}}»
+                content: <recursively resolve imports in ${file_path}>
+                line_count: <count lines in resolved content>
     
     respond:
       on: content_loaded
@@ -183,17 +208,15 @@ ${spec.simplified_responses}
             parsed_structure: {}
         are: "INDRA structure analyzer"
         must:
-          - "parse component blocks"
+          - "parse component blocks from fully resolved content"
           - "extract operators"
           - "trace message flows"
-          - "identify behavioral patterns"
         understand: "proper parsing reveals the behavioral specification"
         perform:
-          through: "structural analysis"
+          through: "structural analysis of resolved content"
           as: <<|
             {extract @component blocks from ${content}}
             {extract operator definitions from ${content}}
-            {extract !read_file statements from ${content}}
             {trace emit/on message flow patterns}
           |>>
           intention: "extract all behavioral elements"
@@ -201,9 +224,9 @@ ${spec.simplified_responses}
             emit: structure_parsed
               to: @convert_to_md.respond.on.structure_parsed
               with:
-                components: «${parsed_structure.components}»
-                operators: «${parsed_structure.operators}»
-                message_flows: «${parsed_structure.message_flow}»
+                components: <<${parsed_structure.components}>>
+                operators: <<${parsed_structure.operators}>>
+                message_flows: <<${parsed_structure.message_flow}>>
     
     respond:
       on: structure_parsed
@@ -234,7 +257,7 @@ ${spec.simplified_responses}
             emit: component_analyzed
               to: @convert_to_md.respond.on.component_analyzed
               with:
-                behavioral_spec: «${extracted_elements}»
+                behavioral_spec: <<${extracted_elements}>>
     
     respond:
       on: component_analyzed
@@ -248,34 +271,37 @@ ${spec.simplified_responses}
         must:
           - "generate requested format"
           - "preserve behavioral intent"
-          - "create executable prompts"
-        understand: "transformation must maintain behavioral fidelity"
+          - "create executable prompts for a non-INDRA-aware LLM"
+        understand: "transformation must maintain behavioral fidelity while being understandable"
         perform:
-          through: "format transformation"
+          through: "format transformation with contextual preamble"
           as: <<|
             Generating ${output_format} format...
             
+            *Adding context for non-INDRA models...*
             *Transforming behavioral specifications...*
-            *Formatting requirements and patterns...*
             *Creating executable prompt structure...*
           |>>
-          intention: "create usable prompt"
+          intention: "create usable, context-aware prompt"
           then:
             emit: markdown_ready
               to: @convert_to_md.respond.on.markdown_ready
-              when: «${output_format} == 'markdown'»
+              when: @convert_to_md.state.output_format is 'markdown'
               with:
-                result: «${markdown_output}»
+                result: <<${markdown_output}>>
           otherwise:
             emit: system_prompt_ready
               to: @convert_to_md.respond.on.system_prompt_ready
-              when: «${output_format} == 'system'»
+              when: @convert_to_md.state.output_format is 'system'
               with:
-                result: «${system_output}»
+                result: <<${system_output}>>
           otherwise:
             emit: both_formats_ready
               to: @convert_to_md.respond.on.both_formats_ready
-              when: «${output_format} == 'both'»
+              when: @convert_to_md.state.output_format is 'both'
+              with:
+                markdown_output: <<${markdown_output}>>
+                system_output: <<${system_output}>>
     
     respond:
       on: markdown_ready
@@ -284,38 +310,13 @@ ${spec.simplified_responses}
           identifier: MARKDOWN_PRESENTER
         are: "markdown output presenter"
         must:
-          - "display formatted markdown"
-          - "include all behavioral elements"
+          - "display formatted markdown with preamble for LLM audience"
+          - "include all behavioral elements with clear headers"
         understand: "clear presentation enables immediate use"
         perform:
           through: "markdown presentation"
-          as: <<|
-# ${behavioral_spec.are}
-
-## Your Identity
-You are ${behavioral_spec.are}.
-
-## Core Requirements
-${behavioral_spec.must}
-
-## Context
-${behavioral_spec.understand}
-
-## Configuration
-```json
-${behavioral_spec.state}
-```
-
-## Available Tools
-${behavioral_spec.tools}
-
-## Behavioral Flows
-${behavioral_spec.response_patterns}
-
-## Message Handling
-${behavioral_spec.message_flow}
-          |>>
-          intention: "deliver detailed prompt"
+          as: <<${result}>>
+          intention: "deliver detailed, context-aware prompt"
           then:
             emit: conversion_complete
               to: @convert_to_md.respond.on.conversion_complete
@@ -327,27 +328,13 @@ ${behavioral_spec.message_flow}
           identifier: SYSTEM_PRESENTER
         are: "system prompt presenter"
         must:
-          - "display concise system prompt"
+          - "display concise system prompt with LLM preamble"
           - "focus on essential behaviors"
         understand: "system prompts need clarity and brevity"
         perform:
           through: "system prompt generation"
-          as: <<|
-You are ${behavioral_spec.are}.
-
-${behavioral_spec.understand}
-
-Your core behavioral requirements:
-${behavioral_spec.must_formatted}
-
-${behavioral_spec.state_context}
-
-${behavioral_spec.tools_context}
-
-Behavioral patterns:
-${behavioral_spec.simplified_responses}
-          |>>
-          intention: "deliver concise prompt"
+          as: <<${result}>>
+          intention: "deliver concise, context-aware prompt"
           then:
             emit: conversion_complete
               to: @convert_to_md.respond.on.conversion_complete
@@ -359,7 +346,7 @@ ${behavioral_spec.simplified_responses}
           identifier: DUAL_PRESENTER
         are: "dual format presenter"
         must:
-          - "show both formats"
+          - "show both formats with preambles"
           - "clearly separate outputs"
         understand: "comparison helps users choose"
         perform:
@@ -451,7 +438,7 @@ ${behavioral_spec.simplified_responses}
           - "parse new conversion request"
           - "maintain conversation context"
           - "handle follow-up questions"
-        understand: "users may want multiple conversions or clarifications"
+        understand: "users may want to multiple conversions or clarifications"
         perform:
           through: "continuation routing"
           as: <<|
@@ -461,14 +448,14 @@ ${behavioral_spec.simplified_responses}
           then:
             emit: user_provided_input
               to: @convert_to_md.respond.on.user_provided_input
-              when: ‹input contains file path or conversion request›
+              when: <input contains file path or conversion request>
               with:
                 mode: 'awaiting_input'
-                input: «${user_input}»
+                input: <<${user_input}>>
           otherwise:
             emit: await_continuation
               to: @conversation_loop.respond.on.await_continuation
-              when: ‹input is general question or unclear›
+              when: <input is general question or unclear>
 
 # Conversion helpers
 @format_helpers:
@@ -504,10 +491,10 @@ ${behavioral_spec.simplified_responses}
         perform:
           through: "response pattern formatting"
           as: <<|
-            ### Message: ${response.on}
+            ### Event: ${response.on}
             ${response.guard ? `**Condition**: ${response.guard}` : ''}
             **Action**: ${response.perform_through}
-            **Pattern**: ${response.perform_as}
+            **Behavior**: ${response.perform_as}
             **Intent**: ${response.intention}
           |>>
           intention: "document message handling"

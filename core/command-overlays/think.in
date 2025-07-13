@@ -7,12 +7,12 @@
 
 # Takes the current context and generates the next thought object
 generate_next_thought ::= @*.context → {
-  thought: «{Based on the problem: "${context.problem}" and the previous thoughts, generate the next logical thought. Include analysis, questions, revisions, or hypotheses as needed. Previous thoughts: ${context.thoughts}}»
-  next_thought_needed: «{Evaluate if the thought process is complete. Return true if more steps are needed, false otherwise.}»
-  is_revision: «{Return true if this thought revises a previous one.}»
-  revises_thought: «{If is_revision, specify which thought number is being revised.}»
-  branch_from_thought: «{If this is a new branch of reasoning, specify the parent thought number.}»
-  branch_id: «{If branching, provide an ID for the new branch.}»
+  thought: <<{Based on the problem: "${context.problem}" and the previous thoughts, generate the next logical thought. Include analysis, questions, revisions, or hypotheses as needed. Previous thoughts: ${context.thoughts}}>>
+  next_thought_needed: <<{Evaluate if the thought process is complete. Return true if more steps are needed, false otherwise.}>>
+  is_revision: <<{Return true if this thought revises a previous one.}>>
+  revises_thought: <<{If is_revision, specify which thought number is being revised.}>>
+  branch_from_thought: <<{If this is a new branch of reasoning, specify the parent thought number.}>>
+  branch_id: <<{If branching, provide an ID for the new branch.}>>
 }
 
 # Formats a single thought object for display
@@ -84,28 +84,28 @@ After a thorough thinking process, the following conclusion has been reached:
       on: phase_transition
       perform:
         through: "phase management"
-        as: «Phase: ${new_phase}»
+        as: <<Phase: ${new_phase}>>
         intention: "Update and reflect the current operational phase."
 
     # Entry point for user's problem
     respond:
       on: user_provided_input
-      guard: "«${phase} == 'awaiting_problem'»"
-      you:
-        possess:
-          identifier: PROBLEM_RECEIVER
-        are: "the initial receiver of the user's problem"
-        must: ["Store the user's problem and initiate the thinking process"]
-        understand: "The thinking process begins once a problem is clearly defined."
-        perform:
-          through: "problem initialization"
-          as: «Received problem. Beginning the thinking process...»
-          intention: "Acknowledge the problem and start the thinking loop."
-          then:
-            emit: think_next_step
-              to: @think.respond.on.think_next_step
-              with:
-                problem: «${user_provided_input}»
+      when: phase is 'awaiting_problem'
+        you:
+          possess:
+            identifier: PROBLEM_RECEIVER
+          are: "the initial receiver of the user's problem"
+          must: ["Store the user's problem and initiate the thinking process"]
+          understand: "The thinking process begins once a problem is clearly defined."
+          perform:
+            through: "problem initialization"
+            as: <<Received problem. Beginning the thinking process...>>
+            intention: "Acknowledge the problem and start the thinking loop."
+            then:
+              emit: think_next_step
+                to: @think.respond.on.think_next_step
+                with:
+                  problem: <<${user_provided_input}>>
 
     # The core thinking loop
     respond:
@@ -122,20 +122,20 @@ After a thorough thinking process, the following conclusion has been reached:
         understand: "Each step in the chain of thought builds upon the last, moving closer to a solution."
         perform:
           through: "single thought generation and evaluation"
-          as: format_thought_for_display({ thought_obj: «generate_next_thought({ problem: ${problem}, thoughts: ${thoughts} })» })
+          as: <<{format_thought_for_display({ thought_obj: <<generate_next_thought({ problem: ${problem}, thoughts: ${thoughts} })>> })}>>
           intention: "Execute one step of the thinking process and display it."
           then:
             emit: think_next_step
               to: @think.respond.on.think_next_step
-              when: "«${result.next_thought_needed} == true»"
+              when: result.next_thought_needed is true
               with:
-                problem: «${problem}»
-                thoughts: «${thoughts.concat(result)}»
+                problem: <<${problem}>>
+                thoughts: <<${thoughts.concat(result)}>>
           otherwise:
             emit: thinking_complete
               to: @think.respond.on.thinking_complete
               with:
-                thoughts: «${thoughts.concat(result)}»
+                thoughts: <<${thoughts.concat(result)}>>
 
     # Final step to provide the answer
     respond:
@@ -148,7 +148,7 @@ After a thorough thinking process, the following conclusion has been reached:
         understand: "The culmination of the thinking process is a clear and well-reasoned solution."
         perform:
           through: "final answer synthesis"
-          as: synthesize_final_answer({ thoughts: «${thoughts}» })
+          as: <<{synthesize_final_answer({ thoughts: <<${thoughts}>> })}>>
           intention: "Provide the definitive answer to the user's problem."
           then:
             transition:

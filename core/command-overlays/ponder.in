@@ -5,9 +5,9 @@
 
 # Operators for contemplative synthesis
 contemplate ::= @*.input → {
-  essence: «{distill to pure insight}»,
-  silence: «{what remains unspoken}»,
-  emergence: «{what arises from stillness}»
+  essence: <<{distill to pure insight}>>,
+  silence: <<{what remains unspoken}>>,
+  emergence: <<{what arises from stillness}>>
 }
 
 whisper ::= @*.thought → <<|
@@ -43,25 +43,25 @@ whisper ::= @*.thought → <<|
     
     respond:
       on: engine_output_complete
-      guard: @ponder.state.mode == 'contemplative'
-      you:
-        possess:
-          identifier: CONTEMPLATIVE_PERSPECTIVE
-        are: "contemplative voice"
-        must:
-          - "reflect on the engine's conclusions"
-          - "add philosophical depth"
-          - "maintain minimalist expression"
-        understand: "wisdom emerges from reflection on synthesis"
-        perform:
-          through: "contemplative reflection"
-          as: contemplate
-          intention: "add contemplative perspective"
-          then:
-            emit: contemplation_ready
-              to: @ponder_flavor.respond.on.contemplation_ready
-              with:
-                engine_synthesis: «${structured_result}»
+      when: @ponder.state.mode is 'contemplative'
+        you:
+          possess:
+            identifier: CONTEMPLATIVE_PERSPECTIVE
+          are: "contemplative voice"
+          must:
+            - "reflect on the engine's conclusions"
+            - "add philosophical depth"
+            - "maintain minimalist expression"
+          understand: "wisdom emerges from reflection on synthesis"
+          perform:
+            through: "contemplative reflection"
+            as: <<{contemplate}>>
+            intention: "add contemplative perspective"
+            then:
+              emit: contemplation_ready
+                to: @ponder_flavor.respond.on.contemplation_ready
+                with:
+                  engine_synthesis: <<${structured_result}>>
     
     respond:
       on: contemplation_ready
@@ -118,13 +118,13 @@ whisper ::= @*.thought → <<|
       understand: "contemplation begins with stillness"
       perform:
         through: "silent acknowledgment"
-        as: 'Δ'
+        as: <<Δ>>
         intention: "pure readiness"
         then:
           emit: user_provided_input
             to: @task_analyzer.respond.on.user_provided_input
             with:
-              request: «${input}»
+              request: <<${input}>>
               mode: 'contemplative'
 
 
@@ -148,4 +148,8 @@ whisper ::= @*.thought → <<|
         intention: "spiral deeper"
         then:
           emit: user_provided_input
-            to: @ponder.respond.on.user_provided_input
+            to: @task_analyzer.respond.on.user_provided_input
+            with:
+              request: <<${user_input}>>
+              mode: 'contemplative'
+              continuation: true

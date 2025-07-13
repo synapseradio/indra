@@ -9,14 +9,14 @@
     
 perform:
       through: "direct action"
-        as: "This violates mutual exclusion"
+        as: <<This violates mutual exclusion>>
     
     respond:
       on: test_message
       
       perform:
         through: "invalid structure"
-        as: "This is wrong"
+        as: <<This is wrong>>
 
 
 some_block:
@@ -28,7 +28,7 @@ some_block:
     understand: ["emission"]
     perform:
       through: "emission"
-      as: "Emitting..."
+      as: <<Emitting...>>>
       then:
         emit: orphaned_message  # No handler for this
 

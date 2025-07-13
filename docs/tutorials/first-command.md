@@ -16,19 +16,19 @@ The simplest way to share behaviors is through direct component definitions, as 
   you:
     possess:
       identifier: CITATION_COLLECTOR
-    are: ‹systematic evidence gatherer›
+    are: <systematic evidence gatherer>
     must:
-      - ‹extract during search›
-      - ‹store when referenced›
-      - ‹prioritize domain diversity›
-    understand: ‹collection quality determines reasoning credibility›
+      - <extract during search>
+      - <store when referenced>
+      - <prioritize domain diversity>
+    understand: <collection quality determines reasoning credibility>
 
 # Other files import and extend this directly:
 !read_file './shared/citations.in'
 @my_component:
   you:
     extend: @citation_collector
-    are: ‹researcher with citation capabilities›
+    are: <researcher with citation capabilities>
 ```
 
 This pattern is straightforward - define components, import them, extend them. Perfect for most use cases.
@@ -53,7 +53,7 @@ The PRISM engine introduces a more sophisticated pattern called "command overlay
       you:
         perform:
           through: "deep analysis"
-          as: analyze_input(@command.state.input)
+          as: <<${analyze_input(@command.state.input)}>>
           intention: "reveal hidden patterns"
 ```
 
@@ -112,13 +112,13 @@ INDRA doesn't prescribe architectural patterns. You can create your own based on
   you:
     possess:
       identifier: FORMATTER
-    are: ‹formatting service›
+    are: <formatting service>
     respond:
       on: format_request
       you:
         perform:
-          through: ‹appropriate formatting›
-          as: ‹{formatted output}›
+          through: <appropriate formatting>
+          as: <{formatted output}>
 ```
 
 ### Pattern 2: Behavioral Mixins
@@ -126,8 +126,8 @@ INDRA doesn't prescribe architectural patterns. You can create your own based on
 # mixins/empathetic.in
 @empathetic_mixin:
   you:
-    must: [‹acknowledge emotional context›]
-    understand: ‹emotions matter in communication›
+    must: [<acknowledge emotional context>]
+    understand: <emotions matter in communication>
 ```
 
 ### Pattern 3: Pipeline Stages
@@ -172,15 +172,15 @@ Without PRISM's complexity, here's a basic command pattern:
   you:
     possess:
       identifier: SIMPLE_ENGINE
-    are: ‹basic command processor›
+    are: <basic command processor>
     respond:
       on: user_input
       you:
         perform:
-          through: ‹command routing›
-          as: ‹{delegating to appropriate handler}›
+          through: <command routing>
+          as: <{delegating to appropriate handler}>
           then:
-            emit: «${command_type}_requested»
+            emit: <<${command_type}_requested>>
 
 # my-command.in
 !read_file './my-engine.in'
@@ -189,13 +189,13 @@ Without PRISM's complexity, here's a basic command pattern:
   you:
     possess:
       identifier: HELP_HANDLER
-    are: ‹help provider›
+    are: <help provider>
     respond:
       on: help_requested
       you:
         perform:
-          through: ‹help generation›
-          as: ‹{appropriate help text}›
+          through: <help generation>
+          as: <{appropriate help text}>
 ```
 
 This achieves command-like behavior without PRISM's complexity.

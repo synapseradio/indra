@@ -26,10 +26,10 @@ Now here's what you might try in INDRA:
 
 ```indra
 # WRONG - Trying to think in function returns
-calculate ::= @*.items → «${sum(items)}»
+calculate ::= @*.items → <<${sum(items)}>>
 
 perform:
-  as: «Total is: ${calculate(@command.items)}»  # This isn't how INDRA works!
+  as: <<Total is: ${calculate(@command.items)}>>  # This isn't how INDRA works!
 ```
 
 This is the first trap. You're trying to make operators return values to use immediately. Stop.
@@ -58,12 +58,12 @@ In INDRA, components don't call each other. They have conversations:
         understand: "totals are needed for decisions"
         perform:
           through: "summation"
-          as: ‹The total of your items is {meaningful sum}›
+          as: <The total of your items is {meaningful sum}>
           intention: "provide useful total"
           then:
             emit: total_calculated
             with:
-              result: ‹{the calculated total}›
+              result: <{the calculated total}>
 
 @presenter:
   you:
@@ -83,7 +83,7 @@ In INDRA, components don't call each other. They have conversations:
         understand: "context matters for presentation"
         perform:
           through: "contextual presentation"
-          as: ‹Based on the calculation: ${result}›
+          as: <Based on the calculation: ${result}>
           intention: "inform user effectively"
 ```
 
@@ -111,25 +111,25 @@ respond:
   on: order_received
   you:
     perform:
-      through: ‹order processing›
-      as: ‹Processing your order...›
-      intention: ‹acknowledge receipt›
+      through: <order processing>
+      as: <Processing your order...>
+      intention: <acknowledge receipt>
       then:
         emit: calculate_total_requested
         with:
-          items: «${order.items}»
+          items: <<${order.items}>>
 
 respond:
   on: total_calculated
   you:
     perform:
-      through: ‹tax assessment›
-      as: ‹Calculating applicable taxes...›
-      intention: ‹determine tax›
+      through: <tax assessment>
+      as: <Calculating applicable taxes...>
+      intention: <determine tax>
       then:
         emit: calculate_tax_requested
         with:
-          amount: «${total}»
+          amount: <<${total}>>
 ```
 
 The order processor doesn't need to know HOW totals are calculated or even WHO calculates them. It just asks for what it needs.
@@ -146,7 +146,7 @@ INDRA thinks asynchronously:
 ```indra
 emit: analysis_requested
 with:
-  data: «${complex_data}»
+  data: <<${complex_data}>>
 
 # The emitter continues with its life
 # The analyzer works when it receives the message
@@ -161,7 +161,7 @@ Want multiple perspectives? Just emit to multiple listeners:
 then:
   emit: review_requested
   with:
-    document: «${draft}»
+    document: <<${draft}>>
 
 # Multiple reviewers can respond simultaneously
 # Each brings their perspective
@@ -175,11 +175,11 @@ Here's what people coming from traditional programming try:
 ```indra
 # ANTI-PATTERN - Don't do this!
 get_result ::= @*.query → {
-  result: ‹{calculate the answer}›
+  result: <{calculate the answer}>
 } [EMITS: result_ready]
 
 perform:
-  as: «The answer is ${get_result(@command.input).result}»  # NO!
+  as: <<The answer is ${get_result(@command.input).result}>>  # NO!
 ```
 
 Why doesn't this work? Because:
@@ -195,7 +195,7 @@ Good message flows feel like conversations:
 # User asks a question
 emit: question_asked
 with:
-  content: «${user_input}»
+  content: <<${user_input}>>
 
 # Analyzer considers it
 respond:
@@ -203,17 +203,17 @@ respond:
   then:
     emit: analysis_complete
     with:
-      understanding: ‹{what I understood}›
-      needs_clarification: ‹{what's unclear}›
+      understanding: <{what I understood}>
+      needs_clarification: <{what's unclear}>
 
 # Researcher gathers information
 respond:
   on: analysis_complete
-  guard: ‹not needs_clarification›
+  when: @analyzer.state.needs_clarification is false
   then:
     emit: research_complete
     with:
-      findings: ‹{relevant information}›
+      findings: <{relevant information}>
 
 # Synthesizer creates response
 respond:
@@ -221,7 +221,7 @@ respond:
   then:
     emit: response_ready
     with:
-      answer: ‹{thoughtful response based on findings}›
+      answer: <{thoughtful response based on findings}>
 ```
 
 This feels natural because it mirrors how humans actually solve problems - through dialogue, not function calls.

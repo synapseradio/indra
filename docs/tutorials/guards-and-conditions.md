@@ -1,4 +1,4 @@
-# Guards and Conditional Behavior
+# Conditional Behavior with when:
 
 ## Forget If/Else
 
@@ -18,114 +18,137 @@ You're building a decision tree. Each branch is a different code path. The execu
 
 INDRA doesn't think this way.
 
-## Guards: Behavioral Boundaries
+## `when:` Blocks: Conditional Response
 
-In INDRA, guards don't create code branches. They create behavioral boundaries:
+In INDRA, you don't use a separate `guard:` keyword. Instead, you create conditional response blocks using `when:` and `otherwise:`. This allows a component to react differently to the same message based on its current state or the message payload.
 
 ```indra
 respond:
   on: admin_request
-  guard: ‹user appears authorized›
-  you:
-    possess:
-      identifier: ADMIN_HANDLER
-    are: "administrative authority"
-    must: ["handle with appropriate permissions"]
-    understand: "admin actions need careful handling"
-    perform:
-      through: "authorized administration"
-      as: ‹{appropriate admin response}›
-      intention: "fulfill administrative need"
+  
+  when: <user appears authorized>
+    you:
+      possess:
+        identifier: ADMIN_HANDLER
+      are: "administrative authority"
+      must: ["handle with appropriate permissions"]
+      understand: "admin actions need careful handling"
+      perform:
+        through: "authorized administration"
+        as: <{appropriate admin response}>
+        intention: "fulfill administrative need"
+  
+  otherwise:
+    you:
+      are: "permission denial handler"
+      perform:
+        as: <You do not have sufficient privileges for this action.>
 ```
 
-See the difference? The guard `‹user appears authorized›` isn't checking a boolean. It's asking the AI to interpret whether this feels like an authorized request.
+See the difference? The `when: <user appears authorized>` condition isn't checking a simple boolean; it's asking the AI to interpret the context. If that condition isn't met, the `otherwise:` block is executed.
 
-## Two Types of Guards
+## Types of Conditions
 
-### Deterministic Guards
+### Deterministic Conditions
 
-Use single quotes and state values for exact conditions:
+Use single quotes and state values for exact conditions with the new natural-language operators. State references must be fully qualified.
 
 ```indra
 respond:
   on: process_payment
-  guard: mode == 'active' and balance > 0
-  you:
-    # This handler only activates for exact conditions
+  
+  when: @self.state.mode is 'active' and @self.state.balance gt 0
+    you:
+      # This handler only activates for exact conditions
+      perform:
+        as: <Processing payment...>
+
+  otherwise:
+    you:
+      perform:
+        as: <Cannot process payment. System is not active or balance is zero.>
 ```
 
-### Probabilistic Guards
+### Probabilistic Conditions
 
-Use angle brackets for contextual interpretation:
+Use angle brackets for contextual interpretation.
 
 ```indra
 respond:
   on: user_message
-  guard: ‹message seems urgent›
-  you:
-    # AI interprets what "urgent" means in context
+  
+  when: <message seems urgent>
+    you:
+      # AI interprets what "urgent" means in context
+      perform:
+        as: <This seems important! Addressing immediately.>
+
+  when: <message seems casual>
+    you:
+      perform:
+        as: <Thanks for reaching out. Let's take a look.>
 ```
 
-## The Beauty of Contextual Guards
+## The Power of Multiple `when:` Blocks
 
-Traditional code makes binary decisions. INDRA makes contextual interpretations:
+Traditional code makes binary decisions. INDRA makes contextual interpretations by allowing multiple `when:` blocks for the same message.
 
 ```indra
 respond:
   on: support_request
-  guard: ‹user seems frustrated›
-  you:
-    possess:
-      identifier: EMPATHY_HANDLER
-    are: ‹empathetic support specialist›
-    must: [‹address emotional state first›]
-    understand: ‹frustrated users need understanding›
-    perform:
-      through: ‹compassionate assistance›
-      as: ‹{acknowledging frustration before solving}›
-      intention: ‹calm and help›
+  
+  when: <user seems frustrated>
+    you:
+      possess:
+        identifier: EMPATHY_HANDLER
+      are: <empathetic support specialist>
+      must: [<address emotional state first>]
+      understand: <frustrated users need understanding>
+      perform:
+        through: <compassionate assistance>
+        as: <{acknowledging frustration before solving}>
+        intention: <calm and help>
 
-respond:
-  on: support_request  
-  guard: ‹user seems confused›
-  you:
-    possess:
-      identifier: CLARITY_HANDLER
-    are: ‹patient explainer›
-    must: [‹provide step-by-step guidance›]
-    understand: ‹confusion needs gentle clarification›
-    perform:
-      through: ‹systematic explanation›
-      as: ‹{clear, simple steps to understanding}›
-      intention: ‹illuminate the path›
+  when: <user seems confused>
+    you:
+      possess:
+        identifier: CLARITY_HANDLER
+      are: <patient explainer>
+      must: [<provide step-by-step guidance>]
+      understand: <confusion needs gentle clarification>
+      perform:
+        through: <systematic explanation>
+        as: <{clear, simple steps to understanding}>
+        intention: <illuminate the path>
+        
+  otherwise:
+    you:
+      are: "standard support handler"
+      perform:
+        as: <Thank you for your request. We are looking into it.>
 ```
+The first `when:` block whose condition evaluates to true will be executed. If none match, the `otherwise:` block runs.
 
-Multiple handlers can respond to the same message, each with different interpretations of the context.
+## Conditional Actions within a `perform` block
 
-## Conditional Actions with then/otherwise
-
-Within a handler, you can have conditional emissions:
+You can still use `when:` inside a `then:` block for conditional emissions, just as before.
 
 ```indra
 perform:
-  through: ‹analysis›
-  as: ‹Analyzing your request...›
-  intention: ‹understand need›
+  through: <analysis>
+  as: <Analyzing your request...>
+  intention: <understand need>
   then:
     emit: found_solution
-    when: ‹solution is clear›
+    when: <solution is clear>
     with:
-      solution: ‹{the identified solution}›
+      solution: <{the identified solution}>
   otherwise:
     emit: need_more_info
-    when: ‹requirements unclear›
+    when: <requirements unclear>
     with:
-      questions: ‹{clarifying questions}›
-  otherwise:
-    emit: escalate_to_human
+      questions: <{clarifying questions}>
 ```
-
-But notice - even here, the conditions can be interpretive (‹solution is clear›) or exact (state comparisons).
 
 ## Why Not Just Use If/Else?
 
@@ -146,154 +169,87 @@ Versus INDRA:
 ```indra
 respond:
   on: user_message
-  guard: ‹emotional content detected›
-  you:
-    perform:
-      through: ‹emotional intelligence›
-      as: ‹{response that matches emotional tone}›
-      intention: ‹connect emotionally›
+  
+  when: <message has a positive emotional tone>
+    you:
+      perform:
+        as: <I'm glad you're feeling positive!>
+        
+  when: <message has a negative emotional tone>
+    you:
+      perform:
+        as: <I'm sorry to hear that. Let's see how I can help.>
 ```
-
 The INDRA version doesn't need arbitrary thresholds. It responds naturally to the actual emotional content.
 
-## Guard Combinations
+## Condition Combinations
 
-Guards can be sophisticated:
+Conditions can be combined using `and`:
 
 ```indra
 # Mixed deterministic and probabilistic
-guard: mode == 'active' and ‹user seems ready›
+when: @self.state.mode is 'active' and <user seems ready>
 
 # Multiple probabilistic conditions  
-guard: ‹request is valid› and ‹timing is appropriate›
+when: <request is valid> and <timing is appropriate>
 
 # Negation
-guard: not ‹user seems confused›
+when: not <user seems confused>
 ```
 
-## The Anti-Pattern: Over-Guarding
+## The Anti-Pattern: Over-Conditioning
 
-Don't try to recreate traditional control flow:
+Don't try to recreate traditional control flow by making your `when` conditions too rigid and numerous.
 
 ```indra
 # ANTI-PATTERN - Too rigid
 respond:
   on: user_input
-  guard: input_type == 'question'
-  # ...
+  
+  when: @self.state.input_type is 'question'
+    # ...
 
-respond:
-  on: user_input
-  guard: input_type == 'command'
-  # ...
+  when: @self.state.input_type is 'command'
+    # ...
 
-respond:
-  on: user_input
-  guard: input_type == 'statement'
-  # ...
+  when: @self.state.input_type is 'statement'
+    # ...
 ```
 
-This fights INDRA's nature. Better:
+This fights INDRA's nature. Better to let the AI interpret:
 
 ```indra
 respond:
   on: user_input
   you:
     perform:
-      through: ‹intelligent interpretation›
-      as: ‹{appropriate response to input type}›
-      intention: ‹address user need›
+      through: <intelligent interpretation>
+      as: <{appropriate response to input type}>
+      intention: <address user need>
 ```
 
-Let the AI figure out what kind of input it is and respond appropriately.
+## `when:` vs. `understand:`
 
-## Guards vs. understand:
-
-Guards and understand blocks work together:
+`when:` and `understand:` work together:
 
 ```indra
 respond:
   on: delete_request
-  guard: ‹user has appropriate authority›
-  you:
-    possess:
-      identifier: DELETION_HANDLER
-    are: ‹careful deletion manager›
-    must: [‹verify before destroying›]
-    understand: ‹deletion is irreversible - user needs confidence›
-    perform:
-      through: ‹confirmed deletion›
-      as: ‹{verification then deletion}›
-      intention: ‹safely remove with confidence›
+  
+  when: <user has appropriate authority>
+    you:
+      possess:
+        identifier: DELETION_HANDLER
+      are: <careful deletion manager>
+      must: [<verify before destroying>]
+      understand: <deletion is irreversible - user needs confidence>
+      perform:
+        through: <confirmed deletion>
+        as: <{verification then deletion}>
+        intention: <safely remove with confidence>
 ```
 
-The guard checks if we should handle it. The understand: explains why we handle it this way.
-
-## Real-World Example: Multi-Modal Response
-
-```indra
-@assistant:
-  you:
-    possess:
-      identifier: ADAPTIVE_ASSISTANT
-      state:
-        interaction_count: 0
-        user_style: 'unknown'
-    are: ‹adaptive communication interface›
-    must: 
-      - ‹match communication style›
-      - ‹provide helpful responses›
-    understand: ‹users have different communication preferences›
-    
-    respond:
-      on: user_message
-      guard: ‹message contains technical jargon›
-      you:
-        possess:
-          identifier: TECHNICAL_RESPONDER
-        are: ‹technical communication specialist›
-        must: [‹use precise technical language›]
-        understand: ‹technical users appreciate accuracy›
-        perform:
-          through: ‹technical analysis›
-          as: ‹{detailed technical response with appropriate terminology}›
-          intention: ‹provide expert-level information›
-    
-    respond:
-      on: user_message
-      guard: ‹message seems casual/conversational›
-      you:
-        possess:
-          identifier: CASUAL_RESPONDER
-        are: ‹friendly conversationalist›
-        must: [‹keep things approachable›]
-        understand: ‹casual users want friendly interaction›
-        perform:
-          through: ‹natural conversation›
-          as: ‹{warm, friendly response without jargon}›
-          intention: ‹connect naturally›
-    
-    respond:
-      on: user_message
-      guard: ‹message indicates confusion or learning›
-      you:
-        possess:
-          identifier: TEACHING_RESPONDER
-        are: ‹patient educator›
-        must: [‹explain clearly without condescension›]
-        understand: ‹learners need encouragement and clarity›
-        perform:
-          through: ‹educational guidance›
-          as: ‹{step-by-step explanation with examples}›
-          intention: ‹facilitate understanding›
-          then:
-            emit: learning_moment_recorded
-            with:
-              topic: ‹{identified learning area}›
-              approach: ‹{educational method used}›
-```
-
-The same message might trigger different handlers based on context. This isn't a bug - it's the feature.
+The `when:` block determines *if* this behavior should run. The `understand:` block informs *how* it should run.
 
 ## Exercise: Reframe Your Conditions
 
@@ -326,7 +282,7 @@ Now stop thinking about permission checks as binary gates. Start thinking about:
 - How would you naturally handle different types of requests?
 - What behavioral boundaries make sense?
 
-Try writing it in INDRA with guards that capture intent, not just check values.
+Try writing it in INDRA with `when:` blocks that capture intent, not just check values.
 
 ## The Mental Shift
 
@@ -338,16 +294,6 @@ Start thinking: "Sense context, adapt behavior"
 
 Stop thinking: "Control flow"
 Start thinking: "Behavioral flow"
-
-## A Philosophical Note
-
-Traditional conditions assume a world of discrete states and binary decisions. INDRA assumes a world of continuous contexts and adaptive behaviors.
-
-Which one better matches how intelligence actually works?
-
-When you decide to help someone, do you check a series of boolean flags? Or do you sense the situation and respond appropriately?
-
-INDRA guards work like the latter. They're not gates in a circuit - they're sensitivities in a behavioral system.
 
 ---
 

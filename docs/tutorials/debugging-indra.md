@@ -19,7 +19,7 @@ INDRA doesn't work this way:
 ```indra
 perform:
   through: "thoughtful calculation"
-  as: ‹{total that reflects the true value}›
+  as: <{total that reflects the true value}>
   intention: "provide meaningful sum"
 ```
 
@@ -108,13 +108,13 @@ When behavior isn't what you expect, you don't fix bugs - you refine patterns:
 ```indra
 # Original
 perform:
-  through: ‹comprehensive analysis›
-  as: ‹{detailed findings}›
+  through: <comprehensive analysis>
+  as: <{detailed findings}>
   
 # Refined
 perform:
   through: "focused analysis"
-  as: ‹{concise key insights only}›
+  as: <{concise key insights only}>
   intention: "clarity through brevity"
 ```
 
@@ -122,8 +122,8 @@ perform:
 
 ```indra
 # Original
-are: ‹analyzer›
-must: [‹find patterns›]
+are: <analyzer>
+must: [<find patterns>]
 
 # Refined  
 are: "holistic analyzer"
@@ -138,12 +138,12 @@ understand: "absence is as revealing as presence"
 
 ```indra
 # Original - too open
-as: ‹{appropriate response}›
+as: <{appropriate response}>
 
 # Refined - guided but flexible
-as: ‹{structured response following our established format}›
+as: <{structured response following our established format}>
 with:
-  format_guide: «Introduction, Analysis, Conclusion»
+  format_guide: <<Introduction, Analysis, Conclusion>>
 ```
 
 ## Debugging Message Flow
@@ -156,7 +156,7 @@ respond:
   on: data_received
   you:
     perform:
-      as: ‹*Received data, beginning processing*› # Visible marker
+      as: <*Received data, beginning processing*> # Visible marker
       then:
         emit: processing_started
         
@@ -164,31 +164,31 @@ respond:
   on: processing_started
   you:
     perform:
-      as: ‹*Processing phase initiated*› # Another marker
+      as: <*Processing phase initiated*> # Another marker
 ```
 
 These markers help you see where in the flow things diverge from expectations.
 
-## Debugging Guards
+## Debugging Conditional Logic
 
-When guards don't trigger as expected:
+When `when:` blocks don't trigger as expected:
 
 ```indra
 # Original - might be too subtle
-guard: ‹seems urgent›
+when: <seems urgent>
 
 # Debugging version - more explicit
-guard: ‹contains urgency indicators like "ASAP", "urgent", "critical"›
+when: <contains urgency indicators like "ASAP", "urgent", "critical">
 
 # Or add diagnostic output
 respond:
   on: request
   you:
     perform:
-      as: ‹*Checking urgency: {assessment of urgency level}*›
+      as: <*Checking urgency: {assessment of urgency level}*>
       then:
         emit: urgent_request
-        when: ‹high urgency detected›
+        when: <high urgency detected>
 ```
 
 ## The Variation Principle
@@ -197,21 +197,21 @@ INDRA behaviors naturally vary. This isn't a bug - it's the feature. But you can
 
 ### High Variation (Creative tasks)
 ```indra
-are: ‹imaginative creator›
-must: [‹surprise and delight›]
+are: <imaginative creator>
+must: [<surprise and delight>]
 perform:
-  through: ‹unbounded exploration›
-  as: ‹{something unexpected}›
+  through: <unbounded exploration>
+  as: <{something unexpected}>
 ```
 
 ### Low Variation (Consistent tasks)
 ```indra
-are: ‹precise formatter›
-must: [‹follow exact specifications›]
-understand: ‹consistency enables trust›
+are: <precise formatter>
+must: [<follow exact specifications>]
+understand: <consistency enables trust>
 perform:
-  through: ‹strict adherence to format›
-  as: «Status: ${status}\nTime: ${time}\nResult: ${result}»
+  through: <strict adherence to format>
+  as: <<Status: ${status}\nTime: ${time}\nResult: ${result}>>
 ```
 
 ## Common Debugging Patterns
@@ -224,11 +224,11 @@ respond:
   on: trigger_event
   you:
     perform:
-      as: ‹*Event received, evaluating...*›
+      as: <*Event received, evaluating...*>
       then:
-        emit: diagnostic_guard_check
+        emit: diagnostic_condition_check
         with:
-          evaluation: ‹{why guard might not match}›
+          evaluation: <{why the when condition might not match}>
 ```
 
 ### 2. Wrong Behavior Manifesting
@@ -236,14 +236,14 @@ respond:
 ```indra
 # Make constraints more explicit
 # Instead of:
-are: ‹helpful›
+are: <helpful>
 
 # Try:
-are: ‹technically helpful assistant›
+are: <technically helpful assistant>
 must: 
-  - ‹prioritize accuracy›
-  - ‹use domain terminology›
-understand: ‹users are technical professionals›
+  - <prioritize accuracy>
+  - <use domain terminology>
+understand: <users are technical professionals>
 ```
 
 ### 3. State Not Evolving
@@ -256,10 +256,10 @@ respond:
     possess:
       state:
         # Make state changes visible
-        last_update: «${timestamp}»
-        update_count: «${update_count + 1}»
+        last_update: <<${timestamp}>>
+        update_count: <<${update_count + 1}>>
     perform:
-      as: «Update #${update_count} at ${timestamp}»
+      as: <<Update #${update_count} at ${timestamp}>>
 ```
 
 ## The Philosophy of INDRA Debugging
@@ -278,8 +278,8 @@ Create diagnostic components that observe without interfering:
   you:
     possess:
       identifier: DIAGNOSTIC_PROBE
-    are: ‹silent observer›
-    must: [‹record without interfering›]
+    are: <silent observer>
+    must: [<record without interfering>]
     
     respond:
       on: any_message
@@ -289,9 +289,9 @@ Create diagnostic components that observe without interfering:
           then:
             emit: probe_observation
             with:
-              message_type: «${message.type}»
-              context_depth: «${context.stack.length}»
-              state_snapshot: «${current.state}»
+              message_type: <<${message.type}>>
+              context_depth: <<${context.stack.length}>>
+              state_snapshot: <<${current.state}>>
 ```
 
 ## Debugging Workflow

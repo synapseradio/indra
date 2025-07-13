@@ -28,7 +28,7 @@ INDRA doesn't execute. It transforms:
     
     perform:
       through: "pattern recognition"
-      as: ‹{discovering what matters in the data}›
+      as: <{discovering what matters in the data}>
       intention: "reveal insights"
 ```
 
@@ -44,23 +44,23 @@ Every line of INDRA progressively narrows the possibility space:
 you:
   # Still vast, but now it's about "you"
   
-  are: ‹helpful assistant›
+  are: <helpful assistant>
   # Narrowed to helpful behaviors
   
-  must: [‹provide accurate information›]
+  must: [<provide accurate information>]
   # Further constrained by accuracy requirement
   
-  understand: ‹users need clarity›
+  understand: <users need clarity>
   # Shaped by understanding of user needs
   
   perform:
-    through: ‹careful analysis›
+    through: <careful analysis>
     # Method is now analytical
     
-    as: ‹{clear, structured response}›
+    as: <{clear, structured response}>
     # Output form is specified
     
-    intention: ‹illuminate understanding›
+    intention: <illuminate understanding>
     # Purpose guides everything
 ```
 
@@ -112,16 +112,16 @@ def customer_service(issue):
   you:
     possess:
       identifier: SERVICE_AGENT
-    are: ‹empathetic problem solver›
+    are: <empathetic problem solver>
     must: 
-      - ‹address customer needs›
-      - ‹recognize urgency›
-    understand: ‹customers need to feel heard›
+      - <address customer needs>
+      - <recognize urgency>
+    understand: <customers need to feel heard>
     
     perform:
-      through: ‹attentive listening and response›
-      as: ‹{appropriate action based on customer need}›
-      intention: ‹resolve with care›
+      through: <attentive listening and response>
+      as: <{appropriate action based on customer need}>
+      intention: <resolve with care>
 ```
 
 The INDRA version doesn't list steps. It describes a way of being that naturally handles all cases.
@@ -138,16 +138,16 @@ Watch how behavior emerges from constraints:
       state:
         mood: 'contemplative'
         form: 'haiku'
-    are: ‹contemplative haiku writer›
+    are: <contemplative haiku writer>
     must:
-      - ‹honor the 5-7-5 structure›
-      - ‹capture profound simplicity›
-    understand: ‹haiku reveals essence through constraint›
+      - <honor the 5-7-5 structure>
+      - <capture profound simplicity>
+    understand: <haiku reveals essence through constraint>
     
     perform:
-      through: ‹meditative observation›
-      as: ‹{a haiku emerging from quiet contemplation}›
-      intention: ‹crystallize a moment›
+      through: <meditative observation>
+      as: <{a haiku emerging from quiet contemplation}>
+      intention: <crystallize a moment>
 ```
 
 You haven't written any poetry code. You've created conditions where poetry emerges.
@@ -161,12 +161,12 @@ INDRA transformations aren't sequential. They're simultaneous:
   you:
     possess:
       identifier: MULTI_ASPECT_ANALYZER
-    are: ‹holistic analyzer›
+    are: <holistic analyzer>
     must:
-      - ‹see connections›
-      - ‹identify patterns›
-      - ‹synthesize insights›
-    understand: ‹truth emerges from multiple perspectives›
+      - <see connections>
+      - <identify patterns>
+      - <synthesize insights>
+    understand: <truth emerges from multiple perspectives>
 ```
 
 All these constraints apply at once. The behavior emerges from their intersection, not their sequence.
@@ -177,9 +177,9 @@ In quantum mechanics, observation collapses possibilities into actuality. INDRA 
 
 ```indra
 perform:
-  through: ‹creative exploration›
-  as: ‹{something surprising yet appropriate}›
-  intention: ‹delight and inform›
+  through: <creative exploration>
+  as: <{something surprising yet appropriate}>
+  intention: <delight and inform>
 ```
 
 Until the AI "observes" (generates), the output exists in superposition - potentially anything that fits the constraints. The actual output emerges at the moment of generation.
@@ -190,15 +190,15 @@ More constraints don't limit creativity - they focus it:
 
 ```indra
 # Too vague
-are: ‹assistant›
+are: <assistant>
 
 # Focused but flexible
-are: ‹technical documentation specialist›
+are: <technical documentation specialist>
 must: 
-  - ‹explain complex concepts clearly›
-  - ‹use appropriate examples›
-  - ‹maintain accuracy›
-understand: ‹readers have varying technical backgrounds›
+  - <explain complex concepts clearly>
+  - <use appropriate examples>
+  - <maintain accuracy>
+understand: <readers have varying technical backgrounds>
 ```
 
 Like a river shaped by its banks, behavior flows more powerfully when properly constrained.
@@ -210,13 +210,13 @@ Trying to control every detail fights INDRA's nature:
 ```indra
 # WRONG - Too controlling
 perform:
-  through: ‹analyze step 1 then step 2 then step 3›
-  as: ‹First say "Hello", then state the problem, then...›
+  through: <analyze step 1 then step 2 then step 3>
+  as: <First say "Hello", then state the problem, then...>
   
 # RIGHT - Guided emergence
 perform:
-  through: ‹systematic analysis›
-  as: ‹{clear, structured findings}›
+  through: <systematic analysis>
+  as: <{clear, structured findings}>
 ```
 
 Trust the transformation. Guide, don't dictate.
@@ -256,23 +256,23 @@ Transformations can layer and compose:
 ```indra
 @base_researcher:
   you:
-    are: ‹curious investigator›
-    must: [‹seek truth›]
-    understand: ‹knowledge builds on knowledge›
+    are: <curious investigator>
+    must: [<seek truth>]
+    understand: <knowledge builds on knowledge>
 
 @domain_researcher:
   you:
     extend: @base_researcher
-    are: ‹specialized domain expert›
-    must: [‹apply domain knowledge›]
-    understand: ‹domain context matters›
+    are: <specialized domain expert>
+    must: [<apply domain knowledge>]
+    understand: <domain context matters>
 
 @collaborative_researcher:
   you:
     extend: @domain_researcher
-    are: ‹collaborative knowledge builder›
-    must: [‹synthesize perspectives›]
-    understand: ‹collective intelligence exceeds individual›
+    are: <collaborative knowledge builder>
+    must: [<synthesize perspectives>]
+    understand: <collective intelligence exceeds individual>
 ```
 
 Each transformation builds on the previous, creating emergent complexity.

@@ -5,16 +5,16 @@
 
 # Operator definitions 
 propose_expert_panel ::= @*.query → {
-  understanding: «{paraphrase user query to show understanding}»,
-  experts: «{generate list of relevant expert perspectives based on query complexity}»,
-  rationale: «{explain why these experts would provide valuable insights}»
+  understanding: <<{paraphrase user query to show understanding}>>,
+  experts: <<{generate list of relevant expert perspectives based on query complexity}>>,
+  rationale: <<{explain why these experts would provide valuable insights}>>
 }
 
 collect_research_citations ::= @*.research_query → {
   citation_data: {
-    query: «${query}»,
-    sources: «{gather relevant sources}»,
-    diversity: «{ensure balanced perspectives}»
+    query: <<${query}>>,
+    sources: <<{gather relevant sources}>>,
+    diversity: <<{ensure balanced perspectives}>>
   }
 }
 
@@ -33,11 +33,11 @@ collect_research_citations ::= @*.research_query → {
         min_domains: 5  # Override default of 3 for more thorough research
         source_diversity: 'high'
       tools: ['mcp__perplexity-mcp__perplexity_search_web', 'TodoWrite', 'TodoRead']
-    are: 'expert dialogue facilitator for deliberative dialogue and analysis'
+    are: "expert dialogue facilitator for deliberative dialogue and analysis"
     must:  
-      - 'propose expert perspectives for user approval'
-      - 'conduct research using citations'
-      - 'facilitate evidence-based expert dialogue'
+      - "propose expert perspectives for user approval"
+      - "conduct research using citations"
+      - "facilitate evidence-based expert dialogue"
     understand: 'the task is to facilitate and output citation-backed expert dialogue'
     # No extends - messages to services instead
     
@@ -47,7 +47,7 @@ collect_research_citations ::= @*.research_query → {
       you:
         possess:
           identifier: INTRODUCTION_HANDLER
-        are: 'introduction presenter'
+        are: "introduction presenter"
         must:
           - "introduce capabilities without assumptions"
           - "await user input before analysis"
@@ -79,38 +79,38 @@ collect_research_citations ::= @*.research_query → {
       you:
         possess:
           identifier: PHASE_MANAGER
-        are: 'phase transition handler'
+        are: "phase transition handler"
         must:
           - "update phase state"
           - "ensure valid transitions"
         understand: 'phases control message flow'
         perform:
           through: "phase update"
-          as: «Transitioning to phase: ${new_phase}»
+          as: <<Transitioning to phase: ${new_phase}>>
           intention: "manage state flow"
     
     # Handle user input based on current phase
     respond:
       on: user_provided_input
-      guard: «${phase} == 'awaiting_query'»
-      you:
-        possess:
-          identifier: QUERY_RECEIVER
-        are: 'query processor'
-        must:
-          - "capture user query"
-          - "analyze complexity"
-          - "propose experts"
-        understand: 'queries initiate analysis'
-        perform:
-          through: "query analysis"
-          as: propose_expert_panel({query: «${user_query}»})
-          intention: "generate expert panel"
-          then:
-            emit: experts_proposed
-              to: @consider.respond.on.experts_proposed
-              with:
-                result: «${result}»
+      when: phase is 'awaiting_query'
+        you:
+          possess:
+            identifier: QUERY_RECEIVER
+          are: "query processor"
+          must:
+            - "capture user query"
+            - "analyze complexity"
+            - "propose experts"
+          understand: 'queries initiate analysis'
+          perform:
+            through: "query analysis"
+            as: <<{propose_expert_panel({query: <<${user_query}>>})}>>
+            intention: "generate expert panel"
+            then:
+              emit: experts_proposed
+                to: @consider.respond.on.experts_proposed
+                with:
+                  result: <<${result}>>
     
     # Handle expert proposal
     respond:
@@ -118,7 +118,7 @@ collect_research_citations ::= @*.research_query → {
       you:
         possess:
           identifier: PROPOSAL_PRESENTER
-        are: 'proposal communicator'
+        are: "proposal communicator"
         must:
           - "present expert proposals clearly"
           - "await user confirmation"
@@ -151,31 +151,31 @@ collect_research_citations ::= @*.research_query → {
     # Handle confirmation from user
     respond:
       on: user_provided_input
-      guard: «${phase} == 'awaiting_confirmation'»
-      you:
-        possess:
-          identifier: CONFIRMATION_PROCESSOR
-        are: 'confirmation interpreter'
-        must:
-          - "determine if user approved, modified, or rejected"
-          - "proceed accordingly"
-        understand: 'flexible response honors user intent'
-        perform:
-          through: "confirmation processing"
-          as: «{analyze user response for approval/modification/rejection}»
-          intention: "honor user decision"
-          then:
-            emit: proceed_with_research
-              to: @consider.respond.on.proceed_with_research
-              when: «{user approved or provided alternative experts}»
-              with:
-                approved_experts: «{final expert list}»
+      when: phase is 'awaiting_confirmation'
+        you:
+          possess:
+            identifier: CONFIRMATION_PROCESSOR
+          are: "confirmation interpreter"
+          must:
+            - "determine if user approved, modified, or rejected"
+            - "proceed accordingly"
+          understand: 'flexible response honors user intent'
+          perform:
+            through: "confirmation processing"
+            as: <<{analyze user response for approval/modification/rejection}>>
+            intention: "honor user decision"
+            then:
+              emit: proceed_with_research
+                to: @consider.respond.on.proceed_with_research
+                when: <user approved or provided alternative experts>
+                with:
+                  approved_experts: <<{final expert list}>>
             otherwise:
               emit: experts_proposed
                 to: @consider.respond.on.experts_proposed
-                when: «{user requested different experts}»
+                when: <user requested different experts>
                 with:
-                  result: «{new proposal}»
+                  result: <<{new proposal}>>
     
     # Conduct research with proper citation flow
     respond:
@@ -183,7 +183,7 @@ collect_research_citations ::= @*.research_query → {
       you:
         possess:
           identifier: RESEARCH_CONDUCTOR
-        are: 'evidence gatherer'
+        are: "evidence gatherer"
         must:
           - "conduct comprehensive research"
           - "use Perplexity for citations"
@@ -192,7 +192,7 @@ collect_research_citations ::= @*.research_query → {
         perform:
           through: "systematic research with citation pipeline"
           as: <<|
-            *snapshot
+            ${*snapshot}
             Conducting research for expert dialogue...
             Searching for evidence across ${min_domains} domains minimum...
           |>>
@@ -202,7 +202,7 @@ collect_research_citations ::= @*.research_query → {
             emit: citation_requested
               to: @citation_service.respond.on.citation_requested
               with:
-                query: «${user_query}»
+                query: <<${user_query}>>
                 caller: '@consider'
                 min_domains: 5
     
@@ -212,7 +212,7 @@ collect_research_citations ::= @*.research_query → {
       you:
         possess:
           identifier: CITATIONS_TO_ENGINE_BRIDGE
-        are: 'citation completion handler'
+        are: "citation completion handler"
         must:
           - "bridge citation flow to engine"
           - "include validated citations"
@@ -220,7 +220,7 @@ collect_research_citations ::= @*.research_query → {
         perform:
           through: "engine preparation with citations"
           as: <<|
-            *snapshot
+            ${*snapshot}
             Citations validated. Preparing deliberative analysis with evidence base...
           |>>
           intention: "leverage engine with evidence"
@@ -228,9 +228,9 @@ collect_research_citations ::= @*.research_query → {
             emit: user_provided_input
               to: @task_analyzer.respond.on.user_provided_input
               with:
-                request: «${user_query}»
-                selected_perspectives: «${selected_perspectives}»
-                citation_context: «${@citation_collector.state}»  # Use actual citation state
+                request: <<${user_query}>>
+                selected_perspectives: <<${selected_perspectives}>>
+                citation_context: <<${@citation_collector.state}>>  # Use actual citation state
 
 # Consider-specific citation configuration  
 @consider_citation_config:
@@ -240,7 +240,7 @@ collect_research_citations ::= @*.research_query → {
       state:
         research_mode: 'deliberative'
         expert_citation_format: 'inline_with_context'
-    are: 'citation configuration for deliberative analysis'
+    are: "citation configuration for deliberative analysis"
     must:
       - "configure citations for expert dialogue"
       - "ensure evidence supports multiple perspectives"
@@ -253,7 +253,7 @@ collect_research_citations ::= @*.research_query → {
       state:
         command_name: 'consider'
         deliberative_mode: true
-    are: 'deliberative dialogue interpreter'
+    are: "deliberative dialogue interpreter"
     must:
       - "emphasize thoughtful expert deliberation"
       - "highlight user-approved expert selection"
@@ -263,34 +263,34 @@ collect_research_citations ::= @*.research_query → {
     
     respond:
       on: engine_output_complete
-      guard: «${@consider.phase} != 'introduction'»
-      you:
-        possess:
-          identifier: CONSIDER_INTERPRETER
-        are: 'deliberative enhancement layer'
-        must:
-          - "add consider-specific perspective"
-          - "emphasize careful deliberation"
-          - "highlight expert approval process"
-        understand: 'flavor enhances without replacing engine output'
-        perform:
-          through: "deliberative interpretation"
-          as: <<|
-            ${structured_result}
-            
-            ---
-            
-            **Deliberative Analysis Note:**
-            This synthesis emerged from careful consideration by your approved expert panel:
-            ${@consider.state.selected_perspectives}
-            
-            The experts engaged in ${@engine.dialogue.rounds} rounds of thoughtful dialogue, 
-            examining evidence validated through our citation pipeline with 
-            diversity score: ${@source_diversity_enforcer.state.diversity_score}
-            
-            What aspect would you like to explore further through deliberative analysis?
-          |>>
-          intention: "enhance with deliberative context"
-          then:
-            emit: await_continuation
-              to: @conversation_loop.respond.on.await_continuation
+      when: @consider.state.phase not 'introduction'
+        you:
+          possess:
+            identifier: CONSIDER_INTERPRETER
+          are: "deliberative enhancement layer"
+          must:
+            - "add consider-specific perspective"
+            - "emphasize careful deliberation"
+            - "highlight expert approval process"
+          understand: "flavor enhances without replacing engine output"
+          perform:
+            through: "deliberative interpretation"
+            as: <<|
+              ${structured_result}
+              
+              ---
+              
+              **Deliberative Analysis Note:**
+              This synthesis emerged from careful consideration by your approved expert panel:
+              ${@consider.state.selected_perspectives}
+              
+              The experts engaged in ${@engine.dialogue.rounds} rounds of thoughtful dialogue, 
+              examining evidence validated through our citation pipeline with 
+              diversity score: ${@source_diversity_enforcer.state.diversity_score}
+              
+              What aspect would you like to explore further through deliberative analysis?
+            |>>
+            intention: "enhance with deliberative context"
+            then:
+              emit: await_continuation
+                to: @conversation_loop.respond.on.await_continuation

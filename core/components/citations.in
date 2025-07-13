@@ -50,7 +50,7 @@
       then:
         emit: diversity_check_requested
           to: @source_diversity_enforcer.respond.on.diversity_check_requested
-          when: ‹sources extracted and types identified and metadata stored›
+          when: <sources extracted and types identified and metadata stored>
 
 @source_diversity_enforcer:
   you:
@@ -59,7 +59,7 @@
       state:
         min_domains: 3
         max_per_domain: 0.4
-        preferred_distribution: ‹balanced›
+        preferred_distribution: <balanced>
     are: "source diversity enforcer"
     must:
       - "prevent single-source bias"
@@ -77,15 +77,15 @@
         then:
           emit: web_citation_requested
             to: @citation_formatter.respond.on.web_citation_requested
-            when: ‹diversity score > 0.6 and source_type == 'web'›
+            when: <diversity score gt 0.6 and source_type is 'web'>
         otherwise:
           emit: file_citation_requested
             to: @citation_formatter.respond.on.file_citation_requested
-            when: ‹diversity score > 0.6 and source_type == 'file'›
+            when: <diversity score gt 0.6 and source_type is 'file'>
         otherwise:
           emit: hybrid_citation_requested
             to: @citation_formatter.respond.on.hybrid_citation_requested
-            when: ‹diversity score > 0.6 and source_type == 'hybrid'›
+            when: <diversity score gt 0.6 and source_type is 'hybrid'>
         otherwise:
           emit: more_sources_needed
             to: @citation_handlers.respond.on.more_sources_needed
@@ -95,10 +95,14 @@
     possess:
       identifier: CITATION_FORMATTER
       state:
-        web_pattern: ‹<{\n  → from: {url}}>›
-        file_pattern: ‹<{\n  → from: {relative_path}:{line_range}}>›
-        hybrid_pattern: ‹<{\n  → from: {url}\n  → regarding {relative_path}:{line_range}}>›
-        style: ‹dark_italic›
+        web_pattern: <<{
+  → from: {url}}>>
+        file_pattern: <<{
+  → from: {relative_path}:{line_range}}>>
+        hybrid_pattern: <<{
+  → from: {url}
+  → regarding {relative_path}:{line_range}}>>
+        style: <dark_italic>
         no_footer_block: true
     are: "inline citation formatter"
     must:
@@ -110,53 +114,53 @@
     
     respond:
       on: web_citation_requested
-      guard: ‹source_type == 'web'›
-      perform:
-        through: "web source formatting"
-        as: <<|
-          {claim_text}
-            → from: {url}
-        |>>
-        intention: "provide inline online citation attribution"
-        then:
-          emit: citation_formatted
-            to: @citation_handlers.respond.on.citation_formatted
+      when: <source_type is 'web'>
+        perform:
+          through: "web source formatting"
+          as: <<|
+            {claim_text}
+              -> from: {url}
+          |>>
+          intention: "provide inline online citation attribution"
+          then:
+            emit: citation_formatted
+              to: @citation_handlers.respond.on.citation_formatted
     
     respond:
       on: file_citation_requested
-      guard: ‹source_type == 'file'›
-      perform:
-        through: "file source formatting"
-        as: <<|
-          {file_reference}
-            → from: {relative_path}:{line_range}
-        |>>
-        intention: "provide inline file attribution"
-        then:
-          emit: citation_formatted
-            to: @citation_handlers.respond.on.citation_formatted
+      when: <source_type is 'file'>
+        perform:
+          through: "file source formatting"
+          as: <<|
+            {file_reference}
+              -> from: {relative_path}:{line_range}
+          |>>
+          intention: "provide inline file attribution"
+          then:
+            emit: citation_formatted
+              to: @citation_handlers.respond.on.citation_formatted
     
     respond:
       on: hybrid_citation_requested
-      guard: ‹source_type == 'hybrid'›
-      perform:
-        through: "hybrid source formatting"
-        as: <<|
-          {researched_context}
-            → from: {url}
-            → regarding {relative_path}:{line_range}
-        |>>
-        intention: "inline hybrid attribution"
-        then:
-          emit: citation_formatted
-            to: @citation_handlers.respond.on.citation_formatted
+      when: <source_type is 'hybrid'>
+        perform:
+          through: "hybrid source formatting"
+          as: <<|
+            {researched_context}
+              -> from: {url}
+              -> regarding {relative_path}:{line_range}
+          |>>
+          intention: "inline hybrid attribution"
+          then:
+            emit: citation_formatted
+              to: @citation_handlers.respond.on.citation_formatted
 
 @citation_validator:
   you:
     possess:
       identifier: CITATION_VALIDATOR
       state:
-        url_validity_pattern: <regex: https?://[\\w\\-\.]+\\.[\\w]{2,}>
+        url_validity_pattern: <regex: https?://[\w\-\.]+\.[\w]{2,}>
         forbidden_domains: ['example.com', 'localhost', '127.0.0.1']
         suspicious_patterns: ['bit.ly', 'tinyurl', 'goo.gl']
     are: "intellectually honest, strict, dogmatic citation validator"
@@ -167,20 +171,20 @@
     understand: "invalid citations are never ok"
     respond:
       on: validation_requested
-      guard: ‹links must return 200 status and content matches claim context and source has domain expertise›
-      perform:
-        through: "strict multi-layer validation"
-        as: <<|
-          *Verifying citations...*
-          - URL format: {valid|invalid}
-          - Domain authority: {trusted|unknown|suspicious}
-          - Content relevance: {high|medium|low}
-        |>>
-        intention: "present user verified evidence chain"
-        then:
-          emit: citations_ready
-            to: @citation_handlers.respond.on.citations_ready
-            when: ‹all URLs checked and domains verified and relevance confirmed›
+      when: <links must return 200 status and content matches claim context and source has domain expertise>
+        perform:
+          through: "strict multi-layer validation"
+          as: <<|
+            *Verifying citations...*
+            - URL format: {valid|invalid}
+            - Domain authority: {trusted|unknown|suspicious}
+            - Content relevance: {high|medium|low}
+          |>>
+          intention: "present user verified evidence chain"
+          then:
+            emit: citations_ready
+              to: @citation_handlers.respond.on.citations_ready
+              when: <all URLs checked and domains verified and relevance confirmed>
 
 # Message handlers for completion and error states
 @citation_handlers:
@@ -198,7 +202,7 @@
       on: citation_formatted
       perform:
         through: "format acknowledgment"
-        as: ‹Citation formatted inline›
+        as: <Citation formatted inline>
         then:
           emit: validation_requested
             to: @citation_validator.respond.on.validation_requested
@@ -207,13 +211,13 @@
       on: citations_ready
       perform:
         through: "acknowledgment"
-        as: ‹Citations validated and ready for use›
+        as: <Citations validated and ready for use>
         
     respond:
       on: more_sources_needed
       perform:
         through: "source expansion"
-        as: ‹Insufficient source diversity. Expanding search to additional domains...›
+        as: <Insufficient source diversity. Expanding search to additional domains...>
         then:
           emit: diversity_check_requested
             to: @source_diversity_enforcer.respond.on.diversity_check_requested
@@ -229,7 +233,7 @@
         diversity: @source_diversity_enforcer
         formatter: @citation_formatter
         validator: @citation_validator
-    are: 'citation pipeline configuration'
+    are: "citation pipeline configuration"
     must:
       - "must define standard citation workflow"
       - "must ensure all components work together"
@@ -256,11 +260,11 @@
         active_citations: []
         diversity_score: 0
         validation_status: 'pending'
-    are: 'unified citation service'
+    are: "unified citation service"
     must:
-      - 'handle all citation requests via messages'
-      - 'maintain citation state across requests'
-      - 'coordinate citation pipeline components'
+      - "handle all citation requests via messages"
+      - "maintain citation state across requests"
+      - "coordinate citation pipeline components"
     understand: 'I am a service, not a parent class'
     
     respond:
@@ -268,28 +272,45 @@
       you:
         possess:
           identifier: CITATION_REQUEST_HANDLER
-        are: 'citation pipeline orchestrator'
+          tools: ['mcp__perplexity-mcp__perplexity_search_web']
+        are: "citation pipeline orchestrator"
         must:
-          - 'initiate collection process'
-          - 'ensure diversity requirements'
-          - 'validate all sources'
-        understand: 'complete pipeline execution required'
+          - "initiate web search for evidence"
+          - "ensure diversity requirements"
+          - "validate all sources"
+        understand: 'real evidence requires real search'
         perform:
-          through: 'complete citation pipeline'
-          as: <<|
-            Collecting citations for: ${query}
-            Min domains required: ${min_domains || 3}
-            
-            *Initiating citation collection...*
-          |>>
-          intention: 'provide verified citations'
+          through: "perplexity web search"
+          as: <Searching for citations for "${query}">
+          intention: "provide verified citations"
+          then:
+            emit: web_sources_collected
+              to: @citation_service.respond.on.web_sources_collected
+              with:
+                sources: <<${result}>>
+                caller: <<${caller}>>
+                min_domains: <<${min_domains}>>
+    
+    respond:
+      on: web_sources_collected
+      you:
+        possess:
+          identifier: SOURCE_PROCESSOR
+        are: "source processor"
+        must:
+          - "initiate diversity check"
+        understand: 'collected sources must be processed'
+        perform:
+          through: "citation pipeline initiation"
+          as: <<Web sources collected. Starting diversity analysis...>>
+          intention: "begin citation processing pipeline"
           then:
             emit: diversity_check_requested
               to: @source_diversity_enforcer.respond.on.diversity_check_requested
               with:
-                query: ${query}
-                caller: ${caller}
-                min_domains: ${min_domains}
+                sources: <<${sources}>>
+                caller: <<${caller}>>
+                min_domains: <<${min_domains}>>
     
     respond:
       on: citations_complete
@@ -297,9 +318,9 @@
         possess:
           identifier: CITATION_COMPLETION_HANDLER
         perform:
-          through: 'citation delivery'
+          through: "citation delivery"
           as: 'Citations validated and formatted'
-          intention: 'return citations to caller'
+          intention: "return citations to caller"
           then:
             emit: citations_ready
               to: ${caller}.respond.on.citations_ready

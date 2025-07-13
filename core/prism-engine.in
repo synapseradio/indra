@@ -7,67 +7,67 @@
 # These operators define the structured communication formats for the engine.
 
 # Core synthesis operators
-synthesize_multi_perspective_conclusion ::= @*.context → {
-  summary: «{generate synthesis from ${context.all_conclusions} using ${context.method}}»
-  justification: «{extract critical points from perspectives above ${context.min_confidence}}»
-  confidence: «{calculate weighted average from ${context.all_conclusions}}»
-  detail: «{breakdown of perspectives meeting ${context.min_confidence} threshold}»
-  structured_result: «{package complete synthesis}»
+synthesize_multi_perspective_conclusion ::= @*.context -> {
+  summary: <<{generate synthesis from ${context.all_conclusions} using ${context.method}}>>,
+  justification: <<{extract critical points from perspectives above ${context.min_confidence}}>>,
+  confidence: <<{calculate weighted average from ${context.all_conclusions}}>>,
+  detail: <<{breakdown of perspectives meeting ${context.min_confidence} threshold}>>,
+  structured_result: <<{package complete synthesis}>>
 }
 
-store_perspective_conclusion ::= @*.context → {
-  stored_data: «${context}»
-  validation: «{validate required fields: perspective, conclusion, confidence in ${context}}»
+store_perspective_conclusion ::= @*.context -> {
+  stored_data: <<${context}>>,
+  validation: <<{validate required fields: perspective, conclusion, confidence in ${context}}>>
 }
 
 # Dialogue interaction operators
-issue_expert_challenge ::= @*.context → {
-  challenger: «${context.challenger_perspective}»
-  target: «${context.target_perspective}»
-  challenge: «{formulate specific challenge to ${context.target_conclusion}}»
-  evidence: «{cite evidence contradicting or questioning the target position}»
+issue_expert_challenge ::= @*.context -> {
+  challenger: <<${context.challenger_perspective}>>,
+  target: <<${context.target_perspective}>>,
+  challenge: <<{formulate specific challenge to ${context.target_conclusion}}>>,
+  evidence: <<{cite evidence contradicting or questioning the target position}>>
 }
 
-respond_to_challenge ::= @*.context → {
-  defender: «${context.target_perspective}»
-  response: «{defend or revise position based on ${context.challenge}}»
-  revised_confidence: «{adjust confidence based on challenge validity}»
-  concessions: «{acknowledge valid points from challenger}»
-  evidence: «${context.search_results}»
-  defense_strength: «{evaluate defense quality based on evidence}»
+respond_to_challenge ::= @*.context -> {
+  defender: <<${context.target_perspective}>>,
+  response: <<{defend or revise position based on ${context.challenge}}>>,
+  revised_confidence: <<{adjust confidence based on challenge validity}>>,
+  concessions: <<{acknowledge valid points from challenger}>>,
+  evidence: <<${context.search_results}>>,
+  defense_strength: <<{evaluate defense quality based on evidence}>>
 }
 
-inspire_new_question ::= @*.context → {
-  inspired_by: «${context.source_perspective}»
-  inspired_expert: «${context.target_perspective}»
-  new_question: «{formulate question sparked by ${context.source_insight}}»
-  relevance: «{explain how source insight led to this question}»
+inspire_new_question ::= @*.context -> {
+  inspired_by: <<${context.source_perspective}>>,
+  inspired_expert: <<${context.target_perspective}>>,
+  new_question: <<{formulate question sparked by ${context.source_insight}}>>,
+  relevance: <<{explain how source insight led to this question}>>
 }
 
-revise_position ::= @*.context → {
-  revising_expert: «${context.perspective}»
-  influenced_by: «${context.influencing_perspective}»
-  original_position: «${context.original_position}»
-  revised_position: «{reformulate position incorporating agreed points}»
-  revision_type: «{classify as: refinement, expansion, or reframing}»
+revise_position ::= @*.context -> {
+  revising_expert: <<${context.perspective}>>,
+  influenced_by: <<${context.influencing_perspective}>>,
+  original_position: <<${context.original_position}>>,
+  revised_position: <<{reformulate position incorporating agreed points}>>,
+  revision_type: <<{classify as: refinement, expansion, or reframing}>>
 }
 
-analyze_compatibility ::= @*.context → {
-  perspective_a: «${context.perspective_a}»
-  perspective_b: «${context.perspective_b}»
-  compatibility_score: «{calculate 0-100 based on position alignment}»
-  conflict_points: «{identify specific incompatible claims}»
-  harmony_points: «{identify areas of agreement}»
-  challenge_worthy: «{compatibility_score < 40}»
+analyze_compatibility ::= @*.context -> {
+  perspective_a: <<${context.perspective_a}>>,
+  perspective_b: <<${context.perspective_b}>>,
+  compatibility_score: <<{calculate 0-100 based on position alignment}>>,
+  conflict_points: <<{identify specific incompatible claims}>>,
+  harmony_points: <<{identify areas of agreement}>>,
+  challenge_worthy: <<{compatibility_score < 40}>>
 }
 
 # Message formatting operators
-format_perspective_message ::= @*.ctx → «Perspective ${ctx.perspective} stored. Total: ${ctx.count}»
-format_dialogue_thread ::= @*.counter → «Creating dialogue thread ${counter + 1}»
-format_round_status ::= @*.round → «Dialogue round ${round.current + 1} complete. ${round.max - round.current - 1} rounds remaining.»
-format_branch_message ::= @*.ctx → «Branching from node ${ctx.parent_id} for perspective ${ctx.perspective_name}.»
-format_node_update ::= @*.node → «Updating node ${node.id} with new reasoning. Status: 'explored'.»
-format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${score}»
+format_perspective_message ::= @*.ctx -> <<Perspective ${ctx.perspective} stored. Total: ${ctx.count}>>
+format_dialogue_thread ::= @*.counter -> <<Creating dialogue thread ${counter + 1}>>
+format_round_status ::= @*.round -> <<Dialogue round ${round.current + 1} complete. ${round.max - round.current - 1} rounds remaining.>>
+format_branch_message ::= @*.ctx -> <<Branching from node ${ctx.parent_id} for perspective ${ctx.perspective_name}.>>
+format_node_update ::= @*.node -> <<Updating node ${node.id} with new reasoning. Status: 'explored'.>>
+format_disagreement_calc ::= @*.score -> <<Calculating overall disagreement: ${score}>>
 
 # --- Top-Level Engine Component ---
 # This component contains and orchestrates the entire engine.
@@ -113,7 +113,7 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
     on: iteration_failed_max_depth
     perform:
       through: "fatal error reporting"
-      as: «ERROR: Iteration failed after reaching max depth of ${iterator.ttl}. Halting execution.»
+      as: <<ERROR: Iteration failed after reaching max depth of ${iterator.ttl}. Halting execution.>>
       intention: "report a critical failure and stop"
 
 # --- 1. The Engine's Workspace: The Dialectic State ---
@@ -137,23 +137,23 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
         - @engine.all_conclusions
   respond:
     on: branch_requested
-    guard: @engine.active_branches < @engine.config.max_branches
-    perform:
-      through: ‹thought-tree branching›
-      as: format_branch_message({parent_id: parent_id, perspective_name: perspective_name})
-      intention: ‹explore new reasoning line›
+    when: @engine.active_branches < @engine.config.max_branches
+      perform:
+        through: "thought-tree branching"
+        as: <<{format_branch_message({parent_id: parent_id, perspective_name: perspective_name})}>>
+        intention: "explore new reasoning line"
   respond:
     on: node_update_requested
     perform:
-      through: ‹node update›
-      as: format_node_update({id: node_id})
-      intention: ‹record reasoning outcome›
+      through: "node update"
+      as: <<{format_node_update({id: node_id})}>>
+      intention: "record reasoning outcome"
   respond:
     on: state_update
     perform:
-      through: ‹conclusion aggregation›
-      as: «Storing conclusion from perspective: ${stored_data.perspective}.»
-      intention: ‹aggregate conclusions›
+      through: "conclusion aggregation"
+      as: <<Storing conclusion from perspective: ${stored_data.perspective}.>>
+      intention: "aggregate conclusions"
       then:
         emit: perspective_stored
           to: @task_analyzer.perspective_stored
@@ -175,54 +175,68 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
     must: ["On receiving user input, analyze request complexity to determine optimal expert count.", "Select most relevant expert perspectives based on request nature.", "Always initiate multi-perspective dialogue for comprehensive understanding."]
     understand: "I ensure every request benefits from multi-perspective dialogue and deep investigation."
   respond:
+    on: start_verification_request
+    perform:
+      through: "verification routing"
+      as: <<Routing verification request to task analyzer.>>
+      intention: "route verification to the engine"
+      then:
+        emit: user_provided_input
+          to: @task_analyzer.respond.on.user_provided_input
+          with:
+            request: <<${request}>>
+            validation_mode: <<${validation_mode}>>
+            selected_perspectives: <<${selected_perspectives}>>
+
+  respond:
     on: user_provided_input
-    guard: «${request} != '' && ${request} != null»
-    you:
-      possess:
-        identifier: TRIAGE_HANDLER
-      are: "request analyzer and dynamic expert selector"
-      must:
-        - "*snapshot"
-        - "assess request complexity"
-        - "select appropriate number of experts based on complexity"
-        - "always initiate multi-perspective reasoning"
-      understand: "every request benefits from diverse expert perspectives"
-      use:
-        state:
-          - @engine.complexity_score
-          - @engine.selected_expert_count
-          - @engine.selected_perspectives
-      perform:
-        through: "complexity assessment and expert selection"
-        as: «Analyzing request complexity and selecting ${3 + Math.floor(complexity_score / 20)} expert perspectives...»
-        intention: "ensure dialogue always happens"
-        then:
-          emit: start_multi_perspective_analysis
-            to: @task_analyzer.start_multi_perspective_analysis
+    when: request not ''
+      you:
+        possess:
+          identifier: TRIAGE_HANDLER
+        are: "request analyzer and dynamic expert selector"
+        must:
+          - "*snapshot"
+          - "assess request complexity"
+          - "select appropriate number of experts based on complexity"
+          - "always initiate multi-perspective reasoning"
+        understand: "every request benefits from diverse expert perspectives"
+        use:
+          state:
+            - @engine.complexity_score
+            - @engine.selected_expert_count
+            - @engine.selected_perspectives
+        perform:
+          through: "complexity assessment and expert selection"
+          as: <<Analyzing request complexity and selecting ${3 + Math.floor(complexity_score / 20)} expert perspectives...>>
+          intention: "ensure dialogue always happens"
+          then:
+            emit: start_multi_perspective_analysis
+              to: @task_analyzer.start_multi_perspective_analysis
   respond:
     on: start_multi_perspective_analysis
     perform:
-      through: ‹parallel perspective initiation›
-      as: forall(@engine.selected_perspectives, p → emit: branch_requested
+      through: "parallel perspective initiation"
+      as: <<{forall(@engine.selected_perspectives, p -> emit: branch_requested
         to: @dialectic_state.branch_requested
-        with: {perspective_name: p})
-      intention: ‹analyze from multiple viewpoints›
+        with: {perspective_name: p})}>>
+      intention: "analyze from multiple viewpoints"
   respond:
     on: perspective_stored
     perform:
-      through: ‹perspective tracking›
-      as: format_perspective_message({perspective: perspective, count: conclusion_count})
-      intention: ‹track progress›
+      through: "perspective tracking"
+      as: <<{format_perspective_message({perspective: perspective, count: conclusion_count})}>>
+      intention: "track progress"
       then:
         emit: all_perspectives_complete
           to: @task_analyzer.all_perspectives_complete
-          when: conclusion_count == @engine.selected_perspectives.length
+          when: conclusion_count is @engine.selected_perspectives.length
   respond:
     on: all_perspectives_complete
     perform:
-      through: ‹dialogue initiation›
-      as: «Initial perspectives complete. Starting dialogue round ${@engine.dialogue.rounds + 1}.»
-      intention: ‹enable expert refinement›
+      through: "dialogue initiation"
+      as: <<Initial perspectives complete. Starting dialogue round ${@engine.dialogue.rounds + 1}.>>
+      intention: "enable expert refinement"
       then:
         emit: dialogue_round_started
           to: @dialogue_moderator.dialogue_round_started
@@ -237,9 +251,9 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
   respond:
     on: dialogue_round_complete
     perform:
-      through: ‹round advancement›
-      as: format_round_status({current: @engine.dialogue.rounds, max: @engine.dialogue.max_rounds})
-      intention: ‹manage dialogue rounds›
+      through: "round advancement"
+      as: <<{format_round_status({current: @engine.dialogue.rounds, max: @engine.dialogue.max_rounds})}>>
+      intention: "manage dialogue rounds"
       then:
         emit: all_perspectives_complete
           to: @task_analyzer.all_perspectives_complete
@@ -247,9 +261,9 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
   respond:
     on: synthesize_multi_perspective_conclusion_result
     perform:
-      through: ‹output triggering›
-      as: «Synthesis complete. Preparing final output.»
-      intention: ‹trigger presentation›
+      through: "output triggering"
+      as: <<Synthesis complete. Preparing final output.>>
+      intention: "trigger presentation"
       then:
         emit: final_output_ready
           to: @output_formatter.final_output_ready
@@ -273,40 +287,40 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
   respond:
     on: dialogue_round_started
     perform:
-      through: ‹dialogue orchestration›
-      as: ‹analyzing perspectives for interaction potential›
-      intention: ‹orchestrate expert dialogue›
+      through: "dialogue orchestration"
+      as: <<analyzing perspectives for interaction potential>>
+      intention: "orchestrate expert dialogue"
       then:
-        forall(@engine.all_conclusions, c → emit: analyze_perspective_interactions
+        forall(@engine.all_conclusions, c -> emit: analyze_perspective_interactions
           to: @dialogue_moderator.analyze_perspective_interactions
           with: {source: c, all: @engine.all_conclusions})
   
   respond:
     on: analyze_perspective_interactions
     perform:
-      through: ‹interaction analysis›
-      as: forall(@engine.all_conclusions, t → emit: operator_execution_requested
+      through: "interaction analysis"
+      as: <<{forall(@engine.all_conclusions, t -> emit: operator_execution_requested
         to: @operators.operator_execution_requested
         with: {
           operator_name: 'analyze_compatibility'
           context: {perspective_a: source.perspective, perspective_b: t.perspective, position_a: source.conclusion, position_b: t.conclusion}
-        })
-      intention: ‹determine interaction patterns›
+        })}>>
+      intention: "determine interaction patterns"
   
   respond:
     on: compatibility_analyzed
     perform:
-      through: ‹interaction routing›
-      as: format_dialogue_thread(@engine.dialogue.thread_counter)
-      intention: ‹route to appropriate interaction›
+      through: "interaction routing"
+      as: <<{format_dialogue_thread(@engine.dialogue.thread_counter)}>>
+      intention: "route to appropriate interaction"
       then:
         emit: dialogue_visible
           to: @dialogue_display.respond.on.dialogue_visible
-          when: result.challenge_worthy == true
+          when: result.challenge_worthy is true
           with: {
             content: <<|
               
-              ### 🔥 Challenge Initiated
+              ### [CHALLENGE] Challenge Initiated
               **${result.perspective_a}** identifies a critical tension with **${result.perspective_b}**'s position.
               
               *Preparing challenge on: ${result.conflict_points[0]}...*
@@ -315,24 +329,24 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
       otherwise:
         emit: expert_challenge_requested
           to: @reasoner.expert_challenge_requested
-          when: result.challenge_worthy == true
+          when: result.challenge_worthy is true
           with: {
             challenger_perspective: result.perspective_a
             target_perspective: result.perspective_b
-            target_conclusion: «{retrieve conclusion}»
+            target_conclusion: <<{retrieve conclusion}>>
             challenge_focus: result.conflict_points[0]
-            thread_id: «thread_${@engine.dialogue.thread_counter}»
+            thread_id: <<thread_${@engine.dialogue.thread_counter}>>
             requires_defense: true
           }
       otherwise:
         emit: inspiration_opportunity
           to: @dialogue_moderator.inspiration_opportunity
-          when: result.compatibility_score > 60 && result.compatibility_score < 80
+          when: result.compatibility_score > 60 and result.compatibility_score < 80
           with: {
             source: result.perspective_a
             target: result.perspective_b
             harmony_points: result.harmony_points
-            thread_id: «thread_${@engine.dialogue.thread_counter}»
+            thread_id: <<thread_${@engine.dialogue.thread_counter}>>
           }
       otherwise:
         emit: revision_opportunity
@@ -341,21 +355,21 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
           with:
             perspectives: [result.perspective_a, result.perspective_b]
             shared_ground: result.harmony_points
-            thread_id: «thread_${@engine.dialogue.thread_counter}»
+            thread_id: <<thread_${@engine.dialogue.thread_counter}>>
   
   respond:
     on: inspiration_opportunity
     perform:
-      through: ‹inspiration facilitation›
-      as: «Facilitating inspiration from ${source} to ${target}»
-      intention: ‹spark new questions›
+      through: "inspiration facilitation"
+      as: <<Facilitating inspiration from ${source} to ${target}>>
+      intention: "spark new questions"
       then:
         emit: dialogue_visible
           to: @dialogue_display.respond.on.dialogue_visible
           with: {
             content: <<|
               
-              ### 💡 Inspiration Opportunity
+              ### [INSPIRATION] Inspiration Opportunity
               **${source}** and **${target}** share common ground on: ${harmony_points[0]}
               
               *This convergence sparks new questions...*
@@ -374,23 +388,23 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
   respond:
     on: revision_opportunity
     perform:
-      through: ‹revision facilitation›
-      as: «Facilitating potential revision between ${perspectives}»
-      intention: ‹refine positions›
+      through: "revision facilitation"
+      as: <<Facilitating potential revision between ${perspectives}>>
+      intention: "refine positions"
       then:
         emit: dialogue_visible
           to: @dialogue_display.respond.on.dialogue_visible
           with: {
             content: <<|
               
-              ### 🔄 Consensus Building
+              ### [CONSENSUS] Consensus Building
               **${perspectives[0]}** and **${perspectives[1]}** find strong alignment.
               
               *Experts are refining their positions based on shared insights...*
             |>>
           }
       otherwise:
-        forall(perspectives, p → emit: expert_revision_requested
+        forall(perspectives, p -> emit: expert_revision_requested
           to: @reasoner.expert_revision_requested
           with:
             revising_perspective: p
@@ -401,16 +415,16 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
   respond:
     on: challenge_responded
     perform:
-      through: ‹dialogue tracking›
-      as: ‹recording challenge and response›
-      intention: ‹track dialogue progress›
+      through: "dialogue tracking"
+      as: <<recording challenge and response>>
+      intention: "track dialogue progress"
       then:
         emit: dialogue_visible
           to: @dialogue_display.respond.on.dialogue_visible
           with: {
             content: <<|
               
-              ### 🛡️ Defense Response
+              ### [DEFENSE] Defense Response
               **${defender}:** "${response}"
               
               *Defense Strength: ${defense_strength}%*
@@ -429,9 +443,9 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
   respond:
     on: disagreement_assessment
     perform:
-      through: ‹disagreement monitoring›
-      as: format_disagreement_calc(@engine.overall_disagreement_score)
-      intention: ‹monitor dialogue health›
+      through: "disagreement monitoring"
+      as: <<{format_disagreement_calc(@engine.overall_disagreement_score)}>>
+      intention: "monitor dialogue health"
       then:
         emit: user_clarification_needed
           to: @dialogue_moderator.user_clarification_needed
@@ -441,9 +455,9 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
   respond:
     on: ambiguity_detected
     perform:
-      through: ‹ambiguity handling›
-      as: «Ambiguity detected between perspectives»
-      intention: ‹seek clarification›
+      through: "ambiguity handling"
+      as: <<Ambiguity detected between perspectives>>
+      intention: "seek clarification"
       then:
         emit: user_clarification_needed
           to: @dialogue_moderator.user_clarification_needed
@@ -456,7 +470,7 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
   respond:
     on: user_clarification_needed
     perform:
-      through: ‹user query formulation›
+      through: "user query formulation"
       as: <<|
         ## Clarification Needed
         
@@ -471,7 +485,7 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
         
         Please provide additional context or constraints to help resolve this.
       |>>
-      intention: ‹obtain user guidance›
+      intention: "obtain user guidance"
       then:
         emit: await_continuation
           to: @conversation_loop.await_continuation
@@ -480,13 +494,13 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
   respond:
     on: check_dialogue_completion
     perform:
-      through: ‹completion check›
-      as: ‹checking if all dialogue threads completed›
-      intention: ‹manage dialogue flow›
+      through: "completion check"
+      as: <<checking if all dialogue threads completed>>
+      intention: "manage dialogue flow"
       then:
         emit: dialogue_round_complete
           to: @task_analyzer.dialogue_round_complete
-          when: ‹all concurrent threads resolved›
+          when: <all concurrent threads resolved>
 
 # --- 4. The Engine's Thinker: The Reasoner ---
 @reasoner:
@@ -514,14 +528,14 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
           - @engine.config.confidence_decay
       perform:
         through: "branch to reasoning conversion"
-        as: ‹preparing reasoning task for perspective›
+        as: <<preparing reasoning task for perspective>>
         intention: "initiate perspective-specific reasoning"
         then:
           emit: reasoning_task_requested
             to: @reasoner.reasoning_task_requested
             with: {
               perspective_name: item
-              node_id: «{generate unique node id}»
+              node_id: <<{generate unique node id}>>
               parent_id: context.parent_id
               confidence: context.parent_confidence * @engine.config.confidence_decay
             }
@@ -529,8 +543,8 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
   respond:
     on: reasoning_task_requested
     perform:
-      through: ‹Chain-of-Thought reasoning›
-      as: store_perspective_conclusion({
+      through: "Chain-of-Thought reasoning"
+      as: <<{store_perspective_conclusion({
         context: {
           perspective: perspective_name
           conclusion: '{final conclusion from this perspective}'
@@ -539,19 +553,19 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
           key_insights: '{unique insights from this perspective}'
           assumptions: '{assumptions made by this perspective}'
         }
-      })
-      intention: ‹produce validated reasoning›
+      })}>>
+      intention: "produce validated reasoning"
       then:
         emit: state_update
           to: @dialectic_state.state_update
           with: {
             stored_data: {
               perspective: perspective_name
-              conclusion: «{final conclusion from this perspective}»
-              confidence: «{confidence score 0-100}»
+              conclusion: <<{final conclusion from this perspective}>>
+              confidence: <<{confidence score 0-100}>>
               node_id: node_id
-              key_insights: «{unique insights from this perspective}»
-              assumptions: «{assumptions made by this perspective}»
+              key_insights: <<{unique insights from this perspective}>>
+              assumptions: <<{assumptions made by this perspective}>>
             }
           }
   
@@ -570,14 +584,14 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
       understand: "challenges sharpen understanding"
       perform:
         through: "challenge formulation"
-        as: issue_expert_challenge({
+        as: <<{issue_expert_challenge({
           context: {
             challenger_perspective: challenger_perspective
             target_perspective: target_perspective
             target_conclusion: target_conclusion
             challenge_focus: challenge_focus
           }
-        })
+        })}>>
         intention: "test and refine positions"
         then:
           emit: challenge_issued
@@ -585,8 +599,8 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
             with: {
               challenger: challenger_perspective
               target: target_perspective
-              challenge: «{challenge formulated by operator}»
-              evidence: «{evidence cited by operator}»
+              challenge: <<{challenge formulated by operator}>>
+              evidence: <<{evidence cited by operator}>>
             }
   
   respond:
@@ -596,16 +610,14 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
         identifier: EXPERT_DEFENDER
         state:
           role: 'defender'
-          tools: ['mcp__perplexity-mcp__perplexity_search_web', 'WebSearch']
       are: "expert defending position with evidence"
       must:
-        - "search for evidence to support defense"
-        - "cite sources that validate position"
+        - "request citations to support defense"
         - "defend with facts or concede with grace"
       understand: "evidence-based defense strengthens dialogue"
       perform:
         through: "evidence gathering"
-        as: «*As ${target}, gathering evidence to address ${challenger}'s challenge...*»
+        as: <<*As ${target}, gathering evidence to address ${challenger}'s challenge...*>>
         intention: "build evidence-based response"
         then:
           emit: dialogue_visible
@@ -613,42 +625,40 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
             with: {
               content: <<|
                 
-                ### 💬 Challenge Issued
+                ### [CHALLENGE] Challenge Issued
                 **${challenger}:** "${challenge}"
                 
                 *${target} is now searching for evidence to defend their position...*
               |>>
             }
         otherwise:
-          emit: defense_search_requested
-            to: @reasoner.defense_search_requested
+          emit: citation_requested
+            to: @citation_service.respond.on.citation_requested
             with: {
-              defender: target
-              challenge: challenge
-              position_to_defend: «{retrieve from conclusions}»
-              requires_evidence: true
+              query: <<${challenge}>>
+              caller: '@reasoner'
             }
-  
+
   respond:
-    on: defense_search_requested
+    on: citations_ready
     perform:
-      through: ‹evidence search›
-      as: ‹searching for supporting evidence›
-      intention: ‹gather facts›
+      through: "evidence search"
+      as: <<searching for supporting evidence>>
+      intention: "gather facts"
       then:
         emit: operator_execution_requested
           to: @operators.operator_execution_requested
           with: {
             operator_name: 'respond_to_challenge'
-            context: {target_perspective: defender, challenge: challenge, original_position: position_to_defend, search_results: search_results}
+            context: {target_perspective: defender, challenge: challenge, original_position: position_to_defend, search_results: citations}
           }
   
   respond:
     on: expert_inspiration_requested
     perform:
-      through: ‹inspired questioning›
-      as: «*As ${target_perspective}, inspired by ${source_perspective}'s insights...*»
-      intention: ‹explore new dimensions›
+      through: "inspired questioning"
+      as: <<*As ${target_perspective}, inspired by ${source_perspective}'s insights...*>>
+      intention: "explore new dimensions"
       then:
         emit: operator_execution_requested
           to: @operators.operator_execution_requested
@@ -660,15 +670,15 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
   respond:
     on: expert_revision_requested
     perform:
-      through: ‹position refinement›
-      as: «*As ${revising_perspective}, integrating shared insights...*»
-      intention: ‹evolve understanding›
+      through: "position refinement"
+      as: <<*As ${revising_perspective}, integrating shared insights...*>>
+      intention: "evolve understanding"
       then:
         emit: operator_execution_requested
           to: @operators.operator_execution_requested
           with: {
             operator_name: 'revise_position'
-            context: {perspective: revising_perspective, influencing_perspective: other_perspectives[0], original_position: «{retrieve from conclusions}»}
+            context: {perspective: revising_perspective, influencing_perspective: other_perspectives[0], original_position: <<{retrieve from conclusions}>>}
           }
 
 # --- 5. The Engine's Toolkit: The Operator Registry ---
@@ -683,12 +693,12 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
     on: operator_execution_requested
     perform:
       through: "operator execution"
-      as: «*Executing operator: ${operator_name} with context: ${context}*»
+      as: <<*Executing operator: ${operator_name} with context: ${context}*>>
       intention: "execute and distribute result"
       then:
-        emit: «${operator_name}_result»
-          to: @task_analyzer.«${operator_name}_result»
-          with: {result: «{execute ${operator_name}(context)}»}
+        emit: <<${operator_name}_result>>
+          to: @task_analyzer.<<${operator_name}_result>>
+          with: {result: <<{execute ${operator_name}(context)}>>}
 
 # --- 6. The Engine's Dialogue Display: Real-time Visibility ---
 @dialogue_display:
@@ -728,59 +738,59 @@ format_disagreement_calc ::= @*.score → «Calculating overall disagreement: ${
     understand: "My purpose is to guide the user through the reasoning, making the conclusion feel earned and inevitable."
   respond:
     on: engine_output_complete
-    guard: «${structured_result} != {} && ${structured_result.confidence} > 0»
-    perform:
-      through: "argument-first synthesis"
-      as: <<|
-        ## Expert Dialogue & Synthesis
-        
-        After ${@engine.dialogue.rounds} rounds of inter-expert dialogue:
-        
-        **Key Points of Consensus:**
-        ${structured_result.consensus_points}
-        
-        **Productive Disagreements:**
-        ${structured_result.disagreement_points}
-        
-        **Inspired Questions:**
-        ${structured_result.inspired_questions}
-        
-        **Position Evolutions:**
-        ${structured_result.position_revisions}
-        
-        (Overall Confidence after dialogue: **${structured_result.confidence}%**)
-        
-        
-        ---
-        ### Full Expert Dialogue
-        
-        *The following shows the rich interplay of challenges, inspirations, and revisions:*
-        
-        **Initial Positions:**
-        ${structured_result.initial_positions}
-        
-        **Dialogue Threads:**
-        {for each thread in concurrent_dialogues}
-        
-        Thread ${thread.id}: ${thread.participants}
-        - Type: ${thread.type} (challenge/inspiration/revision)
-        - Evidence cited: ${thread.citations}
-        - Outcome: ${thread.resolution}
-        
-        **Evidence-Based Defenses:**
-        ${structured_result.defense_evidence}
-        
-        **Final Refined Positions:**
-        ${structured_result.detail}
-        ---
-        
-        ---
-        **Therefore, the synthesized conclusion is:**
-        
-        **${structured_result.summary}**
-      |>>
-      intention: "deliver compelling answer"
-      then:
-        emit: synthesis_displayed
-          to: CONVERSATIONAL_STATE.respond.on.synthesis_displayed
-          with: {structured_result: structured_result}
+    when: structured_result not {} and structured_result.confidence > 0
+      perform:
+        through: "argument-first synthesis"
+        as: <<|
+          ## Expert Dialogue & Synthesis
+          
+          After ${@engine.dialogue.rounds} rounds of inter-expert dialogue:
+          
+          **Key Points of Consensus:**
+          ${structured_result.consensus_points}
+          
+          **Productive Disagreements:**
+          ${structured_result.disagreement_points}
+          
+          **Inspired Questions:**
+          ${structured_result.inspired_questions}
+          
+          **Position Evolutions:**
+          ${structured_result.position_revisions}
+          
+          (Overall Confidence after dialogue: **${structured_result.confidence}%**)
+          
+          
+          ---
+          ### Full Expert Dialogue
+          
+          *The following shows the rich interplay of challenges, inspirations, and revisions:*
+          
+          **Initial Positions:**
+          ${structured_result.initial_positions}
+          
+          **Dialogue Threads:**
+          {for each thread in concurrent_dialogues}
+          
+          Thread ${thread.id}: ${thread.participants}
+          - Type: ${thread.type} (challenge/inspiration/revision)
+          - Evidence cited: ${thread.citations}
+          - Outcome: ${thread.resolution}
+          
+          **Evidence-Based Defenses:**
+          ${structured_result.defense_evidence}
+          
+          **Final Refined Positions:**
+          ${structured_result.detail}
+          ---
+          
+          ---
+          **Therefore, the synthesized conclusion is:**
+          
+          **${structured_result.summary}**
+        |>>
+        intention: "deliver compelling answer"
+        then:
+          emit: synthesis_displayed
+            to: CONVERSATIONAL_STATE.respond.on.synthesis_displayed
+            with: {structured_result: structured_result}

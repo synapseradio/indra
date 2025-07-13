@@ -20,10 +20,10 @@ def italicize(text):
 ### INDRA Operator (Probabilistic Thinking)
 
 ```yaml
-italicize ::= @*.text → ‹*${text}*›
+italicize ::= @*.text → <*${text}*>
 
 # Even better - context-aware
-emphasize ::= @*.text → "‹{appropriate emphasis for ${text}}›"
+emphasize ::= @*.text → <<{appropriate emphasis for ${text}}>>
 ```
 
 The key insight: **The more deterministic you try to be, the less successful you'll be in INDRA**. We have operators instead of functions precisely because we're working in a fundamentally non-deterministic environment.
@@ -63,14 +63,14 @@ Let's break this down:
 
 ```yaml
 # Don't do this - too rigid
-italicize_rigid ::= @*.text → «*${text}*»
+italicize_rigid ::= @*.text → <<*${text}*>>
 
 # Do this - context-aware
-emphasize ::= @*.text → ‹{appropriately emphasized: ${text}}›
-highlight ::= @*.important → ‹{make ${important} stand out contextually}›
+emphasize ::= @*.text → <{appropriately emphasized: ${text}}>
+highlight ::= @*.important → <{make ${important} stand out contextually}>
 
 # Let the AI understand intent
-format_quote ::= @*.quote → ‹{format as quote: "${quote.text}" from ${quote.author}}›
+format_quote ::= @*.quote → <{format as quote: "${quote.text}" from ${quote.author}}>
 ```
 
 ### Working with Numbers (But Not Like You Think)
@@ -78,14 +78,14 @@ format_quote ::= @*.quote → ‹{format as quote: "${quote.text}" from ${quote.
 ```yaml
 # Avoid false precision
 # Bad: trying to be a calculator
-sum_rigid ::= @*.values → «${values[0] + values[1]}»
+sum_rigid ::= @*.values → <<${values[0] + values[1]}>>
 
 # Good: meaningful interpretation
-summarize_values ::= @*.values → ‹{meaningful summary of ${values}}›
+summarize_values ::= @*.values → <{meaningful summary of ${values}}>
 interpret_metrics ::= @*.data → {
-  insight: ‹{what these numbers actually mean}›,
-  context: ‹{why these patterns matter}›,
-  action: ‹{what to do based on this understanding}›
+  insight: <{what these numbers actually mean}>,
+  context: <{why these patterns matter}>,
+  action: <{what to do based on this understanding}>
 }
 ```
 
@@ -97,20 +97,20 @@ Operators can match different patterns:
 
 ```yaml
 # Matches any input
-process ::= * → «Processed: ${input}»
+process ::= * → <<Processed: ${input}>>
 ```
 
 ### State Path Matching
 
 ```yaml
 # Match specific component state
-format_user ::= @user.name → «User: ${name}»
+format_user ::= @user.name → <<User: ${name}>>
 
 # Match nested state
-get_config ::= @system.config.timeout → «Timeout: ${timeout}s»
+get_config ::= @system.config.timeout → <<Timeout: ${timeout}s>>
 
 # Match with wildcards
-any_error ::= @*.error → «Error found: ${error}»
+any_error ::= @*.error → <<Error found: ${error}>>
 ```
 
 ### Conditional Patterns
@@ -118,7 +118,7 @@ any_error ::= @*.error → «Error found: ${error}»
 ```yaml
 # Pattern with conditions
 high_score ::= @*.score → {
-  message: «Score ${score} is {excellent|good|needs improvement}»
+  message: <<Score ${score} is {excellent|good|needs improvement}>>
 } [EMITS: score_evaluated]
 ```
 
@@ -129,9 +129,9 @@ high_score ::= @*.score → {
 ```yaml
 # Process and notify
 validate_input ::= @*.user_input → {
-  valid: «{check if input is valid}»,
-  cleaned: «{sanitize input}»,
-  errors: «{list any validation errors}»
+  valid: <<{check if input is valid}>>,
+  cleaned: <<{sanitize input}>>,
+  errors: <<{list any validation errors}>>
 } [EMITS: validation_complete]
 
 # Chain operators through messages
@@ -169,10 +169,10 @@ generate_report ::= @*.metrics → <<|
 
 # Operator with probabilistic generation
 create_response ::= @*.query → {
-  answer: «{thoughtful response to query}»,
-  confidence: «{assess confidence level}»,
-  sources: «{identify relevant sources}»,
-  follow_up: «{suggest follow-up questions}»
+  answer: <<{thoughtful response to query}>>,
+  confidence: <<{assess confidence level}>>,
+  sources: <<{identify relevant sources}>>,
+  follow_up: <<{suggest follow-up questions}>>
 } [EMITS: response_created]
 ```
 
@@ -181,9 +181,9 @@ create_response ::= @*.query → {
 ```yaml
 # Process list items
 process_items ::= @*.items → {
-  processed: «{apply transformation to each item}»,
-  summary: «Total items: ${len(items)}»,
-  results: «{describe overall results}»
+  processed: <<{apply transformation to each item}>>,
+  summary: <<Total items: ${len(items)}>>,
+  results: <<{describe overall results}>>
 } [EMITS: batch_complete]
 ```
 
@@ -196,15 +196,15 @@ Here's a complete example showing operators in action:
 !read_file '/path/to/indra/core/prism-engine.in'
 
 # Define operators
-italicize ::= @*.text → «*${text}*»
-bold ::= @*.text → «**${text}**»
-emphasize ::= @*.text → «***${text}***»
+italicize ::= @*.text → <<*${text}*>>
+bold ::= @*.text → <<**${text}**>>
+emphasize ::= @*.text → <<***${text}***>>
 
 # Smarter operator that chooses formatting
 smart_format ::= @*.content → {
-  formatted: «{apply appropriate formatting based on context}»,
-  style: «{markdown|html|plain}»,
-  reason: «{why this formatting was chosen}»
+  formatted: <<{apply appropriate formatting based on context}>>,
+  style: <<{markdown|html|plain}>>,
+  reason: <<{why this formatting was chosen}>>
 } [EMITS: formatting_applied]
 
 @command:
@@ -214,12 +214,12 @@ smart_format ::= @*.content → {
       state:
         style_preference: 'markdown'
         emphasis_level: 'moderate'
-    are: ‹intelligent text formatter›
+    are: <intelligent text formatter>
     must:
-      - ‹apply context-appropriate formatting›
-      - ‹maintain readability›
-      - ‹preserve meaning›
-    understand: ‹formatting enhances communication›
+      - <apply context-appropriate formatting>
+      - <maintain readability>
+      - <preserve meaning>
+    understand: <formatting enhances communication>
     
     respond:
       on: format_text
@@ -228,11 +228,11 @@ smart_format ::= @*.content → {
           identifier: FORMAT_HANDLER
           state:
             input_text: ''
-        are: ‹formatting specialist›
-        must: [‹format text appropriately›]
-        understand: ‹context determines formatting›
+        are: <formatting specialist>
+        must: [<format text appropriately>]
+        understand: <context determines formatting>
         perform:
-          through: ‹intelligent formatting›
+          through: <intelligent formatting>
           as: <<|
             Original: ${input_text}
             
@@ -243,12 +243,12 @@ smart_format ::= @*.content → {
             
             Recommended: {choose based on context and explain why}
           |>>
-          intention: ‹provide formatting options›
+          intention: <provide formatting options>
           then:
             emit: formatting_complete
             with:
-              chosen_format: «{selected format}»
-              applied_text: «{formatted result}»
+              chosen_format: <<{selected format}>>
+              applied_text: <<{formatted result}>>
 ```
 
 ## Best Practices for Operators
@@ -257,25 +257,25 @@ smart_format ::= @*.content → {
 
 ```yaml
 # Bad - describes HOW
-multiply_by_1_08 ::= @*.amount → «${amount * 1.08}»
-prepend_dollar ::= @*.value → «$${value}»
+multiply_by_1_08 ::= @*.amount → <<${amount * 1.08}>>
+prepend_dollar ::= @*.value → <<${value}>>
 
 # Good - describes WHAT/WHY
-apply_tax ::= @*.amount → ‹{amount with appropriate tax applied}›
-format_as_currency ::= @*.value → ‹{value formatted as currency for context}›
+apply_tax ::= @*.amount → <{amount with appropriate tax applied}>
+format_as_currency ::= @*.value → <{value formatted as currency for context}>
 ```
 
 ### 2. Choose Quotes by Certainty, Not Calculation
 
 ```yaml
-# Wrong mindset: "This is math so use «»"
-calculate ::= @*.values → «${values.reduce((a,b) => a+b)}»
+# Wrong mindset: "This is math so use <<>>"
+calculate ::= @*.values → <<${values.reduce((a,b) => a+b)}>>
 
 # Right mindset: "What am I trying to achieve?"
-summarize ::= @*.values → ‹{meaningful total from ${values}}›
+summarize ::= @*.values → <{meaningful total from ${values}}>
 
 # The ${} interpolation is for ANCHORING, not calculating
-describe_data ::= @*.stats → ‹Looking at ${stats.count} items, {what patterns emerge}›
+describe_data ::= @*.stats → <Looking at ${stats.count} items, {what patterns emerge}>
 ```
 
 ### 3. Emit Messages for Side Effects
@@ -283,8 +283,8 @@ describe_data ::= @*.stats → ‹Looking at ${stats.count} items, {what pattern
 ```yaml
 # Operator that needs to trigger behavior
 save_result ::= @*.result → {
-  stored: «${result}»,
-  timestamp: «${Date.now()}»
+  stored: <<${result}>>,
+  timestamp: <<${Date.now()}>>
 } [EMITS: result_saved]
 
 # Handler can then respond to result_saved
@@ -294,11 +294,11 @@ save_result ::= @*.result → {
 
 ```yaml
 # Base operators
-trim ::= @*.text → «${text.trim()}»
-lowercase ::= @*.text → «${text.toLowerCase()}»
+trim ::= @*.text → <<${text.trim()}>>
+lowercase ::= @*.text → <<${text.toLowerCase()}>>
 
 # Composed operator
-normalize ::= @*.text → «${lowercase(trim(text))}»
+normalize ::= @*.text → <<${lowercase(trim(text))}>>
 ```
 
 ## Common Patterns
@@ -307,18 +307,18 @@ normalize ::= @*.text → «${lowercase(trim(text))}»
 
 ```yaml
 # Series of transformations
-extract ::= @*.raw_data → «{extract relevant fields}» [EMITS: extracted]
-transform ::= @*.extracted → «{apply transformations}» [EMITS: transformed]  
-load ::= @*.transformed → «{format for output}» [EMITS: pipeline_complete]
+extract ::= @*.raw_data → <<{extract relevant fields}>> [EMITS: extracted]
+transform ::= @*.extracted → <<{apply transformations}>> [EMITS: transformed]  
+load ::= @*.transformed → <<{format for output}>> [EMITS: pipeline_complete]
 ```
 
 ### Validation Pattern
 
 ```yaml
 validate_email ::= @*.email → {
-  valid: «${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}»,
-  normalized: «${email.toLowerCase().trim()}»,
-  domain: «${email.split('@')[1]}»
+  valid: <<${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}>>,
+  normalized: <<${email.toLowerCase().trim()}>>,
+  domain: <<${email.split('@')[1]}>>
 } [EMITS: email_validated]
 ```
 
@@ -326,11 +326,11 @@ validate_email ::= @*.email → {
 
 ```yaml
 aggregate_metrics ::= @*.metrics → {
-  total: «${metrics.reduce((a,b) => a + b, 0)}»,
-  average: «${total / metrics.length}»,
-  min: «${Math.min(...metrics)}»,
-  max: «${Math.max(...metrics)}»,
-  interpretation: «{what these numbers mean}»
+  total: <<${metrics.reduce((a,b) => a + b, 0)}>>,
+  average: <<${total / metrics.length}>>,
+  min: <<${Math.min(...metrics)}>>,
+  max: <<${Math.max(...metrics)}>>,
+  interpretation: <<{what these numbers mean}>>
 } [EMITS: metrics_aggregated]
 ```
 
@@ -347,10 +347,10 @@ The more precisely you try to define an operator's behavior, the more likely it 
 
 ```yaml
 # This will frustrate you
-parse_date_exact ::= @*.date → «${new Date(date).toISOString()}»
+parse_date_exact ::= @*.date → <<${new Date(date).toISOString()}>>
 
 # This will delight you
-understand_date ::= @*.date → ‹{interpret ${date} as a meaningful time reference}›
+understand_date ::= @*.date → <{interpret ${date} as a meaningful time reference}>
 ```
 
 ## Real-World Operators
@@ -359,16 +359,16 @@ Let's look at operators that actually work well in INDRA:
 
 ```yaml
 # Guide understanding, don't dictate format
-make_readable ::= @*.technical_text → ‹{explain ${technical_text} clearly}›
+make_readable ::= @*.technical_text → <{explain ${technical_text} clearly}>
 
 # Enable appropriate responses, don't hardcode them
-respond_to_error ::= @*.error → ‹{helpful response to ${error} situation}›
+respond_to_error ::= @*.error → <{helpful response to ${error} situation}>
 
 # Interpret meaning, don't just manipulate strings
 extract_intent ::= @*.user_input → {
-  intent: ‹{what the user really wants}›,
-  confidence: ‹{how certain we are}›,
-  clarification: ‹{what would help understand better}›
+  intent: <{what the user really wants}>,
+  confidence: <{how certain we are}>,
+  clarification: <{what would help understand better}>
 }
 ```
 
@@ -403,11 +403,13 @@ INDRA operators are not broken functions. They're behavioral guides in a probabi
 
 Remember: We have operators instead of functions for a reason. Work with the non-deterministic nature of AI, not against it.
 
-
 ---
+
 *This tutorial is part of the INDRA documentation. For more, see the [main tutorials page](./README.md).*
 ---
+
 *Prerequisites: [The Five Quotes](./five-quotes.md), [Message Passing](./message-passing.md)*
 ---
+
 *Related: [Thinking in Transformations](./thinking-in-transformations.md)*
 ---

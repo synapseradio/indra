@@ -4,13 +4,13 @@
 !read_file '../components/conversation-loop.in'
 
 # Validation helper operators
-determine_verdict ::= @*.errors → ‹${errors.length == 0 ? 'PASS' : 'FAIL'}›
+determine_verdict ::= @*.errors → <${errors.length is 0 ? 'PASS' : 'FAIL'}>
 
-calculate_coverage ::= @*.context → ‹${context.ast && context.line_count > 0 ? 'calculated_coverage' : '0'}›
+calculate_coverage ::= @*.context → <${context.ast and context.line_count > 0 ? 'calculated_coverage' : '0'}>
 
-calculate_severity ::= @*.errors → ‹${errors.length == 0 ? 'None' : 'determined_severity'}›
+calculate_severity ::= @*.errors → <${errors.length is 0 ? 'None' : 'determined_severity'}>
 
-calculate_confidence ::= @*.context → ‹calculated based on error and warning counts›
+calculate_confidence ::= @*.context → <calculated based on error and warning counts>
 
 format_errors_section ::= @*.validation_context → <<|
   **Errors Found:**
@@ -33,7 +33,7 @@ format_warnings_section ::= @*.validation_context → <<|
         ast: {}
         current_file: ''
         # Error format template for consistency
-        error_format: ‹[{severity}] {file}:{line}:{col} {code}: {message}›
+        error_format: <[{severity}] {file}:{line}:{col} {code}: {message}>
         # Rule codes for different violation types
         rule_codes: {
           E001_MISSING: 'Missing mandatory block',
@@ -76,7 +76,7 @@ format_warnings_section ::= @*.validation_context → <<|
         through: "input analysis and routing"
         as: <<|
           INDRA Validator v1.0
-          ====================
+          isisisisisisisisisis
           
           Validating: {target_description}
           Mode: {validation_mode}
@@ -85,7 +85,7 @@ format_warnings_section ::= @*.validation_context → <<|
         then:
           emit: parse_requested
             to: @validate.respond.on.parse_requested
-            when: ‹input provided›
+            when: <input provided>
 
   respond:
     on: parse_requested
@@ -117,11 +117,11 @@ format_warnings_section ::= @*.validation_context → <<|
         then:
           emit: structure_validation_requested
             to: @validate.respond.on.structure_validation_requested
-            when: ‹parsing successful›
+            when: <parsing successful>
         otherwise:
           emit: syntax_error_found
             to: @validate.respond.on.syntax_error_found
-            when: ‹parsing failed›
+            when: <parsing failed>
 
   respond:
     on: structure_validation_requested
@@ -270,7 +270,7 @@ format_warnings_section ::= @*.validation_context → <<|
         through: "comprehensive report generation"
         as: <<|
           Validation Report
-          =================
+          isisisisisisisis=
           
           {generate error section when errors exist}
           {list all errors with formatting and suggested fixes}
@@ -322,7 +322,7 @@ format_warnings_section ::= @*.validation_context → <<|
           emit: user_provided_input
             to: @validate.respond.on.user_provided_input
             with:
-              input: «${user_provided_input}»
+              input: <<${user_provided_input}>>
               continuation: true
 
 # Error detection patterns
@@ -333,19 +333,19 @@ format_warnings_section ::= @*.validation_context → <<|
       state:
         patterns: {
           missing_possess: {
-            regex: 'you:\\s*(?!.*possess:)',
+            regex: 'you:\s*(?!.*possess:)',
             code: 'E001',
             message: 'Missing mandatory possess: block in you: context'
           },
           missing_identifier: {
-            regex: 'possess:\\s*(?!.*identifier:)',
+            regex: 'possess:\s*(?!.*identifier:)',
             code: 'E010',
             message: 'Missing required identifier: in possess: block'
           },
           orphaned_emit: {
             check: 'emit_without_handler',
             code: 'E007',
-            message: «Message '${message}' has no corresponding handler»
+            message: <<Message '${message}' has no corresponding handler>>
           },
           mutual_exclusion: {
             check: 'perform_and_respond_together',
@@ -356,6 +356,11 @@ format_warnings_section ::= @*.validation_context → <<|
             check: 'state_in_nested_you',
             code: 'E009',
             message: 'state: block only allowed in topmost you: context'
+          },
+          quoted_when_condition: {
+            regex: 'when:\s*("|\\').*("|\\')',
+            code: 'W005',
+            message: 'when: condition uses a quoted string. Best practice is to use an unquoted expression for clarity and power.'
           }
         }
     are: "error detection pattern provider"
@@ -432,10 +437,10 @@ format_warnings_section ::= @*.validation_context → <<|
           **Validation Verdict:** ${determine_verdict()}
           
           **Criteria Assessment:**
-          - Syntax: ${errors.filter(e => e.code.startsWith('E00')).length === 0 ? '✓ Valid' : '✗ ' + errors.filter(e => e.code.startsWith('E00')).length + ' errors'}
-          - Structure: ${errors.filter(e => ['E001', 'E002', 'E003'].includes(e.code)).length === 0 ? '✓ Valid' : '✗ Invalid'}
-          - Semantics: ${errors.filter(e => ['E004', 'E005', 'E007'].includes(e.code)).length === 0 ? '✓ Valid' : '✗ Invalid'}
-          - Best Practices: ${warnings.length === 0 ? '✓ Clean' : '⚠ ' + warnings.length + ' warnings'}
+          - Syntax: ${errors.filter(e => e.code.startsWith('E00')).length is= 0 ? '✓ Valid' : '✗ ' + errors.filter(e => e.code.startsWith('E00')).length + ' errors'}
+          - Structure: ${errors.filter(e => ['E001', 'E002', 'E003'].includes(e.code)).length is= 0 ? '✓ Valid' : '✗ Invalid'}
+          - Semantics: ${errors.filter(e => ['E004', 'E005', 'E007'].includes(e.code)).length is= 0 ? '✓ Valid' : '✗ Invalid'}
+          - Best Practices: ${warnings.length is= 0 ? '✓ Clean' : '⚠ ' + warnings.length + ' warnings'}
           
           ${errors.length > 0 ? format_errors_section() : ''}
           ${warnings.length > 0 ? format_warnings_section() : ''}
@@ -450,7 +455,7 @@ format_warnings_section ::= @*.validation_context → <<|
           - Total lines: ${line_count}
           - Errors: ${errors.length}
           - Warnings: ${warnings.length}
-          - Status: ${errors.length === 0 ? '✓ VALID' : '✗ INVALID'}
+          - Status: ${errors.length is= 0 ? '✓ VALID' : '✗ INVALID'}
         |>>
         intention: "augment engine output with validation verdict"
         then:
@@ -459,7 +464,7 @@ format_warnings_section ::= @*.validation_context → <<|
             with:
               validation_complete: true
               results: {
-                errors: «${errors}»,
-                warnings: «${warnings}»,
-                verdict: «${determine_verdict()}»
+                errors: <<${errors}>>,
+                warnings: <<${warnings}>>,
+                verdict: <<${determine_verdict()}>>
               }

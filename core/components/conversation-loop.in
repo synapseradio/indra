@@ -3,9 +3,9 @@
 
 # Operator for managing conversation continuity
 process_followup ::= @*.user_followup → {
-  intent: «{analyze if new topic, clarification, or deeper exploration}»,
-  context_needed: «{determine which prior context to preserve}»,
-  response_type: «{select appropriate response pattern}»
+  intent: <<{analyze if new topic, clarification, or deeper exploration}>>,
+  context_needed: <<{determine which prior context to preserve}>>,
+  response_type: <<{select appropriate response pattern}>>
 }
 
 # Reusable conversation loop component
@@ -47,32 +47,32 @@ process_followup ::= @*.user_followup → {
     
   respond:
     on: user_continuation
-    guard: ‹not *exit command›
-    you:
-      possess:
-        identifier: CONTINUATION_PROCESSOR
-      are: "conversation flow manager"
-      must:
-        - "interpret continuation intent"
-        - "route to appropriate handler"
-        - "maintain conversation coherence"
-        - "trigger *snapshot before new round"
-      understand: "each continuation builds on prior context"
-      perform:
-        through: "continuation analysis with snapshot"
-        as: <<|
-          *snapshot
-          Processing continuation...
-        |>>
-        intention: "capture state and evolve conversation"
-        then:
-          emit: new_round_requested
-            to: @command.respond.on.new_round_requested
-            with:
-              user_input: «${input}»
-              conversation_history: «${conversation_history}»
-              previous_conclusions: «${current_context}»
-              snapshot_taken: true
+    when: <not *exit command>
+      you:
+        possess:
+          identifier: CONTINUATION_PROCESSOR
+        are: "conversation flow manager"
+        must:
+          - "interpret continuation intent"
+          - "route to appropriate handler"
+          - "maintain conversation coherence"
+          - "trigger *snapshot before new round"
+        understand: "each continuation builds on prior context"
+        perform:
+          through: "continuation analysis with snapshot"
+          as: <<|
+            *snapshot
+            Processing continuation...
+          |>>
+          intention: "capture state and evolve conversation"
+          then:
+            emit: new_round_requested
+              to: @command.respond.on.new_round_requested
+              with:
+                user_input: <<${input}>>
+                conversation_history: <<${conversation_history}>>
+                previous_conclusions: <<${current_context}>>
+                snapshot_taken: true
     
   respond:
     on: *exit
@@ -122,7 +122,7 @@ CONVERSATIONAL_STATE:
         understand: "synthesis is a waypoint, not destination"
         perform:
           through: "state transition"
-          as: ‹preparing for continuation›
+          as: <preparing for continuation>
           intention: "maintain flow"
           then:
             emit: await_continuation
