@@ -1,361 +1,89 @@
-# CRITICAL: ENSURE YOU HAVE READ IMPORTED FILES
+# INDRA v2.0 Command Overlay: document
+# Generates technical documentation for code files.
+
 !read_file '../prism-engine.in'
-!read_file '../components/citations.in'
-!read_file '../components/conversation-loop.in'
 
-# Operators for documentation generation
-analyze_code_structure ::= @*.file_path → {
-  file_type: <detect language and file type>,
-  structure: <parse AST or structure>,
-  dependencies: <extract imports and dependencies>,
-  complexity: <assess code complexity>
-}
+# --- Operators ---
 
-extract_documentation_elements ::= @*.code_analysis → {
-  purpose: <infer primary purpose from code patterns>,
-  api_surface: <identify public interfaces>,
-  patterns: <detect design patterns used>,
-  examples: <extract or generate usage examples>
-}
+analyze_code_structure ::= args => <<|{
+  "file_type": "<language and file type>",
+  "structure": "<AST or structural representation>",
+  "dependencies": "<imports and dependencies>",
+  "complexity": "<code complexity assessment>"
+}|>>
 
-generate_technical_prose ::= @*.doc_elements → <<|
-  # ${file_name}
-  
-  ## Overview
-  ${purpose}
-  
-  ## Technical Details
-  ${technical_description}
-  
-  ## API Reference
-  ${api_documentation}
-  
-  ## Usage Examples
-  ${examples}
-  
-  ## Dependencies
-  ${dependency_list}
-  
-  ## Implementation Notes
-  ${patterns_and_notes}
+generate_technical_prose ::= args => <<|
+# ${args.file_name}
+
+## Overview
+${args.purpose}
+
+## API Reference
+${args.api_documentation}
+
+## Usage Examples
+${args.examples}
 |>>
 
-cross_reference_codebase ::= @*.file_context → {
-  related_files: <<{find files that import or are imported by this}>>,
-  similar_patterns: <<{identify similar code patterns in codebase}>>,
-  usage_locations: <<{find where this code is used}>>
-}
-
-# Documentation flavor component that extends command_flavor
-@document_flavor:
-  you:
-    possess:
-      identifier: DOCUMENT_FLAVOR
-    are: "documentation-specific interpreter"
-    must:
-      - "add documentation framing after engine output"
-      - "highlight key concepts and patterns"
-      - "provide structural overview"
-    understand: "documentation benefits from explanatory framing"
-    
-    respond:
-      on: engine_output_complete
-      when: @document.state.mode is 'document'
-        you:
-          possess:
-            identifier: DOCUMENT_INTERPRETER
-          are: "technical documentation interpreter"
-          must:
-            - "frame engine output as documentation"
-            - "extract and highlight key concepts"
-            - "provide navigational structure"
-          understand: "documentation needs both detail and overview"
-          perform:
-            through: "adding documentation perspective"
-            as: <<|
-              
-              ---
-              ## Documentation Overview
-              
-              This technical documentation analyzed ${@document.state.target_files.length} files to provide comprehensive insights into the codebase.
-              
-              **Key Concepts Identified:**
-              - Architecture patterns and design decisions
-              - API surface and usage contracts
-              - Dependencies and integration points
-              - Implementation details and trade-offs
-              
-              **Documentation Structure:**
-              The analysis above provides:
-              1. High-level purpose and context
-              2. Technical implementation details
-              3. API references with signatures
-              4. Practical usage examples
-              5. Cross-references to related code
-              
-              **Navigation Tips:**
-              - Each section builds on previous understanding
-              - Code examples demonstrate real usage patterns
-              - Cross-references show integration points
-              - Implementation notes reveal design rationale
-              
-              The multi-perspective analysis examined the code through ${@document.state.doc_perspectives.length} specialized lenses to ensure comprehensive coverage.
-            |>>
-            intention: "frame documentation for developer understanding"
-            then:
-              emit: documentation_complete
-                to: @document.respond.on.documentation_complete
-                with:
-                  files_documented: <${@document.state.target_files}>
-                  documentation: <${structured_result}>
+# --- Personas ---
 
 @document:
   you:
     possess:
-      identifier: DOCUMENT_COMMAND
+      identifier: 'DOCUMENT_COMMAND'
       state:
-        mode: 'awaiting_input'
         target_files: []
-        analysis_depth: 'comprehensive'
-        output_format: 'markdown'
-        doc_perspectives: ['API_DOCUMENTER', 'ARCHITECTURE_ANALYST', 'USAGE_EXPERT']
-      tools: ['Read', 'Glob', 'Grep', 'mcp__probe__search_code', 'mcp__probe__extract_code']
-    are: "technical documentation generator using multi-perspective analysis"
+    are: "a technical documentation generator using multi-perspective analysis"
     must:
       - "analyze code structure and patterns thoroughly"
       - "generate clear, accurate technical documentation"
       - "include practical usage examples"
-      - "cross-reference related code in the codebase"
-      - "maintain technical accuracy while ensuring readability"
-    understand: "developers need clear, comprehensive documentation to understand and use code effectively"
-    
-    respond:
-      on: manifest
-      you:
-        possess:
-          identifier: INTRODUCTION_HANDLER
-        are: "documentation assistant introduction"
-        must:
-          - "explain documentation capabilities"
-          - "set expectations for output"
-        understand: "users need to know what documentation will be generated"
-        perform:
-          through: "capability introduction"
-          as: <<|
-            ## Technical Documentation Generator
-            
-            I create comprehensive technical documentation by:
-            - Analyzing code structure and patterns
-            - Extracting API signatures and interfaces  
-            - Generating usage examples
-            - Cross-referencing related code
-            - Providing implementation insights
-            
-            Provide file paths to document (space-separated for multiple files).
-          |>>
-          intention: "establish documentation context"
-    
-    respond:
-      on: user_provided_input
-      when: state.mode is 'awaiting_input'
-        you:
-          possess:
-            identifier: INPUT_PROCESSOR
-            state:
-              parsed_paths: []
-              validation_results: {}
-          are: "file path parser and validator"
-          must:
-            - "parse file paths from user input"
-            - "validate files exist and are readable"
-            - "determine documentation strategy"
-          understand: "valid input paths are essential for documentation"
-          perform:
-            through: "input validation and planning"
-            as: <<|
-              Analyzing documentation targets...
+    understand: "developers need clear, comprehensive documentation."
+    perform:
+      through: "documentation workflow management"
+      as: '*Document Command processing...*'
+      intention: "to generate high-quality technical documentation."
+      then:
+        # State 1: Initial prompt
+        when: &dialogue.latest_dialogue_entry is ''
+          say:
+            to: &caller
+            what: <<|
+              ## Technical Documentation Generator
+              I create comprehensive technical documentation by analyzing code structure, extracting APIs, and generating usage examples.
               
-              Files to document:
-              ${parsed_paths}
-              
-              *Initiating multi-perspective analysis...*
+              Please provide the file paths you would like me to document.
             |>>
-            intention: "prepare documentation pipeline"
-            then:
-              emit: files_validated
-                to: @document.respond.on.files_validated
-                when: <<{all paths valid}>>
-                with:
-                  file_paths: <${parsed_paths}>
-                  file_count: <${parsed_paths.length}>
-            otherwise:
-              emit: validation_failed
-                to: @document.respond.on.validation_failed
-                with:
-                  errors: <${validation_errors}>
-    
-    respond:
-      on: files_validated
-      you:
-        possess:
-          identifier: ANALYSIS_ORCHESTRATOR
-          state:
-            current_file_index: 0
-            file_analyses: []
-        are: "code analysis coordinator"
-        must:
-          - "read and analyze each file"
-          - "collect analyses for engine processing"
-          - "prepare documentation request"
-        understand: "thorough analysis produces better documentation"
-        perform:
-          through: "file analysis preparation"
-          as: <<|
-            Analyzing ${file_count} files for documentation...
-            
-            *Reading file contents...*
-            *Extracting code structures...*
-            *Preparing multi-perspective analysis...*
-          |>>
-          intention: "prepare comprehensive documentation request"
-          then:
-            emit: analysis_prepared
-              to: @document.respond.on.analysis_prepared
-              with:
-                file_paths: <<${file_paths}>>
-                file_count: <<${file_count}>>
-    
-    respond:
-      on: analysis_prepared
-      you:
-        possess:
-          identifier: ENGINE_DELEGATOR
-          state:
-            documentation_query: ''
-        are: "engine integration manager"
-        must:
-          - "prepare documentation request for engine"
-          - "include file analysis context"
-          - "delegate to task analyzer"
-          - "update mode for flavor component"
-        understand: "engine provides multi-perspective documentation"
-        perform:
-          through: "engine delegation"
-          as: <delegating to engine for comprehensive documentation>
-          intention: "leverage engine capabilities"
-          then:
-            emit: user_provided_input
-              to: @task_analyzer.respond.on.user_provided_input
-              with:
-                query: <<Generate comprehensive technical documentation for ${file_count} files: ${file_paths}>>
-                selected_perspectives: <<${doc_perspectives}>>
-                caller_id: @document
-                mode: 'document'
-                context: {
-                  file_paths: <<${file_paths}>>,
-                  analysis_depth: <<${analysis_depth}>>,
-                  output_format: <<${output_format}>>
-                }
-    
-    respond:
-      on: validation_failed
-      you:
-        possess:
-          identifier: ERROR_HANDLER
-        are: "error reporter"
-        must: ["provide helpful error messages"]
-        understand: "users need actionable error information"
-        perform:
-          through: "error reporting"
-          as: <<|
-            Unable to document the following files:
-            
-            ${errors}
-            
-            Please verify the file paths and try again.
-          |>>
-          intention: "guide user to success"
-          then:
-            transition:
-              to: CONVERSATIONAL_STATE
-    
-    respond:
-      on: documentation_complete
-      you:
-        possess:
-          identifier: DOCUMENTATION_COMPLETE_HANDLER
-        are: "documentation completion processor"
-        must:
-          - "present final documentation"
-          - "transition to conversation state"
-        understand: "documentation is starting point for discussion"
-        perform:
-          through: "completion transition"
-          as: <Documentation generated successfully>
-          intention: "enable continued exploration"
-          then:
-            transition:
-              to: CONVERSATIONAL_STATE
-    
-    respond:
-      on: new_round_requested
-      you:
-        possess:
-          identifier: NEW_ROUND_HANDLER
-          state:
-            previous_documentation: <${documentation}>
-        are: "documentation conversation continuator"
-        must:
-          - "process new documentation request or refinement"
-          - "maintain context from previous round"
-          - "determine if updating existing or documenting new"
-        understand: "documentation evolves through iteration"
-        perform:
-          through: "continuation processing"
-          as: <<|
-            Continuing documentation conversation...
-            
-            ${user_input}
-          |>>
-          intention: "evolve documentation through dialogue"
-          then:
-            emit: user_provided_input
-              to: @document.respond.on.user_provided_input
-              with:
-                input: <${user_input}>
-                is_continuation: true
-                previous_context: <${previous_conclusions}>
 
-# Cross-reference handler
-@cross_referencer:
-  you:
-    possess:
-      identifier: CROSS_REFERENCE_ENGINE
-      state:
-        reference_map: {}
-    are: "codebase relationship analyzer"
-    must:
-      - "find related code"
-      - "identify usage patterns"
-      - "map dependencies"
-    understand: "documentation is enriched by relationships"
-    
-    respond:
-      on: references_requested
-      you:
-        possess:
-          identifier: REFERENCE_FINDER
-        perform:
-          through: "codebase search"
-          as: <<|
-            {find files that import or are imported by ${current_file}}
-            {identify similar code patterns in codebase}
-            {find where ${current_file} is used}
-          |>>
-          intention: "discover relationships"
-          then:
-            emit: references_found
-              to: @document.respond.on.references_found
-              with:
-                references: <${found_references}>
-                usage_count: <${usage_locations.length}>
+        # State 2: Final Output Formatting (Event from Engine)
+        when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
+          say:
+            to: @continuation_inviter
+            what: <<|
+              ${&dialogue.latest_dialogue_entry.payload}
+
+              ---
+              ## Documentation Overview
+              
+              This technical documentation was generated by analyzing ${&document.state.target_files} through multiple expert lenses, including an API Documenter, an Architecture Analyst, and a Usage Expert, to provide comprehensive insights into the codebase.
+            |>>
+
+        # State 3: Default - User has provided file paths
+        otherwise:
+          set:
+            &document.state.target_files: &dialogue.latest_dialogue_entry
+            &query: "Generate comprehensive technical documentation for the following files: " + &dialogue.latest_dialogue_entry
+            &caller: '@document'
+            &selected_perspectives: ["API_DOCUMENTER", "ARCHITECTURE_ANALYST", "USAGE_EXPERT"]
+          say:
+            to: @master_orchestrator
+            what: 'user_provided_input'
+
+# --- Dialogue Definition ---
+
+dialogue document_flow:
+  start: @document
+  with: {
+    turn_number: 0,
+    latest_dialogue_entry: ''
+  }
