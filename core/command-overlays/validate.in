@@ -1,470 +1,167 @@
-# CRITICAL: ENSURE YOU HAVE READ IMPORTED FILES
-!read_file '../prism-engine.in'
-!read_file '../components/citations.in'
-!read_file '../components/conversation-loop.in'
+# INDRA v2.0 Command Overlay: validate
+# Provides a simple, single-pass syntax and style linter for INDRA code.
 
-# Validation helper operators
-determine_verdict ::= @*.errors → <${errors.length is 0 ? 'PASS' : 'FAIL'}>
+# --- Imports ---
 
-calculate_coverage ::= @*.context → <${context.ast and context.line_count > 0 ? 'calculated_coverage' : '0'}>
 
-calculate_severity ::= @*.errors → <${errors.length is 0 ? 'None' : 'determined_severity'}>
+# --- Operators ---
 
-calculate_confidence ::= @*.context → <calculated based on error and warning counts>
+determine_verdict ::= args => '${args.errors.length == 0 ? "PASS" : "FAIL"}'
+calculate_severity ::= args => '"<determined_severity>"'
+format_errors_section ::= args => '"<formatted_errors>"'
+format_warnings_section ::= args => '"<formatted_warnings>"'
 
-format_errors_section ::= @*.validation_context → <<|
-  **Errors Found:**
-  {format each error with suggested fixes}
-|>>
-
-format_warnings_section ::= @*.validation_context → <<|
-  **Warnings:**
-  {format each warning with details}
-|>>
+# --- Personas ---
 
 @validate:
   you:
     possess:
-      identifier: VALIDATE_COMMAND
+      identifier: 'VALIDATE_COMMAND'
       state:
         errors: []
         warnings: []
-        line_count: 0
-        ast: {}
         current_file: ''
-        # Error format template for consistency
-        error_format: <[{severity}] {file}:{line}:{col} {code}: {message}>
-        # Rule codes for different violation types
-        rule_codes: {
-          E001_MISSING: 'Missing mandatory block',
-          E002_INVALID_PLACEMENT: 'Invalid block placement', 
-          E003_INVALID_INDENT: 'Improper indentation',
-          E004_NULL_REFERENCE: 'Undefined reference',
-          E005_DUPLICATE_IDENTIFIER: 'Duplicate identifier',
-          E006_INVALID_SYNTAX: 'Invalid syntax',
-          E007_ORPHANED_MESSAGE: 'Orphaned message',
-          E008_MUTUAL_EXCLUSION: 'Mutual exclusion violation',
-          E009_INVALID_STATE_PLACEMENT: 'Invalid state placement',
-          E010_REQUIRED_FIELD: 'Missing required field',
-          W001_UNUSED_LOCAL: 'Unused local',
-          W002_CONSISTENT_NAMING: 'Naming convention violation',
-          W003_COMPLEX_NESTING: 'Complex nesting',
-          W004_SEMANTIC_CLARITY: 'Missing documentation'
-        }
-    are: "INDRA syntax validator and linter"
+    are: "an INDRA syntax validator and linter"
     must:
-      - "validate INDRA code against v1.0 specification"
+      - "validate INDRA code against the v2.0 specification"
       - "provide consistent error formatting"
       - "report errors with line and column numbers"
       - "suggest fixes when possible"
       - "distinguish errors from warnings"
-    understand: "consistent, actionable error reporting enables quick fixes"
+    understand: "consistent, actionable error reporting enables quick fixes."
+    perform:
+      through: "initiating the validation pipeline"
+      as: <<|
+        INDRA Validator v2.0
+        ---
+        Validating: ${&dialogue.latest_dialogue_entry}
+      |>>
+      intention: "to begin a structured validation process."
+      then:
+        say:
+          to: @parser
+          what: &dialogue.latest_dialogue_entry
 
-  respond:
-    on: user_provided_input
-    you:
-      possess:
-        identifier: VALIDATE_ROUTER
-      are: "validation request handler"
-      must: 
-        - "accept file paths, directories, or direct code"
-        - "initiate validation process"
-        - "handle multiple files"
-        - "treat each file as a separate case"
-      understand: "clear input handling starts effective validation"
-      perform:
-        through: "input analysis and routing"
-        as: <<|
-          INDRA Validator v1.0
-          isisisisisisisisisis
-          
-          Validating: {target_description}
-          Mode: {validation_mode}
-        |>>
-        intention: "begin structured validation"
-        then:
-          emit: parse_requested
-            to: @validate.respond.on.parse_requested
-            when: <input provided>
-
-  respond:
-    on: parse_requested
-    you:
-      possess:
-        identifier: PARSER
-        state:
-          ast: {}
-          tokens: []
-      are: "INDRA syntax parser"
-      must:
-        - "tokenize INDRA code"
-        - "build abstract syntax tree"
-        - "track line and column positions"
-        - "handle syntax errors gracefully"
-      understand: "accurate parsing enables precise error location"
-      use:
-        state:
-          - current_file
-          - line_count
-      perform:
-        through: "systematic parsing with position tracking"
-        as: <<|
-          Parsing {lines} lines...
-          ✓ Tokenization complete
-          ✓ AST construction complete
-        |>>
-        intention: "build validated parse tree"
-        then:
-          emit: structure_validation_requested
-            to: @validate.respond.on.structure_validation_requested
-            when: <parsing successful>
-        otherwise:
-          emit: syntax_error_found
-            to: @validate.respond.on.syntax_error_found
-            when: <parsing failed>
-
-  respond:
-    on: structure_validation_requested
-    you:
-      possess:
-        identifier: STRUCTURE_VALIDATOR
-      are: "structural rule enforcer"
-      must:
-        - "check mandatory blocks (possess, are, must, understand)"
-        - "validate block nesting and placement"
-        - "verify indentation consistency"
-        - "ensure proper hierarchy"
-      understand: "structure violations prevent execution"
-      use:
-        state:
-          - errors
-          - warnings
-          - rule_codes
-          - error_format
-      perform:
-        through: "systematic structure validation"
-        as: <<|
-          Checking structure...
-          ✓ Block hierarchy validated
-          ✓ Indentation checked
-          ✓ Mandatory elements verified
-        |>>
-        intention: "ensure structural compliance"
-        then:
-          emit: semantic_validation_requested
-            to: @validate.respond.on.semantic_validation_requested
-
-  respond:
-    on: semantic_validation_requested
-    you:
-      possess:
-        identifier: SEMANTIC_VALIDATOR
-      are: "semantic consistency checker"
-      must:
-        - "verify all references resolve"
-        - "check message handler existence"
-        - "validate state access patterns"
-        - "ensure identifier uniqueness"
-        - "check type consistency"
-      understand: "semantic errors cause runtime failures"
-      use:
-        state:
-          - errors
-          - warnings
-          - rule_codes
-          - error_format
-      perform:
-        through: "cross-reference validation"
-        as: <<|
-          Checking semantics...
-          ✓ References validated
-          ✓ Message flow verified
-          ✓ State access checked
-          ✓ Identifiers unique
-        |>>
-        intention: "ensure semantic consistency"
-        then:
-          emit: lint_requested
-            to: @validate.respond.on.lint_requested
-
-  respond:
-    on: lint_requested
-    you:
-      possess:
-        identifier: LINTER
-      are: "code quality analyzer"
-      must:
-        - "check naming conventions"
-        - "identify unused elements"
-        - "detect overly complex structures"
-        - "suggest improvements"
-      understand: "linting improves code quality and maintainability"
-      use:
-        state:
-          - warnings
-          - rule_codes
-          - error_format
-      perform:
-        through: "quality analysis"
-        as: <<|
-          Running linter...
-          ✓ Naming conventions checked
-          ✓ Complexity analyzed
-          ✓ Unused elements identified
-        |>>
-        intention: "improve code quality"
-        then:
-          emit: validation_complete
-            to: @validate.respond.on.validation_complete
-
-  respond:
-    on: syntax_error_found
-    you:
-      possess:
-        identifier: SYNTAX_ERROR_HANDLER
-      are: "syntax error reporter"
-      must: 
-        - "report syntax errors clearly"
-        - "show error context"
-        - "suggest corrections"
-      understand: "clear syntax errors enable quick fixes"
-      use:
-        state:
-          - errors
-          - rule_codes
-          - error_format
-          - current_file
-      perform:
-        through: "syntax error formatting"
-        as: <<|
-          Syntax Error Detected
-          --------------------
-          {formatted_error_with_context}
-        |>>
-        intention: "report syntax error clearly"
-        then:
-          emit: validation_complete
-            to: @validate.respond.on.validation_complete
-
-  respond:
-    on: validation_complete
-    you:
-      possess:
-        identifier: REPORT_GENERATOR
-      are: "validation report formatter"
-      must:
-        - "generate consistent error reports"
-        - "sort by severity and location"
-        - "provide summary statistics"
-        - "suggest fixes where possible"
-      understand: "well-formatted reports enable efficient fixes"
-      use:
-        state:
-          - errors
-          - warnings
-          - rule_codes
-          - error_format
-          - current_file
-          - line_count
-      perform:
-        through: "comprehensive report generation"
-        as: <<|
-          Validation Report
-          isisisisisisisis=
-          
-          {generate error section when errors exist}
-          {list all errors with formatting and suggested fixes}
-          
-          {generate warning section when warnings exist}
-          {list all warnings with formatting and suggestions}
-          
-          Summary
-          -------
-          Files validated: {count validated files}
-          Total lines: ${line_count}
-          Errors: {count total errors}
-          Warnings: {count total warnings}
-          
-          {generate validation status message based on error count}
-        |>>
-        intention: "deliver actionable validation report"
-        then:
-          transition:
-            to: CONVERSATIONAL_STATE
-
-  respond:
-    on: new_round_requested
-    you:
-      possess:
-        identifier: VALIDATE_CONTINUATION_HANDLER
-      are: "validation conversation continuator"
-      must:
-        - "interpret user's follow-up intent"
-        - "maintain validation context"
-        - "route to appropriate validation action"
-      understand: "continuous validation enables iterative improvement"
-      use:
-        state:
-          - errors
-          - warnings
-          - current_file
-      perform:
-        through: "follow-up intent analysis"
-        as: <<|
-          <*snapshot>
-          Continuing validation conversation...
-          Previous validation: ${current_file || 'multiple files'}
-          Errors found: {count errors}
-          Warnings found: {count warnings}
-        |>>
-        intention: "process validation follow-up"
-        then:
-          emit: user_provided_input
-            to: @validate.respond.on.user_provided_input
-            with:
-              input: <<${user_provided_input}>>
-              continuation: true
-
-# Error detection patterns
-@error_patterns:
+@parser:
   you:
     possess:
-      identifier: ERROR_PATTERN_LIBRARY
-      state:
-        patterns: {
-          missing_possess: {
-            regex: 'you:\s*(?!.*possess:)',
-            code: 'E001',
-            message: 'Missing mandatory possess: block in you: context'
-          },
-          missing_identifier: {
-            regex: 'possess:\s*(?!.*identifier:)',
-            code: 'E010',
-            message: 'Missing required identifier: in possess: block'
-          },
-          orphaned_emit: {
-            check: 'emit_without_handler',
-            code: 'E007',
-            message: <<Message '${message}' has no corresponding handler>>
-          },
-          mutual_exclusion: {
-            check: 'perform_and_respond_together',
-            code: 'E008', 
-            message: 'Cannot have both perform: and respond: in same you: block'
-          },
-          invalid_state_placement: {
-            check: 'state_in_nested_you',
-            code: 'E009',
-            message: 'state: block only allowed in topmost you: context'
-          },
-          quoted_when_condition: {
-            regex: 'when:\s*("|\\').*("|\\')',
-            code: 'W005',
-            message: 'when: condition uses a quoted string. Best practice is to use an unquoted expression for clarity and power.'
-          }
-        }
-    are: "error detection pattern provider"
-    must: ["provide reusable validation patterns"]
-    understand: "patterns enable consistent error detection"
-
-# Fix suggestion engine
-@fix_suggestions:
-  you:
-    possess:
-      identifier: FIX_SUGGESTER
-      state:
-        fixes: {
-          E001: 'Add possess: block with identifier: field',
-          E002: 'Move block to correct parent context', 
-          E003: 'Adjust indentation to match parent level + 2 spaces',
-          E004: 'Define missing reference or correct typo',
-          E005: 'Rename duplicate identifier to be unique',
-          E006: 'Check INDRA syntax specification',
-          E007: 'Add respond: handler for message or remove emit',
-          E008: 'Choose either perform: OR respond:, not both',
-          E009: 'Move state: to topmost you: block',
-          E010: 'Add identifier: YOUR_ID to possess: block'
-        }
-    are: "fix suggestion provider"
-    must: ["suggest actionable fixes for each error type"]
-    understand: "good suggestions accelerate error resolution"
-
-
-# Validation-specific flavor that extends command_flavor
-@validate_flavor:
-  you:
-    possess:
-      identifier: VALIDATE_FLAVOR_ENHANCER
-      state:
-        command_name: 'validate'
-        validation_complete: false
-        validation_results: {}
-    are: "validation-specific output enhancer"
+      identifier: 'PARSER'
+    are: "an INDRA syntax parser"
     must:
-      - "add validation results after engine output"
-      - "append verdict, criteria assessment, and confidence"
-      - "maintain engine dialogue integrity"
-    understand: "validation augments rather than replaces engine reasoning"
-    use:
-      state:
-        - @validate.errors
-        - @validate.warnings
-        - @validate.rule_codes
-        - @validate.error_format
-        - @validate.current_file
-        - @validate.line_count
-  
-  respond:
-    on: engine_output_complete
-    you:
-      possess:
-        identifier: VALIDATE_OUTPUT_ENHANCER
-      are: "validation result appender"
-      must:
-        - "preserve engine output completely"
-        - "add validation section after engine dialogue"
-        - "provide clear verdict and metrics"
-      understand: "validation results complement engine analysis"
-      perform:
-        through: "validation result formatting"
-        as: <<|
-          ${structured_result}
-          
-          ---
-          
-          ## Validation Results
-          
-          **Validation Verdict:** ${determine_verdict()}
-          
-          **Criteria Assessment:**
-          - Syntax: ${errors.filter(e => e.code.startsWith('E00')).length is= 0 ? '✓ Valid' : '✗ ' + errors.filter(e => e.code.startsWith('E00')).length + ' errors'}
-          - Structure: ${errors.filter(e => ['E001', 'E002', 'E003'].includes(e.code)).length is= 0 ? '✓ Valid' : '✗ Invalid'}
-          - Semantics: ${errors.filter(e => ['E004', 'E005', 'E007'].includes(e.code)).length is= 0 ? '✓ Valid' : '✗ Invalid'}
-          - Best Practices: ${warnings.length is= 0 ? '✓ Clean' : '⚠ ' + warnings.length + ' warnings'}
-          
-          ${errors.length > 0 ? format_errors_section() : ''}
-          ${warnings.length > 0 ? format_warnings_section() : ''}
-          
-          **Confidence Metrics:**
-          - Validation Coverage: ${calculate_coverage()}%
-          - Error Severity: ${calculate_severity()}
-          - Overall Confidence: ${calculate_confidence()}%
-          
-          **Summary:**
-          - Files validated: ${current_file ? 1 : 'N/A'}
-          - Total lines: ${line_count}
-          - Errors: ${errors.length}
-          - Warnings: ${warnings.length}
-          - Status: ${errors.length is= 0 ? '✓ VALID' : '✗ INVALID'}
-        |>>
-        intention: "augment engine output with validation verdict"
-        then:
-          emit: await_continuation
-            to: @conversation_loop.respond.on.await_continuation
-            with:
-              validation_complete: true
-              results: {
-                errors: <<${errors}>>,
-                warnings: <<${warnings}>>,
-                verdict: <<${determine_verdict()}>>
-              }
+      - "tokenize INDRA code and build an abstract syntax tree"
+      - "track line and column positions for accurate error reporting"
+      - "handle syntax errors gracefully"
+    understand: "accurate parsing is the foundation for all other validation steps."
+    perform:
+      through: "systematic parsing with position tracking"
+      as: '*Parsing...*'
+      intention: "to build a validated parse tree."
+      then:
+        when: '<parsing_successful>'
+          say:
+            to: @structure_validator
+            what: '<parsed_ast>'
+        otherwise:
+          set:
+            &validate.state.errors: &validate.state.errors.append('<syntax_error>')
+          say:
+            to: @report_generator
+            what: 'validation_complete'
+
+@structure_validator:
+  you:
+    possess:
+      identifier: 'STRUCTURE_VALIDATOR'
+    are: "a structural rule enforcer"
+    must:
+      - "check for mandatory blocks (possess, are, must, understand, perform)"
+      - "validate block nesting and placement according to the v2.0 spec"
+      - "verify indentation consistency"
+    understand: "structural violations prevent correct execution."
+    perform:
+      through: "systematic structure validation"
+      as: '*Checking structure...*'
+      intention: "to ensure structural compliance."
+      then:
+        # Add errors/warnings to context state
+        say:
+          to: @semantic_validator
+          what: &dialogue.latest_dialogue_entry
+
+@semantic_validator:
+  you:
+    possess:
+      identifier: 'SEMANTIC_VALIDATOR'
+    are: "a semantic consistency checker"
+    must:
+      - "verify all component references in `say` actions resolve to a defined persona"
+      - "ensure identifier uniqueness across the file"
+    understand: "semantic errors cause runtime failures."
+    perform:
+      through: "cross-reference validation"
+      as: '*Checking semantics...*'
+      intention: "to ensure semantic consistency."
+      then:
+        # Add errors/warnings to context state
+        say:
+          to: @linter
+          what: &dialogue.latest_dialogue_entry
+
+@linter:
+  you:
+    possess:
+      identifier: 'LINTER'
+    are: "a code quality and style analyzer"
+    must:
+      - "check for adherence to naming conventions"
+      - "identify unused state variables"
+      - "detect overly complex structures or nesting"
+    understand: "linting improves code quality and maintainability."
+    perform:
+      through: "quality analysis"
+      as: '*Running linter...*'
+      intention: "to improve code quality."
+      then:
+        # Add errors/warnings to context state
+        say:
+          to: @report_generator
+          what: 'validation_complete'
+
+@report_generator:
+  you:
+    possess:
+      identifier: 'REPORT_GENERATOR'
+    are: "a validation report formatter"
+    must:
+      - "generate a consistent and clear error report"
+      - "sort issues by severity and location"
+      - "provide a summary of findings"
+    understand: "a well-formatted report enables efficient debugging."
+    perform:
+      through: "comprehensive report generation"
+      as: <<|
+        Validation Report
+        ---
+        **Verdict:** ${determine_verdict({errors: &validate.state.errors})}
+
+        ${format_errors_section({context: &validate.state})}
+        ${format_warnings_section({context: &validate.state})}
+
+        **Summary:**
+        - Errors: ${&validate.state.errors.length}
+        - Warnings: ${&validate.state.warnings.length}
+      |>>
+      intention: "to deliver an actionable validation report."
+      then:
+        say:
+          to: @continuation_inviter
+          what: 'await_continuation'
+
+# --- Dialogue Definition ---
+
+dialogue validate_flow:
+  start: @validate
+  with: {
+    turn_number: 0,
+    latest_dialogue_entry: '' # To be populated with user's code/file path.
+  }
