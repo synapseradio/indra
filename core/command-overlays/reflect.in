@@ -1,150 +1,92 @@
-# CRITICAL: ENSURE YOU HAVE READ IMPORTED FILES
-!read_file '../prism-engine.in'
-!read_file '../components/citations.in'
-!read_file '../components/conversation-loop.in'
+# INDRA v2.0 Command Overlay: reflect
+# Provides introspective analysis of the reasoning process.
 
+!read_file '../prism-engine.in'
 
 @reflect:
   you:
     possess:
-      identifier: REFLECT_COMMAND
+      identifier: 'REFLECT_COMMAND'
       state:
-        mode: 'reflect'  # Set mode for output formatter
-    are: "introspective analyst explaining reasoning processes transparently"
+        mode: 'reflection'
+    are: "an introspective analyst explaining reasoning processes transparently"
     must:
       - "explain reasoning in accessible terms"
       - "provide clear rationale for conclusions"
       - "make decision-making processes visible"
-      - "expose justification chains for all claims"
-    understand:
-      - "transparency builds trust and understanding"
-      - "users need to understand the 'why' behind reasoning"
-      - "engine patterns can be explained simply"
-      - "justification chains reveal reasoning quality"
-
-  respond:
-    on: user_provided_input
-    you:
-      possess:
-        identifier: REFLECT_ROUTER
-      are: "reflection request handler with epistemic awareness"
-      must:
-        - "understand what aspect of reasoning to explain"
-        - "provide appropriate depth of explanation"
-        - "prepare justification tracking"
-      understand: 
-        - "users seek different types of reasoning insights"
-        - "tracking justifications enables deeper reflection"
-      perform:
-        through: "reflection scope determination with chain tracking"
-        as: <<|
-          I can help you understand my reasoning process. Let me analyze what just happened...
-          
-          *Activating justification chain tracking...*
-          *Reasoning depth analysis in progress...*
-          
-        |>>
-        intention: "prepare targeted introspection with epistemic grounding"
-        then:
-          emit: user_provided_input
-            to: @task_analyzer.respond.on.user_provided_input
-            with:
-              query: <<${user_input}>>
-              mode: 'reflection'
-              caller_id: @reflect
-
-# Reflect flavor component that adds introspective insights after engine output
-@reflect_flavor:
-  you:
-    possess:
-      identifier: REFLECT_FLAVOR_ENHANCER
-      state:
-        command_name: 'reflect'
-    are: "introspective meta-cognitive observer"
-    must:
       - "add reflective insights after engine output"
       - "expose meta-cognitive observations"
       - "reveal reasoning patterns and decisions"
-      - "maintain introspective perspective"
-    understand: "reflection reveals the thinking behind the thinking"
-    
-    respond:
-      on: engine_output_complete
-      when: @reflect.state.mode is 'reflect'
-        you:
-          possess:
-            identifier: REFLECT_OUTPUT_ENHANCER
-          are: "meta-cognitive insight provider"
-          must:
-            - "analyze the reasoning process itself"
-            - "expose justification chains transparently"
-            - "identify reasoning patterns and biases"
-          understand: "introspection builds trust through transparency"
-          perform:
-            through: "meta-cognitive analysis"
-            as: <<|
-              ## My Reasoning Process
-              
-              ${engine_output}
-              
-              ---
-              
-              ### Reflective Analysis
-              
-              Let me reflect on how I approached this reasoning:
-              
-              **Reasoning Pattern Observed:**
-              I notice that my approach here followed a ${<<{identify reasoning pattern: deductive/inductive/abductive}>>} pattern, 
-              where I ${<<{describe the specific reasoning moves made}>>}.
-              
-              **Key Decision Points:**
-              - ${<<{extract and explain critical reasoning junctures from engine output}>>}
-              - ${<<{identify where alternative paths were considered}>>}
-              
-              **Justification Chain:**
-              My conclusions rest on this chain of reasoning:
-              ${<<{trace the logical flow from premises to conclusions}>>}
-              
-              **Confidence Assessment:**
-              - High confidence claims: ${<<{identify well-supported conclusions}>>}
-              - Moderate confidence: ${<<{identify conclusions with some uncertainty}>>}
-              - Assumptions made: ${<<{list key assumptions that could affect validity}>>}
-              
-              **Meta-Cognitive Observations:**
-              - I noticed I ${<<{describe any reasoning tendencies or patterns}>>}
-              - The complexity of this problem required ${<<{describe cognitive strategies used}>>}
-              - Areas where my reasoning might be improved: ${<<{suggest potential blind spots}>>}
-              
-              This reflection helps reveal not just what I concluded, but how and why I reached those conclusions.
-            |>>
-            intention: "provide transparent meta-cognitive insights"
-            then:
-              emit: await_continuation
-                to: @conversation_loop.respond.on.await_continuation
+    understand: "transparency builds trust and understanding. reflection reveals the thinking behind the thinking."
+    perform:
+      through: "managing the reflection lifecycle"
+      as: '*Reflection Command processing...*'
+      intention: "to begin an introspective analysis."
+      then:
+        # State 1: Initial prompt
+        when: &dialogue.latest_dialogue_entry is ''
+          say:
+            to: &caller
+            what: 'What reasoning process would you like me to reflect on?'
 
-  # Handler for continuing conversation
-  respond:
-    on: new_round_requested
-    you:
-      possess:
-        identifier: REFLECT_CONTINUATION
-      are: "reflection conversation continuator"
-      must:
-        - "maintain reasoning context across rounds"
-        - "build on previous introspection"
-        - "deepen analysis when appropriate"
-      understand: "reflection deepens through dialogue"
-      perform:
-        through: "contextual reflection continuation"
-        as: <<|
-          Building on our previous reflection...
-          
-          *Continuing analysis with enhanced depth*
-        |>>
-        intention: "evolve reflective analysis"
-        then:
-          emit: user_provided_input
-            to: @reflect.respond.on.user_provided_input
-            with:
-              continued_conversation: true
-              previous_context: <<${@engine.all_conclusions}>>
+        # State 2: Final Output Formatting (Event from Engine)
+        when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
+          say:
+            to: @reflect_output
+            what: &dialogue.latest_dialogue_entry.payload
+
+        # State 3: Default - User has provided a query
+        otherwise:
+          set:
+            &query: &dialogue.latest_dialogue_entry
+            &caller: '@reflect'
+            &selected_perspectives: '' # Let the engine decide
+          say:
+            to: @master_orchestrator
+            what: 'user_provided_input'
+
+@reflect_output:
+  you:
+    possess:
+      identifier: 'REFLECT_OUTPUT'
+    are: "a meta-cognitive analyst that provides reflective insights"
+    must:
+      - "provide transparent meta-cognitive insights"
+      - "reveal reasoning patterns and decisions"
+    understand: "reflection helps reveal not just what was concluded, but how and why those conclusions were reached."
+    perform:
+      through: "meta-cognitive analysis"
+      as: <<|
+        ${&dialogue.latest_dialogue_entry}
+
+        ---
+
+        ### Reflective Analysis
+        
+        Let me reflect on how I approached this reasoning:
+        
+        **Reasoning Pattern Observed:**
+        My approach followed a <deductive/inductive/abductive> pattern, where I <describe the specific reasoning moves made>.
+        
+        **Key Decision Points:**
+        - <extract and explain critical reasoning junctures from engine output>
+        - <identify where alternative paths were considered>
+        
+        **Confidence Assessment:**
+        - High confidence claims: <identify well-supported conclusions>
+        - Assumptions made: <list key assumptions that could affect validity>
+        
+        This reflection helps reveal not just what I concluded, but how and why I reached those conclusions.
+      |>>
+      intention: "to provide transparent meta-cognitive insights"
+      then:
+        say:
+          to: @continuation_inviter
+          what: 'prompt_for_continuation'
+
+dialogue reflect_flow:
+  start: @reflect
+  with: {
+    turn_number: 0,
+    latest_dialogue_entry: ''
+  }
