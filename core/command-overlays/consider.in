@@ -6,11 +6,13 @@
 
 # --- Operators ---
 
-propose_expert_panel ::= args => <<|{
-  "understanding": "<paraphrase of user query>",
-  "experts": ["<expert_1>", "<expert_2>", "<expert_3>"],
-  "rationale": "<explanation of why these experts are relevant>"
-}|>>
+propose_expert_panel(query: string) ::= <<|
+Analyzing query: "$(args.query)"
+
+I suggest assembling a panel of experts with diverse perspectives relevant to your question. The panel should include domain specialists who can address technical aspects, strategic thinkers who can consider broader implications, and practical experts who understand real-world applications.
+
+This combination will provide comprehensive coverage of the topic from multiple angles.
+|>>
 
 # --- Personas ---
 
@@ -27,15 +29,15 @@ propose_expert_panel ::= args => <<|{
       through: "query analysis and expert proposal"
       as: <<|
         ## Understanding Your Request
-        I understand you want to explore: <{propose_expert_panel({query: &dialogue.latest_dialogue_entry}).understanding}>
+        $(propose_expert_panel(query: &dialogue.latest_dialogue_entry))
 
         ## Proposed Expert Panel
-        I suggest these perspectives:
-        - <{propose_expert_panel({query: &dialogue.latest_dialogue_entry}).experts[0]}>
-        - <{propose_expert_panel({query: &dialogue.latest_dialogue_entry}).experts[1]}>
-        - <{propose_expert_panel({query: &dialogue.latest_dialogue_entry}).experts[2]}>
+        Based on the nature of your query, I suggest these perspectives:
+        - <Generate first expert based on core technical aspects of '$(args.query)'>
+        - <Generate second expert based on broader strategic implications of '$(args.query)'>
+        - <Generate third expert based on practical applications of '$(args.query)'>
 
-        <{propose_expert_panel({query: &dialogue.latest_dialogue_entry}).rationale}>
+        These experts will engage in evidence-based dialogue to thoroughly explore your question.
 
         Would you like to proceed with these experts, modify them, or suggest different ones?
       |>>
@@ -44,7 +46,7 @@ propose_expert_panel ::= args => <<|{
         set:
           &consider.state.phase: 'awaiting_confirmation'
           &consider.state.user_query: &dialogue.latest_dialogue_entry
-          &consider.state.proposed_experts: propose_expert_panel({query: &dialogue.latest_dialogue_entry}).experts
+          &consider.state.proposed_experts: ['<generated expert 1>', '<generated expert 2>', '<generated expert 3>']
         say:
           to: @consider
           what: 'expert_panel_proposed'
