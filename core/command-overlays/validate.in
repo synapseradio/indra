@@ -6,7 +6,7 @@
 
 # --- Operators ---
 
-determine_verdict ::= args => '${args.errors.length == 0 ? "PASS" : "FAIL"}'
+determine_verdict ::= args => '$(args.errors.length == 0 ? "PASS" : "FAIL")'
 calculate_severity ::= args => '"<determined_severity>"'
 format_errors_section ::= args => '"<formatted_errors>"'
 format_warnings_section ::= args => '"<formatted_warnings>"'
@@ -34,7 +34,7 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
       as: <<|
         INDRA Validator v2.0
         ---
-        Validating: ${&dialogue.latest_dialogue_entry}
+        Validating: $(&dialogue.latest_dialogue_entry)
       |>>
       intention: "to begin a structured validation process."
       then:
@@ -142,14 +142,14 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
       as: <<|
         Validation Report
         ---
-        **Verdict:** ${determine_verdict({errors: &validate.state.errors})}
+        **Verdict:** $(determine_verdict({errors: &validate.state.errors}))
 
-        ${format_errors_section({context: &validate.state})}
-        ${format_warnings_section({context: &validate.state})}
+        $(format_errors_section({context: &validate.state}))
+        $(format_warnings_section({context: &validate.state}))
 
         **Summary:**
-        - Errors: ${&validate.state.errors.length}
-        - Warnings: ${&validate.state.warnings.length}
+        - Errors: $(&validate.state.errors.length)
+        - Warnings: $(&validate.state.warnings.length)
       |>>
       intention: "to deliver an actionable validation report."
       then:

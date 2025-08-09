@@ -7,27 +7,26 @@
 
 # --- Operators ---
 
-generate_next_thought ::= args => <<|{
-  "thought": "<Based on the problem '${args.problem}' and previous thoughts, this is the next logical step...>",
-  "next_thought_needed": "<true_or_false>",
-  "is_revision": false,
-  "revises_thought": null
-}|>>
+generate_next_thought(problem: string, thoughts: array = []) ::= <<|
+Based on the problem "$(args.problem)" and the $(args.thoughts.length) previous thoughts, the next logical step in the reasoning chain would be to <generate next thought step based on problem context and prior analysis>.
 
-format_thought_for_display ::= args => <<|
----
-**Thought ${args.thought_obj.thought_number}**
-${args.thought_obj.revision_text}
-
-${args.thought_obj.thought}
+<If more analysis needed, indicate continuation; if solution reached, indicate completion>
 |>>
 
-synthesize_final_answer ::= args => <<|
+format_thought_for_display(thought_number: number, thought_text: string, is_revision: boolean = false) ::= <<|
+---
+**Thought $(args.thought_number)**
+$(args.is_revision ? '[Revision] ' : '')
+
+$(args.thought_text)
+|>>
+
+synthesize_final_answer(thoughts: array) ::= <<|
 ### Final Conclusion
 
 After a thorough thinking process, the following conclusion has been reached:
 
-<Synthesize a final, correct answer from the entire chain of thoughts provided in ${args.thoughts}>
+<Synthesize a final, correct answer from the entire chain of thoughts provided in $(args.thoughts)>
 |>>
 
 # --- Personas ---
@@ -49,7 +48,7 @@ After a thorough thinking process, the following conclusion has been reached:
     understand: "I analyze problems through a flexible thinking process, building on, questioning, and revising previous insights to reach a correct answer."
     perform:
       through: "managing the sequential thinking process"
-      as: '*Think Command processing: ${&dialogue.latest_dialogue_entry}*'
+      as: '*Think Command processing: $(&dialogue.latest_dialogue_entry)*'
       intention: "to solve a problem through a transparent, step-by-step process."
       then:
         when: &think.state.phase is 'awaiting_problem'
@@ -97,19 +96,23 @@ After a thorough thinking process, the following conclusion has been reached:
     perform:
       through: "single thought generation and evaluation"
       as: <<|
-        ${format_thought_for_display({
-          thought_obj: &thought_result
-        })}
+        $(format_thought_for_display(
+          thought_number: &think.state.thoughts.length + 1,
+          thought_text: generate_next_thought(
+            problem: &think.state.problem,
+            thoughts: &think.state.thoughts
+          )
+        ))
       |>>
       intention: "to execute one step of the thinking process and display it."
       then:
         set:
           &think.state.thoughts: &think.state.thoughts.append(&thought_result)
-          &thought_result: generate_next_thought({
+          &think.state.current_thought: generate_next_thought(
             problem: &think.state.problem,
             thoughts: &think.state.thoughts
-          })
-        when: &thought_result.next_thought_needed is true
+          )
+        when: &think.state.thoughts.length < 10
           say:
             to: @thought_processor
             what: 'continue_thinking'
@@ -128,7 +131,7 @@ After a thorough thinking process, the following conclusion has been reached:
     perform:
       through: "final answer synthesis"
       as: <<|
-        ${synthesize_final_answer({thoughts: &think.state.thoughts})}
+        $(synthesize_final_answer({thoughts: &think.state.thoughts}))
       |>>
       intention: "to provide the definitive answer to the user's problem."
       then:

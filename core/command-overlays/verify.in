@@ -57,7 +57,7 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
           perform:
             through: "verification enhancement"
             as: <<|
-              ${&dialogue.latest_dialogue_entry.payload}
+              $(&dialogue.latest_dialogue_entry.payload)
 
               ## INDRA Compliance Verification
               **Validation Summary:**
@@ -67,13 +67,13 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
 
               ### Verification Results by Severity:
               **🔴 Critical Issues** (blocks execution):
-              ${format_critical_violations({structured_result: &dialogue.latest_dialogue_entry.payload})}
+              $(format_critical_violations({structured_result: &dialogue.latest_dialogue_entry.payload}))
 
               **🟡 Important Issues** (affects behavior):
-              ${format_important_violations({structured_result: &dialogue.latest_dialogue_entry.payload})}
+              $(format_important_violations({structured_result: &dialogue.latest_dialogue_entry.payload}))
 
               **🔵 Suggested Improvements** (enhances quality):
-              ${format_suggested_violations({structured_result: &dialogue.latest_dialogue_entry.payload})}
+              $(format_suggested_violations({structured_result: &dialogue.latest_dialogue_entry.payload}))
             |>>
             intention: "to deliver a comprehensive verification args."
             then:
@@ -97,7 +97,7 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
             intention: "to prepare a comprehensive validation args."
             then:
               set:
-                &query: "Verify the following INDRA code for compliance: ${&dialogue.latest_dialogue_entry}"
+                &query: "Verify the following INDRA code for compliance: $(&dialogue.latest_dialogue_entry)"
                 &selected_perspectives: ["@INDRA_Authority", "@Syntax_Structure_Validator", "@Semantic_Consistency_Validator", "@Clarity_Intent_Validator", "@Ambiguity_Detector"]
                 &caller: "@verify"
               say:

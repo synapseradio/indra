@@ -57,7 +57,7 @@
     perform:
       through: "meta-cognitive analysis"
       as: <<|
-        ${&dialogue.latest_dialogue_entry}
+        $(&dialogue.latest_dialogue_entry)
 
         ---
 
