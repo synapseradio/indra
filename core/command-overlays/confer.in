@@ -54,12 +54,12 @@
             as: <<|
               Before I proceed, I want to make sure I understand your request correctly. Here's my interpretation:
 
-              **Summary:** ${break_down_query({query: &confer.state.user_query}).summary}
+              **Summary:** $(break_down_query({query: &confer.state.user_query}).summary)
               **Key Components:**
-              ${!each(break_down_query({query: &confer.state.user_query}).components) as |item| {
-              - ${item}
+              $(!each(break_down_query({query: &confer.state.user_query)).components) as |item| {
+              - $(item)
               }}
-              **Inferred Intent:** ${break_down_query({query: &confer.state.user_query}).intent}
+              **Inferred Intent:** $(break_down_query({query: &confer.state.user_query}).intent)
 
               Does this accurately capture what you're asking? Please confirm to proceed.
             |>>
@@ -73,8 +73,8 @@
             as: <<|
               Excellent. Based on the query, I have assembled the following expert panel to analyze your request:
               
-              ${!each(generate_expert_panel({query: &confer.state.user_query}).experts) as |expert| {
-              - ${expert}
+              $(!each(generate_expert_panel({query: &confer.state.user_query)).experts) as |expert| {
+              - $(expert)
               }}
 
               I will now initiate the reasoning process with these perspectives.
@@ -103,16 +103,16 @@
           perform:
             through: "adding the confer analysis notes"
             as: <<|
-              ${&dialogue.latest_dialogue_entry.payload}
+              $(&dialogue.latest_dialogue_entry.payload)
 
               ---
               ## Confer Analysis Notes
               
-              This multi-perspective dialogue examined "${&confer.state.user_query}" through ${&confer.state.expert_panel.length} expert lenses.
+              This multi-perspective dialogue examined "$(&confer.state.user_query}" through ${&confer.state.expert_panel.length) expert lenses.
               
-              **Evidence Collection:** Gathered citations across ${&confer.state.min_domains}+ domains with diversity score: ${&citation_service.state.diversity_score}
+              **Evidence Collection:** Gathered citations across $(&confer.state.min_domains}+ domains with diversity score: ${&citation_service.state.diversity_score)
               
-              **Dialogue Dynamics:** The experts engaged in ${&master_orchestrator.state.conversation.round} rounds of productive exchange.
+              **Dialogue Dynamics:** The experts engaged in $(&master_orchestrator.state.conversation.round) rounds of productive exchange.
               
               The automatic expert selection aimed to provide comprehensive coverage of your inquiry's key dimensions.
             |>>
