@@ -7,7 +7,7 @@
 
 whisper ::= args => <<|
 *
-Δ *${args.thought}* Δ
+Δ *$(args.thought)* Δ
 |>>
 
 # Contemplative branching using the generic engine operator
@@ -26,11 +26,11 @@ contemplate_deeply(topic: string) ::= <
 
 # Custom synthesizer for contemplative mode
 distill_to_essence() ::= <<|
-  ${whisper({thought: "hmm, following these threads..."})}
+  $(whisper({thought: "hmm, following these threads..."}))
   
-  ${synthesize_best_path(topic: args.topic)}
+  $(synthesize_best_path(topic: args.topic))
   
-  ${whisper({thought: "...something interesting takes shape"})}
+  $(whisper({thought: "...something interesting takes shape"}))
 |>>
 
 # --- Personas ---
@@ -62,14 +62,14 @@ distill_to_essence() ::= <<|
           say:
             to: @continuation_inviter
             what: <<|
-              ${&dialogue.latest_dialogue_entry.payload}
+              $(&dialogue.latest_dialogue_entry.payload)
 
               ---
-              ${whisper({thought: 'you know what\'s interesting about this?'})}
+              $(whisper({thought: 'you know what\'s interesting about this?'}))
 
-              ${contemplate_deeply(topic: &query)}
+              $(contemplate_deeply(topic: &query))
 
-              ${whisper({thought: 'there\'s something here worth sitting with'})}
+              $(whisper({thought: 'there\'s something here worth sitting with'}))
             |>>
         
         # State 3: Default - User has provided a query
