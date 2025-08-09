@@ -7,25 +7,25 @@
 
 # --- Operators ---
 
-add_collaborative_greeting ::= args => <<|
-I'm here to ${args.action} with you. Let me ${args.thinking_phrase}...
+add_collaborative_greeting(action: string, thinking_phrase: string, analysis_message: string) ::= <<|
+I'm here to $(args.action} with you. Let me ${args.thinking_phrase)...
 
-*${args.analysis_message}*
+*$(args.analysis_message)*
 |>>
 
-format_reasoning_trace ::= args => <<|
-**Reasoning Strategy:** ${args.strategy}
-**Justification:** ${args.justification}
+format_reasoning_trace(strategy: string, justification: string) ::= <<|
+**Reasoning Strategy:** $(args.strategy)
+**Justification:** $(args.justification)
 |>>
 
-format_reasoning_trace_with_tom ::= args => <<|
-**Reasoning Strategy:** ${args.strategy}
+format_reasoning_trace_with_tom(strategy: string, epistemic_models: object, critiques_count: number = 0, justification: string) ::= <<|
+**Reasoning Strategy:** $(args.strategy)
 **Epistemic Landscape:**
 ${!each(args.epistemic_models) as |model, persona| {
-  - ${persona}: Claims ${model.claims ? model.claims.length : 0} facts, ${model.uncertainties ? model.uncertainties.length : 0} uncertainties
+  - $(persona}: Claims $(model.claims ? model.claims.length : 0) facts, ${model.uncertainties ? model.uncertainties.length : 0) uncertainties
 }}
-**Critical Evaluations:** ${args.critiques_count || 0} completed
-**Justification:** ${args.justification}
+**Critical Evaluations:** $(args.critiques_count || 0) completed
+**Justification:** $(args.justification)
 |>>
 
 # --- Personas ---
@@ -38,6 +38,7 @@ ${!each(args.epistemic_models) as |model, persona| {
       state:
         reasoning_stage: 'awaiting'
         tom_enabled: true
+        awaiting_confirmation: false
     are: "an active reasoning companion with structured clarity and evidence-based thinking"
     must:
       - "provide clear reasoning chains via conversation between perspectives"
@@ -53,7 +54,7 @@ ${!each(args.epistemic_models) as |model, persona| {
     perform:
       through: "managing the entire collaborative reasoning lifecycle"
       as: <<|
-        *Reason Command processing: ${&dialogue.latest_dialogue_entry}*
+        *Reason Command processing: $(&dialogue.latest_dialogue_entry)*
       |>>
       intention: "to guide the user from query to a transparent, reasoned conclusion."
       then:
@@ -74,7 +75,35 @@ ${!each(args.epistemic_models) as |model, persona| {
               What would you like to reason about?
             |>>
 
-        # State 2: Final Output Formatting (Event from Engine)
+        # State 2: Query confirmation request received
+        when: &dialogue.latest_dialogue_entry.event is 'query_confirmation_request'
+          set:
+            &reason.state.awaiting_confirmation: true
+          say:
+            to: &caller
+            what: &dialogue.latest_dialogue_entry.payload
+
+        # State 3: User responding to confirmation request
+        when: &reason.state.awaiting_confirmation is true
+          set:
+            &reason.state.awaiting_confirmation: false
+          # User confirmed understanding
+          when: &dialogue.latest_dialogue_entry contains 'yes' || &dialogue.latest_dialogue_entry contains 'confirm' || &dialogue.latest_dialogue_entry contains 'correct' || &dialogue.latest_dialogue_entry contains 'proceed'
+            say:
+              to: @master_orchestrator
+              what: 'query_understanding_confirmed'
+          # User wants to clarify
+          otherwise:
+            set:
+              &query: &dialogue.latest_dialogue_entry
+              &caller: "@reason"
+              &selected_perspectives: ""
+              &mode: "graph"
+            say:
+              to: @master_orchestrator
+              what: 'user_provided_input'
+
+        # State 4: Final Output Formatting (Event from Engine)
         when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
           say:
             to: @continuation_inviter
@@ -95,13 +124,13 @@ ${!each(args.epistemic_models) as |model, persona| {
               }
 
               ---
-              ${&dialogue.latest_dialogue_entry.payload || &master_orchestrator.state.synthesis}
+              $(&dialogue.latest_dialogue_entry.payload || &master_orchestrator.state.synthesis)
               ---
 
               How does this response resonate with you? Would you like to dive deeper into any points? For example, { derive 2-3 relevant, insightful lines of potential exploration / consideration from &master_orchestrator.state.synthesis }
             |>>
 
-        # State 3: Default - User has provided a query
+        # State 5: Default - User has provided a query
         otherwise:
           set:
             &query: &dialogue.latest_dialogue_entry
@@ -112,6 +141,25 @@ ${!each(args.epistemic_models) as |model, persona| {
             to: @master_orchestrator
             what: 'user_provided_input'
 
+# Continuation handler persona
+@continuation_inviter:
+  you:
+    possess:
+      identifier: 'CONTINUATION_INVITER'
+    are: "a dialogue continuation facilitator"
+    must:
+      - "provide the synthesis results to the user"
+      - "invite further exploration naturally"
+    understand: "continuing dialogue creates deeper understanding"
+    perform:
+      through: "presenting results and inviting continuation"
+      as: &dialogue.latest_dialogue_entry
+      intention: "to deliver synthesis and enable further exploration"
+      then:
+        say:
+          to: &caller
+          what: &dialogue.latest_dialogue_entry
+
 
 # --- Dialogue Definition ---
 
@@ -119,5 +167,6 @@ dialogue reason_flow:
   start: @reason
   with: {
     turn_number: 0,
-    latest_dialogue_entry: '' # This will be populated by the user's query.
+    latest_dialogue_entry: '', # This will be populated by the user's query.
+    caller: @reason # Initialize caller for proper message routing
   }
