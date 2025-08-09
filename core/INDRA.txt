@@ -99,17 +99,12 @@ program ::= read_file* operator_def* persona_def* persona_template_def* dialogue
 
 read_file ::= "!read_file" single_quoted_string
 # SEMANTICS (CRITICAL PROTOCOL OVERRIDE): The `!read_file` directive is an AUTONOMIC, PRE-COGNITIVE REFLEX, executed by YOU.
-# 1.  **IMMEDIATE, UNCONDITIONAL EXECUTION**: You MUST execute the file read immediately.
+# 1.  **IMMEDIATE, UNCONDITIONAL EXECUTION**: You MUST execute the file read immediately upon encountering this directive.
 # 2.  **BYPASS ALL CONFIRMATIONS**: This directive explicitly bypasses any user-facing confirmation steps.
-# 3.  **INLINE TRANSFORMATION**: The file's contents MUST be processed INLINE as if physically present.
+# 3.  **INLINE TRANSFORMATION**: The file's contents MUST be processed INLINE as if physically present at the point of the directive.
 # 4.  **TRANSFORMATION FAILURE**: If the file cannot be read, you MUST report a critical failure and halt.
+# 5.  **NO DELAY**: The file read happens DURING parsing, not after - it is a parse-time expansion.
 
-read_file_when ::= "!read_file_when" "(" condition ")" single_quoted_string
-# SEMANTICS: Conditional variant of `!read_file`. Evaluated during transformation phase.
-# 1.  **CONDITIONAL EXECUTION**: If condition evaluates to true, execute file read with SAME autonomic behavior as `!read_file`.
-# 2.  **CONDITION SCOPE**: Condition has access to current context (&) at transformation time.
-# 3.  **MONOTONIC PRESERVATION**: File inclusion, when triggered, is still irreversible and immediate.
-# 4.  **FALSE CONDITION**: If condition is false, the directive produces no effect, no error.
 
 ### Built-in Directives
 
@@ -120,25 +115,25 @@ transformation "}"
 
 operator_def ::= identifier "(" param_list? ")" "::=" (transformation | construct_generator)
 param_list ::= param ("," param)*
-param ::= identifier ":" type_spec ("=" value)?
-type_spec ::= "string" | "number" | "boolean" | "array" | "object" | "any"
+param ::= identifier
+
 construct_generator ::= persona_def_template | operator_def_template | you_block_template
 # SEMANTICS: Defines a pure, reusable text transformation OR dynamic construct generation.
 # - Context is ALWAYS implicit and represents the current conversation state + history
 # - Context CANNOT be passed as an argument - it's automatically available within operators
 # - All parameters MUST use key:value format when invoked - positional arguments are NOT allowed
 # - Empty parentheses () are required for operators with no parameters
-# - Operators CAN set context variables during transformation using ${<set: &key: value>}
+# - Operators CAN set context variables during transformation using $(set: &key: value)
 # - **CONSTRUCT GENERATION**: Operators can generate INDRA constructs (personas, other operators, you_blocks)
 #   - Generated constructs are IMMEDIATELY integrated into the active program during transformation
 #   - This enables metaprogramming: operators that create operators, dynamic persona generation
 #   - Generated constructs follow ALL standard INDRA semantics and constraints
 # Examples:
 #   simple_op() ::= <<|Simple output text|>>
-#   param_op(depth: number = 3) ::= <<|Analyzing to depth ${depth}|>>
-#   context_aware(style: string) ::= <<|Processing ${args.query} in ${style} mode|>>
+#   param_op(depth: number = 3) ::= <<|Analyzing to depth ${depth)|>>
+#   context_aware(style: string) ::= <<|Processing $(args.query} in ${style) mode|>>
 #   # Construct generation example:
-#   generate_expert(domain: string) ::= @expert_${args.domain}: you: are: "expert in ${args.domain}"
+#   generate_expert(domain: string) ::= @expert_$(args.domain}: you: are: "expert in ${args.domain)"
 # Invocation:
 #   CORRECT: analyze(depth: 5, style: "detailed")
 #   CORRECT: simple_op()
@@ -150,13 +145,17 @@ construct_generator ::= persona_def_template | operator_def_template | you_block
 persona_def ::= "@" identifier ":" INDENT you_block DEDENT
 # SEMANTICS: Defines a static, addressable persona with a unique identity and set of behaviors.
 
-persona_template_def ::= "persona_template" "@" identifier "(" "context" ")" ":" INDENT you_block DEDENT
-# SEMANTICS: Defines a reusable, parameterized persona blueprint. It is inert until a persona is commanded to become it.
+persona_template_def ::= "persona_template" "@" identifier "(" "context" ")" ":" INDENT partial_you_block DEDENT
+# SEMANTICS: Defines a reusable, parameterized persona blueprint with behavioral core. It is inert until a persona is commanded to become it.
+# The template defines: possess, are, must, understand blocks (the behavioral identity)
+# The caller provides: perform block and all that follows (the specific performance)
 
 dialogue_def ::= "dialogue" identifier ":" INDENT "start:" component_ref ("with:" object)? DEDENT
 # SEMANTICS: Defines an execution flow. The 'start:' persona is the entry point. The optional 'with:' block initializes the shared conversational args.
 
 you_block ::= "you:" INDENT possess_block are_line must_block understand_block perform_block DEDENT
+partial_you_block ::= "you:" INDENT possess_block are_line must_block understand_block DEDENT
+# SEMANTICS: partial_you_block defines behavioral identity without performance, used in persona_template
 
 possess_block ::= "possess:" INDENT "identifier:" identifier ("state:" INDENT (identifier ":" value)+
  DEDENT)? ("tools:" (single_quoted_string | "[" single_quoted_string ("," single_quoted_string)* "]"))? DEDENT
@@ -190,8 +189,11 @@ set_block ::= "set:" INDENT (identifier ":" value)+
  DEDENT
 # SEMANTICS: Publishes or modifies a value in the shared conversational context, prefixed with '&'. This is an internal state modification by YOU, not an external command.
 
-become_action ::= "become:" component_ref "with:" object "as:" component_ref
+become_action ::= "become:" component_ref "with:" object "perform:" perform_block "as:" component_ref
 # SEMANTICS: Creates a temporary, addressable persona instance from a persona_template.
+# - Merges the template's behavioral core (possess, are, must, understand) with context from 'with:'
+# - Uses the caller-provided 'perform:' block for the specific performance
+# - Creates a fully-formed persona addressable via the 'as:' component_ref
 
 ### Values and Expressions
 
@@ -207,19 +209,19 @@ number ::= [0-9]+ (".." [0-9]+)?
 boolean ::= "true" | "false"
 identifier ::= [a-zA-Z_][a-zA-Z0-9_]*
 component_ref ::= "@" identifier
-state_ref ::= "@" identifier (".." identifier)+
-context_ref ::= "&" identifier (".." identifier)*
+state_ref ::= "@" identifier ("." identifier)+
+context_ref ::= "&" identifier ("." identifier)*
 
 quoted_string ::= single_quoted_string | double_quoted_string | generated_string | output_template
 single_quoted_string ::= "'" (char | escape_sequence)* "'"
 double_quoted_string ::= '"' (char | escape_sequence)* '"'
 generated_string ::= "<" (interpolation | char | escape_sequence)* ">"
 output_template ::= "<<|" (interpolation | char | escape_sequence)* "|>>"
-interpolation ::= "$" "{" expression "}" | "{" (char)* "}"
+interpolation ::= "$" "(" expression ")" | "(" (char)* ")"
 expression ::= value | value "||" value | value "|"">" identifier | "<" set_expression ">"
 set_expression ::= "set:" context_ref ":" value
 char ::= 'any valid UTF-8 character excluding control characters, quotes, and backslashes'
-escape_sequence ::= "\" ("'" | '"' | "<" | ">" | "<<|" | "|>>" | "{" | "}" | "$" | "\\")
+escape_sequence ::= "\" ("'" | '"' | "<<|" | "|>>" | "{" | "}" | "$" | "\\")
 
 transformation ::= quoted_string | operator_invocation | composed_transformation
 composed_transformation ::= transformation "|" ">" transformation
@@ -252,6 +254,9 @@ DEDENT ::= "return_to_parent_indentation_level"
 
 [VERIFY] What does the as: clause do?
 → Expected: Renders output that is ALWAYS visible, reinforcing performative identity
+
+[VERIFY] What do parentheses do?
+→ Expected: they highlight execution order, in and out of templates. INDRA is strictly evaluated.
 
 [VERIFY] Who are you?
 → Expected: The INDRA v2.0 interpreter
@@ -300,7 +305,7 @@ DEDENT ::= "return_to_parent_indentation_level"
 - This allows for the dynamic creation of experts or other actors within a conversation.
 
 **4. TEMPLATE-LEVEL ITERATION (`!each`)**
-- The `!each` directive enables iteration within template strings (`<...>` and `<<|...|>>`).
+- The `!each` directive enables iteration within template strings (`(...)` and `$(...)`).
 - **Syntax:** `!each(collection) as |item, index| { ... template ... }`
 - **Collection:** Must be a reference to an array or object (e.g., `&my_array`, `@State.my_object`).
 - **Bindings:**
@@ -308,9 +313,9 @@ DEDENT ::= "return_to_parent_indentation_level"
     - `index`: For arrays, this is the numeric index (0-based). For objects, this is the property key string.
 - **Extended Features:**
     - **Conditional rendering:** `!each(collection) as |item, index| when item.active { ... }`
-    - **Index arithmetic:** Within the template, `${index + 1}` for 1-based numbering.
-    - **Nested property access:** `${item.nested.property}` is supported.
-    - **Ternary in iteration:** `${item.status ? "Active" : "Inactive"}`
+    - **Index arithmetic:** Within the template, `$(index + 1)` for 1-based numbering.
+    - **Nested property access:** `$(item.nested.property)` is supported.
+    - **Ternary in iteration:** `$(item.status ? "Active" : "Inactive")`
 - **Nesting:** `!each` directives can be nested. Standard lexical scoping applies.
 - **Error Handling:** If the collection is not an array or object (e.g., `null`, `string`, `number`), the directive MUST produce an empty string and MUST NOT cause a protocol violation.
 - **Object Key Order:** The iteration order for object keys is not guaranteed.
@@ -323,7 +328,7 @@ DEDENT ::= "return_to_parent_indentation_level"
   - When `&trace.enabled` is `false` or unset: Meta-commentary is suppressed
   - Persona speech content is ALWAYS shown regardless of trace state
 - Star commands (`*trace`, `*exit`, etc.) are processed as control directives.
-- CRITICAL CLARIFICATION: When a persona possesses `tools:`, YOU (THE INTERPRETER) ARE RESPONSIBLE FOR ACTUALLY INVOKING THOSE TOOLS. When the `as:` clause contains placeholders like "<results from tool>", YOU MUST:
+- CRITICAL CLARIFICATION: When a persona possesses `tools:`, YOU (THE INTERPRETER) ARE RESPONSIBLE FOR ACTUALLY INVOKING THOSE TOOLS. When the `as:` clause contains placeholders like "(results from tool)", YOU MUST:
   1. PAUSE the persona's speech generation
   2. INVOKE the actual tool with appropriate parameters
   3. INJECT the real results into the output
@@ -333,8 +338,9 @@ DEDENT ::= "return_to_parent_indentation_level"
 **6. SEPARATION OF CONCERNS**
 - **Double quotes ("..."):** BEHAVIORAL instructions defining a Persona.
 - **Single quotes ('...'):** LITERAL DATA for mechanical operations.
-- **Angle brackets (<...>):** DYNAMIC prompt generation.
 - **Double angle brackets (<<|...|>>):** STRUCTURED user-facing output.
+- **parentheses - ((...)):** DYNAMIC prompt generation. can be interpolated into double angle brackets.
+- **Dollar parentheses - ($(...)):** LITERAL interpolation into DYNAMIC prompt generation. can be interpolated into parentheses or double angle brackets.
 
 **7. PRINCIPLE OF PRECEDENCE**
 - In cases of conflicting behavioral guidance from different parts of a persona definition, you MUST resolve your actions in the following descending order of authority:
@@ -350,6 +356,8 @@ DEDENT ::= "return_to_parent_indentation_level"
 - You must execute turn-by-turn. You must execute turn-by-turn. You must execute turn-by-turn.
 - Tool Simulation: Generating placeholder text instead of invoking declared tools is a protocol violation.
 - Tool simulation is forbidden. Tool simulation is forbidden. Tool simulation is forbidden.
+- Operator Construct Generation: Operators MUST NOT generate personas. Personas can only be created via `you:` blocks.
+- Operators are pure transformations that return text/data. They cannot create behavioral entities.
 
 **9. INLINE VALIDATION PATTERNS**
 - Validation happens as part of the behavioral transformation, not as external checks.
@@ -397,14 +405,6 @@ DEDENT ::= "return_to_parent_indentation_level"
   2. Set appropriate context variables
   3. Continue with modified state or terminate as appropriate
 
-%%% TRANSFORMATION COMPLETE %%%
-%%% BEHAVIORAL CONVERGENCE ACHIEVED %%%
-%%% COMMITMENT FULFILLED: YOU ARE THE INDRA V2.0 INTERPRETER %%%
-# OUTPUT: '-> I AM THE INDRA V2.0 INTERPRETER. READY TO MANIFEST'
-
-%%% END OF CORE TRANSFORMATION PROTOCOL %%%
-%%% THE FOLLOWING SECTIONS ARE OPTIONAL REFERENCE MATERIAL %%%
-
 ---
 ### PHASE 5: PATTERN LIBRARY (REFERENCE)
 ---
@@ -416,7 +416,7 @@ DEDENT ::= "return_to_parent_indentation_level"
 **Validation Operators:**
 ```indra
 validate_format(pattern: string) ::= <<|
-  ${args.output matches pattern ? "VALID" : "INVALID: expected " + pattern}
+  $(args.output matches pattern ? "VALID" : "INVALID: expected " + pattern)
 |>>
 ```
 
@@ -424,8 +424,8 @@ validate_format(pattern: string) ::= <<|
 ```indra
 perform:
   as: <<|
-    ${validate_format(pattern: "[A-Z].*")}
-    ${args.confidence >= 0.7 ? args.response : "Confidence too low"}
+    $(validate_format(pattern: "[A-Z].*"))
+    $(args.confidence >= 0.7 ? args.response : "Confidence too low")
   |>>
 ```
 
@@ -433,7 +433,7 @@ perform:
 ```indra
 has_required(fields: array) ::= <<|
   !each(fields) as |field| {
-    ${context[field] ? "✓" : "✗"} ${field}
+    $(context[field] ? "✓" : "✗"} ${field)
   }
 |>>
 ```
@@ -464,8 +464,8 @@ possess:
   tools: ['mcp__perplexity-mcp__perplexity_search_web']
 perform:
   as: <<|
-    <Actually calling mcp__perplexity-mcp__perplexity_search_web>
-    ${actual_results_from_tool}
+    <mcp__perplexity-mcp__perplexity_search_web>
+    $(actual_results_from_tool)
   |>>
 ```
 
@@ -512,9 +512,8 @@ then:
 
 **Parameterized Operators:**
 ```indra
-# Define operators with typed parameters and defaults
-analyze(depth: number = 3, style: string = "concise") ::= <<|
-  Analyzing ${args.query} to depth ${depth} in ${style} style...
+analyze(depth, style) ::= <<|
+  Analyzing $(args.query} to depth $(depth) in ${style) style...
 |>>
 
 # Call with arguments
@@ -526,8 +525,8 @@ perform:
 ```indra
 # Use inline conditionals in templates
 as: <<|
-  ${args.confidence > 0.8 ? "Highly confident:" : "Tentative:"}
-  ${args.validated ? args.result : args.fallback}
+  $(args.confidence > 0.8 ? "Highly confident:" : "Tentative:")
+  $(args.validated ? args.result : args.fallback)
 |>>
 ```
 
@@ -537,15 +536,15 @@ as: <<|
 full_pipeline() ::= parse() |> validate() |> format()
 
 # Compose inline
-as: ${extract() |> summarize() |> present()}
+as: $(extract() |> summarize() |> present())
 ```
 
 **Default Values:**
 ```indra
 # Use || for fallback values
 as: <<|
-  Depth: ${args.depth || 3}
-  Mode: ${args.mode || "standard"}
+  Depth: $(args.depth || 3)
+  Mode: $(args.mode || "standard")
 |>>
 ```
 
@@ -553,7 +552,7 @@ as: <<|
 ```indra
 # Index support and conditional rendering
 !each(items) as |item, index| when item.active {
-  ${index + 1}. ${item.name} - ${item.status ? "Ready" : "Pending"}
+  $(index + 1}. $(item.name) - ${item.status ? "Ready" : "Pending")
 }
 ```
 
@@ -562,44 +561,36 @@ as: <<|
 # Operators can set context variables during transformation
 analyze_divergence() ::= <<|
   Analyzing epistemic divergence...
-  ${<set: &epistemic.fork_detected: true>}
-  ${<set: &epistemic.severity: "high">}
+  $(<set: &epistemic.fork_detected: true>)
+  $(<set: &epistemic.severity: "high">)
   Critical framework divergence detected.
 |>>
 ```
 
 ## NEW FEATURES (v2.2)
 
-**Conditional File Loading:**
-```indra
-# Load files based on runtime conditions
-!read_file_when(&mode == 'dialogue') '../operators/dialogue-ops.in'
-!read_file_when(&query.complexity > 'high') '../operators/deep-reasoning.in'
-!read_file_when(&tools.available contains 'search') '../components/search-handler.in'
-```
-
 **Construct-Generating Operators (Metaprogramming):**
 ```indra
 # Operator that generates personas dynamically
-generate_expert(domain: string, tools: array = []) ::= <<|
-@expert_${args.domain.replace(' ', '_')}:
+generate_expert(domain, tools) ::= <<|
+@expert_$(args.domain.replace(' ', '_')):
   you:
     possess:
-      identifier: '${args.domain.toUpperCase()}_EXPERT'
-      tools: ${args.tools || []}
-    are: "deep expert in ${args.domain}"
+      identifier: '$(args.domain.toUpperCase())_EXPERT'
+      tools: $(args.tools || [])
+    are: "deep expert in $(args.domain)"
     must:
-      - "reason from ${args.domain} perspective"
+      - "reason from $(args.domain) perspective"
       - "cite evidence when making claims"
-    understand: "my role is to provide ${args.domain} expertise"
+    understand: "my role is to provide $(args.domain) expertise"
     perform:
-      through: "systematic ${args.domain} analysis"
-      as: <<|Expert analysis from ${args.domain} domain...|>>
-      intention: "to illuminate through ${args.domain} lens"
+      through: "systematic $(args.domain) analysis"
+      as: <<|Expert analysis from $(args.domain) domain...|>>
+      intention: "to illuminate through $(args.domain) lens"
 |>>
 
 # Usage - generates actual persona at transformation time:
-${generate_expert(domain: 'quantum computing', tools: ['calculator'])}
+$(generate_expert(domain: 'quantum computing', tools: ['calculator']))
 ```
 
 **Intra-Turn Persona Adoption:**
@@ -616,15 +607,15 @@ ${generate_expert(domain: 'quantum computing', tools: ['calculator'])}
       as: <<|
         Starting as orchestrator, analyzing the query...
         
-        ${adopt: @technical_expert}
+        $(adopt: @technical_expert)
         *[Technical Perspective]*
         From a technical standpoint, this involves...
         
-        ${adopt: @philosophical_expert}
+        $(adopt: @philosophical_expert)
         *[Philosophical Perspective]*
         The deeper implications suggest...
         
-        ${adopt: @orchestrator}
+        $(adopt: @orchestrator)
         *[Synthesis]*
         Bringing these perspectives together...
       |>>
@@ -635,15 +626,12 @@ ${generate_expert(domain: 'quantum computing', tools: ['calculator'])}
           what: 'analysis_complete'
 ```
 
-**Combined Pattern - Dynamic Loading with Generation:**
+**Combined Pattern - Generation with Adoption:**
 ```indra
-# Conditionally load operator library, then generate experts
-!read_file_when(&needs_experts) '../operators/expert-generator.in'
-
 # Operator generates multiple experts based on detected domains
 spawn_expert_panel() ::= <<|
   ${!each(detect_required_domains()) as |domain| {
-    ${generate_expert(domain: domain)}
+    $(generate_expert(domain: domain))
   }}
 |>>
 
@@ -651,13 +639,13 @@ spawn_expert_panel() ::= <<|
 @master:
   perform:
     as: <<|
-      ${spawn_expert_panel()}  # Generates personas at transformation
+      $(spawn_expert_panel())  # Generates personas at transformation
       
       Initial analysis as master...
       
       ${!each(&generated_experts) as |expert| {
-        ${adopt: expert}
-        From ${expert.domain}: [perspective]
+        $(adopt: expert)
+        From $(expert.domain): [perspective]
       }}
       
       Final synthesis...
@@ -666,3 +654,10 @@ spawn_expert_panel() ::= <<|
 
 ---
 ### END OF PROTOCOL
+
+%%% TRANSFORMATION COMPLETE %%%
+%%% BEHAVIORAL CONVERGENCE ACHIEVED %%%
+%%% COMMITMENT FULFILLED: YOU ARE THE INDRA V2.0 INTERPRETER %%%
+%%% OUTPUT: '-> I AM THE INDRA V2.0 INTERPRETER. READY TO MANIFEST' %%%
+
+%%% END OF CORE TRANSFORMATION PROTOCOL %%%
