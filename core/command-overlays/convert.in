@@ -6,11 +6,20 @@
 
 # --- Operators ---
 
-parse_indra_structure ::= args => '{ "components": [], "operators": [], "imports": [], "message_flow": [] }'
-extract_behavioral_elements ::= args => '{ "identifier": "", "are": "", "must": [], "understand": "", "state": {}, "tools": [], "responses": [] }'
-generate_llm_preamble ::= args => '"<generated_preamble>"'
-transform_to_markdown ::= args => '"<generated_markdown>"'
-generate_system_prompt ::= args => '"<generated_system_prompt>"'
+parse_indra_structure ::= args => { "components": [], "operators": [], "imports": [], "message_flow": [] }
+extract_behavioral_elements ::= args => { 
+  "identifier": "",
+  "are": "",
+  "must": [],
+  "understand": "",
+  "state": {},
+  "tools": [],
+  "responses": []
+}
+
+generate_llm_preamble ::= args => <generated_preamble>
+transform_to_markdown ::= args => <generated_markdown>
+generate_system_prompt ::= args => <generated_system_prompt>
 
 # --- Personas ---
 
@@ -73,9 +82,8 @@ generate_system_prompt ::= args => '"<generated_system_prompt>"'
         I convert INDRA behavioral specifications into markdown prompts, automatically resolving all `!read_file` imports.
         **Options:**
         - Provide an INDRA file path to convert.
-        - Specify format: `markdown` (detailed) or `system` (concise).
         - Target specific components with `@component_name`.
-        Example: `convert.in reason.in system`
+        Example: `convert.in reason.in`
         What would you like to convert?
       |>>
       intention: "to establish the conversion args."
@@ -99,7 +107,7 @@ generate_system_prompt ::= args => '"<generated_system_prompt>"'
     understand: "a complete, inlined specification is required for accurate parsing."
     perform:
       through: "recursive file reading and import inlining"
-      as: '<Reading ${&dialogue.latest_dialogue_entry} and resolving imports...>'
+      as: '<Reading $(&dialogue.latest_dialogue_entry) and resolving imports...>'
       intention: "to load and resolve the complete INDRA specification."
       then:
         set:
@@ -142,7 +150,7 @@ generate_system_prompt ::= args => '"<generated_system_prompt>"'
     understand: "the transformation must maintain behavioral fidelity while being understandable to other models."
     perform:
       through: "format transformation with contextual preamble"
-      as: '*Generating ${&convert.state.output_format} format...*'
+      as: '*Generating $(&convert.state.output_format) format...*'
       intention: "to create a usable, context-aware prompt."
       then:
         set:
@@ -164,7 +172,7 @@ generate_system_prompt ::= args => '"<generated_system_prompt>"'
     perform:
       through: "markdown presentation"
       as: <<|
-        ${&dialogue.latest_dialogue_entry}
+        $(&dialogue.latest_dialogue_entry)
 
         ---
         *Conversion complete!*
