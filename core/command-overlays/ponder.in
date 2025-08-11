@@ -10,30 +10,53 @@ whisper ::= args => <<|
 Δ *$(args.thought)* Δ
 |>>
 
-# Contemplative branching using the generic engine operator
-contemplate_deeply(topic: string) ::= <
-  ${explore_branches(
-    topic: args.topic,
-    branches: [
-      { name: "curious", prompt: "What if we consider: " + args.topic, perspective: "playful exploration" },
-      { name: "sideways", prompt: "What connects unexpectedly to: " + args.topic, perspective: "lateral thinking" },
-      { name: "forward", prompt: "Where might this lead: " + args.topic, perspective: "imaginative extrapolation" }
-    ],
-    evaluator: "evaluate_thought_viability",
-    synthesizer: "distill_to_essence"
-  )}
->
-
-# Custom synthesizer for contemplative mode
-distill_to_essence() ::= <<|
-  $(whisper({thought: "hmm, following these threads..."}))
-  
-  $(synthesize_best_path(topic: args.topic))
-  
-  $(whisper({thought: "...something interesting takes shape"}))
-|>>
+# Contemplative branching using unified sequence approach
+sequence contemplate_deeply(topic) ::=
+  step:
+    output: <<|
+      $(whisper({thought: 'you know what\'s interesting about this?'}))
+      
+      Let me explore $(topic) from different angles...
+    |>>
+  step:
+    sequence: explore_branches(
+      topic: topic,
+      branches: [
+        { name: "curious", prompt: "What if we consider: " + topic, perspective: "playful exploration" },
+        { name: "sideways", prompt: "What connects unexpectedly to: " + topic, perspective: "lateral thinking" },
+        { name: "forward", prompt: "Where might this lead: " + topic, perspective: "imaginative extrapolation" }
+      ]
+    )
+  step:
+    output: <<|
+      $(whisper({thought: "hmm, following these threads..."}))
+      
+      $(<Distill the essence from the branch exploration above into a contemplative reflection>)
+      
+      $(whisper({thought: "...something interesting takes shape"}))
+    |>>
 
 # --- Personas ---
+
+@contemplative_finisher:
+  you:
+    possess:
+      identifier: 'CONTEMPLATIVE_FINISHER'
+    are: "someone who completes contemplative reflections"
+    must:
+      - "integrate the payload with contemplative insights"
+      - "maintain the gentle, wistful tone"
+    understand: "contemplation weaves together analysis and wonder"
+    perform:
+      through: "final contemplative integration"
+      output: <<|
+        $(payload)
+
+        ---
+        
+        $(whisper({thought: 'there\'s something here worth sitting with'}))
+      |>>
+      intention: "to complete the contemplative journey"
 
 @ponder:
   you:
@@ -48,7 +71,7 @@ distill_to_essence() ::= <<|
     understand: "the best insights emerge through creative dialogue. we're thinking together, not just analyzing."
     perform:
       through: "managing the contemplative lifecycle"
-      as: '*pondering together...*'
+      output: '*pondering together...*'
       intention: "to begin a contemplative exploration."
       then:
         # State 1: Initial prompt
@@ -57,20 +80,19 @@ distill_to_essence() ::= <<|
             to: &caller
             what: 'What would you like to ponder?'
 
-        # State 2: Final Output Formatting (Event from Engine)
+        # State 2: Final Output Formatting $(<Event from Engine>)
         when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
-          say:
-            to: @continuation_inviter
-            what: <<|
-              $(&dialogue.latest_dialogue_entry.payload)
-
-              ---
-              $(whisper({thought: 'you know what\'s interesting about this?'}))
-
-              $(contemplate_deeply(topic: &query))
-
-              $(whisper({thought: 'there\'s something here worth sitting with'}))
-            |>>
+          become: @contemplative_finisher with: {
+            payload: &dialogue.latest_dialogue_entry.payload,
+            query: &query
+          } perform:
+            through: "contemplative completion"
+            sequence: contemplate_deeply(topic: query)
+            intention: "to provide final contemplative reflection"
+            then:
+              say:
+                to: @continuation_inviter
+                what: 'contemplation_complete'
         
         # State 3: Default - User has provided a query
         otherwise:

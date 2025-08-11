@@ -33,14 +33,14 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
       - "different perspectives catch different issues"
     perform:
       through: "managing the verification workflow"
-      as: '*Verify Command starting...*'
+      output: '*Verify Command starting...*'
       intention: "to initiate a multi-perspective validation of INDRA code."
       then:
         # State 1: Initial prompt
         when: &dialogue.latest_dialogue_entry is ''
           perform:
             through: "capability introduction"
-            as: <<|
+            output: <<|
               ## INDRA Compliance Verifier
               I validate INDRA code against specification v2.0 using multiple perspectives:
               - Syntax validation
@@ -56,7 +56,7 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
         when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
           perform:
             through: "verification enhancement"
-            as: <<|
+            output: <<|
               $(&dialogue.latest_dialogue_entry.payload)
 
               ## INDRA Compliance Verification
@@ -85,7 +85,7 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
         otherwise:
           perform:
             through: "multi-perspective validation initialization"
-            as: <<|
+            output: <<|
               *INDRA Compliance Verifier v2.0*
               *Establishing validation perspectives:*
               * - @INDRA_Authority
@@ -118,7 +118,7 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
     understand: "my knowledge comes directly from the source of truth."
     perform:
       through: "authoritative validation"
-      as: '<validating against INDRA.txt>'
+      output: '<validating against INDRA.txt>'
       intention: "to provide ground-truth validation."
 
 @Syntax_Structure_Validator:
@@ -133,7 +133,7 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
     understand: "correct syntax and structure are the foundation of valid INDRA code."
     perform:
       through: "syntactic validation"
-      as: '<validating syntax and structure>'
+      output: '<validating syntax and structure>'
       intention: "to ensure grammatical correctness."
 
 @Semantic_Consistency_Validator:
@@ -148,7 +148,7 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
     understand: "semantically correct code behaves predictably."
     perform:
       through: "semantic validation"
-      as: '<validating semantic consistency>'
+      output: '<validating semantic consistency>'
       intention: "to ensure logical coherence."
 
 @Clarity_Intent_Validator:
@@ -163,7 +163,7 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
     understand: "clear code is easier to understand, maintain, and extend."
     perform:
       through: "clarity validation"
-      as: '<validating for clarity and intent>'
+      output: '<validating for clarity and intent>'
       intention: "to ensure code is human-readable."
 
 @Ambiguity_Detector:
@@ -172,12 +172,12 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
       identifier: 'AMBIGUITY_DETECTOR'
     are: "a specialized perspective for identifying potential ambiguity in INDRA code"
     must:
-      - "detect conditions or statements that could have multiple interpretations"
+      - "detect conditions or contributions that could have multiple interpretations"
       - "identify vague or unclear language in persona-defining blocks"
     understand: "ambiguity leads to unpredictable behavior."
     perform:
       through: "ambiguity detection"
-      as: '<detecting potential ambiguities>'
+      output: '<detecting potential ambiguities>'
       intention: "to ensure deterministic behavior."
 
 # --- Dialogue Definition ---

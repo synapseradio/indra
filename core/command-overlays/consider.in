@@ -7,7 +7,7 @@
 # --- Operators ---
 
 propose_expert_panel(query: string) ::= <<|
-Analyzing query: "$(args.query)"
+Analyzing query: $(args.query)
 
 I suggest assembling a panel of experts with diverse perspectives relevant to your question. The panel should include domain specialists who can address technical aspects, strategic thinkers who can consider broader implications, and practical experts who understand real-world applications.
 
@@ -27,7 +27,7 @@ This combination will provide comprehensive coverage of the topic from multiple 
     understand: "effective expert selection is crucial for quality analysis"
     perform:
       through: "query analysis and expert proposal"
-      as: <<|
+      output: <<|
         ## Understanding Your Request
         $(propose_expert_panel(query: &dialogue.latest_dialogue_entry))
 
@@ -62,7 +62,7 @@ This combination will provide comprehensive coverage of the topic from multiple 
     understand: "users should understand how their approved experts contributed to the final analysis"
     perform:
       through: "deliberative interpretation"
-      as: <<|
+      output: <<|
         <{&dialogue.latest_dialogue_entry}>
 
         ---
@@ -99,7 +99,7 @@ This combination will provide comprehensive coverage of the topic from multiple 
     understand: "the task is to facilitate and output citation-backed expert dialogue with user consent at key stages."
     perform:
       through: "managing the deliberative analysis workflow"
-      as: '*Consider Command processing...*'
+      output: '*Consider Command processing...*'
       intention: "to guide a query through a user-approved, evidence-based analysis."
       then:
         # State 1: Awaiting user query
@@ -110,7 +110,7 @@ This combination will provide comprehensive coverage of the topic from multiple 
 
         # State 2: Awaiting user confirmation on the expert panel
         when: &consider.state.phase is 'awaiting_confirmation'
-          when: &dialogue.latest_dialogue_entry == 'yes'
+          when: &dialogue.latest_dialogue_entry is 'yes'
             set:
               &consider.state.phase: 'reasoning'
               &consider.state.selected_perspectives: &consider.state.proposed_experts
@@ -134,7 +134,7 @@ This combination will provide comprehensive coverage of the topic from multiple 
             to: @master_orchestrator
             what: 'user_provided_input'
 
-        # State 4: Final Output Formatting (Event from Engine)
+        # State 4: Final Output Formatting $(<Event from Engine>)
         when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
           say:
             to: @consider_finalizer

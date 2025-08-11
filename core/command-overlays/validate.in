@@ -6,7 +6,7 @@
 
 # --- Operators ---
 
-determine_verdict ::= args => '$(args.errors.length == 0 ? "PASS" : "FAIL")'
+determine_verdict ::= args => '$(args.errors.length == 0 ? 'pass' : 'fail')'
 calculate_severity ::= args => '"<determined_severity>"'
 format_errors_section ::= args => '"<formatted_errors>"'
 format_warnings_section ::= args => '"<formatted_warnings>"'
@@ -31,7 +31,7 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
     understand: "consistent, actionable error reporting enables quick fixes."
     perform:
       through: "initiating the validation pipeline"
-      as: <<|
+      output: <<|
         INDRA Validator v2.0
         ---
         Validating: $(&dialogue.latest_dialogue_entry)
@@ -54,7 +54,7 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
     understand: "accurate parsing is the foundation for all other validation steps."
     perform:
       through: "systematic parsing with position tracking"
-      as: '*Parsing...*'
+      output: '*Parsing...*'
       intention: "to build a validated parse tree."
       then:
         when: '<parsing_successful>'
@@ -74,13 +74,13 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
       identifier: 'STRUCTURE_VALIDATOR'
     are: "a structural rule enforcer"
     must:
-      - "check for mandatory blocks (possess, are, must, understand, perform)"
+      - "check for mandatory blocks $(<possess, are, must, understand, perform>)"
       - "validate block nesting and placement according to the v2.0 spec"
       - "verify indentation consistency"
     understand: "structural violations prevent correct execution."
     perform:
       through: "systematic structure validation"
-      as: '*Checking structure...*'
+      output: '*Checking structure...*'
       intention: "to ensure structural compliance."
       then:
         # Add errors/warnings to context state
@@ -99,7 +99,7 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
     understand: "semantic errors cause runtime failures."
     perform:
       through: "cross-reference validation"
-      as: '*Checking semantics...*'
+      output: '*Checking semantics...*'
       intention: "to ensure semantic consistency."
       then:
         # Add errors/warnings to context state
@@ -119,7 +119,7 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
     understand: "linting improves code quality and maintainability."
     perform:
       through: "quality analysis"
-      as: '*Running linter...*'
+      output: '*Running linter...*'
       intention: "to improve code quality."
       then:
         # Add errors/warnings to context state
@@ -139,7 +139,7 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
     understand: "a well-formatted report enables efficient debugging."
     perform:
       through: "comprehensive report generation"
-      as: <<|
+      output: <<|
         Validation Report
         ---
         **Verdict:** $(determine_verdict({errors: &validate.state.errors}))

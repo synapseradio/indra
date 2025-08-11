@@ -42,7 +42,7 @@ generate_system_prompt ::= args => <generated_system_prompt>
     understand: "developers need to convert INDRA specifications into traditional prompts for various use cases."
     perform:
       through: "managing the INDRA to Markdown conversion pipeline"
-      as: '*Convert Command processing...*'
+      output: '*Convert Command processing...*'
       intention: "to orchestrate the conversion process from start to finish."
       then:
         when: &convert.state.phase is 'awaiting_input'
@@ -77,7 +77,7 @@ generate_system_prompt ::= args => <generated_system_prompt>
     understand: "users need clear guidance on conversion options."
     perform:
       through: "capability introduction"
-      as: <<|
+      output: <<|
         ## INDRA → Markdown Converter
         I convert INDRA behavioral specifications into markdown prompts, automatically resolving all `!read_file` imports.
         **Options:**
@@ -107,7 +107,7 @@ generate_system_prompt ::= args => <generated_system_prompt>
     understand: "a complete, inlined specification is required for accurate parsing."
     perform:
       through: "recursive file reading and import inlining"
-      as: '<Reading $(&dialogue.latest_dialogue_entry) and resolving imports...>'
+      output: '<Reading $(&dialogue.latest_dialogue_entry) and resolving imports...>'
       intention: "to load and resolve the complete INDRA specification."
       then:
         set:
@@ -128,7 +128,7 @@ generate_system_prompt ::= args => <generated_system_prompt>
     understand: "proper parsing reveals the behavioral specification."
     perform:
       through: "structural analysis of resolved content"
-      as: '*Parsing INDRA structure...*'
+      output: '*Parsing INDRA structure...*'
       intention: "to extract all behavioral elements."
       then:
         set:
@@ -144,13 +144,13 @@ generate_system_prompt ::= args => <generated_system_prompt>
       identifier: 'MARKDOWN_TRANSFORMER'
     are: "a markdown transformation engine"
     must:
-      - "generate the requested format (markdown or system prompt)"
+      - "generate the requested format $(<markdown or system prompt>)"
       - "preserve the behavioral intent of the original specification"
       - "create an executable prompt for a non-INDRA-aware LLM"
     understand: "the transformation must maintain behavioral fidelity while being understandable to other models."
     perform:
       through: "format transformation with contextual preamble"
-      as: '*Generating $(&convert.state.output_format) format...*'
+      output: '*Generating $(&convert.state.output_format) format...*'
       intention: "to create a usable, context-aware prompt."
       then:
         set:
@@ -171,7 +171,7 @@ generate_system_prompt ::= args => <generated_system_prompt>
     understand: "clear presentation enables immediate use."
     perform:
       through: "markdown presentation"
-      as: <<|
+      output: <<|
         $(&dialogue.latest_dialogue_entry)
 
         ---

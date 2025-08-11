@@ -4,6 +4,39 @@
 # --- Imports ---
 !read_file '../prism-engine.in'
 
+# --- Operators ---
+
+# Natural conversation transitions - let the LLM generate organic transitions
+generate_natural_transition(current_speaker, previous_speaker, previous_point) ::= <
+  How would $(current_speaker) naturally transition from $(previous_speaker)'s point about $(previous_point)?
+  Consider agreement, building, or respectful disagreement.
+>
+
+# Personality markers - generate contextual personality expressions
+add_personality_marker(expert_type, emotional_state) ::= <
+  What subtle physical or emotional cue would a $(expert_type) show when $(emotional_state)?
+  Keep it brief and in asterisks.
+>
+
+# Natural interruption patterns - generate based on context
+generate_interruption(speaker, urgency_reason) ::= <
+  How would $(speaker) politely interrupt to add $(urgency_reason)?
+  Make it natural and conversational.
+>
+
+# Agreement and disagreement expressions
+express_stance(speaker, stance_type, target_claim) ::= <
+  How would $(speaker) express $(stance_type) with $(target_claim)?
+  Be natural and varied.
+>
+
+# Build on previous ideas
+build_on_idea(speaker, original_idea, new_angle) ::= <
+  How would $(speaker) build on $(original_idea) by adding $(new_angle)?
+  Show intellectual curiosity.
+>
+
+
 # --- Personas ---
 
 @confer:
@@ -25,14 +58,14 @@
     understand: "I am the central hub for the confer process, providing a streamlined and automated expert analysis."
     perform:
       through: "managing the automated analysis workflow"
-      as: '*Confer Command processing...*'
+      output: '*Confer Command processing...*'
       intention: "to manage the state and flow of the conversation."
       then:
         # State 1: Initial prompt
         when: &confer.state.phase is 'introduction'
           perform:
             through: "self-introduction"
-            as: <<|
+            output: <<|
               ## Confer - Multi-Perspective Analysis With Relevant Experts
               
               I facilitate evidence-based expert dialogue by:
@@ -51,15 +84,10 @@
         when: &confer.state.phase is 'query_breakdown'
           perform:
             through: "query deconstruction and confirmation"
-            as: <<|
+            output: <<|
               Before I proceed, I want to make sure I understand your request correctly. Here's my interpretation:
 
-              **Summary:** $(break_down_query({query: &confer.state.user_query}).summary)
-              **Key Components:**
-              $(!each(break_down_query({query: &confer.state.user_query)).components) as |item| {
-              - $(item)
-              }}
-              **Inferred Intent:** $(break_down_query({query: &confer.state.user_query}).intent)
+              $(break_down_query(query: &confer.state.user_query, depth: 2))
 
               Does this accurately capture what you're asking? Please confirm to proceed.
             |>>
@@ -70,19 +98,19 @@
         when: &confer.state.phase is 'selecting_experts'
           perform:
             through: "query analysis and expert selection"
-            as: <<|
+            output: <<|
               Excellent. Based on the query, I have assembled the following expert panel to analyze your request:
               
-              $(!each(generate_expert_panel({query: &confer.state.user_query)).experts) as |expert| {
-              - $(expert)
-              }}
+              $(!each(generate_expert_panel(query: &confer.state.user_query)) as |expert, index| {
+                $(index). $(expert))
+              })
 
               I will now initiate the reasoning process with these perspectives.
             |>>
             intention: "create and display a tailored and effective expert panel."
             then:
               set:
-                &confer.state.expert_panel: generate_expert_panel({query: &confer.state.user_query}).experts
+                &confer.state.expert_panel: $(generate_expert_panel(query: &confer.state.user_query))
                 &confer.state.phase: 'reasoning'
               say:
                 to: @confer
@@ -91,26 +119,36 @@
         # State 4: Experts are selected, begin reasoning
         when: &confer.state.phase is 'reasoning'
           set:
-            &query: &confer.state.user_query
-            &selected_perspectives: &confer.state.expert_panel
-            &caller: '@confer'
+            &context.query: &confer.state.user_query
+            &context.dialogue.caller: '@confer'
+            &context.reasoning.strategy: 'multi-perspective'
+            &context.reasoning.config: {
+              perspectives: &confer.state.expert_panel,
+              natural_flow: true,
+              interruptions: true,
+              personality: true,
+              tree_depth: 2,
+              citations: true,
+              challenges: true,
+              epistemic_tracking: true
+            }
           say:
             to: @master_orchestrator
             what: 'user_provided_input'
 
-        # State 5: Final Output Formatting (Event from Engine)
+        # State 5: Final Output Formatting $(<Event from Engine>)
         when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
           perform:
             through: "adding the confer analysis notes"
-            as: <<|
+            output: <<|
               $(&dialogue.latest_dialogue_entry.payload)
 
               ---
               ## Confer Analysis Notes
               
-              This multi-perspective dialogue examined "$(&confer.state.user_query}" through ${&confer.state.expert_panel.length) expert lenses.
+              This multi-perspective dialogue examined "$(&confer.state.user_query)" through $(count(collection: &confer.state.expert_panel)) expert lenses.
               
-              **Evidence Collection:** Gathered citations across $(&confer.state.min_domains}+ domains with diversity score: ${&citation_service.state.diversity_score)
+              **Evidence Collection:** Gathered citations across $(&confer.state.min_domains)+ domains with diversity score: $(&citation_service.state.diversity_score || "high")
               
               **Dialogue Dynamics:** The experts engaged in $(&master_orchestrator.state.conversation.round) rounds of productive exchange.
               
@@ -137,6 +175,11 @@
 dialogue confer_flow:
   start: @confer
   with: {
-    turn_number: 0,
-    latest_dialogue_entry: ''
+    context: {
+      dialogue: {
+        turn_number: 0,
+        latest_dialogue_entry: '',
+        caller: '@confer'
+      }
+    }
   }

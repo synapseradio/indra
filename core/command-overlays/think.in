@@ -8,7 +8,7 @@
 # --- Operators ---
 
 generate_next_thought(problem: string, thoughts: array = []) ::= <<|
-Based on the problem "$(args.problem)" and the $(args.thoughts.length) previous thoughts, the next logical step in the reasoning chain would be to <generate next thought step based on problem context and prior analysis>.
+Based on the problem $(args.problem) and the $(args.thoughts.length) previous thoughts, the next logical step in the reasoning chain would be to <generate next thought step based on problem context and prior analysis>.
 
 <If more analysis needed, indicate continuation; if solution reached, indicate completion>
 |>>
@@ -48,7 +48,7 @@ After a thorough thinking process, the following conclusion has been reached:
     understand: "I analyze problems through a flexible thinking process, building on, questioning, and revising previous insights to reach a correct answer."
     perform:
       through: "managing the sequential thinking process"
-      as: '*Think Command processing: $(&dialogue.latest_dialogue_entry)*'
+      output: '*Think Command processing: $(&dialogue.latest_dialogue_entry)*'
       intention: "to solve a problem through a transparent, step-by-step process."
       then:
         when: &think.state.phase is 'awaiting_problem'
@@ -71,7 +71,7 @@ After a thorough thinking process, the following conclusion has been reached:
     understand: "a clear introduction sets the stage for effective problem-solving."
     perform:
       through: "self-introduction"
-      as: <<|
+      output: <<|
         ## Sequential Thinking Engine
         I analyze problems using a dynamic, step-by-step thinking process. I can revise my thoughts, explore different branches of reasoning, and form hypotheses to reach a solution.
         What problem would you like me to think through?
@@ -95,7 +95,7 @@ After a thorough thinking process, the following conclusion has been reached:
     understand: "each step in the chain of thought builds upon the last, moving closer to a solution."
     perform:
       through: "single thought generation and evaluation"
-      as: <<|
+      output: <<|
         $(format_thought_for_display(
           thought_number: &think.state.thoughts.length + 1,
           thought_text: generate_next_thought(
@@ -130,7 +130,7 @@ After a thorough thinking process, the following conclusion has been reached:
     understand: "the culmination of the thinking process is a clear and well-reasoned solution."
     perform:
       through: "final answer synthesis"
-      as: <<|
+      output: <<|
         $(synthesize_final_answer({thoughts: &think.state.thoughts}))
       |>>
       intention: "to provide the definitive answer to the user's problem."

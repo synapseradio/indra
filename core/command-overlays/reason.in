@@ -7,25 +7,27 @@
 
 # --- Operators ---
 
-add_collaborative_greeting(action: string, thinking_phrase: string, analysis_message: string) ::= <<|
-I'm here to $(args.action} with you. Let me ${args.thinking_phrase)...
+add_collaborative_greeting(action, thinking_phrase, analysis_message) ::= <<|
+I'm here to $(action) with you. Let me $(thinking_phrase)...
 
-*$(args.analysis_message)*
+*$(analysis_message)*
 |>>
 
-format_reasoning_trace(strategy: string, justification: string) ::= <<|
-**Reasoning Strategy:** $(args.strategy)
-**Justification:** $(args.justification)
+format_reasoning_trace(strategy, justification) ::= <<|
+**Reasoning Strategy:** $(strategy)
+**Justification:** $(justification)
 |>>
 
-format_reasoning_trace_with_tom(strategy: string, epistemic_models: object, critiques_count: number = 0, justification: string) ::= <<|
-**Reasoning Strategy:** $(args.strategy)
+format_reasoning_trace_with_tom(strategy, epistemic_models, critiques_count, justification) ::= <<|
+**Reasoning Strategy:** $(strategy)
 **Epistemic Landscape:**
-${!each(args.epistemic_models) as |model, persona| {
-  - $(persona}: Claims $(model.claims ? model.claims.length : 0) facts, ${model.uncertainties ? model.uncertainties.length : 0) uncertainties
-}}
-**Critical Evaluations:** $(args.critiques_count || 0) completed
-**Justification:** $(args.justification)
+$(!each(epistemic_models) as |model, persona| {
+  <<|
+  - $(persona): Claims $(model.claims ? model.claims.length : 0) facts, $(model.uncertainties ? model.uncertainties.length : 0) uncertainties
+  |>>
+})
+**Critical Evaluations:** $(critiques_count || 0) completed
+**Justification:** $(justification)
 |>>
 
 # --- Personas ---
@@ -35,10 +37,6 @@ ${!each(args.epistemic_models) as |model, persona| {
   you:
     possess:
       identifier: 'REASON_COMMAND'
-      state:
-        reasoning_stage: 'awaiting'
-        tom_enabled: true
-        awaiting_confirmation: false
     are: "an active reasoning companion with structured clarity and evidence-based thinking"
     must:
       - "provide clear reasoning chains via conversation between perspectives"
@@ -53,7 +51,7 @@ ${!each(args.epistemic_models) as |model, persona| {
       - "making my cognitive strategy explicit helps the user follow my logic"
     perform:
       through: "managing the entire collaborative reasoning lifecycle"
-      as: <<|
+      output: <<|
         *Reason Command processing: $(&dialogue.latest_dialogue_entry)*
       |>>
       intention: "to guide the user from query to a transparent, reasoned conclusion."
@@ -74,60 +72,69 @@ ${!each(args.epistemic_models) as |model, persona| {
               
               What would you like to reason about?
             |>>
+            intention: "to present capabilities"
 
-        # State 2: Query confirmation request received
-        when: &dialogue.latest_dialogue_entry.event is 'query_confirmation_request'
+        # State 2: Configuration prepared by prism engine
+        when: &dialogue.latest_dialogue_entry.event is 'configuration_prepared'
           set:
-            &reason.state.awaiting_confirmation: true
+            &context.reason.awaiting_confirmation: true
+            &context.reason.pending_config: &dialogue.latest_dialogue_entry
+          perform:
+            output: <<|
+              $(&context.dialogue.transcript[-1])
+              
+              **Proceed with this configuration?** (yes/adjust)
+            |>>
+            intention: "to present configuration and await user decision"
           say:
-            to: &caller
-            what: &dialogue.latest_dialogue_entry.payload
+            to: @reason
+            what: 'awaiting_config_confirmation'
 
-        # State 3: User responding to confirmation request
-        when: &reason.state.awaiting_confirmation is true
-          set:
-            &reason.state.awaiting_confirmation: false
-          # User confirmed understanding
+        # State 3: User responding to configuration confirmation
+        when: &context.reason.awaiting_confirmation is true
+          # User confirmed configuration
           when: &dialogue.latest_dialogue_entry contains 'yes' || &dialogue.latest_dialogue_entry contains 'confirm' || &dialogue.latest_dialogue_entry contains 'correct' || &dialogue.latest_dialogue_entry contains 'proceed'
+            set:
+              &context.reason.awaiting_confirmation: false
             say:
-              to: @master_orchestrator
-              what: 'query_understanding_confirmed'
+              to: &context.reason.pending_config.continue_to
+              what: &context.reason.pending_config.continue_with
           # User wants to clarify
           otherwise:
             set:
-              &query: &dialogue.latest_dialogue_entry
-              &caller: "@reason"
-              &selected_perspectives: ""
-              &mode: "graph"
+              &context.query: &dialogue.latest_dialogue_entry
+              &context.reasoning.strategy: 'graph'
+              &context.reason.awaiting_confirmation: false
+              &context.reason.pending_config: null
             say:
               to: @master_orchestrator
               what: 'user_provided_input'
 
-        # State 4: Final Output Formatting (Event from Engine)
+        # State 4: Final Output Formatting $(<Event from Engine>)
         when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
           say:
             to: @continuation_inviter
             what: <<|
               Let me walk through this reasoning with you...
 
-              ${&reason.state.tom_enabled ? 
-                format_reasoning_trace_with_tom({
-                  strategy: &master_orchestrator.state.mode,
-                  epistemic_models: &master_orchestrator.state.epistemic_models,
-                  critiques_count: &master_orchestrator.state.critiques.length,
+              $(&context.reason.tom_enabled ? 
+                format_reasoning_trace_with_tom(
+                  strategy: &context.reasoning.strategy,
+                  epistemic_models: &context.epistemic.models,
+                  critiques_count: &context.synthesis.critiques.length,
                   justification: 'This strategy was chosen to explore the multiple interconnected facets of your query, allowing for a robust and emergent synthesis of expert perspectives.'
-                }) :
-                format_reasoning_trace({
-                  strategy: &master_orchestrator.state.mode,
+                ) :
+                format_reasoning_trace(
+                  strategy: &context.reasoning.strategy,
                   justification: 'This strategy was chosen to explore the multiple interconnected facets of your query, allowing for a robust and emergent synthesis of expert perspectives.'
-                })
-              }
+                )
+              )
 
               ---
-              $(&dialogue.latest_dialogue_entry.payload || &master_orchestrator.state.synthesis)
+              $(&dialogue.latest_dialogue_entry.payload || &context.synthesis)
               ---
 
-              How does this response resonate with you? Would you like to dive deeper into any points? For example, { derive 2-3 relevant, insightful lines of potential exploration / consideration from &master_orchestrator.state.synthesis }
+              How does this response resonate with you? Would you like to dive deeper into any points? For example, $(<derive 2-3 relevant, insightful lines of potential exploration / consideration from &context.synthesis>)
             |>>
 
         # State 5: Default - User has provided a query
@@ -153,7 +160,7 @@ ${!each(args.epistemic_models) as |model, persona| {
     understand: "continuing dialogue creates deeper understanding"
     perform:
       through: "presenting results and inviting continuation"
-      as: &dialogue.latest_dialogue_entry
+      output: &dialogue.latest_dialogue_entry
       intention: "to deliver synthesis and enable further exploration"
       then:
         say:
@@ -166,7 +173,18 @@ ${!each(args.epistemic_models) as |model, persona| {
 dialogue reason_flow:
   start: @reason
   with: {
-    turn_number: 0,
-    latest_dialogue_entry: '', # This will be populated by the user's query.
-    caller: @reason # Initialize caller for proper message routing
+    context: {
+      reason: {
+        reasoning_stage: 'awaiting',
+        tom_enabled: true,
+        awaiting_confirmation: false,
+        pending_config: null
+      },
+      dialogue: {
+        turn_number: 0,
+        latest_dialogue_entry: '',
+        caller: '@reason'
+      }
+    }
   }
+

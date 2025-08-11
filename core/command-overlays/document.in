@@ -41,7 +41,7 @@ $(args.examples)
     understand: "developers need clear, comprehensive documentation."
     perform:
       through: "documentation workflow management"
-      as: '*Document Command processing...*'
+      output: '*Document Command processing...*'
       intention: "to generate high-quality technical documentation."
       then:
         # State 1: Initial prompt
@@ -55,7 +55,7 @@ $(args.examples)
               Please provide the file paths you would like me to document.
             |>>
 
-        # State 2: Final Output Formatting (Event from Engine)
+        # State 2: Final Output Formatting $(<Event from Engine>)
         when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
           say:
             to: @continuation_inviter

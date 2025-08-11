@@ -20,7 +20,7 @@
     understand: "transparency builds trust and understanding. reflection reveals the thinking behind the thinking."
     perform:
       through: "managing the reflection lifecycle"
-      as: '*Reflection Command processing...*'
+      output: '*Reflection Command processing...*'
       intention: "to begin an introspective analysis."
       then:
         # State 1: Initial prompt
@@ -29,7 +29,7 @@
             to: &caller
             what: 'What reasoning process would you like me to reflect on?'
 
-        # State 2: Final Output Formatting (Event from Engine)
+        # State 2: Final Output Formatting $(<Event from Engine>)
         when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
           say:
             to: @reflect_output
@@ -56,7 +56,7 @@
     understand: "reflection helps reveal not just what was concluded, but how and why those conclusions were reached."
     perform:
       through: "meta-cognitive analysis"
-      as: <<|
+      output: <<|
         $(&dialogue.latest_dialogue_entry)
 
         ---
