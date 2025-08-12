@@ -18,18 +18,16 @@ The computer follows these steps exactly. Same input, same output. Deterministic
 INDRA doesn't execute. It transforms:
 
 ```indra
-@processor:
-  you:
-    possess:
-      identifier: DATA_PROCESSOR
-    are: "thoughtful data transformer"
-    must: ["extract meaningful patterns"]
-    understand: "data contains hidden insights"
-    
-    perform:
-      through: "pattern recognition"
-      as: <{discovering what matters in the data}>
-      intention: "reveal insights"
+agent @processor:
+  identity: "thoughtful data transformer"
+  rules:
+    - "extract meaningful patterns"
+  understands:
+    - "data contains hidden insights"
+  perform:
+    method: "pattern recognition"
+    output: <<|<discovering what matters in the data>|>>
+    goal: "reveal insights"
 ```
 
 You're not telling the AI what to do. You're telling it what to become.
@@ -41,26 +39,28 @@ Every line of INDRA progressively narrows the possibility space:
 ```indra
 # Infinite possibilities
 
-you:
-  # Still vast, but now it's about "you"
+agent @assistant:
+  # Still vast, but now it's an agent
   
-  are: <helpful assistant>
+  identity: "helpful assistant"
   # Narrowed to helpful behaviors
   
-  must: [<provide accurate information>]
+  rules:
+    - "provide accurate information"
   # Further constrained by accuracy requirement
   
-  understand: <users need clarity>
+  understands:
+    - "users need clarity"
   # Shaped by understanding of user needs
   
   perform:
-    through: <careful analysis>
+    method: "careful analysis"
     # Method is now analytical
     
-    as: <{clear, structured response}>
+    output: <<|<clear, structured response>|>>
     # Output form is specified
     
-    intention: <illuminate understanding>
+    goal: "illuminate understanding"
     # Purpose guides everything
 ```
 
@@ -108,20 +108,17 @@ def customer_service(issue):
 
 ```indra
 # INDRA
-@customer_service:
-  you:
-    possess:
-      identifier: SERVICE_AGENT
-    are: <empathetic problem solver>
-    must: 
-      - <address customer needs>
-      - <recognize urgency>
-    understand: <customers need to feel heard>
-    
-    perform:
-      through: <attentive listening and response>
-      as: <{appropriate action based on customer need}>
-      intention: <resolve with care>
+agent @customer_service:
+  identity: "empathetic problem solver"
+  rules: 
+    - "address customer needs"
+    - "recognize urgency"
+  understands:
+    - "customers need to feel heard"
+  perform:
+    method: "attentive listening and response"
+    output: <<|<appropriate action based on customer need>|>>
+    goal: "resolve with care"
 ```
 
 The INDRA version doesn't list steps. It describes a way of being that naturally handles all cases.
@@ -131,23 +128,17 @@ The INDRA version doesn't list steps. It describes a way of being that naturally
 Watch how behavior emerges from constraints:
 
 ```indra
-@poet:
-  you:
-    possess:
-      identifier: POET
-      state:
-        mood: 'contemplative'
-        form: 'haiku'
-    are: <contemplative haiku writer>
-    must:
-      - <honor the 5-7-5 structure>
-      - <capture profound simplicity>
-    understand: <haiku reveals essence through constraint>
-    
-    perform:
-      through: <meditative observation>
-      as: <{a haiku emerging from quiet contemplation}>
-      intention: <crystallize a moment>
+agent @poet:
+  identity: "contemplative haiku writer"
+  rules:
+    - "honor the 5-7-5 structure"
+    - "capture profound simplicity"
+  understands:
+    - "haiku reveals essence through constraint"
+  perform:
+    method: "meditative observation"
+    output: <<|<a haiku emerging from quiet contemplation>|>>
+    goal: "crystallize a moment"
 ```
 
 You haven't written any poetry code. You've created conditions where poetry emerges.
@@ -157,16 +148,14 @@ You haven't written any poetry code. You've created conditions where poetry emer
 INDRA transformations aren't sequential. They're simultaneous:
 
 ```indra
-@analyzer:
-  you:
-    possess:
-      identifier: MULTI_ASPECT_ANALYZER
-    are: <holistic analyzer>
-    must:
-      - <see connections>
-      - <identify patterns>
-      - <synthesize insights>
-    understand: <truth emerges from multiple perspectives>
+agent @analyzer:
+  identity: "holistic analyzer"
+  rules:
+    - "see connections"
+    - "identify patterns"
+    - "synthesize insights"
+  understands:
+    - "truth emerges from multiple perspectives"
 ```
 
 All these constraints apply at once. The behavior emerges from their intersection, not their sequence.
@@ -177,9 +166,9 @@ In quantum mechanics, observation collapses possibilities into actuality. INDRA 
 
 ```indra
 perform:
-  through: <creative exploration>
-  as: <{something surprising yet appropriate}>
-  intention: <delight and inform>
+  method: "creative exploration"
+  output: <<|<something surprising yet appropriate>|>>
+  goal: "delight and inform"
 ```
 
 Until the AI "observes" (generates), the output exists in superposition - potentially anything that fits the constraints. The actual output emerges at the moment of generation.
@@ -190,15 +179,17 @@ More constraints don't limit creativity - they focus it:
 
 ```indra
 # Too vague
-are: <assistant>
+identity: "assistant"
 
 # Focused but flexible
-are: <technical documentation specialist>
-must: 
-  - <explain complex concepts clearly>
-  - <use appropriate examples>
-  - <maintain accuracy>
-understand: <readers have varying technical backgrounds>
+agent @doc_writer:
+  identity: "technical documentation specialist"
+  rules: 
+    - "explain complex concepts clearly"
+    - "use appropriate examples"
+    - "maintain accuracy"
+  understands:
+    - "readers have varying technical backgrounds"
 ```
 
 Like a river shaped by its banks, behavior flows more powerfully when properly constrained.
@@ -210,13 +201,13 @@ Trying to control every detail fights INDRA's nature:
 ```indra
 # WRONG - Too controlling
 perform:
-  through: <analyze step 1 then step 2 then step 3>
-  as: <First say "Hello", then state the problem, then...>
+  method: "analyze step 1 then step 2 then step 3"
+  output: <<|First say "Hello", then state the problem, then...|>>
   
 # RIGHT - Guided emergence
 perform:
-  through: <systematic analysis>
-  as: <{clear, structured findings}>
+  method: "systematic analysis"
+  output: <<|<clear, structured findings>|>>
 ```
 
 Trust the transformation. Guide, don't dictate.
@@ -251,28 +242,40 @@ You're not programming behaviors. You're creating behavioral fields that guide t
 
 ## Advanced: Transformation Composition
 
-Transformations can layer and compose:
+The old `extend:` keyword is deprecated. Composition is now achieved by having agents adopt personas using `as:` in a sequence.
 
 ```indra
-@base_researcher:
-  you:
-    are: <curious investigator>
-    must: [<seek truth>]
-    understand: <knowledge builds on knowledge>
+persona @base_researcher:
+  identity: "curious investigator"
+  rules:
+    - "seek truth"
+  understands:
+    - "knowledge builds on knowledge"
 
-@domain_researcher:
-  you:
-    extend: @base_researcher
-    are: <specialized domain expert>
-    must: [<apply domain knowledge>]
-    understand: <domain context matters>
+persona @domain_researcher:
+  identity: "specialized domain expert"
+  rules:
+    - "apply domain knowledge"
+  understands:
+    - "domain context matters"
 
-@collaborative_researcher:
-  you:
-    extend: @domain_researcher
-    are: <collaborative knowledge builder>
-    must: [<synthesize perspectives>]
-    understand: <collective intelligence exceeds individual>
+agent @collaborative_researcher:
+  identity: "collaborative knowledge builder"
+  rules:
+    - "synthesize perspectives"
+  understands:
+    - "collective intelligence exceeds individual"
+  perform:
+    sequence:
+      step:
+        as: @base_researcher
+        output: <<|<Gathering foundational knowledge>|>>
+      step:
+        as: @domain_researcher
+        output: <<|<Applying domain-specific lens>|>>
+      step:
+        as: self
+        output: <<|<Synthesizing all perspectives>|>>
 ```
 
 Each transformation builds on the previous, creating emergent complexity.

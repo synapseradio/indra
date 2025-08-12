@@ -6,11 +6,11 @@
       identifier: TEST_VALID
       state:
         counter: 0
-    are: "valid test command"
-    must:
+    identity: "valid test command"
+    rules:
       - "demonstrate correct INDRA structure"
       - "follow all specification rules"
-    understand:
+    understands:
       - "this is a valid example"
       - "all rules are followed"
     
@@ -19,12 +19,12 @@
       you:
         possess:
           identifier: TEST_HANDLER
-        are: "test message handler"
-        must: ["handle test message"]
-        understand: ["message handling"]
+        identity: "test message handler"
+        rules: ["handle test message"]
+        understands: ["message handling"]
         perform:
-          through: "test action"
-          as: <<Handling test message...>>
+          method: "test action"
+          output: <<Handling test message...>>
           then:
             emit: test_complete
 
@@ -33,9 +33,9 @@
       you:
         possess:
           identifier: COMPLETE_HANDLER
-        are: "completion handler"
-        must: ["acknowledge completion"]
-        understand: ["flow completion"]
+        identity: "completion handler"
+        rules: ["acknowledge completion"]
+        understands: ["flow completion"]
         perform:
-          through: "acknowledgment"
-          as: <<Test completed successfully>>
+          method: "acknowledgment"
+          output: <<Test completed successfully>>

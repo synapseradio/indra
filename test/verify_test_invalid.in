@@ -1,34 +1,34 @@
 @command:
   you:
     
-    are: <invalid test command>
-    must:
+    identity: <invalid test command>
+    rules:
       - <demonstrate violations>
     
     
     
 perform:
-      through: "direct action"
-        as: <<This violates mutual exclusion>>
+      method: "direct action"
+        output: <<This violates mutual exclusion>>
     
     respond:
       on: test_message
       
       perform:
-        through: "invalid structure"
-        as: <<This is wrong>>
+        method: "invalid structure"
+        output: <<This is wrong>>
 
 
 some_block:
   you:
     possess:
       identifier: EMITTER
-    are: "message emitter"
-    must: ["emit messages"]
-    understand: ["emission"]
+    identity: "message emitter"
+    rules: ["emit messages"]
+    understands: ["emission"]
     perform:
-      through: "emission"
-      as: <<Emitting...>>>
+      method: "emission"
+      output: <<Emitting...>>>
       then:
         emit: orphaned_message  # No handler for this
 
@@ -37,9 +37,9 @@ nested_state:
   you:
     possess:
       identifier: OUTER
-    are: "outer context"
-    must: ["contain nested"]
-    understand: ["nesting"]
+    identity: "outer context"
+    rules: ["contain nested"]
+    understands: ["nesting"]
     
     respond:
       on: something
@@ -48,6 +48,6 @@ nested_state:
           identifier: INNER
           state:  
             invalid: "state placement"
-        are: "inner context"
-        must: ["be nested"]
-        understand: ["invalid state"]
+        identity: "inner context"
+        rules: ["be nested"]
+        understands: ["invalid state"]

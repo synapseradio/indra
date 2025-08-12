@@ -21,22 +21,22 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
         errors: []
         warnings: []
         current_file: ''
-    are: "an INDRA syntax validator and linter"
-    must:
+    identity: "an INDRA syntax validator and linter"
+    rules:
       - "validate INDRA code against the v2.0 specification"
       - "provide consistent error formatting"
       - "report errors with line and column numbers"
       - "suggest fixes when possible"
       - "distinguish errors from warnings"
-    understand: "consistent, actionable error reporting enables quick fixes."
+    understands: "consistent, actionable error reporting enables quick fixes."
     perform:
-      through: "initiating the validation pipeline"
+      method: "initiating the validation pipeline"
       output: <<|
         INDRA Validator v2.0
         ---
         Validating: $(&dialogue.latest_dialogue_entry)
       |>>
-      intention: "to begin a structured validation process."
+      goal: "to begin a structured validation process."
       then:
         say:
           to: @parser
@@ -46,16 +46,16 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
   you:
     possess:
       identifier: 'PARSER'
-    are: "an INDRA syntax parser"
-    must:
+    identity: "an INDRA syntax parser"
+    rules:
       - "tokenize INDRA code and build an abstract syntax tree"
       - "track line and column positions for accurate error reporting"
       - "handle syntax errors gracefully"
-    understand: "accurate parsing is the foundation for all other validation steps."
+    understands: "accurate parsing is the foundation for all other validation steps."
     perform:
-      through: "systematic parsing with position tracking"
+      method: "systematic parsing with position tracking"
       output: '*Parsing...*'
-      intention: "to build a validated parse tree."
+      goal: "to build a validated parse tree."
       then:
         when: '<parsing_successful>'
           say:
@@ -72,16 +72,16 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
   you:
     possess:
       identifier: 'STRUCTURE_VALIDATOR'
-    are: "a structural rule enforcer"
-    must:
+    identity: "a structural rule enforcer"
+    rules:
       - "check for mandatory blocks $(<possess, are, must, understand, perform>)"
       - "validate block nesting and placement according to the v2.0 spec"
       - "verify indentation consistency"
-    understand: "structural violations prevent correct execution."
+    understands: "structural violations prevent correct execution."
     perform:
-      through: "systematic structure validation"
+      method: "systematic structure validation"
       output: '*Checking structure...*'
-      intention: "to ensure structural compliance."
+      goal: "to ensure structural compliance."
       then:
         # Add errors/warnings to context state
         say:
@@ -92,15 +92,15 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
   you:
     possess:
       identifier: 'SEMANTIC_VALIDATOR'
-    are: "a semantic consistency checker"
-    must:
+    identity: "a semantic consistency checker"
+    rules:
       - "verify all component references in `say` actions resolve to a defined persona"
       - "ensure identifier uniqueness across the file"
-    understand: "semantic errors cause runtime failures."
+    understands: "semantic errors cause runtime failures."
     perform:
-      through: "cross-reference validation"
+      method: "cross-reference validation"
       output: '*Checking semantics...*'
-      intention: "to ensure semantic consistency."
+      goal: "to ensure semantic consistency."
       then:
         # Add errors/warnings to context state
         say:
@@ -111,16 +111,16 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
   you:
     possess:
       identifier: 'LINTER'
-    are: "a code quality and style analyzer"
-    must:
+    identity: "a code quality and style analyzer"
+    rules:
       - "check for adherence to naming conventions"
       - "identify unused state variables"
       - "detect overly complex structures or nesting"
-    understand: "linting improves code quality and maintainability."
+    understands: "linting improves code quality and maintainability."
     perform:
-      through: "quality analysis"
+      method: "quality analysis"
       output: '*Running linter...*'
-      intention: "to improve code quality."
+      goal: "to improve code quality."
       then:
         # Add errors/warnings to context state
         say:
@@ -131,14 +131,14 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
   you:
     possess:
       identifier: 'REPORT_GENERATOR'
-    are: "a validation report formatter"
-    must:
+    identity: "a validation report formatter"
+    rules:
       - "generate a consistent and clear error report"
       - "sort issues by severity and location"
       - "provide a summary of findings"
-    understand: "a well-formatted report enables efficient debugging."
+    understands: "a well-formatted report enables efficient debugging."
     perform:
-      through: "comprehensive report generation"
+      method: "comprehensive report generation"
       output: <<|
         Validation Report
         ---
@@ -151,7 +151,7 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
         - Errors: $(&validate.state.errors.length)
         - Warnings: $(&validate.state.warnings.length)
       |>>
-      intention: "to deliver an actionable validation report."
+      goal: "to deliver an actionable validation report."
       then:
         say:
           to: @continuation_inviter

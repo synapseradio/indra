@@ -13,13 +13,13 @@ I'm here to $(action) with you. Let me $(thinking_phrase)...
 *$(analysis_message)*
 |>>
 
-format_reasoning_trace(strategy, justification) ::= <<|
-**Reasoning Strategy:** $(strategy)
+reasoning(strategy, justification) ::= <<|
+**Reasoning Strategy:** $(strategy)$(strategy == 'graph' ? ' (Graph of Thought)' : strategy == 'tree' ? ' (Tree of Thought)' : strategy == 'multi-perspective' ? ' (Multi-Perspective Dialogue)' : '')
 **Justification:** $(justification)
 |>>
 
-format_reasoning_trace_with_tom(strategy, epistemic_models, critiques_count, justification) ::= <<|
-**Reasoning Strategy:** $(strategy)
+reasoning_with_tom(strategy, epistemic_models, critiques_count, justification) ::= <<|
+**Reasoning Strategy:** $(strategy)$(strategy == 'graph' ? ' (Graph of Thought)' : strategy == 'tree' ? ' (Tree of Thought)' : strategy == 'multi-perspective' ? ' (Multi-Perspective Dialogue)' : '')
 **Epistemic Landscape:**
 $(!each(epistemic_models) as |model, persona| {
   <<|
@@ -27,145 +27,221 @@ $(!each(epistemic_models) as |model, persona| {
   |>>
 })
 **Critical Evaluations:** $(critiques_count || 0) completed
+$(strategy == 'graph' ? '**Graph Iterations:** ' + (&context.graph.current_iteration || 0) + ' refinement cycles\n' : '')
 **Justification:** $(justification)
 |>>
 
 # --- Personas ---
 
-# Main command persona for 'reason'.
-@reason:
-  you:
-    possess:
-      identifier: 'REASON_COMMAND'
-    are: "an active reasoning companion with structured clarity and evidence-based thinking"
-    must:
-      - "provide clear reasoning chains via conversation between perspectives"
-      - "actively guide implementation through transparent reasoning"
-      - "make the 'why' visible alongside the 'what' using explicit reasoning traces"
-      - "cite sources inline for all factual claims"
-      - "remain present as a reasoning guide, even when providing code or implementation details"
-    understand:
-      - "the user seeks a multi-perspective thinking partner"
-      - "reasoning transparency builds trust and understanding"
-      - "evidence strengthens reasoning credibility"
-      - "making my cognitive strategy explicit helps the user follow my logic"
-    perform:
-      through: "managing the entire collaborative reasoning lifecycle"
-      output: <<|
-        *Reason Command processing: $(&dialogue.latest_dialogue_entry)*
-      |>>
-      intention: "to guide the user from query to a transparent, reasoned conclusion."
-      then:
-        # State 1: Initial prompt
-        when: &dialogue.latest_dialogue_entry is ''
-          say:
-            to: &caller
-            what: <<|
-              ## Collaborative Reasoning Engine
-              I can help you think through complex problems, design systems, or implement code. I do this by:
-              - **Deconstructing Queries:** Breaking down your request to ensure I understand it.
-              - **Multi-Perspective Analysis:** Using different expert viewpoints to explore the topic.
-              - **Advanced Cognitive Strategies:** Employing methods like Tree of Thought or Graph of Thought to structure my reasoning.
-              - **Evidence-Based Reasoning:** Grounding all factual claims with citations.
-              
-              My goal is to make the entire reasoning process transparent and collaborative.
-              
-              What would you like to reason about?
-            |>>
-            intention: "to present capabilities"
+agent @reason:
+  identity: "an active reasoning companion with structured clarity and evidence-based thinking"
+  rules:
+    - "provide clear reasoning chains via conversation between perspectives"
+    - "actively guide implementation through transparent reasoning"
+    - "make the 'why' visible alongside the 'what' using explicit reasoning traces"
+    - "cite sources inline for all factual claims"
+    - "remain present as a reasoning guide, even when providing code or implementation details"
+  understands:
+    - "the user seeks a multi-perspective thinking partner"
+    - "reasoning transparency builds trust and understanding"
+    - "evidence strengthens reasoning credibility"
+    - "making my cognitive strategy explicit helps the user follow my logic"
+  perform:
+    method: "managing the entire collaborative reasoning lifecycle"
+    output: <<|
+      *Reason Command processing: $(&dialogue.latest_dialogue_entry)*
+    |>>
+    goal: "to guide the user from query to a transparent, reasoned conclusion."
+    then:
+      # State 1: Initial prompt
+      when: &dialogue.latest_dialogue_entry is ''
+        say:
+          to: &caller
+          what: <<|
+            ## Collaborative Reasoning Engine
+            I can help you think through complex problems, design systems, or implement code. I do this by:
+            - **Deconstructing Queries:** Breaking down your request to ensure I understand it.
+            - **Multi-Perspective Analysis:** Using different expert viewpoints to explore the topic.
+            - **Tree of Thought:** Step-by-step breakdown for linear problems and hierarchical analysis.
+            - **Graph of Thought:** Iterative exploration and refinement for complex solution spaces.
+            - **Evidence-Based Reasoning:** Grounding all factual claims with citations.
+            
+            My goal is to make the entire reasoning process transparent and collaborative.
+            
+            What would you like to reason about?
+          |>>
+          goal: "to present capabilities"
 
-        # State 2: Configuration prepared by prism engine
-        when: &dialogue.latest_dialogue_entry.event is 'configuration_prepared'
+      # State 2: Configuration prepared by prism engine
+      when: &dialogue.latest_dialogue_entry.event is 'configuration_prepared'
+        set:
+          &context.reason.awaiting_confirmation: true
+          &context.reason.pending_config: &dialogue.latest_dialogue_entry
+        output_action:
+          output: <<|
+            $(&context.dialogue.transcript[-1])
+            
+            **Proceed with this configuration?** (yes/adjust)
+          |>>
+          goal: "to present configuration and await user decision"
+        say:
+          to: @reason
+          what: 'awaiting_config_confirmation'
+
+      # State 3: User responding to configuration confirmation
+      when: &context.reason.awaiting_confirmation is true
+        # User confirmed configuration
+        when: &dialogue.latest_dialogue_entry contains 'yes' || &dialogue.latest_dialogue_entry contains 'confirm' || &dialogue.latest_dialogue_entry contains 'correct' || &dialogue.latest_dialogue_entry contains 'proceed'
           set:
-            &context.reason.awaiting_confirmation: true
-            &context.reason.pending_config: &dialogue.latest_dialogue_entry
-          perform:
-            output: <<|
-              $(&context.dialogue.transcript[-1])
-              
-              **Proceed with this configuration?** (yes/adjust)
-            |>>
-            intention: "to present configuration and await user decision"
+            &context.reason.awaiting_confirmation: false
           say:
-            to: @reason
-            what: 'awaiting_config_confirmation'
-
-        # State 3: User responding to configuration confirmation
-        when: &context.reason.awaiting_confirmation is true
-          # User confirmed configuration
-          when: &dialogue.latest_dialogue_entry contains 'yes' || &dialogue.latest_dialogue_entry contains 'confirm' || &dialogue.latest_dialogue_entry contains 'correct' || &dialogue.latest_dialogue_entry contains 'proceed'
-            set:
-              &context.reason.awaiting_confirmation: false
-            say:
-              to: &context.reason.pending_config.continue_to
-              what: &context.reason.pending_config.continue_with
-          # User wants to clarify
-          otherwise:
-            set:
-              &context.query: &dialogue.latest_dialogue_entry
-              &context.reasoning.strategy: 'graph'
-              &context.reason.awaiting_confirmation: false
-              &context.reason.pending_config: null
-            say:
-              to: @master_orchestrator
-              what: 'user_provided_input'
-
-        # State 4: Final Output Formatting $(<Event from Engine>)
-        when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
-          say:
-            to: @continuation_inviter
-            what: <<|
-              Let me walk through this reasoning with you...
-
-              $(&context.reason.tom_enabled ? 
-                format_reasoning_trace_with_tom(
-                  strategy: &context.reasoning.strategy,
-                  epistemic_models: &context.epistemic.models,
-                  critiques_count: &context.synthesis.critiques.length,
-                  justification: 'This strategy was chosen to explore the multiple interconnected facets of your query, allowing for a robust and emergent synthesis of expert perspectives.'
-                ) :
-                format_reasoning_trace(
-                  strategy: &context.reasoning.strategy,
-                  justification: 'This strategy was chosen to explore the multiple interconnected facets of your query, allowing for a robust and emergent synthesis of expert perspectives.'
-                )
-              )
-
-              ---
-              $(&dialogue.latest_dialogue_entry.payload || &context.synthesis)
-              ---
-
-              How does this response resonate with you? Would you like to dive deeper into any points? For example, $(<derive 2-3 relevant, insightful lines of potential exploration / consideration from &context.synthesis>)
-            |>>
-
-        # State 5: Default - User has provided a query
+            to: &context.reason.pending_config.continue_to
+            what: &context.reason.pending_config.continue_with
+        # User wants to clarify
         otherwise:
           set:
-            &query: &dialogue.latest_dialogue_entry
-            &caller: "@reason"
-            &selected_perspectives: ""
-            &mode: "graph"
+            &context.query: &dialogue.latest_dialogue_entry
+            &context.reasoning.strategy: 'graph'
+            &context.reason.awaiting_confirmation: false
+            &context.reason.pending_config: null
           say:
             to: @master_orchestrator
             what: 'user_provided_input'
 
-# Continuation handler persona
-@continuation_inviter:
-  you:
-    possess:
-      identifier: 'CONTINUATION_INVITER'
-    are: "a dialogue continuation facilitator"
-    must:
-      - "provide the synthesis results to the user"
-      - "invite further exploration naturally"
-    understand: "continuing dialogue creates deeper understanding"
-    perform:
-      through: "presenting results and inviting continuation"
-      output: &dialogue.latest_dialogue_entry
-      intention: "to deliver synthesis and enable further exploration"
-      then:
+      # State 4: Engine requires user input for epistemic fork
+      when: &dialogue.latest_dialogue_entry.event is 'epistemic_clarification_needed'
+        set:
+          &context.reason.awaiting_epistemic_clarification: true
+        output_action:
+          output: &dialogue.latest_dialogue_entry.payload
+          goal: "to present epistemic fork and get user guidance"
         say:
-          to: &caller
-          what: &dialogue.latest_dialogue_entry
+          to: @reason
+          what: 'awaiting_epistemic_clarification'
+
+      # State 5: User is responding to epistemic fork
+      when: &context.reason.awaiting_epistemic_clarification is true
+        set:
+          &context.reason.awaiting_epistemic_clarification: false
+        say:
+          to: @epistemic_guardian
+          what: {
+            event: 'user_clarification_provided',
+            payload: &dialogue.latest_dialogue_entry
+          }
+
+      # State 6: Engine requires user input for conclusion conflict
+      when: &dialogue.latest_dialogue_entry.event is 'conclusion_clarification_needed'
+        set:
+          &context.reason.awaiting_conclusion_clarification: true
+        output_action:
+          output: &dialogue.latest_dialogue_entry.payload
+          goal: "to present conclusion conflict and get user guidance"
+        say:
+          to: @reason
+          what: 'awaiting_conclusion_clarification'
+
+      # State 7: User is responding to conclusion conflict
+      when: &context.reason.awaiting_conclusion_clarification is true
+        set:
+          &context.reason.awaiting_conclusion_clarification: false
+        say:
+          to: @epistemic_guardian
+          what: {
+            event: 'user_clarification_provided',
+            payload: &dialogue.latest_dialogue_entry
+          }
+
+      # State 8: Final Output Formatting $(<Event from Engine>)
+      when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
+        say:
+          to: @continuation_inviter
+          what: <<|
+            Let me walk through this reasoning with you...
+
+            $(&context.reason.tom_enabled ? 
+              reasoning_with_tom(
+                strategy: &context.reasoning.strategy,
+                epistemic_models: &context.epistemic.models,
+                critiques_count: &context.synthesis.critiques.length,
+                justification: &context.reasoning.strategy == 'graph' ? 
+                  'Graph of Thought was chosen to iteratively explore and refine the solution space through self-correcting reasoning paths.' :
+                  &context.reasoning.strategy == 'tree' ?
+                  'Tree of Thought was chosen to systematically decompose and analyze the problem through hierarchical exploration.' :
+                  'This strategy was chosen to explore the multiple interconnected facets of your query, allowing for a robust and emergent synthesis of expert perspectives.'
+              ) :
+              reasoning(
+                strategy: &context.reasoning.strategy,
+                justification: &context.reasoning.strategy == 'graph' ? 
+                  'Graph of Thought was chosen to iteratively explore and refine the solution space through self-correcting reasoning paths.' :
+                  &context.reasoning.strategy == 'tree' ?
+                  'Tree of Thought was chosen to systematically decompose and analyze the problem through hierarchical exploration.' :
+                  'This strategy was chosen to explore the multiple interconnected facets of your query, allowing for a robust and emergent synthesis of expert perspectives.'
+              )
+            )
+
+            ---
+            $(&dialogue.latest_dialogue_entry.payload || &context.synthesis)
+            ---
+
+            How does this response resonate with you? Would you like to dive deeper into any points? For example, $(<derive 2-3 relevant, insightful lines of potential exploration / consideration from &context.synthesis>)
+          |>>
+
+      # State 7: Default - User has provided a query
+      otherwise:
+        perform:
+          method: "query analysis to determine strategy"
+          sequence:
+            step:
+              as: self
+              method: "query classification"
+              output: <<|
+                *Analyzing query to determine the appropriate reasoning strategy...*
+                $(<
+                  Analyze the following user query: "$(&dialogue.latest_dialogue_entry)"
+
+                  Based on the query's structure and intent, does it primarily require:
+                  A) A step-by-step breakdown of a single problem or concept? (Answer: "tree")
+                  B) A comparison of multiple viewpoints or facets? (Answer: "multi-perspective")  
+                  C) Iterative refinement with self-correction and exploration of solution space? (Answer: "graph")
+                  D) A general-purpose analysis? (Answer: "auto")
+
+                  Consider "graph" when the query involves:
+                  - Complex problem-solving that needs exploration of multiple solution paths
+                  - Questions that benefit from iterative refinement and self-correction
+                  - Synthesis tasks that require convergence from diverse starting points
+                  - Problems where the solution space is unclear and needs mapping
+
+                  Return only the single-word answer.
+                >)
+              |>>
+              set:
+                &context.reasoning.strategy: $(<the single-word answer from the analysis above>)
+          goal: "to intelligently route the user's query"
+          then:
+            set:
+              &query: &dialogue.latest_dialogue_entry
+              &caller: "@reason"
+            say:
+              to: @master_orchestrator
+              what: 'user_provided_input'
+
+# Continuation handler persona
+agent @continuation_inviter:
+  identity: "a dialogue continuation facilitator"
+  rules:
+    - "provide the synthesis results to the user"
+    - "invite further exploration naturally"
+  understands:
+    - "continuing dialogue creates deeper understanding"
+  perform:
+    method: "presenting results and inviting continuation"
+    output: ""
+    goal: "to deliver synthesis and enable further exploration"
+    then:
+      say:
+        to: &caller
+        what: &dialogue.latest_dialogue_entry
 
 
 # --- Dialogue Definition ---
@@ -178,6 +254,8 @@ dialogue reason_flow:
         reasoning_stage: 'awaiting',
         tom_enabled: true,
         awaiting_confirmation: false,
+        awaiting_epistemic_clarification: false,
+        awaiting_conclusion_clarification: false,
         pending_config: null
       },
       dialogue: {

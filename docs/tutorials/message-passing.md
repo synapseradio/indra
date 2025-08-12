@@ -26,10 +26,10 @@ Now here's what you might try in INDRA:
 
 ```indra
 # WRONG - Trying to think in function returns
-calculate ::= @*.items → <<${sum(items)}>>
+calculate() ::= <<|$(sum(&context.items))|>>
 
 perform:
-  as: <<Total is: ${calculate(@command.items)}>>  # This isn't how INDRA works!
+  output: <<|Total is: $(calculate())|>>  # This isn't how INDRA works!
 ```
 
 This is the first trap. You're trying to make operators return values to use immediately. Stop.
@@ -40,57 +40,40 @@ In INDRA, components don't call each other. They have conversations:
 
 ```indra
 # RIGHT - Thinking in conversations
-@calculator:
-  you:
-    possess:
-      identifier: CALCULATOR
-    are: "mathematical assistant"
-    must: ["perform calculations when asked"]
-    understand: "users need computation help"
-    
-    respond:
-      on: calculate_total
-      you:
-        possess:
-          identifier: TOTAL_CALCULATOR
-        are: "total calculator"
-        must: ["calculate sums accurately"]
-        understand: "totals are needed for decisions"
-        perform:
-          through: "summation"
-          as: <The total of your items is {meaningful sum}>
-          intention: "provide useful total"
-          then:
-            emit: total_calculated
-            with:
-              result: <{the calculated total}>
+agent @calculator:
+  identity: "mathematical assistant"
+  rules:
+    - "perform calculations when asked"
+  understands:
+    - "users need computation help"
+  perform:
+    method: "summation"
+    output: <<|The total of your items is <meaningful sum>|>>
+    goal: "provide useful total"
+    then:
+      set:
+        &context.result: <the calculated total>
+      say:
+        to: @presenter
+        what: 'total_calculated'
 
-@presenter:
-  you:
-    possess:
-      identifier: PRESENTER
-    are: "result presenter"
-    must: ["show results clearly"]
-    understand: "users need to see outcomes"
-    
-    respond:
-      on: total_calculated
-      you:
-        possess:
-          identifier: RESULT_SHOWER
-        are: "result formatter"
-        must: ["present results meaningfully"]
-        understand: "context matters for presentation"
-        perform:
-          through: "contextual presentation"
-          as: <Based on the calculation: ${result}>
-          intention: "inform user effectively"
+agent @presenter:
+  identity: "result presenter"
+  rules:
+    - "show results clearly"
+  understands:
+    - "users need to see outcomes"
+  perform:
+    method: "contextual presentation"
+    output: <<|Based on the calculation: $(&context.result)|>>
+    goal: "inform user effectively"
+    then:
+      say:
+        to: @user
+        what: 'done'
 ```
 
-*→ calculate_total*
-*→ total_calculated*
-
-See the difference? The calculator doesn't "return" to the presenter. It emits a message that the presenter hears. They're having a conversation.
+See the difference? The calculator doesn't "return" to the presenter. It passes control to the presenter, and the presenter reads the result from the shared context. They're having a conversation.
 
 ## Why Conversations?
 
@@ -107,32 +90,32 @@ def process_order(order):
 
 In INDRA:
 ```indra
-respond:
-  on: order_received
-  you:
-    perform:
-      through: <order processing>
-      as: <Processing your order...>
-      intention: <acknowledge receipt>
-      then:
-        emit: calculate_total_requested
-        with:
-          items: <<${order.items}>>
+agent @order_processor:
+  perform:
+    method: "order processing"
+    output: <<|Processing your order...|>>
+    goal: "acknowledge receipt"
+    then:
+      set:
+        &context.items: <<|$(order.items)|>>
+      say:
+        to: @calculator
+        what: 'calculate_total_requested'
 
-respond:
-  on: total_calculated
-  you:
-    perform:
-      through: <tax assessment>
-      as: <Calculating applicable taxes...>
-      intention: <determine tax>
-      then:
-        emit: calculate_tax_requested
-        with:
-          amount: <<${total}>>
+agent @tax_assessor:
+  perform:
+    method: "tax assessment"
+    output: <<|Calculating applicable taxes...|>>
+    goal: "determine tax"
+    then:
+      set:
+        &context.amount: <<|$(total)|>>
+      say:
+        to: @tax_calculator
+        what: 'calculate_tax_requested'
 ```
 
-The order processor doesn't need to know HOW totals are calculated or even WHO calculates them. It just asks for what it needs.
+The order processor doesn't need to know HOW totals are calculated or even WHO calculates them. It just passes control to the next agent in the chain.
 
 ### 2. Asynchronous by Nature
 
@@ -144,28 +127,37 @@ use_result(result)        # Can't proceed until done
 
 INDRA thinks asynchronously:
 ```indra
-emit: analysis_requested
-with:
-  data: <<${complex_data}>>
+agent @data_requester:
+  perform:
+    output: <<|Requesting analysis...|>>
+    then:
+      set:
+        &context.data: <<|$(complex_data)|>>
+      say:
+        to: @analyzer
+        what: 'analysis_requested'
 
-# The emitter continues with its life
-# The analyzer works when it receives the message
-# Results flow back through the conversation
+# The requester is done. The analyzer works on the next turn.
 ```
 
 ### 3. Natural Parallelism
 
-Want multiple perspectives? Just emit to multiple listeners:
+Want multiple perspectives? Just have an orchestrator call multiple agents in a sequence:
 
 ```indra
-then:
-  emit: review_requested
-  with:
-    document: <<${draft}>>
-
-# Multiple reviewers can respond simultaneously
-# Each brings their perspective
-# No coordination needed
+agent @orchestrator:
+  perform:
+    sequence:
+      step:
+        as: @reviewer_1
+        output: <<|Reviewing document...|>>
+      step:
+        as: @reviewer_2
+        output: <<|Reviewing document...|>>
+    then:
+      say:
+        to: @synthesizer
+        what: 'review_complete'
 ```
 
 ## The Anti-Pattern: Trying to Get Returns
@@ -174,18 +166,15 @@ Here's what people coming from traditional programming try:
 
 ```indra
 # ANTI-PATTERN - Don't do this!
-get_result ::= @*.query → {
-  result: <{calculate the answer}>
-} [EMITS: result_ready]
+get_result() ::= <<|<calculate the answer>|>>
 
 perform:
-  as: <<The answer is ${get_result(@command.input).result}>>  # NO!
+  output: <<|The answer is $(get_result())|>>  # NO!
 ```
 
 Why doesn't this work? Because:
-1. Operators don't "return" values
-2. You can't access the "result" of an emission
-3. You're thinking synchronously in an asynchronous world
+1. Operators don't "return" values in the traditional sense.
+2. You're thinking synchronously in an asynchronous world.
 
 ## Designing Natural Message Flows
 
@@ -193,35 +182,52 @@ Good message flows feel like conversations:
 
 ```indra
 # User asks a question
-emit: question_asked
-with:
-  content: <<${user_input}>>
+agent @user:
+  perform:
+    output: <<|$(user_input)|>>
+    then:
+      say:
+        to: @analyzer
+        what: 'question_asked'
 
 # Analyzer considers it
-respond:
-  on: question_asked
-  then:
-    emit: analysis_complete
-    with:
-      understanding: <{what I understood}>
-      needs_clarification: <{what's unclear}>
+agent @analyzer:
+  perform:
+    output: <<|Analyzing...|>>
+    then:
+      set:
+        &context.understanding: <what I understood>
+        &context.needs_clarification: <what's unclear>
+      say:
+        to: @researcher
+        what: 'analysis_complete'
 
 # Researcher gathers information
-respond:
-  on: analysis_complete
-  when: @analyzer.state.needs_clarification is false
-  then:
-    emit: research_complete
-    with:
-      findings: <{relevant information}>
+agent @researcher:
+  perform:
+    output: <<|Researching...|>>
+    then:
+      when: &context.needs_clarification is false
+        set:
+          &context.findings: <relevant information>
+        say:
+          to: @synthesizer
+          what: 'research_complete'
+      otherwise:
+        say:
+          to: @clarification_requester
+          what: 'needs_clarification'
 
 # Synthesizer creates response
-respond:
-  on: research_complete
-  then:
-    emit: response_ready
-    with:
-      answer: <{thoughtful response based on findings}>
+agent @synthesizer:
+  perform:
+    output: <<|Synthesizing...|>>
+    then:
+      set:
+        &context.answer: <thoughtful response based on findings>
+      say:
+        to: @user
+        what: 'response_ready'
 ```
 
 This feels natural because it mirrors how humans actually solve problems - through dialogue, not function calls.

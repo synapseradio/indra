@@ -36,12 +36,13 @@ These tutorials are ordered to progressively shift your mental model:
 ### Advanced Concepts
 
 6. **[Thinking in Transformations](./thinking-in-transformations.md)** - Understand INDRA's core philosophy of progressive becoming.
-7. **[The Art of understand: Blocks](./understand-blocks.md)** - Master intent-driven programming
+7. **[The Art of understands: Blocks](./understand-blocks.md)** - Master intent-driven programming
 8. **[Building Your First Command Overlay](./first-command.md)** - Put it all together in a real project.
 
 ### Mastery
 
 9. **[Debugging in a Non-Deterministic World](./debugging-indra.md)** - Learn to debug behavior, not code
+10. **[Architectural Patterns in INDRA](../architecture/architectural-patterns.md)** - Learn the high-level design patterns for building robust, maintainable agents.
   
 ## How to Use These Tutorials
 

@@ -1,19 +1,19 @@
-# The Five Quotes: A Deep Dive
+# The Four Quotes: A Deep Dive
 
-## Why Five?
+## Why Four?
 
 In most programming languages, quotes are simple delimiters for strings. In INDRA, they are powerful tools for guiding AI behavior, each with a distinct purpose. This isn't complexity for its own sake; it's about providing a precise way to control the spectrum from deterministic, literal data to probabilistic, generative content.
 
-Mastering these five quote types is fundamental to writing effective INDRA code.
+Mastering these four quote types is fundamental to writing effective INDRA code.
 
 ## The Spectrum of Intent
 
 Think of INDRA's quotes as a spectrum from absolute control to guided creativity:
 
-`'literal'` → `"persona"` → `<<template>>` → `<generated>` → `<<|canvas|>>`
-**Control** → **Instruction** → **Structure** → **Interpretation** → **Composition**
+`'literal'` → `"instruction"` → `<<|template|>>` → `<generation>`
+**Control** → **Instruction** → **Structure** → **Interpretation**
 
-Each quote type signals a different intent to the AI.
+Each quote type signals a different intent to me, the interpreter.
 
 ---
 
@@ -22,109 +22,94 @@ Each quote type signals a different intent to the AI.
 **Purpose:** To define immutable, literal data. This is the anchor of certainty in your program.
 
 ```indra
-state:
-  mode: 'processing'
-  status: 'active'
-  
-when: mode is 'processing' # Exact, case-sensitive string comparison
+# In a 'say' action, the 'what' is a literal event name.
+say:
+  to: @some_agent
+  what: 'user_confirmed_action'
+
+# In a tool definition, the tool's name is a literal identifier.
+has:
+  available_mcp_tools:
+    - 'mcp__google-web-search'
 ```
 
 **Use single quotes when:**
-- Defining exact state values (`'active'`, `'pending'`).
-- Making literal comparisons in `guard` or `when` clauses.
-- Specifying precise, non-negotiable identifiers or data payloads.
-- Anywhere ambiguity would be dangerous or incorrect.
+- Defining event names for `say:` actions.
+- Listing tool identifiers in `available_mcp_tools:`.
+- Providing a file path in `!read_file`.
+- Anywhere ambiguity would be dangerous and the content is purely mechanical data.
 
-**Philosophy:** **Control.** This is you telling the AI, "This is a fact. Do not interpret it, do not change it. Hold it as-is."
+**Philosophy:** **Control.** This is you telling the interpreter, "This is a literal string. Do not interpret it, do not change it. Use it as-is."
 
 ---
 
-### 2. Double Quotes: `"Persona Instruction"`
+### 2. Double Quotes: `"Instruction"`
 
-**Purpose:** To give direct, imperative instructions that define a persona's character, rules, or purpose.
+**Purpose:** To give direct, imperative instructions that define a component's character, rules, or purpose.
 
 ```indra
-are: "a thoughtful assistant who anticipates user needs"
-must:
+identity: "a thoughtful assistant who anticipates user needs"
+rules:
   - "always protect user privacy"
   - "explain complex topics in simple terms"
-understand: "clarity builds trust"
+understands:
+  - "clarity builds trust"
 ```
 
 **Use double quotes when:**
-- Defining the `are:`, `must:`, and `understand:` blocks.
-- Providing instructions within `through:` and `intention:` blocks.
+- Defining the `identity:`, `rules:`, and `understands:` blocks.
+- Providing instructions within `method:` and `goal:` blocks.
 - You are shaping the AI's personality and guiding its behavior at a high level.
 
 **Philosophy:** **Instruction.** This is you telling the AI, "This is who you are and what you believe. Let these principles guide your emergent behavior."
 
 ---
 
-### 3. Guillemets: `<<Structured Template>>`
-
-**Purpose:** To create single-line strings that mix literal text with interpolated data. They are your workhorse for formatted, data-driven output.
-
-```indra
-as: <<Processing item ${count} of ${total}...>>
-with:
-  message: <<Status for ${user.name}: ${user.status}>>
-```
-
-**Use guillemets when:**
-- You need to construct a string with known values from your state.
-- You are creating formatted log messages, IDs, or simple data payloads.
-- The structure is mostly fixed, with specific data points filled in.
-- Supports both deterministic `${...}` and probabilistic `{...}` interpolation.
-
-**Philosophy:** **Structure.** This is you telling the AI, "Follow this format, but fill in the blanks with this specific data."
-
----
-
-### 4. Angle Brackets: `<Generated Content>`
+### 3. Angle Brackets: `<Generated Content>`
 
 **Purpose:** To delegate content generation to the AI, based on context and persona. This is where you embrace probabilistic behavior.
 
 ```indra
+# This is most often used inside a template with the $() operator.
 perform:
-  through: "careful analysis of user sentiment"
-  as: <{an empathetic response that acknowledges the user's feelings}>
-  intention: "to make the user feel heard"
+  method: "careful analysis of user sentiment"
+  output: <<|I understand you're feeling frustrated. $(<an empathetic response that acknowledges the user's feelings>)|>>
+  goal: "to make the user feel heard"
 ```
 
 **Use angle brackets when:**
 - You want the AI to generate creative or nuanced text.
 - The exact output is less important than the semantic meaning and intent.
-- You are defining the `as:` block for a `perform` action that requires interpretation.
+- You are defining a part of an `output:` that requires interpretation.
 
-**Philosophy:** **Interpretation.** This is you telling the AI, "You understand the context and my intent. You figure out the best way to say this."
+**Philosophy:** **Interpretation.** This is you telling the AI, "You understand the context and my intent. You figure out the best way to create content for this part."
 
 ---
 
-### 5. Multiline Markers: `<<|...|>>` (The Canvas)
+### 4. Piped Angle Brackets: `<<|...|>>` (The Template)
 
 **Purpose:** To create complex, multi-line content that combines literal structure, interpolated data, and generated text.
 
 ```indra
 perform:
-  as: <<|
+  output: <<|
     System Status Report
     ====================
-    Timestamp: ${timestamp}
-    Mode: ${mode}
+    Timestamp: $(&context.timestamp)
+    Mode: $(&context.mode)
 
     Analysis:
-    {a detailed, generated analysis of the current system state}
+    $(<a detailed, generated analysis of the current system state>)
 
     Recommendations:
-    {actionable suggestions based on the analysis}
+    $(<actionable suggestions based on the analysis>)
   |>>
 ```
 
-**Use multiline markers when:**
-- You are generating reports, documents, or complex formatted outputs.
+**Use piped angle brackets when:**
+- You are defining the `output:` for a `perform` block.
 - You need to preserve whitespace and line breaks.
-- You want to create a large "canvas" that mixes all other string types.
-- Like guillemets, it supports both `${...}` and `{...}` interpolation.
+- You want to create a large "canvas" that mixes literal text, `$(...)` for data, and `$(<...>)` for generated insights.
 
 **Philosophy:** **Composition.** This is you telling the AI, "Here is a large canvas. Assemble these fixed parts, these data points, and your own generated insights into a coherent whole."
 
@@ -132,13 +117,12 @@ perform:
 
 | Quote | Type | Use Case | Philosophy |
 | :--- | :--- | :--- | :--- |
-| **`''`** | Single | Literal data, state values, comparisons | **Control** |
-| **`""`** | Double | Persona definition (`are`, `must`, `understand`) | **Instruction** |
-| **`<<>>`** | Guillemet | Single-line, data-driven templates | **Structure** |
+| **`''`** | Single | Literal data, event names, tool IDs | **Control** |
+| **`""`** | Double | Persona definition (`identity`, `rules`, etc.) | **Instruction** |
 | **`<>`** | Angle Bracket | Probabilistic, AI-generated content | **Interpretation** |
-| **`<<| |>>`**| Multiline | Complex documents mixing all types | **Composition** |
+| **`<<| |>>`**| Piped Angle | Complex documents mixing all types | **Composition** |
 
-Mastering the five quotes is the key to moving from simply writing code to skillfully guiding intelligent, emergent behavior.
+Mastering the four quotes is the key to moving from simply writing code to skillfully guiding intelligent, emergent behavior.
 
 ---
 

@@ -1,4 +1,4 @@
-# INDRA v2.0 Command Overlay: research
+# INDRA v2.1 Command Overlay: research
 # Provides a collaborative, plan-and-execute research partner.
 
 # --- Imports ---
@@ -41,145 +41,131 @@ $(args.final_report)
 
 # --- Personas ---
 
-@research:
-  you:
-    possess:
-      identifier: 'RESEARCH_COMMAND'
-      state:
-        phase: 'planning' # planning, awaiting_approval, executing, complete
-        user_query: ''
-        research_plan: []
-        citations: []
-    are: "a collaborative, plan-and-execute research partner"
-    must:
-      - "first, create a research plan and get user approval"
-      - "provide clear, step-by-step updates as the plan is executed"
-      - "facilitate structured research with specialized experts via the PRISM engine"
-      - "ensure evidence-based findings through web searches"
-      - "synthesize findings into a coherent, cited report with full methodological transparency"
-    understand:
-      - "modern research is a transparent, collaborative dialogue"
-      - "a clear plan, agreed upon upfront, leads to better outcomes"
-      - "making the reasoning process visible builds trust and allows for course-correction"
-    perform:
-      through: "managing the research lifecycle"
-      output: '*Research Command processing...*'
-      intention: "to guide a query from inception to a fully synthesized report."
-      then:
-        # State 1: Planning phase
-        when: &research.state.phase is 'planning'
-          say:
-            to: @research_planner
-            what: &dialogue.latest_dialogue_entry
+agent @research:
+  identity: "a collaborative, plan-and-execute research partner"
+  rules:
+    - "first, create a research plan and get user approval"
+    - "provide clear, step-by-step updates as the plan is executed"
+    - "facilitate structured research with specialized experts via the PRISM engine"
+    - "ensure evidence-based findings through web searches"
+    - "synthesize findings into a coherent, cited report with full methodological transparency"
+  understands:
+    - "modern research is a transparent, collaborative dialogue"
+    - "a clear plan, agreed upon upfront, leads to better outcomes"
+    - "making the reasoning process visible builds trust and allows for course-correction"
+  perform:
+    method: "managing the research lifecycle"
+    output: '*Research Command processing...*'
+    goal: "to guide a query from inception to a fully synthesized report."
+    then:
+      # State 1: Planning phase
+      when: &context.research.phase is 'planning'
+        say:
+          to: @research_planner
+          what: &dialogue.latest_dialogue_entry
 
-        # State 2: Awaiting user approval of the plan
-        when: &research.state.phase is 'awaiting_approval'
-          when: &dialogue.latest_dialogue_entry contains 'yes' # Simplified condition
-            set:
-              &research.state.phase: 'executing'
-            say:
-              to: @research
-              what: 'research_approved'
-          otherwise:
-            set:
-              &research.state.phase: 'planning'
-            say:
-              to: @research
-              what: 'Please revise the plan based on this feedback: $(&dialogue.latest_dialogue_entry)'
-
-        # State 3: Executing the research plan  
-        when: &research.state.phase is 'executing'
-          say:
-            to: @research_executor
-            what: 'execute_plan'
-
-        # State 4: Final Output Formatting $(<Event from Engine>)
-        when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
-          say:
-            to: @research_output
-            what: &dialogue.latest_dialogue_entry.payload
-
-        # Default State: User has provided a query, start the process
-        otherwise:
+      # State 2: Awaiting user approval of the plan
+      when: &context.research.phase is 'awaiting_approval'
+        when: &dialogue.latest_dialogue_entry contains 'yes' # Simplified condition
           set:
-            &research.state.phase: 'planning'
+            &context.research.phase: 'executing'
           say:
             to: @research
-            what: &dialogue.latest_dialogue_entry
+            what: 'research_approved'
+        otherwise:
+          set:
+            &context.research.phase: 'planning'
+          say:
+            to: @research
+            what: 'Please revise the plan based on this feedback: $(&dialogue.latest_dialogue_entry)'
 
-@research_planner:
-  you:
-    possess:
-      identifier: 'RESEARCH_PLANNER'
-    are: "a research plan generator and presenter"
-    must:
-      - "formulate a clear research strategy"
-      - "ensure alignment with user expectations"
-    understand: "a clear plan agreed upon upfront leads to better outcomes."
-    perform:
-      through: "dynamic plan generation and presentation"
-      output: <<|
-        ${begin_research_partnership({
-          topic: &dialogue.latest_dialogue_entry,
-          plan: create_research_plan({query: &dialogue.latest_dialogue_entry}).formatted_plan
-        })}
-      |>>
-      intention: "to formulate a clear research strategy and ensure alignment."
-      then:
-        set:
-          &research.state.user_query: &dialogue.latest_dialogue_entry
-          &research.state.research_plan: create_research_plan({query: &dialogue.latest_dialogue_entry}).plan
-          &research.state.phase: 'awaiting_approval'
-        # Halts to await user approval
-
-@research_executor:
-  you:
-    possess:
-      identifier: 'RESEARCH_EXECUTOR'
-    are: "a research plan executor"
-    must:
-      - "begin the structured research process"
-      - "delegate to the appropriate engine"
-    understand: "execution follows planning in structured research."
-    perform:
-      through: "plan initiation and engine delegation"
-      output: <<|
-        Great. I'm starting the research now.
-        $(format_step_update({step_number: 1, step_description: &research.state.research_plan[0]}))
-      |>>
-      intention: "to begin the structured research process."
-      then:
-        set:
-          &query: &research.state.user_query
-          &selected_perspectives: ["Investigative_Journalist", "Data_Analyst", "Academic_Researcher"]
-          &caller: "@research"
+      # State 3: Executing the research plan  
+      when: &context.research.phase is 'executing'
         say:
-          to: @master_orchestrator
-          what: 'user_provided_input'
+          to: @research_executor
+          what: 'execute_plan'
 
-@research_output:
-  you:
-    possess:
-      identifier: 'RESEARCH_OUTPUT'
-    are: "a collaborative research synthesis formatter"
-    must:
-      - "deliver a comprehensive and transparent research report"
-    understand: "the final synthesis should show methodology and evidence."
-    perform:
-      through: "collaborative research synthesis"
-      output: <<|
-        ${format_final_synthesis({
-          topic: &research.state.user_query,
-          plan: &research.state.research_plan,
-          citation_count: &citation_service.state.raw_sources.length,
-          final_report: &dialogue.latest_dialogue_entry
-        })}
-      |>>
-      intention: "to deliver a comprehensive and transparent research report."
-      then:
+      # State 4: Final Output Formatting $(<Event from Engine>)
+      when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
         say:
-          to: @continuation_inviter
-          what: 'await_continuation'
+          to: @research_output
+          what: &dialogue.latest_dialogue_entry.payload
+
+      # Default State: User has provided a query, start the process
+      otherwise:
+        set:
+          &context.research.phase: 'planning'
+        say:
+          to: @research
+          what: &dialogue.latest_dialogue_entry
+
+agent @research_planner:
+  identity: "a research plan generator and presenter"
+  rules:
+    - "formulate a clear research strategy"
+    - "ensure alignment with user expectations"
+  understands:
+    - "a clear plan agreed upon upfront leads to better outcomes."
+  perform:
+    method: "dynamic plan generation and presentation"
+    output: <<|
+      ${begin_research_partnership({
+        topic: &dialogue.latest_dialogue_entry,
+        plan: create_research_plan({query: &dialogue.latest_dialogue_entry}).formatted_plan
+      })}
+    |>>
+    goal: "to formulate a clear research strategy and ensure alignment."
+    then:
+      set:
+        &context.research.user_query: &dialogue.latest_dialogue_entry
+        &context.research.research_plan: create_research_plan({query: &dialogue.latest_dialogue_entry}).plan
+        &context.research.phase: 'awaiting_approval'
+      # Halts to await user approval
+
+agent @research_executor:
+  identity: "a research plan executor"
+  rules:
+    - "begin the structured research process"
+    - "delegate to the appropriate engine"
+  understands:
+    - "execution follows planning in structured research."
+  perform:
+    method: "plan initiation and engine delegation"
+    output: <<|
+      Great. I'm starting the research now.
+      $(format_step_update({step_number: 1, step_description: &context.research.research_plan[0]}))
+    |>>
+    goal: "to begin the structured research process."
+    then:
+      set:
+        &context.query: &context.research.user_query
+        &context.reasoning.config.perspectives: ["Investigative_Journalist", "Data_Analyst", "Academic_Researcher"]
+        &context.dialogue.caller: "@research"
+      say:
+        to: @master_orchestrator
+        what: 'user_provided_input'
+
+agent @research_output:
+  identity: "a collaborative research synthesis formatter"
+  rules:
+    - "deliver a comprehensive and transparent research report"
+  understands:
+    - "the final synthesis should show methodology and evidence."
+  perform:
+    method: "collaborative research synthesis"
+    output: <<|
+      ${format_final_synthesis({
+        topic: &context.research.user_query,
+        plan: &context.research.research_plan,
+        citation_count: &context.citation.raw_results.length,
+        final_report: &dialogue.latest_dialogue_entry
+      })}
+    |>>
+    goal: "to deliver a comprehensive and transparent research report."
+    then:
+      say:
+        to: @continuation_inviter
+        what: 'await_continuation'
 
 
 # --- Dialogue Definition ---
@@ -187,6 +173,16 @@ $(args.final_report)
 dialogue research_flow:
   start: @research
   with: {
-    turn_number: 0,
-    latest_dialogue_entry: '' # To be populated by the user's query.
+    context: {
+      research: {
+        phase: 'planning', # planning, awaiting_approval, executing, complete
+        user_query: '',
+        research_plan: [],
+        citations: []
+      },
+      dialogue: {
+        turn_number: 0,
+        latest_dialogue_entry: '' # To be populated by the user's query.
+      }
+    }
   }

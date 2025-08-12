@@ -37,7 +37,7 @@ The quickest way to see INDRA in action is to use it with a tool like the Claude
 
     Read `~/projects/ai/indra/core/INDRA.txt` to become.
 
-    Manifest as:
+    Manifest output:
 
     @hello:
       you:
@@ -45,12 +45,12 @@ The quickest way to see INDRA in action is to use it with a tool like the Claude
           identifier: HELLO_COMMAND
           state:
             name: 'Biff'
-        are: "friendly greeter"
-        must:
+        identity: "friendly greeter"
+        rules:
             - "greet warmly"
-        understand: "greetings create connection with the user"
+        understands: "greetings create connection with the user"
         perform:
-            as: <<|
+            output: <<|
                 Hello! I am ${@hello.state.name}. How can I help you today?
             |>>
     EOF
@@ -74,7 +74,7 @@ To write INDRA, you must understand a few key concepts that differ from traditio
 | Quote | Type | Use Case | Philosophy |
 | :--- | :--- | :--- | :--- |
 | **`''`** | Single Quote | Literal data, state values, comparisons | **Literal** |
-| **`""`** | Double Quote | Persona definition (`are`, `must`, `understand`, `through:`, `intention:`) | **Declarative** |
+| **`""`** | Double Quote | Persona definition (`are`, `must`, `understand`, `method:`, `goal:`) | **Declarative** |
 | **`< >`** | Angle Bracket | Inferential, AI-interpreted description of high-level logic or interpretations. user → LLM.| **Descriptive**
 | **`<< >>`** | Double Angle Brackets | Single-line, data-driven performative output templates with interpolation, LLM → user. | **Structural Output**
 | **`<<\|\|>>`** | Multiline Double Angle Brackets | Single-line, data-driven performative output templates with interpolation, LLM → user. | **Composite Structural Output**
@@ -114,25 +114,25 @@ A basic command structure looks like this:
       identifier: MY_COMMAND
       state:
         mode: 'ready'
-    are: "this given identity"
-    must:
+    identity: "this given identity"
+    rules:
       - "always do behavior 1"
       - "never do behavior 2"
-    understand: "why user needs this this"
+    understands: "why user needs this this"
 
     respond:
       on: user_provided_input # message passing
       you:
         possess:
           identifier: INPUT_HANDLER
-        are: "input processor"
-        must:
+        identity: "input processor"
+        rules:
             - "handle appropriately"
-        understand: "user intent"
+        understands: "user intent"
         perform:
-          through: "user-defined approach"
-          as: <<{contextual response}>>
-          intention: "help the user with a task"
+          method: "user-defined approach"
+          output: <<{contextual response}>>
+          goal: "help the user with a task"
 ```
 
 <details>
@@ -176,7 +176,7 @@ The INDRA interpreter follows a specific, continuous loop:
 3. **The Event Loop:** The system is now active and waits for an event. The initial event is typically `manifest` or `user_provided_input`.
 4. **Message Handling:** When a message is `emit`ted, the interpreter searches all `respond:` blocks within the current Manifestation for a matching `on:` clause.
 5. **Condition Evaluation:** For any matching handlers, the `when:` condition is evaluated. If a `when:` block's condition is met, its handler is activated. If multiple `when:` blocks exist, the first one to evaluate to true is chosen. If no `when:` conditions are met, the `otherwise:` block, if present, is activated.
-6. **Performance:** The `perform:` block is executed. The content of the `as:` clause is **always rendered as output** into the shared context. This is the non-negotiable act of Performative Constraint. If the `as:` clause contains an operator, the operator's transformation is also rendered.
+6. **Performance:** The `perform:` block is executed. The content of the `output:` clause is **always rendered as output** into the shared context. This is the non-negotiable act of Performative Constraint. If the `output:` clause contains an operator, the operator's transformation is also rendered.
 7. **Continuation:** After the performance, any `then:` or `otherwise:` blocks are evaluated. Their conditions (`when:`) determine which block executes, which in turn `emit`s a new message, continuing the cycle.
 8. **Meta-Layer Access:** At any point, a `*` command can be invoked. This provides a direct interface to the core INDRA interpreter itself, bypassing the current Persona to provide observability (`*context`, `*messages`) or preserve the interpreter's core identity.
 
@@ -195,23 +195,23 @@ These are direct behavioral instructions to the LLM, defining its character. The
   * **Classification:** Persona Container.
   * **Purpose:** To begin a block of behavioral definition.
   * **Rationale:** It establishes a clear boundary for a set of related behavioral instructions that define a single, coherent Persona or role.
-* **`are:`**
+* **`identity:`**
   * **Classification:** Persona Identity.
   * **Purpose:** To define the core identity or role of the Persona.
   * **Rationale:** This is the most fundamental instruction of "who to be." It sets the entire tone for the Persona's behavior.
-* **`must:`**
+* **`rules:`**
   * **Classification:** Persona Rules.
   * **Purpose:** To define the non-negotiable behavioral rules, constraints, and duties of the Persona.
   * **Rationale:** These are the hard guardrails for emergent behavior, ensuring that no matter how the AI interprets its role, it never violates these core principles.
-* **`understand:`**
-  * **Classification:** Persona Context/Wisdom.
+* **`understands:`**
+  * **Classification:** Persona Context/understands.
   * **Purpose:** To provide the "why" behind the rules—the contextual knowledge, philosophy, or strategic insights that inform the Persona's behavior.
   * **Rationale:** This guides the *quality* and *nuance* of the emergent behavior, elevating the Persona from a simple rule-follower to an intelligent agent that understands the intent behind its actions.
-* **`through:`**
+* **`method:`**
   * **Classification:** Persona Method.
   * **Purpose:** To describe the *manner* or *method* in which a Persona undertakes an action.
   * **Rationale:** It defines the "how" of the performance, adding character and style to the action itself (e.g., "through systematic analysis" vs. "through creative exploration").
-* **`intention:`**
+* **`goal:`**
   * **Classification:** Persona Goal.
   * **Purpose:** To define the ultimate goal or purpose of a Persona's action.
   * **Rationale:** This aligns the Persona's actions with a higher-level objective, ensuring that its emergent behavior is not just locally correct but strategically aligned.
@@ -256,8 +256,8 @@ These constructs are at the intersection of Persona and Mechanics, governing the
 * **`perform:`**
   * **Classification:** Performative Action.
   * **Purpose:** To define a block of action that a Persona will undertake.
-  * **Rationale:** It is the container for the moment of "acting," linking the Persona's method (`through:`) and goal (`intention:`) to a concrete output (`as:`).
-* **`as:`**
+  * **Rationale:** It is the container for the moment of "acting," linking the Persona's method (`method:`) and goal (`goal:`) to a concrete output (`output:`).
+* **`output:`**
   * **Classification:** Performative Output.
   * **Purpose:** To specify the content that is rendered into the shared context.
   * **Rationale:** This is the lynchpin of the **Performative Constraint**. Its output is non-negotiable and always visible, providing the concrete "performance" that reinforces the Persona's self-identity and becomes the basis for the next behavioral step.

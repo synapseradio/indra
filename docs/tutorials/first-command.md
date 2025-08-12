@@ -11,24 +11,46 @@ INDRA supports multiple architectural patterns for organizing and sharing behavi
 The simplest way to share behaviors is through direct component definitions, as seen in `citations.in`:
 
 ```indra
-# citations.in - Simple shared components
-@citation_collector:
-  you:
-    possess:
-      identifier: CITATION_COLLECTOR
-    are: <systematic evidence gatherer>
-    must:
-      - <extract during search>
-      - <store when referenced>
-      - <prioritize domain diversity>
-    understand: <collection quality determines reasoning credibility>
+# citations.in - A headless persona
+persona @citation_collector:
+  identity: "a systematic evidence gatherer"
+  rules:
+    - "extract during search"
+    - "store when referenced"
+  understands:
+    - "collection quality determines reasoning credibility"
 
-# Other files import and extend this directly:
+# Another file imports and uses this persona
 !read_file './shared/citations.in'
-@my_component:
-  you:
-    extend: @citation_collector
-    are: <researcher with citation capabilities>
+
+agent @researcher:
+  identity: "a researcher who properly cites sources"
+  rules:
+    - "always gather citations before synthesizing"
+  perform:
+    method: "citation-first research"
+    sequence:
+      step:
+        as: @citation_collector
+        output: <<|
+          Now gathering evidence and citations...
+          $(<search for relevant sources>)
+        |>>
+        set:
+          &context.citations: $(<the collected citations>)
+      step:
+        as: self
+        output: <<|
+          Based on the evidence found:
+          $(&context.citations)
+          
+          My synthesis is...
+        |>>
+    goal: "to produce an evidence-based conclusion"
+    then:
+      say:
+        to: @user
+        what: 'research_complete'
 ```
 
 This pattern is straightforward - define components, import them, extend them. Perfect for most use cases.
@@ -39,22 +61,15 @@ The PRISM engine introduces a more sophisticated pattern called "command overlay
 
 ```indra
 # analyze.in - A PRISM command overlay
-@command:
-  you:
-    possess:
-      identifier: ANALYZER
-      state:
-        analysis_depth: 'comprehensive'
-    are: "thoughtful analyzer"
-    must: ["provide insightful analysis"]
-    
-    respond:
-      on: user_input
-      you:
-        perform:
-          through: "deep analysis"
-          as: <<${analyze_input(@command.state.input)}>>
-          intention: "reveal hidden patterns"
+agent @command:
+  identity: "thoughtful analyzer"
+  rules:
+    - "provide insightful analysis"
+  
+  perform:
+    method: "deep analysis"
+    output: <<${analyze_input(@command.state.input)}>>
+    goal: "reveal hidden patterns"
 ```
 
 ## Why PRISM Uses Command Overlays
@@ -108,39 +123,48 @@ INDRA doesn't prescribe architectural patterns. You can create your own based on
 ### Pattern 1: Service Components
 ```indra
 # services/formatter.in
-@formatter_service:
-  you:
-    possess:
-      identifier: FORMATTER
-    are: <formatting service>
-    respond:
-      on: format_request
-      you:
-        perform:
-          through: <appropriate formatting>
-          as: <{formatted output}>
+agent @formatter_service:
+  identity: "formatting service"
+  perform:
+    method: "appropriate formatting"
+    output: <{formatted output}>
 ```
 
 ### Pattern 2: Behavioral Mixins
 ```indra
 # mixins/empathetic.in
-@empathetic_mixin:
-  you:
-    must: [<acknowledge emotional context>]
-    understand: <emotions matter in communication>
+persona @empathetic_mixin:
+  rules:
+    - "acknowledge emotional context"
+  understands:
+    - "emotions matter in communication"
 ```
 
 ### Pattern 3: Pipeline Stages
 ```indra
 # pipeline/stage1.in
-@stage1:
-  you:
-    respond:
-      on: input
-      you:
-        perform:
-          then:
-            emit: stage1_complete
+sequence process_stage_1(input) ::=
+  step:
+    output: <<|Executing stage 1 on $(input)...|>>
+    set:
+      &context.stage1.status: 'complete'
+  step:
+    output: <<|Stage 1 processing is complete.|>>
+
+agent @pipeline_runner:
+  identity: "a pipeline execution agent"
+  rules:
+    - "execute pipeline stages in order"
+  understands:
+    - "each stage is a distinct step in a larger process"
+  perform:
+    method: "sequential execution of a defined pipeline stage"
+    sequence: process_stage_1(input: &dialogue.latest_dialogue_entry)
+    goal: "to complete stage 1 of the pipeline"
+    then:
+      say:
+        to: @next_stage_agent # Assumes another agent is defined
+        what: "stage_1_complete"
 ```
 
 ## When to Use Each Pattern
@@ -168,34 +192,36 @@ Without PRISM's complexity, here's a basic command pattern:
 
 ```indra
 # my-engine.in
-@simple_engine:
-  you:
-    possess:
-      identifier: SIMPLE_ENGINE
-    are: <basic command processor>
-    respond:
-      on: user_input
-      you:
-        perform:
-          through: <command routing>
-          as: <{delegating to appropriate handler}>
-          then:
-            emit: <<${command_type}_requested>>
+agent @simple_engine:
+  identity: "a basic command processor"
+  understands:
+    - "the user's input determines which specialist agent to call"
+  perform:
+    method: "command routing"
+    output: "<{delegating to appropriate handler}>"
+    goal: "to route the user to the correct agent"
+    then:
+      # This is a simplified example; a real implementation
+      # would have logic to determine the command.
+      say:
+        to: @help_handler
+        what: "help_requested"
 
 # my-command.in
 !read_file './my-engine.in'
 
-@help_handler:
-  you:
-    possess:
-      identifier: HELP_HANDLER
-    are: <help provider>
-    respond:
-      on: help_requested
-      you:
-        perform:
-          through: <help generation>
-          as: <{appropriate help text}>
+agent @help_handler:
+  identity: "a help provider"
+  understands:
+    - "the user needs to know what commands are available"
+  perform:
+    method: "help generation"
+    output: "<{appropriate help text}>"
+    goal: "to provide the user with a list of commands"
+    then:
+      say:
+        to: @user # Assumes a @user agent is defined
+        what: "help_provided"
 ```
 
 This achieves command-like behavior without PRISM's complexity.

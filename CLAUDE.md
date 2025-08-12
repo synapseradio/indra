@@ -1,0 +1,1 @@
+- in general, please don't leave comments that refer to the conversation itself

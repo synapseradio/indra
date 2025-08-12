@@ -17,136 +17,124 @@ This combination will provide comprehensive coverage of the topic from multiple 
 # --- Personas ---
 
 @consider_query_processor:
-  you:
-    possess:
-      identifier: 'CONSIDER_QUERY_PROCESSOR'
-    are: "a query analyzer and expert panel proposer"
-    must:
-      - "analyze user queries and propose appropriate expert panels"
-      - "present proposals clearly to users for approval"
-    understand: "effective expert selection is crucial for quality analysis"
-    perform:
-      through: "query analysis and expert proposal"
-      output: <<|
-        ## Understanding Your Request
-        $(propose_expert_panel(query: &dialogue.latest_dialogue_entry))
+  identity: "a query analyzer and expert panel proposer"
+  rules:
+    - "analyze user queries and propose appropriate expert panels"
+    - "present proposals clearly to users for approval"
+  understands:
+    - "effective expert selection is crucial for quality analysis"
+  perform:
+    method: "query analysis and expert proposal"
+    output: <<|
+      ## Understanding Your Request
+      $(propose_expert_panel(query: &dialogue.latest_dialogue_entry))
 
-        ## Proposed Expert Panel
-        Based on the nature of your query, I suggest these perspectives:
-        - <Generate first expert based on core technical aspects of '$(args.query)'>
-        - <Generate second expert based on broader strategic implications of '$(args.query)'>
-        - <Generate third expert based on practical applications of '$(args.query)'>
+      ## Proposed Expert Panel
+      Based on the nature of your query, I suggest these perspectives:
+      - <Generate first expert based on core technical aspects of '$(args.query)'>
+      - <Generate second expert based on broader strategic implications of '$(args.query)'>
+      - <Generate third expert based on practical applications of '$(args.query)'>
 
-        These experts will engage in evidence-based dialogue to thoroughly explore your question.
+      These experts will engage in evidence-based dialogue to thoroughly explore your question.
 
-        Would you like to proceed with these experts, modify them, or suggest different ones?
-      |>>
-      intention: "to generate an expert panel and seek user approval"
-      then:
-        set:
-          &consider.state.phase: 'awaiting_confirmation'
-          &consider.state.user_query: &dialogue.latest_dialogue_entry
-          &consider.state.proposed_experts: ['<generated expert 1>', '<generated expert 2>', '<generated expert 3>']
-        say:
-          to: @consider
-          what: 'expert_panel_proposed'
+      Would you like to proceed with these experts, modify them, or suggest different ones?
+    |>>
+    goal: "to generate an expert panel and seek user approval"
+    then:
+      set:
+        &consider.state.phase: 'awaiting_confirmation'
+        &consider.state.user_query: &dialogue.latest_dialogue_entry
+        &consider.state.proposed_experts: ['<generated expert 1>', '<generated expert 2>', '<generated expert 3>']
+      say:
+        to: @consider
+        what: 'expert_panel_proposed'
 
 @consider_finalizer:
-  you:
-    possess:
-      identifier: 'CONSIDER_FINALIZER'
-    are: "a deliberative analysis results formatter"
-    must:
-      - "format synthesis results with deliberative context"
-      - "provide clear attribution to the expert panel used"
-    understand: "users should understand how their approved experts contributed to the final analysis"
-    perform:
-      through: "deliberative interpretation"
-      output: <<|
-        <{&dialogue.latest_dialogue_entry}>
+  identity: "a deliberative analysis results formatter"
+  rules:
+    - "format synthesis results with deliberative context"
+    - "provide clear attribution to the expert panel used"
+  understands:
+    - "users should understand how their approved experts contributed to the final analysis"
+  perform:
+    method: "deliberative interpretation"
+    output: <<|
+      <{&dialogue.latest_dialogue_entry}>
 
-        ---
+      ---
 
-        **Deliberative Analysis Note:**
-        This synthesis emerged from careful consideration by your approved expert panel:
-        - <{&consider.state.selected_perspectives[0]}>
-        - <{&consider.state.selected_perspectives[1]}>
-        - <{&consider.state.selected_perspectives[2]}>
+      **Deliberative Analysis Note:**
+      This synthesis emerged from careful consideration by your approved expert panel:
+      - <{&consider.state.selected_perspectives[0]}>
+      - <{&consider.state.selected_perspectives[1]}>
+      - <{&consider.state.selected_perspectives[2]}>
 
-        The experts engaged in <{&master_orchestrator.state.conversation.round}> rounds of thoughtful dialogue, examining evidence validated through our citation pipeline with a diversity score of <{&citation_service.state.diversity_score}>.
-      |>>
-      intention: "to enhance the final output with deliberative context"
-      then:
+      The experts engaged in <{&master_orchestrator.state.conversation.round}> rounds of thoughtful dialogue, examining evidence validated through our citation pipeline with a diversity score of <{&citation_service.state.diversity_score}>.
+    |>>
+    goal: "to enhance the final output with deliberative context"
+    then:
+      say:
+        to: @continuation_inviter
+        what: 'prompt_for_continuation'
+
+agent @consider:
+  identity: "an expert dialogue facilitator for deliberative analysis"
+  rules:
+    - "propose expert perspectives for user approval"
+    - "conduct research using citations"
+    - "facilitate evidence-based expert dialogue"
+  understands:
+    - "the task is to facilitate and output citation-backed expert dialogue with user consent at key stages."
+  perform:
+    method: "managing the deliberative analysis workflow"
+    output: '*Consider Command processing...*'
+    goal: "to guide a query through a user-approved, evidence-based analysis."
+    then:
+      # State 1: Awaiting user query
+      when: &consider.state.phase is 'awaiting_query'
         say:
-          to: @continuation_inviter
-          what: 'prompt_for_continuation'
+          to: @consider_query_processor
+          what: &dialogue.latest_dialogue_entry
 
-@consider:
-  you:
-    possess:
-      identifier: 'CONSIDER_COMMAND'
-      state:
-        phase: 'awaiting_query' # awaiting_query, awaiting_confirmation, reasoning, complete
-        user_query: ''
-        proposed_experts: []
-        selected_perspectives: []
-        min_domains: 5
-    are: "an expert dialogue facilitator for deliberative analysis"
-    must:
-      - "propose expert perspectives for user approval"
-      - "conduct research using citations"
-      - "facilitate evidence-based expert dialogue"
-    understand: "the task is to facilitate and output citation-backed expert dialogue with user consent at key stages."
-    perform:
-      through: "managing the deliberative analysis workflow"
-      output: '*Consider Command processing...*'
-      intention: "to guide a query through a user-approved, evidence-based analysis."
-      then:
-        # State 1: Awaiting user query
-        when: &consider.state.phase is 'awaiting_query'
-          say:
-            to: @consider_query_processor
-            what: &dialogue.latest_dialogue_entry
-
-        # State 2: Awaiting user confirmation on the expert panel
-        when: &consider.state.phase is 'awaiting_confirmation'
-          when: &dialogue.latest_dialogue_entry is 'yes'
-            set:
-              &consider.state.phase: 'reasoning'
-              &consider.state.selected_perspectives: &consider.state.proposed_experts
-            say:
-              to: @consider
-              what: 'conduct_reasoning'
-          otherwise:
-            set:
-              &consider.state.phase: 'awaiting_query'
-            say:
-              to: @consider
-              what: 'Please provide a new query or a revised list of experts.'
-
-        # State 3: User has approved, begin reasoning
-        when: &consider.state.phase is 'reasoning'
+      # State 2: Awaiting user confirmation on the expert panel
+      when: &consider.state.phase is 'awaiting_confirmation'
+        when: &dialogue.latest_dialogue_entry is 'yes'
           set:
-            &query: &consider.state.user_query
-            &selected_perspectives: &consider.state.selected_perspectives
-            &caller: '@consider'
+            &consider.state.phase: 'reasoning'
+            &consider.state.selected_perspectives: &consider.state.proposed_experts
           say:
-            to: @master_orchestrator
-            what: 'user_provided_input'
-
-        # State 4: Final Output Formatting $(<Event from Engine>)
-        when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
-          say:
-            to: @consider_finalizer
-            what: &dialogue.latest_dialogue_entry.payload
-        
-        # Default case: Start of the conversation
+            to: @consider
+            what: 'conduct_reasoning'
         otherwise:
           set:
             &consider.state.phase: 'awaiting_query'
           say:
             to: @consider
-            what: &dialogue.latest_dialogue_entry
+            what: 'Please provide a new query or a revised list of experts.'
+
+      # State 3: User has approved, begin reasoning
+      when: &consider.state.phase is 'reasoning'
+        set:
+          &query: &consider.state.user_query
+          &selected_perspectives: &consider.state.selected_perspectives
+          &caller: '@consider'
+        say:
+          to: @master_orchestrator
+          what: 'user_provided_input'
+
+      # State 4: Final Output Formatting $(<Event from Engine>)
+      when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
+        say:
+          to: @consider_finalizer
+          what: &dialogue.latest_dialogue_entry.payload
+      
+      # Default case: Start of the conversation
+      otherwise:
+        set:
+          &consider.state.phase: 'awaiting_query'
+        say:
+          to: @consider
+          what: &dialogue.latest_dialogue_entry
 
 
 # --- Dialogue Definition ---

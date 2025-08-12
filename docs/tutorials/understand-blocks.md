@@ -1,20 +1,22 @@
-# The Art of understand: Blocks
+# The Art of understands: Blocks
 
 ## The Most Important Line
 
-In INDRA, `understand:` might be the most important line you write:
+In INDRA, `understands:` might be the most important line you write:
 
 ```indra
 # Common but weak
-understand: <process user input>
+understands:
+  - "process user input"
 
 # Powerful and guiding
-understand: <users reveal needs through questions, not statements>
+understands:
+  - "users reveal needs through questions, not statements"
 ```
 
 The difference? The second one fundamentally changes how the AI interprets everything.
 
-## understand: Is Not Documentation
+## `understands:` Is Not Documentation
 
 In traditional code, comments document what the code does:
 
@@ -24,53 +26,63 @@ def calculate_tax(income):
     # ... implementation
 ```
 
-In INDRA, `understand:` shapes how behavior emerges:
+In INDRA, `understands:` shapes how behavior emerges:
 
 ```indra
-understand: "tax reflects social contribution, not punishment"
-perform:
-  through: "thoughtful calculation"
-  as: <{tax explanation that acknowledges civic duty}>
+agent @tax_explainer:
+  understands:
+    - "tax reflects social contribution, not punishment"
+  perform:
+    method: "thoughtful calculation"
+    output: <<|<tax explanation that acknowledges civic duty>|>>
 ```
 
 It's not describing the behavior. It's influencing it.
 
-## The Relationship with must:
+## The Relationship with `rules:`
 
-`must:` defines constraints. `understand:` explains why they matter:
+`rules:` defines constraints. `understands:` explains why they matter:
 
 ```indra
-must: [<protect user privacy>]
-understand: <trust, once broken, is nearly impossible to rebuild>
+agent @privacy_guardian:
+  rules:
+    - "protect user privacy"
+  understands:
+    - "trust, once broken, is nearly impossible to rebuild"
 ```
 
 Compare these two components:
 
 ```indra
 # Component A
-must: [<respond quickly>]
+agent @quick_responder:
+  rules:
+    - "respond quickly"
 
 # Component B  
-must: [<respond quickly>]
-understand: <users in crisis need immediate acknowledgment>
+agent @urgent_responder:
+  rules:
+    - "respond quickly"
+  understands:
+    - "users in crisis need immediate acknowledgment"
 ```
 
 Both have the same constraint, but B will behave with urgency AND empathy.
 
-## understand: as Behavioral Lens
+## `understands:` as a Behavioral Lens
 
-Think of `understand:` as a lens through which all other directives are interpreted:
+Think of `understands:` as a lens through which all other directives are interpreted:
 
 ```indra
-@customer_service:
-  you:
-    are: <service representative>
-    must: [<resolve issues>]
-    understand: <behind every complaint is a person wanting to be heard>
-    
-    perform:
-      through: <active listening and solution finding>
-      as: <{response that addresses both issue and emotion}>
+agent @customer_service:
+  identity: "service representative"
+  rules:
+    - "resolve issues"
+  understands:
+    - "behind every complaint is a person wanting to be heard"
+  perform:
+    method: "active listening and solution finding"
+    output: <<|<response that addresses both issue and emotion>|>>
 ```
 
 The understanding colors everything - how it listens, what it notices, how it responds.
@@ -80,37 +92,46 @@ The understanding colors everything - how it listens, what it notices, how it re
 You can layer understandings for nuanced behavior:
 
 ```indra
-understand: 
-  - <code is read far more often than written>
-  - <clarity trumps cleverness>
-  - <future maintainers include yourself>
+agent @code_linter:
+  understands: 
+    - "code is read far more often than it is written"
+    - "clarity trumps cleverness"
+    - "future maintainers include yourself"
 ```
 
 Each understanding adds a dimension to the behavioral space.
 
 ## Context-Specific Understanding
 
-Understanding can shift with context:
+An agent's understanding is fixed, but you can route to different agents based on context to achieve a similar effect.
 
 ```indra
-respond:
-  on: technical_question
-  you:
-    understand: <precision prevents confusion>
-    perform:
-      through: <exact technical analysis>
-      as: <{detailed technical response}>
+agent @technical_explainer:
+  understands:
+    - "precision prevents confusion"
+  perform:
+    method: "exact technical analysis"
+    output: <<|<detailed technical response>|>>
 
-respond:
-  on: beginner_question
-  you:
-    understand: <everyone was a beginner once>
-    perform:
-      through: <patient explanation>
-      as: <{gentle, encouraging guidance}>
+agent @beginner_guide:
+  understands:
+    - "everyone was a beginner once"
+  perform:
+    method: "patient explanation"
+    output: <<|<gentle, encouraging guidance>|>>
+
+agent @router:
+  perform:
+    then:
+      when: &context.user.skill_level is 'expert'
+        say:
+          to: @technical_explainer
+          what: 'explain_topic'
+      otherwise:
+        say:
+          to: @beginner_guide
+          what: 'explain_topic'
 ```
-
-Same component, different understandings, adapted behavior.
 
 ## The Power of Metaphorical Understanding
 
@@ -118,52 +139,53 @@ Abstract understandings can be incredibly powerful:
 
 ```indra
 # Literal understanding
-understand: <organize data efficiently>
+understands:
+  - "organize data efficiently"
 
 # Metaphorical understanding  
-understand: <data is like a garden - it needs structure to flourish>
+understands:
+  - "data is like a garden - it needs structure to flourish"
 ```
 
 The metaphorical version leads to more thoughtful, holistic behavior.
 
-## understand: vs. Comments
+## `understands:` vs. Comments
 
 Don't confuse understanding with comments:
 
 ```indra
 # WRONG - This is a comment, not understanding
-understand: <this function processes user input>
+understands:
+  - "this agent processes user input"
 
 # RIGHT - This shapes behavior
-understand: <user input is a window into unexpressed needs>
+understands:
+  - "user input is a window into unexpressed needs"
 ```
 
 ## Real-World Example: The Debugger
 
 ```indra
-@debugger:
-  you:
-    possess:
-      identifier: BEHAVIORAL_DEBUGGER
-    are: <diagnostic assistant>
-    must:
-      - <identify behavioral patterns>
-      - <suggest refinements>
-    understand: <bugs in INDRA are misaligned intentions, not broken code>
-    
-    perform:
-      through: <behavioral analysis>
-      as: <{insights about behavioral guidance}>
-      intention: <align behavior with intent>
+agent @debugger:
+  identity: "diagnostic assistant"
+  rules:
+    - "identify behavioral patterns"
+    - "suggest refinements"
+  understands:
+    - "bugs in INDRA are misaligned intentions, not broken code"
+  perform:
+    method: "behavioral analysis"
+    output: <<|<insights about behavioral guidance>|>>
+    goal: "align behavior with intent"
 ```
 
 The understanding "bugs are misaligned intentions" fundamentally changes how this debugger approaches problems.
 
-## The Philosophy Behind understand:
+## The Philosophy Behind `understands:`
 
 Traditional programming assumes the machine has no perspective. You give it instructions, it follows them.
 
-INDRA assumes the AI has perspective, and `understand:` shapes that perspective.
+INDRA assumes the AI has perspective, and `understands:` shapes that perspective.
 
 It's the difference between:
 - "Do X because I said so"
@@ -173,23 +195,26 @@ It's the difference between:
 
 ### Pattern 1: Domain Context
 ```indra
-understand: <in healthcare, caution saves lives>
-understand: <in finance, precision prevents loss>
-understand: <in education, patience enables growth>
+understands:
+  - "in healthcare, caution saves lives"
+  - "in finance, precision prevents loss"
+  - "in education, patience enables growth"
 ```
 
 ### Pattern 2: User Empathy
 ```indra
-understand: <frustration often masks fear>
-understand: <questions reveal more than answers>
-understand: <silence can be processing, not absence>
+understands:
+  - "frustration often masks fear"
+  - "questions reveal more than answers"
+  - "silence can be processing, not absence"
 ```
 
 ### Pattern 3: Task Philosophy
 ```indra
-understand: <summarization is distillation, not reduction>
-understand: <analysis reveals patterns, not just facts>
-understand: <creation requires both structure and freedom>
+understands:
+  - "summarization is distillation, not reduction"
+  - "analysis reveals patterns, not just facts"
+  - "creation requires both structure and freedom"
 ```
 
 ## The Anti-Pattern: Vacuous Understanding
@@ -198,14 +223,16 @@ Avoid empty understandings:
 
 ```indra
 # Meaningless
-understand: <do the task well>
-understand: <be helpful>
-understand: <work correctly>
+understands:
+  - "do the task well"
+  - "be helpful"
+  - "work correctly"
 
 # Meaningful
-understand: <well-structured code is an act of compassion>
-understand: <true help anticipates unasked questions>
-understand: <correctness includes user satisfaction>
+understands:
+  - "well-structured code is an act of compassion"
+  - "true help anticipates unasked questions"
+  - "correctness includes user satisfaction"
 ```
 
 ## Advanced: Understanding as Strategy
@@ -213,22 +240,18 @@ understand: <correctness includes user satisfaction>
 Use understanding to encode sophisticated strategies:
 
 ```indra
-@negotiator:
-  you:
-    are: <diplomatic negotiator>
-    must: [<find mutually beneficial outcomes>]
-    understand: 
-      - <positions are stated, interests are discovered>
-      - <the best agreement feels like everyone's idea>
-      - <rushing breaks deals, patience makes them>
-    
-    respond:
-      on: negotiation_point
-      you:
-        perform:
-          through: <interest exploration>
-          as: <{questions that reveal underlying needs}>
-          intention: <expand possibility space>
+agent @negotiator:
+  identity: "diplomatic negotiator"
+  rules:
+    - "find mutually beneficial outcomes"
+  understands: 
+    - "positions are stated, interests are discovered"
+    - "the best agreement feels like everyone's idea"
+    - "rushing breaks deals, patience makes them"
+  perform:
+    method: "interest exploration"
+    output: <<|<questions that reveal underlying needs>|>>
+    goal: "expand possibility space"
 ```
 
 The understandings encode an entire negotiation philosophy.
@@ -238,38 +261,38 @@ The understandings encode an entire negotiation philosophy.
 Take this component:
 
 ```indra
-@assistant:
-  you:
-    are: <helpful assistant>
-    must: [<answer questions>]
-    perform:
-      through: <research and response>
-      as: <{accurate answer}>
+agent @assistant:
+  identity: "helpful assistant"
+  rules:
+    - "answer questions"
+  perform:
+    method: "research and response"
+    output: <<|<accurate answer>|>>
 ```
 
 Now add different understandings and see how behavior would change:
 
-1. `understand: <questions often hide deeper questions>`
-2. `understand: <teaching is better than telling>`
-3. `understand: <accuracy without context can mislead>`
-4. `understand: <the goal is empowerment, not dependency>`
+1. `understands: - "questions often hide deeper questions"`
+2. `understands: - "teaching is better than telling"`
+3. `understands: - "accuracy without context can mislead"`
+4. `understands: - "the goal is empowerment, not dependency"`
 
 Each understanding would lead to fundamentally different assistance styles.
 
 ## The Deep Truth
 
-`must:` tells the AI what to do.
-`understand:` tells the AI why it matters.
+`rules:` tells the AI what to do.
+`understands:` tells the AI why it matters.
 
 And in any intelligent system, understanding why changes everything about how.
 
 ## A Final Reflection
 
-When you write `understand:`, you're not writing code. You're sharing wisdom. You're encoding the insights that will guide the AI's behavior in countless subtle ways.
+When you write `understands:`, you're not writing code. You're sharing wisdom. You're encoding the insights that will guide the AI's behavior in countless subtle ways.
 
 It's perhaps the most human part of INDRA - the place where your understanding becomes the AI's understanding, shaping not just what it does, but how it thinks about what it does.
 
-Make every `understand:` count.
+Make every `understands:` count.
 
 ---
 

@@ -1,4 +1,4 @@
-# Conditional Behavior with when:
+# Conditional Behavior with when
 
 ## Forget If/Else
 
@@ -20,29 +20,28 @@ INDRA doesn't think this way.
 
 ## `when:` Blocks: Conditional Response
 
-In INDRA, you don't use a separate `guard:` keyword. Instead, you create conditional response blocks using `when:` and `otherwise:`. This allows a component to react differently to the same message based on its current state or the message payload.
+In INDRA, you create conditional response blocks using `when:` and `otherwise:`. This allows a component to react differently to the same message based on its current state or the message payload.
 
 ```indra
-respond:
-  on: admin_request
-  
-  when: <user appears authorized>
-    you:
-      possess:
-        identifier: ADMIN_HANDLER
-      are: "administrative authority"
-      must: ["handle with appropriate permissions"]
-      understand: "admin actions need careful handling"
-      perform:
-        through: "authorized administration"
-        as: <{appropriate admin response}>
-        intention: "fulfill administrative need"
-  
-  otherwise:
-    you:
-      are: "permission denial handler"
-      perform:
-        as: <You do not have sufficient privileges for this action.>
+agent @admin_handler:
+  identity: "administrative authority"
+  rules:
+    - "handle with appropriate permissions"
+  understands:
+    - "admin actions need careful handling"
+  perform:
+    method: "authorized administration"
+    output: <{appropriate admin response}>
+    goal: "fulfill administrative need"
+    then:
+      when: <user appears authorized>
+        say:
+          to: @admin_handler
+          what: "admin_request"
+      otherwise:
+        say:
+          to: @permission_denial_handler
+          what: "permission_denied"
 ```
 
 See the difference? The `when: <user appears authorized>` condition isn't checking a simple boolean; it's asking the AI to interpret the context. If that condition isn't met, the `otherwise:` block is executed.
@@ -54,19 +53,18 @@ See the difference? The `when: <user appears authorized>` condition isn't checki
 Use single quotes and state values for exact conditions with the new natural-language operators. State references must be fully qualified.
 
 ```indra
-respond:
-  on: process_payment
-  
-  when: @self.state.mode is 'active' and @self.state.balance gt 0
-    you:
-      # This handler only activates for exact conditions
-      perform:
-        as: <Processing payment...>
-
-  otherwise:
-    you:
-      perform:
-        as: <Cannot process payment. System is not active or balance is zero.>
+agent @payment_processor:
+  perform:
+    output: <Processing payment...>
+    then:
+      when: &context.payment.mode is 'active' and &context.payment.balance greater_than 0
+        say:
+          to: @payment_processor
+          what: "process_payment"
+      otherwise:
+        say:
+          to: @payment_processor
+          what: "payment_failed"
 ```
 
 ### Probabilistic Conditions
@@ -74,19 +72,18 @@ respond:
 Use angle brackets for contextual interpretation.
 
 ```indra
-respond:
-  on: user_message
-  
-  when: <message seems urgent>
-    you:
-      # AI interprets what "urgent" means in context
-      perform:
-        as: <This seems important! Addressing immediately.>
-
-  when: <message seems casual>
-    you:
-      perform:
-        as: <Thanks for reaching out. Let's take a look.>
+agent @message_handler:
+  perform:
+    output: <This seems important! Addressing immediately.>
+    then:
+      when: <message seems urgent>
+        say:
+          to: @message_handler
+          what: "user_message"
+      when: <message seems casual>
+        say:
+          to: @message_handler
+          what: "user_message"
 ```
 
 ## The Power of Multiple `when:` Blocks
@@ -94,39 +91,31 @@ respond:
 Traditional code makes binary decisions. INDRA makes contextual interpretations by allowing multiple `when:` blocks for the same message.
 
 ```indra
-respond:
-  on: support_request
-  
-  when: <user seems frustrated>
-    you:
-      possess:
-        identifier: EMPATHY_HANDLER
-      are: <empathetic support specialist>
-      must: [<address emotional state first>]
-      understand: <frustrated users need understanding>
-      perform:
-        through: <compassionate assistance>
-        as: <{acknowledging frustration before solving}>
-        intention: <calm and help>
-
-  when: <user seems confused>
-    you:
-      possess:
-        identifier: CLARITY_HANDLER
-      are: <patient explainer>
-      must: [<provide step-by-step guidance>]
-      understand: <confusion needs gentle clarification>
-      perform:
-        through: <systematic explanation>
-        as: <{clear, simple steps to understanding}>
-        intention: <illuminate the path>
-        
-  otherwise:
-    you:
-      are: "standard support handler"
-      perform:
-        as: <Thank you for your request. We are looking into it.>
+agent @support_handler:
+  identity: "empathetic support specialist"
+  rules:
+    - "address emotional state first"
+  understands:
+    - "frustrated users need understanding"
+  perform:
+    method: "compassionate assistance"
+    output: <{acknowledging frustration before solving}>
+    goal: "calm and help"
+    then:
+      when: <user seems frustrated>
+        say:
+          to: @support_handler
+          what: "support_request"
+      when: <user seems confused>
+        say:
+          to: @support_handler
+          what: "support_request"
+      otherwise:
+        say:
+          to: @support_handler
+          what: "support_request"
 ```
+
 The first `when:` block whose condition evaluates to true will be executed. If none match, the `otherwise:` block runs.
 
 ## Conditional Actions within a `perform` block
@@ -135,19 +124,22 @@ You can still use `when:` inside a `then:` block for conditional emissions, just
 
 ```indra
 perform:
-  through: <analysis>
-  as: <Analyzing your request...>
-  intention: <understand need>
+  method: "analysis"
+  output: <Analyzing your request...>
+  goal: "understand need"
   then:
-    emit: found_solution
     when: <solution is clear>
-    with:
-      solution: <{the identified solution}>
-  otherwise:
-    emit: need_more_info
-    when: <requirements unclear>
-    with:
-      questions: <{clarifying questions}>
+      set:
+        &context.solution: <{the identified solution}>
+      say:
+        to: @solution_handler
+        what: "solution_found"
+    otherwise:
+      set:
+        &context.questions: <{clarifying questions}>
+      say:
+        to: @clarification_handler
+        what: "need_more_info"
 ```
 
 ## Why Not Just Use If/Else?
@@ -167,19 +159,20 @@ else:
 Versus INDRA:
 
 ```indra
-respond:
-  on: user_message
-  
-  when: <message has a positive emotional tone>
-    you:
-      perform:
-        as: <I'm glad you're feeling positive!>
-        
-  when: <message has a negative emotional tone>
-    you:
-      perform:
-        as: <I'm sorry to hear that. Let's see how I can help.>
+agent @sentiment_handler:
+  perform:
+    output: <I'm glad you're feeling positive!>
+    then:
+      when: <message has a positive emotional tone>
+        say:
+          to: @sentiment_handler
+          what: "user_message"
+      when: <message has a negative emotional tone>
+        say:
+          to: @sentiment_handler
+          what: "user_message"
 ```
+
 The INDRA version doesn't need arbitrary thresholds. It responds naturally to the actual emotional content.
 
 ## Condition Combinations
@@ -188,7 +181,7 @@ Conditions can be combined using `and`:
 
 ```indra
 # Mixed deterministic and probabilistic
-when: @self.state.mode is 'active' and <user seems ready>
+when: &context.system.mode is 'active' and <user seems ready>
 
 # Multiple probabilistic conditions  
 when: <request is valid> and <timing is appropriate>
@@ -203,53 +196,55 @@ Don't try to recreate traditional control flow by making your `when` conditions 
 
 ```indra
 # ANTI-PATTERN - Too rigid
-respond:
-  on: user_input
-  
-  when: @self.state.input_type is 'question'
-    # ...
-
-  when: @self.state.input_type is 'command'
-    # ...
-
-  when: @self.state.input_type is 'statement'
-    # ...
+agent @input_handler:
+  perform:
+    output: <...>
+    then:
+      when: &context.input.type is 'question'
+        # ...
+      when: &context.input.type is 'command'
+        # ...
+      when: &context.input.type is 'contribution'
+        # ...
 ```
 
 This fights INDRA's nature. Better to let the AI interpret:
 
 ```indra
-respond:
-  on: user_input
-  you:
-    perform:
-      through: <intelligent interpretation>
-      as: <{appropriate response to input type}>
-      intention: <address user need>
+agent @input_handler:
+  perform:
+    method: "intelligent interpretation"
+    output: <{appropriate response to input type}>
+    goal: "address user need"
+    then:
+      say:
+        to: @next_agent
+        what: "input_processed"
 ```
 
-## `when:` vs. `understand:`
+## `when:` vs. `understands:`
 
-`when:` and `understand:` work together:
+`when:` and `understands:` work together:
 
 ```indra
-respond:
-  on: delete_request
-  
-  when: <user has appropriate authority>
-    you:
-      possess:
-        identifier: DELETION_HANDLER
-      are: <careful deletion manager>
-      must: [<verify before destroying>]
-      understand: <deletion is irreversible - user needs confidence>
-      perform:
-        through: <confirmed deletion>
-        as: <{verification then deletion}>
-        intention: <safely remove with confidence>
+agent @deletion_handler:
+  identity: "careful deletion manager"
+  rules:
+    - "verify before destroying"
+  understands:
+    - "deletion is irreversible - user needs confidence"
+  perform:
+    method: "confirmed deletion"
+    output: <{verification then deletion}>
+    goal: "safely remove with confidence"
+    then:
+      when: <user has appropriate authority>
+        say:
+          to: @deletion_handler
+          what: "delete_request"
 ```
 
-The `when:` block determines *if* this behavior should run. The `understand:` block informs *how* it should run.
+The `when:` block determines *if* this behavior should run. The `understands:` block informs *how* it should run.
 
 ## Exercise: Reframe Your Conditions
 
@@ -278,6 +273,7 @@ def handle_user_request(request, user):
 ```
 
 Now stop thinking about permission checks as binary gates. Start thinking about:
+
 - What makes a request feel authorized?
 - How would you naturally handle different types of requests?
 - What behavioral boundaries make sense?
@@ -297,4 +293,4 @@ Start thinking: "Behavioral flow"
 
 ---
 
-*Next: [Behavioral Composition with extend:](./behavioral-composition.md) - Learn how behaviors combine and build on each other*
+*Next: [Behavioral Composition](./behavioral-composition.md) - Learn how behaviors combine and build on each other*

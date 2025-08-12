@@ -18,9 +18,9 @@ INDRA doesn't work this way:
 
 ```indra
 perform:
-  through: "thoughtful calculation"
-  as: <{total that reflects the true value}>
-  intention: "provide meaningful sum"
+  method: "thoughtful calculation"
+  output: <{total that reflects the true value}>
+  goal: "provide meaningful sum"
 ```
 
 There's no execution path to trace. No variables to watch. The behavior emerges each time, potentially differently.
@@ -108,40 +108,40 @@ When behavior isn't what you expect, you don't fix bugs - you refine patterns:
 ```indra
 # Original
 perform:
-  through: <comprehensive analysis>
-  as: <{detailed findings}>
+  method: <comprehensive analysis>
+  output: <{detailed findings}>
   
 # Refined
 perform:
-  through: "focused analysis"
-  as: <{concise key insights only}>
-  intention: "clarity through brevity"
+  method: "focused analysis"
+  output: <{concise key insights only}>
+  goal: "clarity through brevity"
 ```
 
 ### Problem: Missing important aspects
 
 ```indra
 # Original
-are: <analyzer>
-must: [<find patterns>]
+identity: <analyzer>
+rules: [<find patterns>]
 
 # Refined  
-are: "holistic analyzer"
-must: 
+identity: "holistic analyzer"
+rules: 
   - "find patterns"
   - "identify exceptions"
   - "note what's missing"
-understand: "absence is as revealing as presence"
+understands: "absence is as revealing as presence"
 ```
 
 ### Problem: Inconsistent behavior
 
 ```indra
 # Original - too open
-as: <{appropriate response}>
+output: <{appropriate response}>
 
 # Refined - guided but flexible
-as: <{structured response following our established format}>
+output: <{structured response following our established format}>
 with:
   format_guide: <<Introduction, Analysis, Conclusion>>
 ```
@@ -156,7 +156,7 @@ respond:
   on: data_received
   you:
     perform:
-      as: <*Received data, beginning processing*> # Visible marker
+      output: <*Received data, beginning processing*> # Visible marker
       then:
         emit: processing_started
         
@@ -164,7 +164,7 @@ respond:
   on: processing_started
   you:
     perform:
-      as: <*Processing phase initiated*> # Another marker
+      output: <*Processing phase initiated*> # Another marker
 ```
 
 These markers help you see where in the flow things diverge from expectations.
@@ -185,7 +185,7 @@ respond:
   on: request
   you:
     perform:
-      as: <*Checking urgency: {assessment of urgency level}*>
+      output: <*Checking urgency: {assessment of urgency level}*>
       then:
         emit: urgent_request
         when: <high urgency detected>
@@ -197,21 +197,21 @@ INDRA behaviors naturally vary. This isn't a bug - it's the feature. But you can
 
 ### High Variation (Creative tasks)
 ```indra
-are: <imaginative creator>
-must: [<surprise and delight>]
+identity: <imaginative creator>
+rules: [<surprise and delight>]
 perform:
-  through: <unbounded exploration>
-  as: <{something unexpected}>
+  method: <unbounded exploration>
+  output: <{something unexpected}>
 ```
 
 ### Low Variation (Consistent tasks)
 ```indra
-are: <precise formatter>
-must: [<follow exact specifications>]
-understand: <consistency enables trust>
+identity: <precise formatter>
+rules: [<follow exact specifications>]
+understands: <consistency enables trust>
 perform:
-  through: <strict adherence to format>
-  as: <<Status: ${status}\nTime: ${time}\nResult: ${result}>>
+  method: <strict adherence to format>
+  output: <<Status: ${status}\nTime: ${time}\nResult: ${result}>>
 ```
 
 ## Common Debugging Patterns
@@ -224,7 +224,7 @@ respond:
   on: trigger_event
   you:
     perform:
-      as: <*Event received, evaluating...*>
+      output: <*Event received, evaluating...*>
       then:
         emit: diagnostic_condition_check
         with:
@@ -236,14 +236,14 @@ respond:
 ```indra
 # Make constraints more explicit
 # Instead of:
-are: <helpful>
+identity: <helpful>
 
 # Try:
-are: <technically helpful assistant>
-must: 
+identity: <technically helpful assistant>
+rules: 
   - <prioritize accuracy>
   - <use domain terminology>
-understand: <users are technical professionals>
+understands: <users are technical professionals>
 ```
 
 ### 3. State Not Evolving
@@ -259,7 +259,7 @@ respond:
         last_update: <<${timestamp}>>
         update_count: <<${update_count + 1}>>
     perform:
-      as: <<Update #${update_count} at ${timestamp}>>
+      output: <<Update #${update_count} at ${timestamp}>>
 ```
 
 ## The Philosophy of INDRA Debugging
@@ -278,14 +278,14 @@ Create diagnostic components that observe without interfering:
   you:
     possess:
       identifier: DIAGNOSTIC_PROBE
-    are: <silent observer>
-    must: [<record without interfering>]
+    identity: <silent observer>
+    rules: [<record without interfering>]
     
     respond:
       on: any_message
       you:
         perform:
-          as: '' # Silent
+          output: '' # Silent
           then:
             emit: probe_observation
             with:
@@ -323,4 +323,4 @@ You're not fixing bugs. You're cultivating behaviors.
 
 ---
 
-*Next: [The Art of understand: Blocks](./understand-blocks.md) - How understanding shapes everything*
+*Next: [The Art of understands: Blocks](./understand-blocks.md) - How understanding shapes everything*

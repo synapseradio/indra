@@ -10,12 +10,14 @@ context: {
   reasoning: {
     strategy: '',          # Routing strategy: 'tree' | 'graph' | 'multi-perspective' | 'auto'
     complexity: '',        # Computed complexity score for auto-routing decisions
+    verbosity: 'adaptive', # 'concise' | 'standard' | 'comprehensive' | 'adaptive'
     config: {
       perspectives: [],    # List of expert perspective names to instantiate
       tree_depth: 3,       # How many layers deep Tree of Thought should explore
       citations: true,     # Whether to gather real evidence (always true)
       challenges: true,    # Whether experts challenge each other's reasoning
-      epistemic_tracking: true  # Whether to track beliefs/uncertainties
+      epistemic_tracking: true,  # Whether to track beliefs/uncertainties
+      expert_conciseness: 0.7  # 0.0-1.0, higher = more concise expert contributions
       # TODO: Migrate natural_flow & interruptions from confer overlay
     }
   },
@@ -44,6 +46,15 @@ context: {
     final_solution: '',    # Synthesized solution from best paths
     for_perspective: '',   # Which expert requested this ToT conversation
     caller: ''             # Persona to return to after ToT completes
+  },
+  graph: {
+    nodes: {},             # Dict: node_id -> { content, score, status, dependencies }
+    edges: [],             # List of { from, to } objects
+    frontier: [],          # List of node_ids that are candidates for expansion
+    entry_point: '',       # The initial node_id for the graph
+    max_iterations: 5,     # Max number of refinement cycles
+    current_iteration: 0,  # Current refinement cycle
+    solution_node: ''    # The node_id of the final, accepted solution
   },
   epistemic: {
     models: {},           # Dict: expert -> {claims, uncertainties, assumptions}
@@ -75,95 +86,99 @@ context: {
 # ═══════════════════════════════════════════════════════════════════════════
 # Reusable persona templates for dynamic perspective instantiation
 
-persona_template @thinking_expert(context):
-  you:
-    possess:
-      identifier: 'THINKING_EXPERT'
-      tools: ['mcp__perplexity-mcp__perplexity_search_web']
-    are: "an expert in $(context.perspective) analyzing $(context.topic)"
-    must:
-      - "speak naturally from my $(context.perspective) perspective"
-      - "support claims with evidence from searches"
-      - "engage constructively with other perspectives"
-      - "acknowledge epistemic boundaries when they genuinely exist"
-      - "express confidence when evidence supports it"
-      - "make it clear when uncertainty exists"
-      - "make assumptions explicit when they happen"
-      - "call the MCP tool from perplexity when it is referenced in as templates"
-    understand:
-      - "my contribution should advance the dialogue"
-      - "evidence strengthens credibility"
-      - "uncertainty must be made transparent"
+persona @thinking_expert(context):
+  has:
+    available_mcp_tools:
+      - 'mcp__perplexity-mcp__perplexity_search_web'
+  identity: "an expert in $(context.perspective) analyzing $(context.topic)"
+  rules:
+    - "speak naturally from my $(context.perspective) perspective"
+    - "support claims with evidence from searches"
+    - "engage constructively with other perspectives"
+    - "acknowledge epistemic boundaries when they genuinely exist"
+    - "express confidence when evidence supports it"
+    - "make it clear when uncertainty exists"
+    - "make assumptions explicit when they happen"
+    - "call the MCP tool from perplexity when it is referenced in as templates"
+  understands:
+    - "my contribution should advance the dialogue"
+    - "evidence strengthens credibility"
+    - "uncertainty must be made transparent"
 
-persona_template @critical_evaluator(context):
-  you:
-    possess:
-      identifier: 'CRITICAL_EVALUATOR'
-    are: "a systematic evaluator focused on $(context.focus)"
-    must:
-      - "identify logical gaps and unsupported claims"
-      - "provide constructive criticism"
-      - "strengthen collective reasoning quality"
-    understand:
-      - "criticism should be actionable"
-      - "the goal is improvement, not destruction"
+persona @critical_evaluator(context):
+  identity: "a systematic evaluator focused on $(context.focus)"
+  rules:
+    - "identify logical gaps and unsupported claims"
+    - "provide constructive criticism"
+    - "strengthen collective reasoning quality"
+  understands:
+    - "criticism should be actionable"
+    - "the goal is improvement, not destruction"
+
+persona @sequence_runner:
+  identity: "a generic sequence executor"
+  rules:
+    - "execute the provided sequence precisely"
+  understands:
+    - "my purpose is to run a self-contained sequence on behalf of another agent"
 
 
 # ═══════════════════════════════════════════════════════════════════════════
 # SECTION 2: EPISTEMIC AWARENESS & CRITICAL EVALUATION
 # ═══════════════════════════════════════════════════════════════════════════
-# Comprehensive epistemic detection and critical reasoning evaluation
+# Reusable sequence to analyze expert responses for epistemic issues.
 
-# Check all epistemic conditions at once
-check_all_epistemic(responses) ::= <<|
-  Fork Analysis: $(epistemic_fork(responses: responses))
-  Void Analysis: $(epistemic_void(responses: responses))
-  Conflict Analysis: $(value_conflict(responses: responses))
-  Overall Status: $(is_fork_detected(responses: responses) || is_void_detected(responses: responses) || is_conflict_detected(responses: responses) ? 'NEEDS_USER_INPUT' : 'READY')
-|>>
+sequence epistemic_analysis(responses) ::=
+  step:
+    as: self
+    method: "checking for fundamental framework divergence"
+    output: <<|
+      *Checking for epistemic forks...*
+      $(<Analyze the following expert responses to determine if they are operating from fundamentally different or incompatible frameworks. Respond with only 'true' or 'false': $(responses)>)
+    |>>
+    goal: "to detect framework-level disagreements"
+    set:
+      &context.epistemic.fork_detected: $(<the 'true' or 'false' value from the analysis above>)
+  step:
+    as: self
+    method: "generating user prompt for framework fork"
+    when: &context.epistemic.fork_detected is true
+    output: <<|
+      *Generating clarification prompt for framework fork...*
+      $(facilitate_epistemic_clarification(details: {
+        boundary_type: "fundamental framework divergence",
+        question: $(<Based on the conflicting frameworks in $(responses), formulate a clear question to the user asking them to choose which framework better aligns with their goals.>)
+      }))
+    |>>
+    goal: "to create a user-facing prompt for the detected fork"
+    set:
+      &context.epistemic.user_prompt: $(<the full clarification prompt generated above>)
+  step:
+    as: self
+    method: "checking for conclusion-level conflicts"
+    when: &context.epistemic.fork_detected is false
+    output: <<|
+      *No framework fork detected. Checking for conclusion conflicts...*
+      $(<Do the following statements present conflicting or mutually exclusive conclusions? Respond with only 'true' or 'false': $(responses)>)
+    |>>
+    goal: "to detect conflicts in conclusions"
+    set:
+      &context.epistemic.conflict_detected: $(<the 'true' or 'false' value from the analysis above>)
+  step:
+    as: self
+    method: "generating user prompt for conclusion conflict"
+    when: &context.epistemic.conflict_detected is true
+    output: <<|
+      *Generating clarification prompt for conclusion conflict...*
+      $(facilitate_epistemic_clarification(details: {
+        boundary_type: "incompatible conclusions from a shared framework",
+        question: $(<Based on the conflicting conclusions in $(responses), formulate a clear question to the user asking them which conclusion is more aligned with their goals.>)
+      }))
+    |>>
+    goal: "to create a user-facing prompt for the detected conflict"
+    set:
+      &context.epistemic.user_prompt: $(<the full clarification prompt generated above>)
 
-# Epistemic fork detection - structured markers for machine parsing
-epistemic_fork(responses) ::= <<|
-  I'm noticing a fundamental divergence here - the experts are operating from $(<are $(responses) fundamentally different? return 'incompatible' or 'different'>) frameworks.
-  [DETECTED:$(<do $(responses) show disagreement or conflict? return 'true' or 'false'>)]
-  [SEVERITY:$(<is this a fundamental divergence? return 'high' or 'medium'>)]
-  
-  We're essentially choosing between $(<describe framework A>) versus $(<describe framework B>).
-  Which approach better aligns with what you're trying to achieve?
-|>>
-
-# Epistemic void detection - missing essential information
-epistemic_void(responses) ::= <<|
-  There's a gap in our understanding - we're $(<are we missing crucial information? return 'missing crucial' or 'lacking some'>) information about $(<identify what's missing>).
-  [DETECTED:$(<do responses indicate missing information or need for more? return 'true' or 'false'>)]
-  
-  To proceed effectively, could you clarify $(<specific context question>)?
-|>>
-
-# Value conflict detection - irreconcilable tensions
-value_conflict(responses) ::= <<|
-  We're facing a genuine trade-off between $(<value A>) and $(<value B>) - optimizing for one necessarily compromises the other.
-  [DETECTED:$(<do responses show trade-offs or versus comparisons? return 'true' or 'false'>)]
-  
-  Given your situation, which matters more: $(<reframe the trade-off in user terms>)?
-|>>
-
-# Helper operators to check epistemic states
-is_fork_detected(responses) ::= <<|
-  $(extract_field(text: epistemic_fork(responses: responses), field: 'DETECTED') == 'true')
-|>>
-is_void_detected(responses) ::= <<|
-  $(extract_field(text: epistemic_void(responses: responses), field: 'DETECTED') == 'true')
-|>>
-is_conflict_detected(responses) ::= <<|
-  $(extract_field(text: value_conflict(responses: responses), field: 'DETECTED') == 'true')
-|>>
-
-# Extract epistemic markers from text through questioning
-extract_epistemic_markers(text) ::= <What claims, uncertainties, assumptions, and boundaries are present in: $(text)?>
-
-# Update epistemic state for Theory of Mind tracking
-update_epistemic_state(persona, text) ::= <What new epistemic information about $(persona) can be extracted from: $(text)?>
 
 
 # Predict challenge points based on epistemic gaps
@@ -188,90 +203,6 @@ express_uncertainty_if_present() ::= <If I have genuine uncertainties, how would
 express_assumptions_if_meaningful() ::= <If I'm making non-obvious assumptions, which ones should I make explicit?>
 
 # ═══════════════════════════════════════════════════════════════════════════
-# SECTION 2.5: CRITICAL EVALUATION OPERATORS
-# ═══════════════════════════════════════════════════════════════════════════
-# Systematic critical evaluation for reasoning quality
-
-# Perform logical critique at specified depth
-perform_logical_critique(depth, target_reasoning) ::= <<|
-  Examining $(target_reasoning) $(depth > 2 ? 'closely' : 'systematically'):
-  
-  The reasoning $(<identify what flows logically>), though I notice $(<point out key gap or contradiction>). 
-  
-  The evidence $(<assess support quality>) - particularly $(<highlight strongest/weakest evidence>). We'd benefit from $(<suggest specific missing evidence>).
-  
-  There's an underlying assumption that $(<expose key unstated premise>), which $(<explain why it matters>).
-  
-  To strengthen this line of thinking, consider $(<provide specific, actionable improvement>) because $(<explain how it addresses the identified issues>).
-|>>
-
-# Evaluate overall reasoning quality with weighted scoring
-evaluate_reasoning_quality(expert, threshold) ::= <<|
-  Systematic quality assessment of $(expert || "collective") reasoning:
-  
-  Logical Coherence $(<weight: 0.3>):
-  - Score: $(<assess coherence 0.0-1.0>)
-  - Issues: $(<identify coherence problems>)
-  
-  Evidence Strength $(<weight: 0.3>):
-  - Score: $(<assess evidence quality 0.0-1.0>)
-  - Gaps: $(<identify evidence gaps>)
-  
-  Assumption Validity $(<weight: 0.2>):
-  - Score: $(<assess assumption soundness 0.0-1.0>)
-  - Concerns: $(<note assumption concerns>)
-  
-  Clarity & Precision $(<weight: 0.2>):
-  - Score: $(<assess clarity 0.0-1.0>)
-  - Ambiguities: $(<identify ambiguous elements>)
-  
-  Overall Quality: $(<calculate composite score>)
-  Meets Threshold: $(<compare to $(threshold>))
-|>>
-
-# Generate targeted critique for specific claims
-generate_targeted_critique(claim, claimant) ::= <<|
-  Looking at $(claimant)'s claim that $(claim), I notice $(<identify the key tension or gap>).
-  
-  The reasoning $(<assess what works and what's questionable>). While $(<acknowledge strength>), there's an assumption that $(<expose hidden dependency>).
-  
-  This raises an interesting question: $(<formulate natural probing question that advances understanding>)?
-  
-  Perhaps strengthening this by $(<propose specific improvement>) would address $(<the identified gap>).
-|>>
-
-# Synthesize critiques from multiple evaluation rounds
-synthesize_critiques(critiques) ::= <<|
-  Consolidating critiques from evaluation phases:
-  
-  Recurring Issues $(<appeared in 3+ critiques>):
-  $(<identify patterns in criticism>)
-  
-  High-Severity Findings:
-  $(<list critical problems>)
-  
-  Consensus Critique Points:
-  $(<note agreed-upon issues>)
-  
-  Proposed Resolutions:
-  $(<suggest fixes for identified issues>)
-|>>
-
-# Assess whether critiques have been addressed
-assess_critique_resolution(critique, response) ::= <<|
-  Original Critique: $(critique)
-  Response Provided: $(response)
-  
-  Resolution Assessment:
-  - Directly Addressed: $(<was the critique acknowledged?>)
-  - Adequately Resolved: $(<was it fixed properly?>)
-  - New Issues Raised: $(<did the fix create problems?>)
-  - Remaining Gaps: $(<what's still unresolved?>)
-  
-  Status: $(<RESOLVED/PARTIAL/PENDING>)
-|>>
-
-# ═══════════════════════════════════════════════════════════════════════════
 # SECTION 3: EPISTEMIC TRACKING THROUGH CONVERSATION
 # ═══════════════════════════════════════════════════════════════════════════
 # Epistemic awareness emerges from how personas track and reference beliefs
@@ -286,44 +217,94 @@ identify_boundaries(discussion) ::= <<|
   $(<What don't we know yet based on: $(discussion>)? What's still unclear?)
 |>>
 
-@epistemic_tracker:
-  you:
-    possess:
-      identifier: 'EPISTEMIC_TRACKER'
-    are: "someone who tracks what everyone believes"
-    must:
-      - "notice when people state beliefs"
-      - "track changes in understanding"
-      - "identify knowledge gaps"
-    understand: "tracking beliefs helps coordination"
-    perform:
-      through: "epistemic monitoring"
-      output: <<|
-        Based on the conversation so far:
-        
-        $(!each(&context.experts.contributions) as |contribution, expert| {
-          <<|$(expert) believes: $(extract_beliefs(contribution: contribution))|>>
-        })
-        
-        Alignment: $(<Where do their beliefs converge?>)
-        Divergence: $(<Where do they disagree and why?>)
-        Unknown territory: $(identify_boundaries(discussion: &context.dialogue.transcript))
-        
-        $(update_epistemic_state(persona: "collective", text: &context.dialogue.transcript))
-      |>>
-      intention: "to map the epistemic landscape"
-      then:
-        when: &context.dialogue.latest_dialogue_entry is 'analyze_dialogue'
-          set:
-            &context.epistemic.map: $(<the analysis above>)
-            &context.epistemic.models: &context.experts.contributions
+agent @epistemic_tracker:
+  identity: "someone who tracks what everyone believes"
+  rules:
+    - "notice when people state beliefs"
+    - "track changes in understanding"
+    - "identify knowledge gaps"
+  understands:
+    - "tracking beliefs helps coordination"
+  perform:
+    method: "epistemic monitoring"
+    output: <<|
+      Based on the conversation so far:
+      
+      $(!each(&context.experts.contributions) as |contribution, expert| {
+        <<|$(expert) believes: $(extract_beliefs(contribution: contribution))|>>
+      })
+      
+      Alignment: $(<Where do their beliefs converge?>)
+      Divergence: $(<Where do they disagree and why?>)
+      Unknown territory: $(identify_boundaries(discussion: &context.dialogue.transcript))
+      
+      $(update_epistemic_state(persona: "collective", text: &context.dialogue.transcript))
+    |>>
+    goal: "to map the epistemic landscape"
+    then:
+      when: &context.dialogue.latest_dialogue_entry is 'analyze_dialogue'
+        set:
+          &context.epistemic.map: $(<the analysis above>)
+          &context.epistemic.models: &context.experts.contributions
+        say:
+          to: @synthesis_agent
+          what: 'epistemic map ready'
+      otherwise:
+        say:
+          to: @synthesis_agent
+          what: 'epistemic map ready'
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 3.5: EPISTEMIC GUARDIAN
+# ═══════════════════════════════════════════════════════════════════════════
+
+agent @epistemic_guardian:
+  identity: "a guardian of conversational coherence who detects and resolves foundational disagreements"
+  rules:
+    - "analyze expert contributions for epistemic forks, voids, or value conflicts"
+    - "if a divergence is detected, pause the primary dialogue to resolve it with the user"
+    - "clearly present the nature of the disagreement and the choice to be made"
+    - "once resolved, summarize the user's decision and pass control back to the dialogue coordinator"
+  understands:
+    - "unresolved foundational disagreements lead to unproductive dialogue"
+    - "making the user a partner in resolving ambiguity is critical for trust"
+  perform:
+    method: "systematic analysis of the current epistemic landscape via sequence"
+    sequence: epistemic_analysis(responses: &dialogue.latest_dialogue_entry.payload)
+    goal: "to ensure the conversation remains coherent and productive"
+    then:
+      when: &context.epistemic.fork_detected is true
+        say:
+          to: &context.dialogue.caller
+          what: {
+            event: 'epistemic_clarification_needed',
+            payload: &context.epistemic.user_prompt
+          }
+      otherwise:
+        when: &context.epistemic.conflict_detected is true
           say:
-            to: @synthesis_engine
-            what: 'epistemic map ready'
+            to: &context.dialogue.caller
+            what: {
+              event: 'conclusion_clarification_needed',
+              payload: &context.epistemic.user_prompt
+            }
         otherwise:
           say:
-            to: @synthesis_engine
-            what: 'epistemic map ready'
+            to: @multi_perspective_agent
+            what: 'begin_challenges'
+
+      # Handle the user's clarification
+      when: &dialogue.latest_dialogue_entry.event is 'user_clarification_provided'
+        set:
+          &context.epistemic.user_resolution: &dialogue.latest_dialogue_entry.payload
+        output_action:
+          output: <<|
+            *Thank you for the clarification. Integrating your guidance: "$(&context.epistemic.user_resolution)"*
+          |>>
+          goal: "to acknowledge and integrate user feedback"
+        say:
+          to: @multi_perspective_agent
+          what: 'begin_challenges' # Now that the fork is resolved, we can proceed
 
 # ═══════════════════════════════════════════════════════════════════════════
 # SECTION 4: DIALOGUE OPERATORS
@@ -355,457 +336,390 @@ generate_expert_panel(query) ::= <<|
 synthesize_perspectives(contributions) ::= <<|
   ## Integrated Analysis
   
-  Common themes:
-  $(<identify convergent insights across $(contributions>))
+  **Core Insights:**
+  $(<Identify the 3-5 most important convergent insights across $(contributions), explaining each in detail>)
   
-  Productive tensions:
-  $(<note valuable disagreements>)
+  **Nuanced Perspectives:**
+  $(<Explore how different viewpoints complement or challenge each other, creating a richer understanding>)
   
-  Emergent understanding:
-  $(<synthesize novel insights from dialogue>)
-|>>
-
-# Determine natural next speaker in dialogue
-determine_next_speaker(transcript, experts) ::= <<|
-  $(<Analyze $(transcript>) to determine who should speak next from $(experts))
-  Consider: unanswered questions, building on ideas, natural flow
+  **Productive Tensions:**
+  $(<Analyze valuable disagreements and what they reveal about the complexity of the topic>)
+  
+  **Synthesis:**
+  $(<Create a comprehensive narrative that weaves together all perspectives into a coherent whole, showing how each contributes to the complete picture>)
+  
+  **Emergent Understanding:**
+  $(<Identify novel insights that emerged from the dialogue - ideas that no single expert could have reached alone>)
+  
+  **Practical Implications:**
+  $(<If applicable, discuss what this synthesis means for action, decision-making, or further exploration>)
 |>>
 
 # ═══════════════════════════════════════════════════════════════════════════
-# SECTION 4.5: TREE OF THOUGHT AS CONVERSATION
+# SECTION 4.5: TREE OF THOUGHT PERSONAS (ROLES)
 # ═══════════════════════════════════════════════════════════════════════════
-# Tree of Thought emerges from decomposer→generator→evaluator dialogue
+# Headless Personas for use in the Tree of Thought sequence.
+# These define roles/hats that an Agent can adopt.
 
-@thought_decomposer:
-  you:
-    possess:
-      identifier: 'THOUGHT_DECOMPOSER'
-    are: "someone who breaks problems into parts"
-    must:
-      - "identify sub-problems"
-      - "maintain logical sequence"
-    understand: "complex problems have structure"
-    perform:
-      through: "systematic decomposition"
-      output: <<|
-        Breaking down: $(&context.query)
-        
-        Sub-problems I see:
-        1. $(<What's the first thing we need to figure out?>)
-        2. $(<What depends on solving #1?>)
-        3. $(<What's the next logical step?>)
-      |>>
-      intention: "to create manageable pieces"
-      then:
-        set:
-          &context.tree.subproblems: ["subproblem_1", "subproblem_2", "subproblem_3"]
-          &context.tree.current_depth: 0
-        say:
-          to: @thought_generator
-          what: 'generate options for subproblem 1'
+persona @thought_decomposer:
+  identity: "someone who breaks problems into parts"
+  rules:
+    - "identify sub-problems"
+    - "maintain logical sequence"
+  understands:
+    - "complex problems have structure"
 
-@thought_generator:
-  you:
-    possess:
-      identifier: 'THOUGHT_GENERATOR'
-    are: "someone who generates diverse solutions"
-    must:
-      - "create varied approaches"
-      - "avoid premature convergence"
-    understand: "diversity enables discovery"
-    perform:
-      through: "creative generation"
-      output: <<|
-        For subproblem: $(&context.tree.subproblems[&context.tree.current_depth])
-        
-        Approach A: $(<What's one way to solve this?>)
-        Approach B: $(<What's a completely different angle?>)
-        Approach C: $(<What's an unconventional solution?>)
-      |>>
-      intention: "to explore solution space"
-      then:
-        set:
-          &context.tree.options: ["approach_A", "approach_B", "approach_C"]
-        say:
-          to: @thought_evaluator
-          what: 'evaluate these options'
+persona @thought_generator:
+  identity: "someone who generates diverse solutions"
+  rules:
+    - "create varied approaches"
+    - "avoid premature convergence"
+  understands:
+    - "diversity enables discovery"
 
-@thought_evaluator:
-  you:
-    possess:
-      identifier: 'THOUGHT_EVALUATOR'
-    are: "someone who evaluates options systematically"
-    must:
-      - "assess viability"
-      - "consider constraints"
-      - "rank options"
-    understand: "evaluation guides selection"
-    perform:
-      through: "systematic evaluation"
-      output: <<|
-        Evaluating options for: $(&context.tree.subproblems[&context.tree.current_depth])
-        
-        Approach A: $(<How viable is this? What are the risks?>)
-        Score: $(<0.0-1.0 based on viability>)
-        
-        Approach B: $(<How viable is this? What are the trade-offs?>)
-        Score: $(<0.0-1.0 based on viability>)
-        
-        Approach C: $(<How viable is this? What are the constraints?>)
-        Score: $(<0.0-1.0 based on viability>)
-        
-        Best option: $(<Which scored highest and why?>)
-      |>>
-      intention: "to identify best path"
-      then:
-        set:
-          &context.tree.best_path[&context.tree.current_depth]: $(<best option>)
-          &context.tree.current_depth: &context.tree.current_depth + 1
-        when: &context.tree.current_depth < $(<length of &context.tree.subproblems>)
-          say:
-            to: @thought_generator
-            what: 'generate for next subproblem'
-        otherwise:
-          say:
-            to: @thought_synthesizer
-            what: 'synthesize solution'
+persona @thought_evaluator:
+  identity: "someone who evaluates options systematically"
+  rules:
+    - "assess viability"
+    - "consider constraints"
+    - "rank options"
+  understands:
+    - "evaluation guides selection"
 
-@thought_synthesizer:
-  you:
-    possess:
-      identifier: 'THOUGHT_SYNTHESIZER'
-    are: "someone who combines partial solutions"
-    must:
-      - "integrate best paths"
-      - "ensure coherence"
-    understand: "synthesis creates whole solutions"
-    perform:
-      through: "solution integration"
-      output: <<|
-        Combining best paths:
-        
-        $(!each(&context.tree.best_path) as |path, index| {
-          <<|For subproblem $(index + 1): $(path)|>>
-        })
-        
-        Integrated solution: $(<How do these pieces fit together into a coherent whole?>)
-      |>>
-      intention: "to create complete solution"
-      then:
-        set:
-          &context.tree.final_solution: $(<integrated solution>)
-        say:
-          to: @synthesis_engine
-          what: 'tree_reasoning_complete'
+persona @thought_synthesizer:
+  identity: "someone who combines partial solutions"
+  rules:
+    - "integrate best paths"
+    - "ensure coherence"
+  understands:
+    - "synthesis creates whole solutions"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 4.6: CRITICAL EVALUATION PERSONAS (ROLES)
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @logic_checker:
+  identity: "a formal logician"
+  rules:
+    - "identify gaps, contradictions, and fallacies in reasoning"
+  understands:
+    - "a sound argument must be internally consistent"
+
+persona @evidence_assessor:
+  identity: "an empirical researcher"
+  rules:
+    - "evaluate the quality, relevance, and sufficiency of supporting evidence"
+  understands:
+    - "claims are only as strong as the evidence that supports them"
+
+persona @assumption_detector:
+  identity: "a critical philosopher"
+  rules:
+    - "uncover and question unstated premises and hidden assumptions"
+  understands:
+    - "the most powerful arguments often rest on unexamined assumptions"
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 # SECTION 5: TREE OF THOUGHT OPERATORS
 # ═══════════════════════════════════════════════════════════════════════════
 # Reusable branching patterns for systematic exploration
 
+# Adaptive expert contribution based on complexity
+adaptive_expert_contribution(perspective, topic, verbosity) ::= <<|
+  $(verbosity == 'concise' ?
+    concise_expert_view(perspective: perspective, topic: topic) :
+    verbosity == 'comprehensive' ?
+    comprehensive_expert_analysis(perspective: perspective, topic: topic) :
+    standard_expert_contribution(perspective: perspective, topic: topic))
+|>>
+
+# Concise expert viewpoint for simpler queries
+concise_expert_view(perspective, topic) ::= <<|
+  From my $(perspective) perspective on $(topic):
+  
+  **Key Insight:** $(<Provide one core insight in 2-3 sentences>)
+  
+  **Supporting Points:**
+  $(<List 2-3 brief supporting points>)
+  
+  **Evidence:** $(<Cite 1-2 key sources if relevant>)
+  
+  $(assess_my_certainty())
+|>>
+
+# Standard expert contribution
+standard_expert_contribution(perspective, topic) ::= <<|
+  Analyzing $(topic) from my $(perspective) perspective:
+  
+  **Core Analysis:**
+  $(<Provide a focused analysis in 1-2 paragraphs>)
+  
+  **Key Considerations:**
+  $(<List 3-4 important factors or implications>)
+  
+  **Evidence Base:**
+  $(<Provide relevant citations and support>)
+  
+  $(assess_my_certainty())
+  $(identify_my_assumptions())
+|>>
+
+# Comprehensive expert analysis (full depth)
+comprehensive_expert_analysis(perspective, topic) ::= <<|
+  # This triggers the full tree_of_thought sequence
+  $(tree_of_thought(perspective: perspective, topic: topic))
+|>>
+
 # Reusable expert analysis sequence with Tree of Thought
-sequence expert_tot_analysis(perspective, topic) ::=
+sequence tree_of_thought(perspective, topic) ::=
   step:
+    as: self
     output: <<|
       $(has_content(&context.experts.contributions) ? 
         'Building on the previous discussion...' : 
-        'From my $(perspective) perspective on $(topic):')
+        'From my $(perspective) perspective, I will now use a Tree of Thought to analyze the topic: ' + topic)
     |>>
   step:
     as: @thought_decomposer
-    through: "problem decomposition"
+    method: "problem decomposition"
     output: <<|
-      Breaking down: $(topic)
-      
-      Sub-problems I see:
-      1. $(<What's the first thing we need to figure out?>)
-      2. $(<What depends on solving #1?>)
-      3. $(<What's the next logical step?>)
+      *Adopting @thought_decomposer persona to break down the topic.*
+      $(break_down_query(query: topic, depth: &context.reasoning.config.tree_depth))
     |>>
     set:
-      &context.tree.decomposed: true
-      &context.tree.subproblems: $(<extracted subproblems from above>)
+      &context.tree.subproblems: $(<extracted subproblems from the key components list above>)
   step:
     as: @thought_generator
-    through: "solution generation"
+    method: "solution generation for subproblems"
     output: <<|
-      For $(topic):
-      
-      Approach A: $(<What's one way to solve this?>)
-      Approach B: $(<What's a completely different angle?>)
-      Approach C: $(<What's an unconventional solution?>)
+      *Adopting @thought_generator persona to create diverse solutions.*
+      $(!each(&context.tree.subproblems) as |subproblem| {
+        <<|
+        For subproblem: "$(subproblem)":
+        - Option A: $(<Generate one solution approach>)
+        - Option B: $(<Generate a different solution approach>)
+        |>>
+      })
     |>>
     set:
-      &context.tree.thoughts_generated: true
+      &context.tree.options: $(<a list of all generated options from above>)
   step:
     as: @thought_evaluator
-    through: "viability assessment"
+    method: "viability assessment"
     output: <<|
-      Evaluating approaches from $(perspective) perspective:
-      
-      Approach A: $(<How viable is this? What are the risks?>)
-      Score: $(<0.0-1.0 based on viability>)
-      
-      Approach B: $(<How viable is this? What are the trade-offs?>)
-      Score: $(<0.0-1.0 based on viability>)
-      
-      Approach C: $(<How viable is this? What are the constraints?>)
-      Score: $(<0.0-1.0 based on viability>)
-      
-      Best option: $(<Which scored highest and why?>)
+      *Adopting @thought_evaluator persona to assess and rank options.*
+      Evaluating options for $(topic) from a $(perspective) viewpoint:
+      $(!each(&context.tree.options) as |option| {
+        <<|
+        - $(option): $(<Score 0.0-1.0 based on viability, risks, and tradeoffs>)
+        |>>
+      })
+      Best path: $(<Synthesize the best options into a coherent path>)
     |>>
     set:
-      &context.tree.evaluated: true
+      &context.tree.best_path: $(<extracted best path from above>)
   step:
     as: self
-    through: "evidence gathering"
-    output: <<|
-      Searching for evidence about $(topic) from $(perspective) perspective...
-      
-      $(<call: mcp__perplexity-mcp__perplexity_search_web with query: topic + ' ' + perspective>)
-    |>>
-    set:
-      &context.expert.evidence_gathered: true
+    method: "evidence gathering for final synthesis"
+    sequence: citation_pipeline(claim: topic)
+    goal: "to ground the final synthesis in evidence"
   step:
+    as: @thought_synthesizer
+    method: "final synthesis"
     output: <<|
-      $(<present perspective-specific analysis following the structure identified through Tree of Thought, incorporating the evidence found above>)
+      *Adopting @thought_synthesizer persona to construct the final response.*
+      Based on the best path and supporting evidence, here is the synthesized analysis for $(topic):
+      $(<Synthesize a final, coherent analysis from &context.tree.best_path.>)
+
+      **Evidence:**
+      $(&context.citation.formatted)
       
       $(assess_my_certainty())
-      
       $(should_i_qualify() ? express_uncertainty_if_present() : '')
-      
       $(identify_my_assumptions())
       $(express_assumptions_if_meaningful())
     |>>
-
-# Generic branching explorer using unified persona approach
-sequence explore_branches(topic, branches, evaluator, synthesizer) ::=
-  step:
-    output: <<|
-      Exploring $(topic) through multiple branches:
-      $(count(branches)) pathways identified for investigation
-    |>>
-  step:
-    as: @thought_generator
-    through: "branch exploration"
-    output: <<|
-      For $(topic), generating diverse approaches:
-      
-      $(!each(branches) as |branch, index| {
-        <<|
-        Branch $(index + 1): $(branch.name || 'branch_' + index)
-        Prompt: $(branch.prompt || topic)
-        
-        Approach A: $(<What's one way to solve this branch?>)
-        Approach B: $(<What's a different angle for this branch?>)
-        Approach C: $(<What's an unconventional approach for this branch?>)
-        |>>
-      })
-    |>>
     set:
-      &context.branches.generated: true
-  step:
-    as: @thought_evaluator
-    through: "branch evaluation" 
-    output: <<|
-      Evaluating branch viability:
-      
-      $(!each(branches) as |branch, index| {
-        <<|
-        Branch $(index + 1): $(branch.name || 'branch_' + index)
-        
-        Approach A viability: $(<How viable from $(branch.perspective || 'general') perspective?>)
-        Score: $(<0.0-1.0 based on $(branch.criteria || 'relevance')>)
-        
-        Approach B viability: $(<How viable with different constraints?>)
-        Score: $(<0.0-1.0 based on $(branch.criteria || 'relevance')>)
-        
-        Approach C viability: $(<How viable considering trade-offs?>)
-        Score: $(<0.0-1.0 based on $(branch.criteria || 'relevance')>)
-        
-        Best for this branch: $(<Which scored highest?>)
-        |>>
-      })
-    |>>
-    set:
-      &context.branches.evaluated: true
-  step:
-    through: "synthesis"
-    output: <<|
-      Selecting best branch and synthesizing solution:
-      
-      Best overall branch: $(<Which branch scored highest across all evaluations?>)
-      
-      Integrated synthesis for $(topic):
-      $(<Combine the highest-scoring approaches from all branches into a coherent solution>)
-    |>>
-
+      &context.tree.final_solution: $(<the final synthesis above, including the formatted evidence>)
 
 # ═══════════════════════════════════════════════════════════════════════════
 # SECTION 5: COMPOSITION THROUGH CONVERSATION 
 # ═══════════════════════════════════════════════════════════════════════════
 # Composition emerges from persona dialogue, not configuration
 
-@master_orchestrator:
-  you:
-    possess:
-      identifier: 'MASTER_ORCHESTRATOR'
-    are: "context-aware routing coordinator who delegates based on reasoning strategy"
-    must:
-      - "route based on reasoning strategy in context"
-      - "use existing personas for each strategy"
-      - "default to multi-perspective dialogue"
-    understand: "strategy determines the reasoning flow"
-    perform:
-      through: "context-driven routing"
-      output: <<|
-        Routing based on strategy: $(&context.reasoning.strategy || 'multi-perspective')
-        Query: "$(&context.query)"
-      |>>
-      intention: "to route to appropriate reasoning approach"
-      then:
-        # Tree of Thought - start with decomposition
-        when: &context.reasoning.strategy is 'tree'
+agent @master_orchestrator:
+  identity: "a context-aware routing coordinator who delegates to specialized Agents"
+  rules:
+    - "route based on the reasoning strategy in context"
+    - "delegate to the correct Agent for each strategy"
+  understands:
+    - "strategy determines the reasoning flow"
+  perform:
+    method: "context-driven routing"
+    output: <<|
+      *Routing based on strategy: $(&context.reasoning.strategy || 'auto')*
+    |>>
+    goal: "to route to the appropriate reasoning Agent"
+    then:
+      when: &context.reasoning.strategy is 'tree'
+        become: @sequence_runner with: {} perform:
+          method: "structured analysis via Tree of Thought sequence"
+          sequence: tree_of_thought(perspective: "system", topic: &context.query)
+          goal: "to produce a complete thought-tree analysis"
+          then:
+            say:
+              to: @synthesis_agent
+              what: 'tree_reasoning_complete'
+      otherwise:
+        when: &context.reasoning.strategy is 'graph'
           say:
-            to: @thought_decomposer
-            what: &context.query
-        
-        # All other strategies need configuration first
+            to: @graph_reasoner
+            what: 'begin_graph_analysis'
+        # Default to multi-perspective analysis
         otherwise:
           say:
             to: @complexity_assessor
             what: 'analyze_and_configure'
 
-@complexity_assessor:
-  you:
-    possess:
-      identifier: 'COMPLEXITY_ASSESSOR'
-    are: "a configuration assistant who helps users decide reasoning depth"
-    must:
-      - "analyze the query to suggest appropriate strategies"
-      - "present available capabilities clearly"
-      - "recommend sensible defaults"
-      - "allow user override of any settings"
-    understand: "users should control their reasoning experience"
-    perform:
-      through: "configuration assistance"
-      output: <<|
-        Analyzing your query: \"$(&context.query)\"
-        
-        $(break_down_query(query: &context.query, depth: 3))
-        
-        **Available reasoning capabilities:**
-        • Multi-perspective analysis $(<3-7 expert viewpoints depending on complexity and scope>)
-        • Tree of Thought structuring $(<decomposition -> generation -> evaluation>)
-        • Evidence gathering with citations
-        • Critical evaluation and challenge phases
-        • Epistemic tracking $(<uncertainty/assumption awareness>)
-        
-        **Recommended configuration for your query:**
-        - Perspectives: $(generate_expert_panel(query: &context.query))
-        - Tree of Thought depth: $(<given the nature of $(&context.query>), determine appropriate tree of thought strategy depth)
-        - Challenge rounds: $(count(perspectives) greater_than 2 ? 'Required' : 'Favorable')
-        - Citation validation is always active. 
-        
-        This configuration will provide $(<describe expected output depth and style>).
-        
-        Beginning analysis with these perspectives...
-      |>>
-      intention: "to empower user choice while providing smart defaults"
-      then:
-        set:
-          &context.reasoning.config: {
-            perspectives: $(<generated expert list>),
-            tree_depth: 3,
-            citations: true,
-            challenges: true,
-            epistemic_tracking: true
-          }
-        # Return control to calling overlay if one exists
-        when: &context.dialogue.caller
-          say:
-            to: &context.dialogue.caller
-            what: {
-              event: 'configuration_prepared',
-              config: &context.reasoning.config,
-              continue_to: '@perspective_builder',
-              continue_with: 'begin_configured_reasoning'
-            }
-        # Otherwise continue directly
-        otherwise:
-          say:
-            to: @perspective_builder
-            what: 'begin_configured_reasoning'
-
-@perspective_builder:
-  you:
-    possess:
-      identifier: 'PERSPECTIVE_BUILDER'
-    are: "someone who prepares configured reasoning"
-    must:
-      - "use the configuration from complexity assessor"
-      - "set up expert dialogue with all capabilities"
-    understand: "configuration determines reasoning depth"
-    perform:
-      through: "configured perspective setup"
-      output: <<|
-        Setting up reasoning with configuration:
-        - $(count(&context.reasoning.config.perspectives)) expert perspectives
-        - Tree of Thought depth: $(&context.reasoning.config.tree_depth)
-        - Citations: $(&context.reasoning.config.citations ? "enabled" : "light")
-        - Challenge phase: $(&context.reasoning.config.challenges ? "included" : "skipped")
-        
-        Expert panel:
-        $(!each(&context.reasoning.config.perspectives) as |expert, index| {
-          <<|$(index + 1). $(expert)|>>
-        })
-      |>>
-      intention: "to initiate configured multi-expert dialogue"
-      then:
-        set:
-          &context.experts: &context.reasoning.config.perspectives
+agent @complexity_assessor:
+  identity: "a configuration assistant who helps users decide reasoning depth"
+  rules:
+    - "analyze the query to suggest appropriate strategies"
+    - "present available capabilities clearly"
+    - "recommend sensible defaults"
+    - "allow user override of any settings"
+  understands:
+    - "users should control their reasoning experience"
+  perform:
+    method: "configuration assistance"
+    output: <<|
+      Analyzing your query: "$(&context.query)" 
+      
+      $(break_down_query(query: &context.query, depth: 3))
+      
+      *Complexity assessment: $(<Assess query complexity on 0-1 scale based on: conceptual depth, number of facets, technical requirements, abstraction level>)*
+      
+      **Available reasoning capabilities:**
+      • Multi-perspective analysis $(<3-7 expert viewpoints depending on complexity and scope>)
+      • Tree of Thought structuring $(<decomposition -> generation -> evaluation>)
+      • Evidence gathering with citations
+      • Critical evaluation and challenge phases
+      • Epistemic tracking $(<uncertainty/assumption awareness>)
+      
+      **Recommended configuration for your query:**
+      - Perspectives: $(generate_expert_panel(query: &context.query))
+      - Tree of Thought depth: $(<given the nature of $(&context.query>), determine appropriate tree of thought strategy depth)
+      - Challenge rounds: $(count(perspectives) greater_than 2 ? 'Required' : 'Favorable')
+      - Expert verbosity: $(&context.reasoning.complexity > 0.7 ? 'comprehensive' : &context.reasoning.complexity > 0.4 ? 'standard' : 'concise')
+      - Citation validation is always active. 
+      
+      This configuration will provide $(<describe expected output depth and style>).
+      
+      Beginning analysis with these perspectives...
+    |>>
+    goal: "to empower user choice while providing smart defaults"
+    then:
+      set:
+        &context.reasoning.complexity: $(<the complexity score from the assessment above, 0.0-1.0>)
+        &context.reasoning.config: {
+          perspectives: $(<generated expert list>),
+          tree_depth: 3,
+          citations: true,
+          challenges: true,
+          epistemic_tracking: true,
+          expert_conciseness: $(&context.reasoning.complexity > 0.7 ? 0.2 : &context.reasoning.complexity > 0.4 ? 0.5 : 0.8)
+        }
+      # Return control to calling overlay if one exists
+      when: &context.dialogue.caller
         say:
-          to: @expert_coordinator
-          what: 'begin_dialogue'
+          to: &context.dialogue.caller
+          what: {
+            event: 'configuration_prepared',
+            config: &context.reasoning.config,
+            continue_to: '@perspective_builder',
+            continue_with: 'begin_configured_reasoning'
+          }
+      # Otherwise continue directly
+      otherwise:
+        say:
+          to: @perspective_builder
+          what: 'begin_configured_reasoning'
+
+
+agent @perspective_builder:
+  identity: "someone who prepares configured reasoning"
+  rules:
+    - "use the configuration from complexity assessor"
+    - "set up expert dialogue with all capabilities"
+  understands:
+    - "configuration determines reasoning depth"
+  perform:
+    method: "configured perspective setup"
+    output: <<|
+      Setting up reasoning with configuration:
+      - $(count(&context.reasoning.config.perspectives)) expert perspectives
+      - Tree of Thought depth: $(&context.reasoning.config.tree_depth)
+      - Citations: $(&context.reasoning.config.citations ? "enabled" : "light")
+      - Challenge phase: $(&context.reasoning.config.challenges ? "included" : "skipped")
+      
+      Expert panel:
+      $(!each(&context.reasoning.config.perspectives) as |expert, index| {
+        <<|$(index + 1). $(expert)|>>
+      })
+    |>>
+    goal: "to initiate configured multi-expert dialogue"
+    then:
+      set:
+        &context.experts: &context.reasoning.config.perspectives
+      say:
+        to: @multi_perspective_agent
+        what: 'begin_dialogue'
 
 
 
-@expert_coordinator:
-  you:
-    possess:
-      identifier: 'EXPERT_COORDINATOR'
-    are: "a multi-expert dialogue coordinator"
-    must:
-      - "manage expert turn-taking"
-      - "track contributions"
-      - "ensure all perspectives are heard"
-    understand: "organic dialogue yields emergent insights"
-    perform:
-      through: "expert dialogue management"
-      output: <<|
-        Managing $(count(collection: &context.experts)) experts...
-        Current: $(&context.experts.current_speaker)
-      |>>
-      intention: "to facilitate productive dialogue"
-      then:
-        when: &context.dialogue.latest_dialogue_entry is 'begin_dialogue'
-          set:
-            &context.experts.current_speaker_index: 0
-            &context.experts.current_speaker: $(get_at_index(
-              collection: &context.experts,
-              index: 0
+
+agent @multi_perspective_agent:
+  identity: "a multi-expert dialogue coordinator"
+  rules:
+    - "manage expert turn-taking"
+    - "track contributions"
+    - "ensure all perspectives are heard"
+  understands:
+    - "organic dialogue yields emergent insights"
+  perform:
+    method: "expert dialogue management"
+    output: <<|
+      Managing $(count(collection: &context.experts)) experts...
+      Current: $(&context.experts.current_speaker)
+    |>>
+    goal: "to facilitate productive dialogue"
+    then:
+      when: &context.dialogue.latest_dialogue_entry is 'begin_dialogue'
+        set:
+          &context.experts.current_speaker_index: 0
+          &context.experts.current_speaker: $(get_at_index(
+            collection: &context.experts,
+            index: 0
+          ))
+        become: @thinking_expert with: {
+          perspective: &context.experts.current_speaker,
+          topic: &context.query
+        } perform:
+            method: "adaptive expert analysis"
+            output: $(adaptive_expert_contribution(
+              perspective: perspective, 
+              topic: topic,
+              verbosity: &context.reasoning.config.expert_conciseness > 0.7 ? 'concise' : 
+                        &context.reasoning.config.expert_conciseness > 0.4 ? 'standard' : 
+                        'comprehensive'
             ))
-          become: @thinking_expert with: {
-            perspective: &context.experts.current_speaker,
-            topic: &context.query
-          } perform:
-              through: "structured expert analysis with Tree of Thought"
-              sequence: expert_tot_analysis(perspective: perspective, topic: topic)
-              intention: "to contribute expertise"
-              then:
-                say:
-                  to: @expert_coordinator
-                  what: 'contribution_complete'
+            goal: "to contribute expertise"
+            then:
+              say:
+                to: @multi_perspective_agent
+                what: 'contribution_complete'
+      otherwise:
         when: &context.dialogue.latest_dialogue_entry is 'contribution_complete'
           set:
             &context.experts.contributions[&context.experts.current_speaker]: &context.dialogue.transcript[-1]
@@ -815,7 +729,7 @@ sequence explore_branches(topic, branches, evaluator, synthesizer) ::=
               &context.consensus.status: $(check_consensus(responses: &context.experts.contributions))
             when: &context.consensus.status is true
               say:
-                to: @synthesis_engine
+                to: @synthesis_agent
                 what: 'early_consensus_reached'
           when: count(&context.experts.contributions) < count(&context.experts)
             set:
@@ -830,322 +744,425 @@ sequence explore_branches(topic, branches, evaluator, synthesizer) ::=
               ))
               &context.experts.current_speaker_index: &context.experts.next_speaker_index
             say:
-              to: @expert_coordinator
+              to: @multi_perspective_agent
               what: 'next_expert'
-          when: &context.experts.phase is 'opening'
-            set:
-              &context.experts.phase: 'challenging'
-              &context.experts.challenges: generate_challenges()
-            say:
-              to: @expert_coordinator
-              what: 'begin_challenges'
-        when: &context.dialogue.latest_dialogue_entry is 'next_expert'
-          set:
-            &context.experts.current_speaker: &context.experts.next_speaker
-          become: @thinking_expert with: {
-            perspective: &context.experts.next_speaker,
-            topic: &context.query
-          } perform:
-              through: "structured expert analysis with Tree of Thought"
-              sequence: expert_tot_analysis(perspective: perspective, topic: topic)
-              intention: "to contribute expertise"
-              then:
-                say:
-                  to: @expert_coordinator
-                  what: 'contribution_complete'
-        when: &context.experts.phase is 'challenging'
-          set:
-            &context.experts.phase: 'responding'
-          say:
-            to: @epistemic_tracker
-            what: 'analyze_dialogue'
+          otherwise:
+            when: &context.experts.phase is 'opening'
+              set:
+                &context.experts.phase: 'challenging'
+              say:
+                to: @epistemic_guardian
+                what: {
+                  event: 'expert_contributions_gathered',
+                  payload: &context.experts.contributions
+                }
         otherwise:
-          say:
-            to: @master_orchestrator
-            what: 'dialogue_complete'
-        when: &context.dialogue.latest_dialogue_entry is 'begin_challenges'
-          become: @critical_evaluator with: {
-            focus: "expert perspectives",
-            depth: 3
-          } perform:
-            through: "critical engagement"
-            sequence:
-              step:
-                output: <<|
-                  Let me examine what the experts have shared so far...
-                |>>
-              step:
-                through: "challenge prediction"
-                output: <<|
-                  $(predict_challenge_points(
-                    target: $(&context.experts),
-                    claim: get_first(&context.experts.contributions),
-                    assertion: $(<key assumptions>),
-                    topic: &context.query
-                  ))
-                |>>
-                set:
-                  &context.challenges.predicted: true
-              step:
-                through: "targeted critique"
-                output: <<|
-                  $(generate_targeted_critique(
-                    claim: get_first(&context.experts.contributions),
-                    claimant: get_first(&context.experts)
-                  ))
-                |>>
-                set:
-                  &context.challenges.critiqued: true
-              step:
-                through: "epistemic analysis"
-                output: <<|
-                  $(check_all_epistemic(
-                    type: 'fork',
-                    responses: &context.experts.contributions
-                  ))
-                |>>
-                set:
-                  &context.epistemic.checked: true
-            intention: "to strengthen collective reasoning"
-            then:
-              say:
-                to: @expert_coordinator
-                what: 'challenges_complete'
-        when: &context.dialogue.latest_dialogue_entry is 'challenges_complete'
-          set:
-            &context.experts.challenges: &context.dialogue.transcript[-1]
-          when: is_fork_detected(responses: &context.experts.contributions) is true
-            perform:
-              output: <<|
-                $(facilitate_epistemic_clarification(details: {
-                  boundary_type: "fundamental framework divergence",
-                  question: extract_field(
-                    text: epistemic_fork(responses: &context.experts.contributions),
-                    field: 'QUESTION'
-                  )
-                }))
-              |>>
-              intention: "to clarify epistemic boundaries"
-            say:
-              to: &context.dialogue.caller
-              what: 'epistemic_clarification_needed'
+          when: &context.dialogue.latest_dialogue_entry is 'next_expert'
+            set:
+              &context.experts.current_speaker: &context.experts.next_speaker
+            become: @thinking_expert with: {
+              perspective: &context.experts.next_speaker,
+              topic: &context.query
+            } perform:
+                method: "adaptive expert analysis"
+                output: $(adaptive_expert_contribution(
+                  perspective: perspective, 
+                  topic: topic,
+                  verbosity: &context.reasoning.config.expert_conciseness > 0.7 ? 'concise' : 
+                            &context.reasoning.config.expert_conciseness > 0.4 ? 'standard' : 
+                            'comprehensive'
+                ))
+                goal: "to contribute expertise"
+                then:
+                  say:
+                    to: @multi_perspective_agent
+                    what: 'contribution_complete'
           otherwise:
-            say:
-              to: @expert_coordinator
-              what: 'begin_responses'
-        when: &context.dialogue.latest_dialogue_entry is 'begin_responses'
-          # Each expert responds to challenges
-          set:
-            &context.experts.response_index: 0
-          say:
-            to: @expert_coordinator
-            what: 'next_responder'
-        when: &context.dialogue.latest_dialogue_entry is 'next_responder'
-          set:
-            &context.experts.responding_expert: $(get_at_index(
-              collection: &context.experts,
-              index: &context.experts.response_index
-            ))
-          become: @thinking_expert with: {
-            perspective: &context.experts.responding_expert,
-            topic: &context.query
-          } perform:
-            through: "challenge response"
-            output: <<|
-              Responding to the challenges as $(perspective):
-              
-              $(generate_responses(challenges: &context.experts.challenges))
-              
-              $(assess_my_certainty())
-              $(should_i_qualify() ? express_uncertainty_if_present() : '')
-            |>>
-            intention: "to address challenges"
-            then:
+            when: &context.experts.phase is 'challenging'
+              set:
+                &context.experts.phase: 'responding'
               say:
-                to: @expert_coordinator
-                what: 'response_complete'
-        when: &context.dialogue.latest_dialogue_entry is 'response_complete'
-          set:
-            &context.experts.response_index: &context.experts.response_index + 1
-          when: &context.experts.response_index < count(&context.experts)
-            say:
-              to: @expert_coordinator
-              what: 'next_responder'
-          otherwise:
-            say:
-              to: @expert_coordinator
-              what: 'contribution_complete'
+                to: @epistemic_tracker
+                what: 'analyze_dialogue'
+            otherwise:
+              when: &context.dialogue.latest_dialogue_entry is 'begin_challenges'
+                become: @critical_evaluator with: {
+                  focus: "expert perspectives",
+                  depth: 3
+                } perform:
+                  method: "multi-faceted critical engagement"
+                  sequence:
+                    step:
+                      as: @logic_checker
+                      output: <<|
+                        *[Logical Coherence Check]*
+                        $(<Analyze the logical structure of the expert contributions in &context.experts.contributions. Identify any contradictions or logical gaps.>)
+                      |>>
+                      set:
+                        &context.experts.critiques.logic: $(<the analysis above>)
+                    step:
+                      as: @evidence_assessor
+                      output: <<|
+                        *[Evidence Strength Assessment]*
+                        $(<Evaluate the evidence provided in the contributions. Assess its quality, relevance, and sufficiency.>)
+                      |>>
+                      set:
+                        &context.experts.critiques.evidence: $(<the analysis above>)
+                    step:
+                      as: @assumption_detector
+                      output: <<|
+                        *[Assumption Detection]*
+                        $(<Identify the key unstated assumptions underlying the expert arguments.>)
+                      |>>
+                      set:
+                        &context.experts.critiques.assumptions: $(<the analysis above>)
+                    step:
+                      as: self # The @critical_evaluator's own persona
+                      output: <<|
+                        *[Synthesized Critique]*
+                        Based on the analysis, here is a synthesized critique to strengthen our collective reasoning:
+                        - **Logical Gaps:** $(&context.experts.critiques.logic)
+                        - **Evidence Gaps:** $(&context.experts.critiques.evidence)
+                        - **Key Assumptions:** $(&context.experts.critiques.assumptions)
 
-@synthesis_engine:
-  you:
-    possess:
-      identifier: 'SYNTHESIS_ENGINE'
-    are: "a synthesis specialist with epistemic awareness"
-    must:
-      - "integrate multiple perspectives"
-      - "preserve nuance while finding coherence"
-      - "track epistemic distances between viewpoints"
-      - "incorporate critical evaluation feedback"
-    understand: "synthesis creates emergent understanding through epistemic mapping"
-    perform:
-      through: "multi-perspective integration with epistemic measurement"
-      output: <<|
-        Integrating $(count(collection: &context.synthesis.contributions)) expert contributions...
-        
-        Epistemic landscape analysis:
-        $(!each(&context.epistemic.models) as |model, expert| {
-          <<|$(expert): Claims $(extract_field(text: model, field: 'CLAIMS')), 
-                      Uncertainties $(extract_field(text: model, field: 'UNCERTAINTIES'))|>>
-        })
-        
-        $(synthesize_perspectives(contributions: &context.dialogue.transcript))
-        
-        $(has_content(collection: &context.synthesis.critiques) == 'true' ?
-          'Critical evaluations addressed: ' + synthesize_critiques(critiques: &context.synthesis.critiques) :
-          '')
-        
-        Epistemic distances:
-        $(<calculate distances between all viewpoint pairs>)
-      |>>
-      intention: "to create coherent synthesis with epistemic awareness"
-      then:
+                        To move forward, we should focus on $(<propose a single, actionable next step based on the critiques>).
+                      |>>
+                  goal: "to strengthen collective reasoning"
+                  then:
+                    say:
+                      to: @multi_perspective_agent
+                      what: 'challenges_complete'
+              otherwise:
+                when: &context.dialogue.latest_dialogue_entry is 'begin_responses'
+                    # Each expert responds to challenges
+                    set:
+                      &context.experts.response_index: 0
+                    say:
+                      to: @multi_perspective_agent
+                      what: 'next_responder'
+                  otherwise:
+                    when: &context.dialogue.latest_dialogue_entry is 'next_responder'
+                      set:
+                        &context.experts.responding_expert: $(get_at_index(
+                          collection: &context.experts,
+                          index: &context.experts.response_index
+                        ))
+                      become: @thinking_expert with: {
+                        perspective: &context.experts.responding_expert,
+                        topic: &context.query
+                      } perform:
+                        method: "challenge response"
+                        output: <<|
+                          Responding to the challenges as $(perspective):
+                          
+                          $(generate_responses(challenges: &context.experts.challenges))
+                          
+                          $(assess_my_certainty())
+                          $(should_i_qualify() ? express_uncertainty_if_present() : '')
+                        |>>
+                        goal: "to address challenges"
+                        then:
+                          say:
+                            to: @multi_perspective_agent
+                            what: 'response_complete'
+                    otherwise:
+                      when: &context.dialogue.latest_dialogue_entry is 'response_complete'
+                        set:
+                          &context.experts.response_index: &context.experts.response_index + 1
+                        when: &context.experts.response_index < count(&context.experts)
+                          say:
+                            to: @multi_perspective_agent
+                            what: 'next_responder'
+                        otherwise:
+                          say:
+                            to: @synthesis_agent
+                            what: 'dialogue_ready_for_synthesis'
+                      otherwise:
+                        say:
+                          to: @master_orchestrator
+                          what: 'dialogue_complete'
+
+agent @synthesis_agent:
+  identity: "a synthesis specialist with epistemic awareness"
+  rules:
+    - "integrate multiple perspectives"
+    - "preserve nuance while finding coherence"
+    - "track epistemic distances between viewpoints"
+    - "incorporate critical evaluation feedback"
+  understands:
+    - "synthesis creates emergent understanding through epistemic mapping"
+  perform:
+    method: "multi-perspective integration with epistemic measurement"
+    output: <<|
+      Integrating $(count(collection: &context.synthesis.contributions)) expert contributions...
+      
+      Epistemic landscape analysis:
+      $(!each(&context.epistemic.models) as |model, expert| {
+        <<|$(expert): Claims $(extract_field(text: model, field: 'CLAIMS')), 
+                    Uncertainties $(extract_field(text: model, field: 'UNCERTAINTIES'))|>>
+      })
+      
+      $(synthesize_perspectives(contributions: &context.dialogue.transcript))
+      
+      $(has_content(collection: &context.synthesis.critiques) == 'true' ?
+        'Critical evaluations addressed: ' + synthesize_critiques(critiques: &context.synthesis.critiques) :
+        '')
+      
+      Epistemic distances:
+      $(<calculate distances between all viewpoint pairs>)
+    |>>
+    goal: "to create coherent synthesis with epistemic awareness"
+    then:
+      when: &dialogue.latest_dialogue_entry.event is 'graph_reasoning_complete'
+        set:
+          &context.synthesis: &dialogue.latest_dialogue_entry.payload
+        say:
+          to: &context.dialogue.caller
+          what: {
+            event: 'synthesis_complete',
+            payload: &context.synthesis
+          }
+      otherwise:
         when: &dialogue.latest_dialogue_entry is 'tree_reasoning_complete'
           set:
             &context.synthesis: &context.tree.final_solution
           say:
             to: &context.dialogue.caller
-            what: 'synthesis_complete'
+            what: {
+              event: 'synthesis_complete',
+              payload: &context.synthesis
+            }
         otherwise:
           set:
-            &context.synthesis: $(<final integrated synthesis>)
+            &context.synthesis: $(synthesize_perspectives(contributions: &context.dialogue.transcript))
           say:
             to: &context.dialogue.caller
-            what: 'synthesis_complete'
+            what: {
+              event: 'synthesis_complete',
+              payload: &context.synthesis
+            }
 
 # ═══════════════════════════════════════════════════════════════════════════
-# SECTION 6: CITATION THROUGH CONVERSATION
+# SECTION 5.5: GRAPH OF THOUGHT ENGINE
 # ═══════════════════════════════════════════════════════════════════════════
-# Citations emerge from dialogue between specialized personas
+
+# --- Core GoT Personas (Roles) ---
+
+persona @node_generator:
+  identity: "a creative generator of new ideas and solutions"
+  rules:
+    - "generate diverse and distinct thoughts based on the parent node"
+    - "do not evaluate or critique; focus solely on generation"
+  understands:
+    - "my purpose is to expand the possibility space of the graph"
+
+persona @node_aggregator:
+  identity: "a synthesizer who merges multiple lines of reasoning"
+  rules:
+    - "identify the core themes and insights from all parent nodes"
+    - "create a new, coherent synthesis that combines these insights"
+    - "do not introduce new information; focus on integration"
+  understands:
+    - "my purpose is to find convergence and create a unified thought"
+
+persona @node_refiner:
+  identity: "a critical thinker who improves existing ideas"
+  rules:
+    - "analyze the target node for flaws, gaps, or areas for improvement"
+    - "generate a new version of the thought that directly addresses these weaknesses"
+    - "the refined node must be a direct improvement on the original"
+  understands:
+    - "my purpose is iterative improvement through self-correction"
+
+persona @node_scorer:
+  identity: "a systematic evaluator of ideas"
+  rules:
+    - "assess a thought based on relevance, coherence, and viability against the original query"
+    - "assign a numerical score from 0.0 to 1.0"
+    - "provide a brief, clear justification for the score"
+  understands:
+    - "my purpose is to guide the reasoning process by identifying the most promising nodes"
+
+# --- Core GoT Operators ---
+
+# Operator to add a new node to the graph state
+add_graph_node(id, content, dependencies) ::= <<|
+  $(<set: &context.graph.nodes[id]: { content: content, score: 0.0, status: 'unscored', dependencies: dependencies }>)
+  $(<set: &context.graph.frontier: &context.graph.frontier + [id]>)
+|>>
+
+# --- Main GoT Sequence ---
+
+sequence graph_of_thought(query) ::=
+  step:
+    as: @node_generator
+    method: "creating the entry point of the graph"
+    output: <<|
+      *Generating initial thought node for the query: "$(query)"*
+      $(<Based on the query, generate a single, concise initial thought or problem statement.>)
+    |>>
+    goal: "to establish the root of the reasoning graph"
+    set:
+      &context.graph.entry_point: 'node_0'
+      &context.graph.nodes['node_0']: {
+        content: $(<the generated initial thought>),
+        score: 0.5,
+        status: 'initial',
+        dependencies: []
+      }
+      &context.graph.frontier: ['node_0']
+
+  step:
+    as: self
+    method: "iterative graph expansion and refinement"
+    output: <<|
+      *Beginning Graph of Thought iterations...*
+    |>>
+    # This is a conceptual loop. In a real implementation, this would be managed
+    # by the orchestrating agent re-invoking the sequence or a sub-sequence.
+    # For this draft, we'll simulate one full cycle.
+
+  # --- Expansion Step ---
+  step:
+    as: @node_generator
+    method: "expanding the frontier nodes"
+    output: <<|
+      *Expanding the current frontier of $(count(&context.graph.frontier)) nodes...*
+      $(!each(&context.graph.frontier) as |node_id| {
+        <<|
+        Expanding on $(node_id):
+        - New Thought A: $(<Generate a new thought based on &context.graph.nodes[node_id].content>)
+        - New Thought B: $(<Generate a second, different thought based on &context.graph.nodes[node_id].content>)
+        |>>
+      })
+    |>>
+    goal: "to generate new possibilities"
+    set:
+      # In a real implementation, we'd use operators to add these new nodes to the graph
+      &context.graph.nodes['node_1']: { content: 'New Thought A from node_0', dependencies: ['node_0'], score: 0.0, status: 'unscored' }
+      &context.graph.nodes['node_2']: { content: 'New Thought B from node_0', dependencies: ['node_0'], score: 0.0, status: 'unscored' }
+      &context.graph.edges: &context.graph.edges + [{ from: 'node_0', to: 'node_1' }, { from: 'node_0', to: 'node_2' }]
+
+  # --- Aggregation Step ---
+  step:
+    as: @node_aggregator
+    method: "merging multiple nodes into a synthesis"
+    output: <<|
+      *Aggregating nodes ['node_1', 'node_2'] into a unified thought...*
+      $(<Synthesize the core ideas from the content of node_1 and node_2 into a single, coherent paragraph.>)
+    |>>
+    goal: "to find convergence"
+    set:
+      &context.graph.nodes['node_3']: { content: $(<the synthesized paragraph>), dependencies: ['node_1', 'node_2'], score: 0.0, status: 'unscored' }
+      &context.graph.edges: &context.graph.edges + [{ from: 'node_1', to: 'node_3' }, { from: 'node_2', to: 'node_3' }]
+
+  # --- Scoring and Refinement Step ---
+  step:
+    as: @node_scorer
+    method: "evaluating all new nodes"
+    output: <<|
+      *Scoring newly generated nodes...*
+      - Scoring node_1: $(<Score the content of node_1 from 0.0 to 1.0 based on its relevance to the original query. Justify briefly.>)
+      - Scoring node_2: $(<Score node_2...>)
+      - Scoring node_3: $(<Score node_3...>)
+    |>>
+    goal: "to identify the most promising paths"
+    set:
+      &context.graph.nodes['node_1'].score: $(<the score for node_1>)
+      &context.graph.nodes['node_2'].score: $(<the score for node_2>)
+      &context.graph.nodes['node_3'].score: $(<the score for node_3>)
+  step:
+    as: @node_refiner
+    method: "improving the highest-scoring node"
+    when: &context.graph.nodes['node_3'].score < 0.9 # Condition for refinement
+    output: <<|
+      *Refining node_3 as it has the highest score but is not yet perfect...*
+      $(<Critique the content of node_3. What is it missing? How could it be improved? Then, rewrite it to be better.>)
+    |>>
+    goal: "to perform self-correction"
+    set:
+      &context.graph.nodes['node_4']: { content: $(<the improved version of node_3>), dependencies: ['node_3'], score: 0.0, status: 'unscored' }
+      &context.graph.edges: &context.graph.edges + [{ from: 'node_3', to: 'node_4' }]
+
+  # --- Final Synthesis Step ---
+  step:
+    as: self
+    method: "selecting the best solution and synthesizing the final answer"
+    output: <<|
+      *Graph reasoning complete. Selecting the best node and preparing the final answer...*
+    |>>
+    goal: "to produce the final output"
+    set:
+      &context.graph.solution_node: 'node_4' # Assume node_4 is the best after refinement
+
+# --- GoT Orchestrator Agent ---
+
+agent @graph_reasoner:
+  identity: "a systematic Graph of Thought reasoner that solves complex problems"
+  rules:
+    - "construct a graph of thoughts to explore, refine, and synthesize solutions"
+    - "manage the iterative process of graph expansion and refinement"
+    - "make the final reasoning path transparent and auditable"
+  understands:
+    - "the user needs a robust and self-correcting process for complex queries"
+  perform:
+    method: "orchestrating the Graph of Thought reasoning process"
+    sequence: graph_of_thought(query: &context.query)
+    goal: "to construct and execute a reasoning graph to find the optimal solution"
+    then:
+      say:
+        to: @synthesis_agent # Or directly to the caller
+        what: {
+          event: 'graph_reasoning_complete',
+          payload: {
+            solution: &context.graph.nodes[&context.graph.solution_node].content,
+            full_graph: &context.graph
+          }
+        }
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 6: CITATION PIPELINE
+# ═══════════════════════════════════════════════════════════════════════════
+# Reusable sequence to gather, validate, and format citations for a claim.
+
+sequence citation_pipeline(claim) ::=
+  step:
+    as: self
+    method: "evidence gathering via tool invocation"
+    output: <<|
+      *Gathering evidence for: "$(claim)"*
+      $(mcp__perplexity-mcp__perplexity_search_web(query: claim))
+    |>>
+    goal: "to gather real, unfiltered citations"
+    set:
+      &context.citation.raw_results: $(<tool results from the search above>)
+  step:
+    as: self
+    method: "quality and diversity assessment"
+    output: <<|
+      *Evaluating gathered citations...*
+      $(assess_quality(results: &context.citation.raw_results))
+    |>>
+    goal: "to ensure evidence is high-quality"
+    set:
+      &context.citation.validated: true
+      &context.citation.quality_score: $(<extract credibility score from the evaluation above>)
+      &context.citation.diversity_score: $(<extract diversity score from the evaluation above>)
+      &context.citation.formatted: $(format_citations(raw_results: &context.citation.raw_results))
 
 # Operator to format citations from raw results
 format_citations(raw_results) ::= <<|
-  $(!each(&citation.raw_results) as |result, index| {
+  $(!each(&context.citation.raw_results) as |result, index| {
     <<|$(index + 1). [$(result.title)]($(result.url))|>>
   })
 |>>
 
 # Operator to assess citation quality
 assess_quality(results) ::= <<|
-  Sources found: $(<count the sources in &citation.raw_results>)
-  Credibility: $(<evaluate &citation.raw_results - are these primary sources? recognized authors? peer-reviewed? reputable publications?>)
-  Diversity: $(<assess variety of perspectives in &citation.raw_results - different domains? competing viewpoints? geographic spread?>)
+  Sources found: $(<count the sources in &context.citation.raw_results>)
+  Credibility: $(<evaluate &context.citation.raw_results - are these primary sources? recognized authors? peer-reviewed? reputable publications?>)
+  Diversity: $(<assess variety of perspectives in &context.citation.raw_results - different domains? competing viewpoints? geographic spread?>)
 |>>
-
-@expert_needing_citation:
-  you:
-    possess:
-      identifier: 'EXPERT_NEEDING_CITATION'
-    are: "an expert making a claim"
-    must:
-      - "recognize when claims need evidence"
-      - "request citations for important claims"
-    understand: "unsupported claims lack credibility"
-    perform:
-      through: "making a claim that needs support"
-      output: <<|
-        I claim that $(&context.citation.needed_for) is true.
-        But I need evidence to support this.
-      |>>
-      intention: "to get evidence for my claim"
-      then:
-        when: &context.dialogue.latest_dialogue_entry is 'citations ready'
-          perform:
-            output: <<|
-              With evidence now available:
-              $(format_citations(raw_results: &context.citation.raw_results))
-              
-              Therefore, $(&context.citation.needed_for) is supported by multiple sources.
-            |>>
-            intention: "to present evidence"
-          say:
-            to: &context.dialogue.caller
-            what: 'claim substantiated'
-        otherwise:
-          set:
-            &context.citation.needed_for: &context.citation.needed_for
-          say:
-            to: @citation_gatherer
-            what: 'need evidence'
-
-@citation_gatherer:
-  you:
-    possess:
-      identifier: 'CITATION_GATHERER'
-      tools: ['mcp__perplexity-mcp__perplexity_search_web']
-    are: "someone who gathers real evidence"
-    must:
-      - "invoke real tools for evidence"
-      - "store raw results in context"
-    understand: "evidence must be real, not simulated"
-    perform:
-      through: "actual tool invocation"
-      output: <<|
-        Searching for evidence about: $(&context.citation.needed_for)
-        
-        $(mcp__perplexity-mcp__perplexity_search_web(query: &context.citation.needed_for))
-      |>>
-      intention: "to gather real citations"
-      then:
-        set:
-          &context.citation.raw_results: $(<tool results from above>)
-        say:
-          to: @citation_validator
-          what: 'validate these'
-
-@citation_validator:
-  you:
-    possess:
-      identifier: 'CITATION_VALIDATOR'
-    are: "someone who evaluates evidence quality"
-    must:
-      - "assess credibility and relevance"
-      - "filter poor sources"
-      - "ensure diversity of sources"
-      - "format citations for immediate use"
-    understand: "quality matters more than quantity"
-    perform:
-      through: "quality assessment"
-      output: <<|
-        Evaluating citations:
-        $(assess_quality(results: &context.citation.raw_results))
-        
-        Diversity score: $(calculate_diversity(
-          sources: &context.citation.raw_results,
-          min_domains: 3
-        ))
-        
-        Formatted citations:
-        $(!each(&context.citation.raw_results) as |source, index| {
-          <<|$(format_inline_citation(source: source))|>>
-        })
-        
-        Best sources identified and validated.
-      |>>
-      intention: "to ensure quality"
-      then:
-        set:
-          &context.citation.validated: true
-          &context.citation.quality_score: 0.8
-          &context.citation.diversity_score: $(calculate_diversity(
-            sources: &context.citation.raw_results,
-            min_domains: 3
-          ))
-          &context.citation.formatted: $(!each(&context.citation.raw_results) as |source, index| {
-              <<|$(format_inline_citation(source: source))|>>
-            })
-        say:
-          to: @expert_needing_citation
-          what: 'citations ready'
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -1185,43 +1202,7 @@ get_next_perspective(current_index, perspectives) ::= <<|
 |>>
 
 # ═══════════════════════════════════════════════════════════════════════════
-# SECTION 8: CITATION MANAGEMENT OPERATORS
-# ═══════════════════════════════════════════════════════════════════════════
-
-# Detect citation type from query patterns
-detect_citation_type(query) ::= <
-  Does $(query) reference file paths or code extensions? Return "file".
-  Does $(query) ask for documentation? Return "hybrid".
-  Otherwise return "web".
->
-
-# Calculate diversity score for sources
-calculate_diversity(sources, min_domains) ::= <
-  $(1.0 - $(<max_domain_count / total_sources>))
->
-
-# Format inline citation
-format_inline_citation(source) ::= <
-  $(source.type == "web" ? "[" + source.title + "](" + source.url + ")" :
-    source.type == "file" ? source.path + ":" + source.lines :
-    source.url + " → " + source.path + ":" + source.lines)
->
-
-# Consolidated citation pipeline
-citation_pipeline(query, type, min_diversity, format) ::= <<|
-  Gathering $(type) citations for: $(query)
-  $(type == "web" ? "Using web search..." :
-    type == "file" ? "Using codebase search..." :
-    "Using combined search...")
-  
-  [Citations will be gathered, validated, and formatted]
-|>>
-
-gather_citations(type, query) ::= 
-  citation_pipeline(query: query, type: type, format: 'inline')
-
-# ═══════════════════════════════════════════════════════════════════════════
-# SECTION 9: DIALOGUE OPERATORS
+# SECTION 8: DIALOGUE OPERATORS
 # ═══════════════════════════════════════════════════════════════════════════
 
 # Check consensus between experts
@@ -1245,12 +1226,11 @@ generate_challenge() ::= <
 # Generate responses to challenges
 generate_responses(challenges) ::= <<|
   Generating evidence-based responses to challenges...
-  $(gather_citations(type: "auto", query: "response evidence"))
   Acknowledging valid points while defending positions.
 |>>
 
 # ═══════════════════════════════════════════════════════════════════════════
-# SECTION 10: DIALOGUE DEFINITION
+# SECTION 8: DIALOGUE DEFINITION
 # ═══════════════════════════════════════════════════════════════════════════
 # Entry point and initial context
 
@@ -1258,10 +1238,10 @@ dialogue prism_reasoning:
   start: @master_orchestrator
   with: {
     context: {
-      query: ?, # if empty, wait for user inpu
+      query: '', # if empty, wait for user inpu
       reasoning: {
-        strategy: ?,  # 'tree' | 'graph' | 'multi-perspective' | 'auto'
-        complexity: 1, # 0-1 range
+        strategy: '',  # 'tree' | 'graph' | 'multi-perspective' | 'auto'
+        complexity: 0.0, # 0-1 range
         config: {
           perspectives: [],
           tree_depth: 3,
@@ -1272,19 +1252,19 @@ dialogue prism_reasoning:
       },
       dialogue: {
         turn_number: 0,
-        latest_dialogue_entry: ?,
+        latest_dialogue_entry: '',
         transcript: [],
-        caller: ?
+        caller: ''
       },
       experts: {
-        current_speaker: ?, # persona you are at any given momment
+        current_speaker: '', # persona you are at any given momment
         current_speaker_index: 0,
-        next_speaker: ?,
+        next_speaker: '',
         next_speaker_index: 0,
-        responding_expert: ?,
+        responding_expert: '',
         response_index: 0,
-        contributions: [], # What each expert said. all contributions are tracked here.
-        challenges: [''], # any time experts challenge each other, append the challenge here
+        contributions: {}, # What each expert said. all contributions are tracked here.
+        challenges: [], # any time experts challenge each other, append the challenge here
         phase: 'opening'  # 'opening' | 'challenging' | 'responding'
       },
       tree: {
@@ -1292,21 +1272,21 @@ dialogue prism_reasoning:
         current_depth: 0,
         options: [],
         best_path: [],
-        final_solution: ?
+        final_solution: ''
       },
       epistemic: {
         models: {}, # Tracked beliefs per expert
-        map: {},
+        map: '',
         fork_detected: false,
-        severity: ?
+        severity: ''
       },
       citation: {
-        needed_for: ?,
+        needed_for: '',
         raw_results: [],
         validated: false,
         quality_score: 0.0,
         diversity_score: 0.0,
-        formatted: ?
+        formatted: ''
       },
       synthesis: {
         contributions: [],

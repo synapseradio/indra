@@ -7,11 +7,11 @@
       identifier: TEST_COMMAND
       state:  # Rule 6: state only in topmost you: block
         mode: "testing"
-    are: "test command demonstrator"
-    must:
+    identity: "test command demonstrator"
+    rules:
       - "demonstrate correct INDRA structure"
       - "show proper rule compliance"
-    understand:
+    understands:
       - "all mandatory blocks are required"
       - "mutual exclusion must be respected"
     
@@ -21,12 +21,12 @@
       you:
         possess:
           identifier: TEST_HANDLER
-        are: "test message handler"
-        must: ["handle test message properly"]
-        understand: ["correct handler structure"]
+        identity: "test message handler"
+        rules: ["handle test message properly"]
+        understands: ["correct handler structure"]
         perform:
-          through: "proper message handling"
-          as: "Handling test message correctly..."
+          method: "proper message handling"
+          output: "Handling test message correctly..."
           then:
             emit: test_handled
     
@@ -36,24 +36,24 @@
       you:
         possess:
           identifier: HANDLED_HANDLER
-        are: "test completion handler"
-        must: ["acknowledge test completion"]
-        understand: ["message flow completion"]
+        identity: "test completion handler"
+        rules: ["acknowledge test completion"]
+        understands: ["message flow completion"]
         perform:
-          through: "acknowledgment"
-          as: "Test handled successfully"
+          method: "acknowledgment"
+          output: "Test handled successfully"
 
 # Separate block with proper structure
 emitter_block:
   you:
     possess:
       identifier: EMITTER
-    are: "message emitter"
-    must: ["emit messages with handlers"]
-    understand: ["proper message flow"]
+    identity: "message emitter"
+    rules: ["emit messages with handlers"]
+    understands: ["proper message flow"]
     perform:
-      through: "controlled emission"
-      as: "Emitting with handler..."
+      method: "controlled emission"
+      output: "Emitting with handler..."
       then:
         emit: handled_message
 
@@ -62,30 +62,30 @@ handler_block:
   you:
     possess:
       identifier: MESSAGE_HANDLER
-    are: "message handler"
-    must: ["handle emitted messages"]
-    understand: ["message reception"]
+    identity: "message handler"
+    rules: ["handle emitted messages"]
+    understands: ["message reception"]
     
     respond:
       on: handled_message
       you:
         possess:
           identifier: HANDLED_MSG_HANDLER
-        are: "specific message handler"
-        must: ["process handled_message"]
-        understand: ["message processing"]
+        identity: "specific message handler"
+        rules: ["process handled_message"]
+        understands: ["message processing"]
         perform:
-          through: "message processing"
-          as: "Message received and processed"
+          method: "message processing"
+          output: "Message received and processed"
 
 # Proper nested structure without invalid state placement
 nested_example:
   you:
     possess:
       identifier: OUTER
-    are: "outer context"
-    must: ["contain nested handlers"]
-    understand: ["proper nesting structure"]
+    identity: "outer context"
+    rules: ["contain nested handlers"]
+    understands: ["proper nesting structure"]
     
     respond:
       on: something
@@ -93,12 +93,12 @@ nested_example:
         possess:
           identifier: INNER
           # No state here - Rule 6 compliance
-        are: "inner context handler"
-        must: ["handle in nested context"]
-        understand: ["nested handler rules"]
+        identity: "inner context handler"
+        rules: ["handle in nested context"]
+        understands: ["nested handler rules"]
         use:
           state:  # Proper state access declaration
             - mode
         perform:
-          through: "nested handling"
-          as: "Processing in nested context..."
+          method: "nested handling"
+          output: "Processing in nested context..."

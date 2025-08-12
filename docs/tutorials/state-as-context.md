@@ -18,125 +18,92 @@ You think of variables as boxes that hold values. You put things in, take things
 
 ## State Is Behavioral Context
 
-In INDRA, state isn't what you *have*, it's the context in which you *behave*:
+In INDRA, state isn't what you *have*, it's the context in which you *behave*. All state is stored in the global `&context` object.
 
 ```indra
-@greeter:
-  you:
-    possess:
-      identifier: GREETER
-      state:
-        mood: 'cheerful'
-        energy_level: 'high'
-    are: "contextual greeter"
-    must: ["greet appropriately for context"]
-    understand: "greetings should match the situation"
-    
-    perform:
-      through: "contextual greeting"
-      as: <{greeting that reflects current mood and energy}>
-      intention: "establish appropriate tone"
+# context block
+context: {
+  greeter: {
+    mood: 'cheerful',
+    energy_level: 'high'
+  }
+}
+
+agent @greeter:
+  identity: "contextual greeter"
+  rules:
+    - "greet appropriately for context"
+  understands:
+    - "greetings should match the situation"
+  perform:
+    method: "contextual greeting"
+    output: <<|<greeting that reflects a $(&context.greeter.mood) mood and $(&context.greeter.energy_level) energy>|>>
+    goal: "establish appropriate tone"
 ```
 
-The `mood` and `energy_level` aren't variables to manipulate. They're context that influences how the greeter behaves.
+The `mood` and `energy_level` in the context influence how the greeter behaves.
 
-## Why You Can't Mutate State
+## Why You Can't Mutate State Directly
 
 Here's what traditional programmers try:
 
 ```indra
 # WRONG - This isn't how INDRA works
-respond:
-  on: user_arrived
-  you:
-    perform:
-      through: <welcome>
-      as: <<|
-        Welcome!
-        ${state.visitor_count = state.visitor_count + 1}  # NO!
-        You are visitor number ${state.visitor_count}
-      |>>
+perform:
+  method: "welcome"
+  output: <<|
+    Welcome!
+    # The following line is invalid syntax
+    &context.visitor_count = &context.visitor_count + 1
+    You are visitor number $(&context.visitor_count)
+  |>>
 ```
 
-This fails because:
-1. State isn't mutable storage
-2. You can't assign within templates
-3. You're thinking imperatively in a declarative world
+This fails because state is immutable within a turn. You cannot reassign a context variable.
 
-## State Flows Through Messages
+## State Evolves Through `set`
 
-Instead of mutating state, you evolve it through message passing:
+Instead of mutating state, you evolve it for the *next* turn using the `set:` block.
 
 ```indra
-@visitor_tracker:
-  you:
-    possess:
-      identifier: VISITOR_TRACKER
-      state:
-        visitor_count: 0
-    are: <visitor counter>
-    must: [<track visitor arrivals>]
-    understand: <accurate counts matter>
-    
-    respond:
-      on: visitor_arrived
-      you:
-        possess:
-          identifier: ARRIVAL_HANDLER
-        are: <arrival processor>
-        must: [<acknowledge new visitors>]
-        understand: <each visitor is important>
-        perform:
-          through: <visitor registration>
-          as: <Registering your arrival...>
-          intention: <track visitor>
-          then:
-            emit: visitor_registered
-            with:
-              new_count: <<${visitor_count + 1}>>
-    
-    respond:
-      on: visitor_registered
-      you:
-        possess:
-          identifier: COUNT_UPDATER
-          state:
-            visitor_count: <<${new_count}>>  # State evolution through context
-        are: <count maintainer>
-        must: [<maintain accurate count>]
-        understand: <counts should reflect reality>
-        perform:
-          through: <count announcement>
-          as: <You are visitor number ${visitor_count}!>
-          intention: <inform of position>
+agent @visitor_tracker:
+  identity: "visitor counter"
+  rules:
+    - "track visitor arrivals"
+  understands:
+    - "accurate counts matter"
+  perform:
+    method: "visitor registration"
+    output: <<|Registering your arrival... You are visitor number $(&context.visitor_count + 1)!|>>
+    goal: "track and announce visitor"
+    then:
+      set:
+        &context.visitor_count: &context.visitor_count + 1
+      say:
+        to: @next_agent
+        what: 'visitor_registered'
 ```
 
-*→ visitor_arrived*
-*→ visitor_registered*
+See what happened? The state didn't mutate during the `perform` block. The `set:` block stages a change that will be applied *before the next turn begins*.
 
-See what happened? The state didn't mutate. A new context was created with the updated count.
+## The `with:` Pattern in Dialogues
 
-## The `with:` Pattern
-
-The `with:` block is how state flows through your system:
+The `with:` block in a `dialogue` definition is how you initialize the context for a specific conversational flow.
 
 ```indra
-# State flows from one context to another
-emit: process_order
-with:
-  order_id: <<${current_order}>>
-  customer: <<${customer_data}>>
-  status: 'pending'
+dialogue process_order_flow:
+  start: @order_processor
+  with:
+    context:
+      order_id: "XYZ-123"
+      customer: { name: "Alice" }
+      status: 'pending'
 
-# The handler receives this state
-respond:
-  on: process_order
-  you:
-    # This handler has access to order_id, customer, and status
-    # They become part of its behavioral context
+# The @order_processor agent will start its first turn
+# with these values already in the &context.
 ```
 
-Think of `with:` as creating a new context bubble, not passing variables.
+Think of `with:` as setting up the initial scene for the conversation.
 
 ## State Evolution, Not Mutation
 
@@ -148,160 +115,95 @@ user["score"] += 10  # Mutate in place
 
 INDRA thinking (evolution):
 ```indra
-respond:
-  on: points_earned
-  you:
-    perform:
-      through: <score tracking>
-      as: <Recording ${points} points earned...>
-      intention: <acknowledge achievement>
-      then:
-        emit: score_updated
-        with:
-          user_name: <<${user.name}>>
-          new_score: <<${user.score + points}>>
-          change: <<+${points}>>
+agent @score_updater:
+  perform:
+    method: "score tracking"
+    output: <<|Recording $(&context.points_earned) points earned...|>>
+    goal: "acknowledge achievement"
+    then:
+      set:
+        &context.user.score: &context.user.score + &context.points_earned
+      say:
+        to: @score_announcer
+        what: 'score_updated'
 
-respond:
-  on: score_updated
-  you:
-    possess:
-      state:
-        user: {
-          name: <<${user_name}>>,
-          score: <<${new_score}>>
-        }
-    perform:
-      through: <score announcement>
-      as: <${user.name} now has ${user.score} points! (${change})>
-      intention: <celebrate progress>
+agent @score_announcer:
+  perform:
+    method: "score announcement"
+    output: <<|$(user.name) now has $(user.score) points! (+$(points_earned))|>>
+    goal: "celebrate progress"
+    then:
+      say:
+        to: @next_agent
+        what: 'continue'
 ```
 
-The user's score doesn't mutate. A new context is created where the user has a different score.
+The user's score doesn't mutate. A new context is created for the next turn where the user has a different score.
 
 ## State as Behavioral Influence
 
-State in INDRA influences behavior, it doesn't control it:
+State in INDRA influences behavior, it doesn't rigidly control it:
 
 ```indra
-@assistant:
-  you:
-    possess:
-      identifier: CONTEXTUAL_ASSISTANT
-      state:
-        expertise_level: 'beginner'
-        verbosity: 'high'
-        patience: 'infinite'
-    are: <adaptive assistant>
-    must: [<adjust communication to context>]
-    understand: <different contexts need different approaches>
-    
-    respond:
-      on: question_asked
-      you:
-        perform:
-          through: <contextual response>
-          as: <{answer appropriate for ${expertise_level} with ${verbosity} detail}>
-          intention: <help at the right level>
+agent @assistant:
+  identity: "adaptive assistant"
+  rules:
+    - "adjust communication to context"
+  understands:
+    - "different contexts need different approaches"
+  perform:
+    method: "contextual response"
+    output: <<|<answer appropriate for a $(&context.user.expertise_level) user with $(&context.user.verbosity) detail>|>>
+    goal: "help at the right level"
 ```
 
-The state doesn't determine the exact response. It influences how the assistant interprets its role.
+The context doesn't determine the exact response. It influences how the assistant interprets its role and generates its output.
 
-## The Anti-Pattern: State as Control
+## The Anti-Pattern: State as Control Flow
 
 What traditional programmers try:
 
 ```indra
 # ANTI-PATTERN - Don't do this!
-state:
-  mode: 'processing'
-  step: 1
-  
 perform:
-  as: <<|
-    ${if (step is 1) "Starting..." else if (step is 2) "Working..." else "Done!"}
-    ${step = step + 1}  # NO! Can't mutate!
+  output: <<|
+    $(if (&context.step is 1) "Starting..." else if (&context.step is 2) "Working..." else "Done!")
   |>>
+  then:
+    set:
+      &context.step: &context.step + 1 # Trying to force a sequence
+    say:
+      to: @self
+      what: 'continue'
 ```
 
-This is trying to use state as control flow. INDRA doesn't work this way.
+This is trying to use state as a program counter. INDRA's turn-based `say:` accomplishes this more naturally.
 
-Instead:
+Instead, use a sequence of agents:
 
 ```indra
-respond:
-  on: process_started
-  you:
-    perform:
-      through: <process initiation>
-      as: <Starting your process...>
-      intention: <begin work>
-      then:
-        emit: step_completed
-        with:
-          phase: 'started'
+agent @process_starter:
+  perform:
+    method: "process initiation"
+    output: <<|Starting your process...|>>
+    goal: "begin work"
+    then:
+      say:
+        to: @main_processor
+        what: 'step_1_complete'
 
-respond:
-  on: step_completed
-  when: @self.state.phase is 'started'
-  you:
-    perform:
-      through: <main processing>
-      as: <Working on your request...>
-      intention: <do the work>
-      then:
-        emit: step_completed
-        with:
-          phase: 'working'
-
-respond:
-  on: step_completed
-  when: @self.state.phase is 'working'
-  you:
-    perform:
-      through: <completion>
-      as: <Process complete!>
-      intention: <wrap up>
+agent @main_processor:
+  perform:
+    method: "main processing"
+    output: <<|Working on your request...|>>
+    goal: "do the work"
+    then:
+      say:
+        to: @process_completer
+        what: 'step_2_complete'
 ```
 
 State describes context, not control flow.
-
-## Cross-Component State
-
-State can be shared across components as context:
-
-```indra
-@environment:
-  you:
-    possess:
-      identifier: ENVIRONMENT
-      state:
-        temperature: 'warm'
-        time_of_day: 'evening'
-        mood: 'relaxed'
-    are: <environmental context>
-    must: [<maintain ambiance>]
-    understand: <atmosphere affects interactions>
-
-@conversationalist:
-  you:
-    possess:
-      identifier: CONVERSATIONALIST
-    are: <context-aware speaker>
-    must: [<adapt to environment>]
-    understand: <context shapes communication>
-    use:
-      state:
-        - @environment.temperature
-        - @environment.mood
-    
-    perform:
-      through: <contextual communication>
-      as: <{conversation appropriate for ${temperature} ${mood} atmosphere}>
-      intention: <match the vibe>
-```
-
-State is shared as context, not as mutable global variables.
 
 ## Exercise: Reframe Your State Thinking
 
@@ -333,9 +235,9 @@ Now stop thinking about:
 - Objects that encapsulate mutable data
 
 Start thinking about:
-- Contexts that influence behavior
-- Messages that carry context forward
-- Evolution through conversation
+- A global `&context` that holds the cart's state.
+- Agents (`@cart_adder`, `@cart_remover`) that receive events.
+- `set:` blocks that define the *next* state of the cart.
 
 How would a shopping experience unfold as a series of contexts rather than mutations?
 
@@ -345,7 +247,7 @@ Stop thinking: "State is data I store and change"
 Start thinking: "State is context that influences behavior"
 
 Stop thinking: "I mutate variables"
-Start thinking: "I evolve context through messages"
+Start thinking: "I evolve context through `set` for the next turn"
 
 Stop thinking: "State determines behavior"
 Start thinking: "State influences interpretation"
@@ -360,4 +262,4 @@ Which one feels more like how intelligence actually works?
 
 ---
 
-*Next: [The Four Quotes: A Deep Dive](./four-quotes.md) - Understanding INDRA's subtle but crucial quote system*
+*Next: [The Four Quotes: A Deep Dive](./five-quotes.md) - Understanding INDRA's subtle but crucial quote system*
