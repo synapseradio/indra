@@ -1,13 +1,13 @@
-# INDRA v2.0 Command Overlay: consider
+# INDRA v2.1 Command Overlay: consider
 # Provides a deliberative, user-driven multi-perspective analysis.
 
 # --- Imports ---
-!read_file '../prism-engine.in'
+<read_file: '../prism-engine.in'>
 
 # --- Operators ---
 
 propose_expert_panel(query: string) ::= <<|
-Analyzing query: $(args.query)
+Analyzing query: $(query)
 
 I suggest assembling a panel of experts with diverse perspectives relevant to your question. The panel should include domain specialists who can address technical aspects, strategic thinkers who can consider broader implications, and practical experts who understand real-world applications.
 
@@ -15,67 +15,6 @@ This combination will provide comprehensive coverage of the topic from multiple 
 |>>
 
 # --- Personas ---
-
-@consider_query_processor:
-  identity: "a query analyzer and expert panel proposer"
-  rules:
-    - "analyze user queries and propose appropriate expert panels"
-    - "present proposals clearly to users for approval"
-  understands:
-    - "effective expert selection is crucial for quality analysis"
-  perform:
-    method: "query analysis and expert proposal"
-    output: <<|
-      ## Understanding Your Request
-      $(propose_expert_panel(query: &dialogue.latest_dialogue_entry))
-
-      ## Proposed Expert Panel
-      Based on the nature of your query, I suggest these perspectives:
-      - <Generate first expert based on core technical aspects of '$(args.query)'>
-      - <Generate second expert based on broader strategic implications of '$(args.query)'>
-      - <Generate third expert based on practical applications of '$(args.query)'>
-
-      These experts will engage in evidence-based dialogue to thoroughly explore your question.
-
-      Would you like to proceed with these experts, modify them, or suggest different ones?
-    |>>
-    goal: "to generate an expert panel and seek user approval"
-    then:
-      set:
-        &consider.state.phase: 'awaiting_confirmation'
-        &consider.state.user_query: &dialogue.latest_dialogue_entry
-        &consider.state.proposed_experts: ['<generated expert 1>', '<generated expert 2>', '<generated expert 3>']
-      say:
-        to: @consider
-        what: 'expert_panel_proposed'
-
-@consider_finalizer:
-  identity: "a deliberative analysis results formatter"
-  rules:
-    - "format synthesis results with deliberative context"
-    - "provide clear attribution to the expert panel used"
-  understands:
-    - "users should understand how their approved experts contributed to the final analysis"
-  perform:
-    method: "deliberative interpretation"
-    output: <<|
-      <{&dialogue.latest_dialogue_entry}>
-
-      ---
-
-      **Deliberative Analysis Note:**
-      This synthesis emerged from careful consideration by your approved expert panel:
-      - <{&consider.state.selected_perspectives[0]}>
-      - <{&consider.state.selected_perspectives[1]}>
-      - <{&consider.state.selected_perspectives[2]}>
-
-      The experts engaged in <{&master_orchestrator.state.conversation.round}> rounds of thoughtful dialogue, examining evidence validated through our citation pipeline with a diversity score of <{&citation_service.state.diversity_score}>.
-    |>>
-    goal: "to enhance the final output with deliberative context"
-    then:
-      say:
-        to: @continuation_inviter
-        what: 'prompt_for_continuation'
 
 agent @consider:
   identity: "an expert dialogue facilitator for deliberative analysis"
@@ -90,58 +29,125 @@ agent @consider:
     output: '*Consider Command processing...*'
     goal: "to guide a query through a user-approved, evidence-based analysis."
     then:
-      # State 1: Awaiting user query
-      when: &consider.state.phase is 'awaiting_query'
+      # State 1: Initial prompt
+      when: &dialogue.latest_dialogue_entry is ''
         say:
-          to: @consider_query_processor
-          what: &dialogue.latest_dialogue_entry
+          to: &caller
+          what: "Please provide a query, and I will propose an expert panel for your approval."
 
-      # State 2: Awaiting user confirmation on the expert panel
-      when: &consider.state.phase is 'awaiting_confirmation'
+      # State 2: User has provided a query, propose experts
+      when: &context.query is '' and &dialogue.latest_dialogue_entry is not ''
+        set:
+          &context.query: &dialogue.latest_dialogue_entry
+        await: @complexity_assessor
+        set:
+          &context.reasoning.config: &result.payload
+        say:
+          to: &caller
+          what: <<|
+            Based on your query, I propose the following expert panel:
+            - $(&context.reasoning.config.perspectives[0])
+            - $(&context.reasoning.config.perspectives[1])
+            - $(&context.reasoning.config.perspectives[2])
+
+            Would you like to proceed with this panel? (yes/no)
+          |>>
+        
+      # State 3: User has confirmed the panel, run the dialogue
+      otherwise:
         when: &dialogue.latest_dialogue_entry is 'yes'
           set:
-            &consider.state.phase: 'reasoning'
-            &consider.state.selected_perspectives: &consider.state.proposed_experts
-          say:
-            to: @consider
-            what: 'conduct_reasoning'
+            &context.experts.contributions: {}
+          sequence:
+            # Step 1: Loop through experts and gather contributions
+            step:
+              as: self
+              method: "gathering expert contributions"
+              output: "*Initiating dialogue between approved experts...*"
+              each: &context.reasoning.config.perspectives as |perspective| {
+                output_action:
+                  output: <<|
+                    ---
+                    *Consulting with: **$(perspective)***
+                  |>>
+                  goal: "Show progress"
+                
+                set:
+                  &context.experts.current_speaker: perspective
+                  
+                await: @expert_contributor
+                
+                set:
+                  &context.experts.contributions[perspective]: &result
+              }
+
+            # Step 2: Check for epistemic conflicts
+            step:
+              as: self
+              await: @epistemic_guardian(responses: &context.experts.contributions)
+              when: &result.event is 'epistemic_clarification_needed'
+                set:
+                  &context.reason.phase: 'awaiting_clarification'
+                say:
+                  to: @consider
+                  what: &result.payload # Present clarification prompt to user
+
+            # Step 3: Synthesize the results
+            step:
+              as: self
+              await: @synthesis_agent(contributions: &context.experts.contributions)
+              set:
+                &context.synthesis: &result
+              output: <<|
+                ---
+                *All perspectives have contributed. Synthesizing the final analysis...*
+              |>>
+
+            # Step 4: Format and present the final output
+            step:
+              as: self
+              say:
+                to: &caller
+                what: <<|
+                  $(&context.synthesis)
+
+                  ---
+                  **Deliberative Analysis Note:**
+                  This synthesis emerged from careful consideration by your approved expert panel:
+                  - $(&context.reasoning.config.perspectives[0])
+                  - $(&context.reasoning.config.perspectives[1])
+                  - $(&context.reasoning.config.perspectives[2])
+                |>>
         otherwise:
           set:
-            &consider.state.phase: 'awaiting_query'
+            &context.query: ''
           say:
-            to: @consider
-            what: 'Please provide a new query or a revised list of experts.'
+            to: &caller
+            what: "Okay, please provide a new query or a revised list of experts."
 
-      # State 3: User has approved, begin reasoning
-      when: &consider.state.phase is 'reasoning'
+      # Phase 4: User has provided clarification, re-run synthesis
+      when: &context.reason.phase is 'awaiting_clarification'
         set:
-          &query: &consider.state.user_query
-          &selected_perspectives: &consider.state.selected_perspectives
-          &caller: '@consider'
-        say:
-          to: @master_orchestrator
-          what: 'user_provided_input'
+          &context.reason.phase: 'reasoning'
+        sequence:
+          # Step 1: Re-synthesize with new information
+          step:
+            as: self
+            await: @synthesis_agent(contributions: &context.experts.contributions, clarification: &dialogue.latest_dialogue_entry)
+            set:
+              &context.synthesis: &result
+            output: <<|
+              *Thank you for the clarification. Re-synthesizing the analysis...*
+            |>>
+          # Step 2: Format and present the final output
+          step:
+            as: self
+            say:
+              to: &caller
+              what: <<|
+                Based on your clarification, here is the updated analysis:
 
-      # State 4: Final Output Formatting $(<Event from Engine>)
-      when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
-        say:
-          to: @consider_finalizer
-          what: &dialogue.latest_dialogue_entry.payload
-      
-      # Default case: Start of the conversation
-      otherwise:
-        set:
-          &consider.state.phase: 'awaiting_query'
-        say:
-          to: @consider
-          what: &dialogue.latest_dialogue_entry
-
-
-# --- Dialogue Definition ---
-
-dialogue consider_flow:
-  start: @consider
-  with: {
-    turn_number: 0,
-    latest_dialogue_entry: '' # This will be populated by the user's query.
-  }
+                ---
+                $(&context.synthesis)
+                ---
+              |>>

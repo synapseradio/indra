@@ -86,19 +86,31 @@ agent @master_orchestrator:
           to: @graph_reasoner # Simple, clean handoff
           what: 'begin_graph_analysis'
 
-# The orchestrator hides the complexity.
+# The orchestrator is a stateful agent that manages the loop.
 agent @graph_reasoner:
+  identity: "a systematic Graph of Thought reasoner"
+  rules:
+    - "manage an iterative reasoning loop"
+    - "call a worker sequence for each iteration"
   perform:
-    sequence: graph_of_thought(query: &context.query) # Manages the complex worker sequence
+    method: "orchestrating the Graph of Thought process"
     then:
-      say:
-        to: @synthesis_agent
-        what: 'graph_reasoning_complete'
+      when: &context.graph.current_iteration < &context.graph.max_iterations
+        sequence:
+          step:
+            sequence: graph_iteration() # Worker sequence
+          step:
+            set:
+              &context.graph.current_iteration: $(&context.graph.current_iteration + 1)
+            say:
+              to: @graph_reasoner # Recursive call to continue loop
+              what: 'continue'
+      otherwise:
+        return: &context.graph # Return final result
 
-# The worker sequence contains the actual implementation.
-sequence graph_of_thought(query) ::=
-  step:
-    # ... all the complex logic for GoT lives here ...
+# The worker sequence contains the logic for a single iteration.
+sequence graph_iteration() ::=
+  # ... steps for one cycle of expansion, aggregation, etc. ...
 ```
 
 **Benefit:** This pattern hides the internal complexity of a subsystem from the main engine controller, leading to a cleaner high-level architecture.

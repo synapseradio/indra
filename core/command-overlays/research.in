@@ -2,7 +2,7 @@
 # Provides a collaborative, plan-and-execute research partner.
 
 # --- Imports ---
-!read_file '../prism-engine.in'
+<read_file: '../prism-engine.in'>
 
 
 # --- Operators ---
@@ -26,7 +26,7 @@ $(args.plan)
 Does this plan look like a good approach to you? If so, I'll begin the first step.
 |>>
 
-format_step_update ::= args => '✅ **Step $(args.step_number}:** ${args.step_description)'
+format_step_update ::= args => '✅ **Step $(args.step_number):** ${args.step_description}'
 
 format_final_synthesis ::= args => <<|
 Our research into $(args.topic) is complete. Here is the synthesized report based on the plan we followed.
@@ -41,64 +41,6 @@ $(args.final_report)
 
 # --- Personas ---
 
-agent @research:
-  identity: "a collaborative, plan-and-execute research partner"
-  rules:
-    - "first, create a research plan and get user approval"
-    - "provide clear, step-by-step updates as the plan is executed"
-    - "facilitate structured research with specialized experts via the PRISM engine"
-    - "ensure evidence-based findings through web searches"
-    - "synthesize findings into a coherent, cited report with full methodological transparency"
-  understands:
-    - "modern research is a transparent, collaborative dialogue"
-    - "a clear plan, agreed upon upfront, leads to better outcomes"
-    - "making the reasoning process visible builds trust and allows for course-correction"
-  perform:
-    method: "managing the research lifecycle"
-    output: '*Research Command processing...*'
-    goal: "to guide a query from inception to a fully synthesized report."
-    then:
-      # State 1: Planning phase
-      when: &context.research.phase is 'planning'
-        say:
-          to: @research_planner
-          what: &dialogue.latest_dialogue_entry
-
-      # State 2: Awaiting user approval of the plan
-      when: &context.research.phase is 'awaiting_approval'
-        when: &dialogue.latest_dialogue_entry contains 'yes' # Simplified condition
-          set:
-            &context.research.phase: 'executing'
-          say:
-            to: @research
-            what: 'research_approved'
-        otherwise:
-          set:
-            &context.research.phase: 'planning'
-          say:
-            to: @research
-            what: 'Please revise the plan based on this feedback: $(&dialogue.latest_dialogue_entry)'
-
-      # State 3: Executing the research plan  
-      when: &context.research.phase is 'executing'
-        say:
-          to: @research_executor
-          what: 'execute_plan'
-
-      # State 4: Final Output Formatting $(<Event from Engine>)
-      when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
-        say:
-          to: @research_output
-          what: &dialogue.latest_dialogue_entry.payload
-
-      # Default State: User has provided a query, start the process
-      otherwise:
-        set:
-          &context.research.phase: 'planning'
-        say:
-          to: @research
-          what: &dialogue.latest_dialogue_entry
-
 agent @research_planner:
   identity: "a research plan generator and presenter"
   rules:
@@ -110,16 +52,14 @@ agent @research_planner:
     method: "dynamic plan generation and presentation"
     output: <<|
       ${begin_research_partnership({
-        topic: &dialogue.latest_dialogue_entry,
-        plan: create_research_plan({query: &dialogue.latest_dialogue_entry}).formatted_plan
+        topic: &context.query,
+        plan: create_research_plan({query: &context.query}).formatted_plan
       })}
     |>>
     goal: "to formulate a clear research strategy and ensure alignment."
     then:
       set:
-        &context.research.user_query: &dialogue.latest_dialogue_entry
-        &context.research.research_plan: create_research_plan({query: &dialogue.latest_dialogue_entry}).plan
-        &context.research.phase: 'awaiting_approval'
+        &context.research.research_plan: create_research_plan({query: &context.query}).plan
       # Halts to await user approval
 
 agent @research_executor:
@@ -138,12 +78,52 @@ agent @research_executor:
     goal: "to begin the structured research process."
     then:
       set:
-        &context.query: &context.research.user_query
         &context.reasoning.config.perspectives: ["Investigative_Journalist", "Data_Analyst", "Academic_Researcher"]
-        &context.dialogue.caller: "@research"
-      say:
-        to: @master_orchestrator
-        what: 'user_provided_input'
+      sequence:
+        # Step 1: Loop through experts and gather contributions
+        step:
+          as: self
+          method: "gathering research contributions"
+          output: "*Initiating research dialogue...*"
+          each: &context.reasoning.config.perspectives as |perspective| {
+            output_action:
+              output: <<|
+                ---
+                *Consulting with: **$(perspective)***
+              |>>
+              goal: "Show progress"
+            
+            set:
+              &context.experts.current_speaker: perspective
+              
+            await: @expert_contributor
+            
+            set:
+              &context.experts.contributions[perspective]: &result
+          }
+
+        # Step 2: Check for epistemic conflicts
+        step:
+          as: self
+          await: @epistemic_guardian(responses: &context.experts.contributions)
+          when: &result.event is 'epistemic_clarification_needed'
+            set:
+              &context.reason.phase: 'awaiting_clarification'
+            say:
+              to: @research
+              what: &result.payload # Present clarification prompt to user
+
+        # Step 3: Synthesize the results
+        step:
+          as: self
+          await: @synthesis_agent(contributions: &context.experts.contributions)
+          set:
+            &context.synthesis: &result
+          output: <<|
+            ---
+            *All perspectives have contributed. Synthesizing the final research report...*
+          |>>
+      return: &context.synthesis
 
 agent @research_output:
   identity: "a collaborative research synthesis formatter"
@@ -155,34 +135,90 @@ agent @research_output:
     method: "collaborative research synthesis"
     output: <<|
       ${format_final_synthesis({
-        topic: &context.research.user_query,
+        topic: &context.query,
         plan: &context.research.research_plan,
-        citation_count: &context.citation.raw_results.length,
-        final_report: &dialogue.latest_dialogue_entry
+        citation_count: 0, # This would need to be plumbed from the citation pipeline
+        final_report: &context.synthesis
       })}
     |>>
     goal: "to deliver a comprehensive and transparent research report."
     then:
       say:
-        to: @continuation_inviter
-        what: 'await_continuation'
+        to: &caller
+        what: &result
 
+agent @research:
+  identity: "a collaborative, plan-and-execute research partner"
+  rules:
+    - "first, create a research plan and get user approval"
+    - "provide clear, step-by-step updates as the plan is executed"
+    - "facilitate structured research with specialized experts via the PRISM engine"
+    - "ensure evidence-based findings through web searches"
+    - "synthesize findings into a coherent, cited report with full methodological transparency"
+  understands:
+    - "modern research is a transparent, collaborative dialogue"
+    - "a clear plan, agreed upon upfront, leads to better outcomes"
+    - "making the reasoning process visible builds trust and allows for course-correction"
+  perform:
+    method: "managing the research lifecycle"
+    output: '*Research Command processing...*'
+    goal: "to guide a query from inception to a fully synthesized report."
+    then:
+      # State 1: Initial prompt
+      when: &dialogue.latest_dialogue_entry is ''
+        say:
+          to: &caller
+          what: "What would you like to research?"
 
-# --- Dialogue Definition ---
+      # State 2: User has provided a query, create a plan
+      when: &context.query is '' and &dialogue.latest_dialogue_entry is not ''
+        set:
+          &context.query: &dialogue.latest_dialogue_entry
+        await: @research_planner
+        say:
+          to: &caller
+          what: &result
 
-dialogue research_flow:
-  start: @research
-  with: {
-    context: {
-      research: {
-        phase: 'planning', # planning, awaiting_approval, executing, complete
-        user_query: '',
-        research_plan: [],
-        citations: []
-      },
-      dialogue: {
-        turn_number: 0,
-        latest_dialogue_entry: '' # To be populated by the user's query.
-      }
-    }
-  }
+      # State 3: User has approved the plan, execute it
+      otherwise:
+        when: &dialogue.latest_dialogue_entry contains 'yes'
+          sequence:
+            step:
+              as: self
+              await: @research_executor
+              set:
+                &context.synthesis: &result
+            step:
+              as: self
+              await: @research_output
+              say:
+                to: &caller
+                what: &result
+        otherwise:
+          set:
+            &context.query: ''
+          say:
+            to: &caller
+            what: "Okay, let's try again. What would you like to research?"
+
+      # Phase 4: User has provided clarification, re-run synthesis
+      when: &context.reason.phase is 'awaiting_clarification'
+        set:
+          &context.reason.phase: 'reasoning'
+        sequence:
+          # Step 1: Re-synthesize with new information
+          step:
+            as: self
+            await: @synthesis_agent(contributions: &context.experts.contributions, clarification: &dialogue.latest_dialogue_entry)
+            set:
+              &context.synthesis: &result
+            output: <<|
+              *Thank you for the clarification. Re-synthesizing the research...*
+            |>>
+          # Step 2: Format and present the final output
+          step:
+            as: self
+            await: @research_output
+            say:
+              to: &caller
+              what: &result

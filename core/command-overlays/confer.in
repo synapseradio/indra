@@ -1,8 +1,8 @@
-# INDRA v2.0 Command Overlay: Confer
+# INDRA v2.1 Command Overlay: Confer
 # Provides a streamlined, automated multi-perspective analysis.
 
 # --- Imports ---
-!read_file '../prism-engine.in'
+<read_file: '../prism-engine.in'>
 
 # --- Operators ---
 
@@ -54,7 +54,7 @@ agent @confer:
     goal: "to manage the state and flow of the conversation."
     then:
       # State 1: Initial prompt
-      when: &confer.state.phase is 'introduction'
+      when: &dialogue.latest_dialogue_entry is ''
         perform:
           method: "self-introduction"
           output: <<|
@@ -72,106 +72,77 @@ agent @confer:
           goal: "establish purpose and await input."
           # Halts for user input
 
-      # State 2: User has provided a query, break it down for confirmation
-      when: &confer.state.phase is 'query_breakdown'
-        perform:
-          method: "query deconstruction and confirmation"
-          output: <<|
-            Before I proceed, I want to make sure I understand your request correctly. Here's my interpretation:
-
-            $(break_down_query(query: &confer.state.user_query, depth: 2))
-
-            Does this accurately capture what you're asking? Please confirm to proceed.
-          |>>
-          goal: "to validate my understanding of the user's query."
-          # Halts for user confirmation.
-
-      # State 3: User has confirmed, select and display experts
-      when: &confer.state.phase is 'selecting_experts'
-        perform:
-          method: "query analysis and expert selection"
-          output: <<|
-            Excellent. Based on the query, I have assembled the following expert panel to analyze your request:
-            
-            $(!each(generate_expert_panel(query: &confer.state.user_query)) as |expert, index| {
-              $(index). $(expert))
-            })
-
-            I will now initiate the reasoning process with these perspectives.
-          |>>
-          goal: "create and display a tailored and effective expert panel."
-          then:
-            set:
-              &confer.state.expert_panel: $(generate_expert_panel(query: &confer.state.user_query))
-              &confer.state.phase: 'reasoning'
-            say:
-              to: @confer
-              what: 'experts_selected_and_displayed'
-
-      # State 4: Experts are selected, begin reasoning
-      when: &confer.state.phase is 'reasoning'
-        set:
-          &context.query: &confer.state.user_query
-          &context.dialogue.caller: '@confer'
-          &context.reasoning.strategy: 'multi-perspective'
-          &context.reasoning.config: {
-            perspectives: &confer.state.expert_panel,
-            natural_flow: true,
-            interruptions: true,
-            personality: true,
-            tree_depth: 2,
-            citations: true,
-            challenges: true,
-            epistemic_tracking: true
-          }
-        say:
-          to: @master_orchestrator
-          what: 'user_provided_input'
-
-      # State 5: Final Output Formatting $(<Event from Engine>)
-      when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
-        perform:
-          method: "adding the confer analysis notes"
-          output: <<|
-            $(&dialogue.latest_dialogue_entry.payload)
-
-            ---
-            ## Confer Analysis Notes
-            
-            This multi-perspective dialogue examined "$(&confer.state.user_query)" through $(count(collection: &confer.state.expert_panel)) expert lenses.
-            
-            **Evidence Collection:** Gathered citations across $(&confer.state.min_domains)+ domains with diversity score: $(&citation_service.state.diversity_score || "high")
-            
-            **Dialogue Dynamics:** The experts engaged in $(&master_orchestrator.state.conversation.round) rounds of productive exchange.
-            
-            The automatic expert selection aimed to provide comprehensive coverage of your inquiry's key dimensions.
-          |>>
-          goal: "provide meta-commentary on the confer process."
-          then:
-            say:
-              to: @continuation_inviter
-              what: 'prompt_for_continuation'
-
-      # Default State: User has provided a query, start the process
+      # State 2: User has provided a query, start the reasoning flow
       otherwise:
         set:
-          &confer.state.phase: 'query_breakdown'
-          &confer.state.user_query: &dialogue.latest_dialogue_entry
-        say:
-          to: @confer
-          what: 'query_received'
+          &context.query: &dialogue.latest_dialogue_entry
+          &context.experts.contributions: {}
+        sequence:
+          # Step 1: Assess complexity and get configuration
+          step:
+            as: self
+            await: @complexity_assessor
+            set:
+              &context.reasoning.config: &result.payload
+            output: <<|
+              *Configuration prepared. Assembling expert panel: $(&context.reasoning.config.perspectives). Proceeding with analysis.*
+            |>>
+          
+          # Step 2: Loop through experts and gather contributions
+          step:
+            as: self
+            method: "gathering expert contributions"
+            output: "*Initiating dialogue between experts...*"
+            each: &context.reasoning.config.perspectives as |perspective| {
+              output_action:
+                output: <<|
+                  ---
+                  *Consulting with: **$(perspective)***
+                |>>
+                goal: "Show progress"
+              
+              set:
+                &context.experts.current_speaker: perspective
+                
+              await: @expert_contributor
+              
+              set:
+                &context.experts.contributions[perspective]: &result
+            }
 
+          # Step 3: Check for epistemic conflicts
+          step:
+            as: self
+            await: @epistemic_guardian(responses: &context.experts.contributions)
+            set:
+              &context.epistemic.has_conflict: &result.event is not 'no_issues_detected'
 
-# --- Dialogue Definition ---
+          # Step 4: Synthesize the results
+          step:
+            as: self
+            await: @synthesis_agent(contributions: &context.experts.contributions)
+            set:
+              &context.synthesis: &result
+            output: <<|
+              ---
+              *All perspectives have contributed. Synthesizing the final analysis...*
+            |>>
 
-dialogue confer_flow:
-  start: @confer
-  with: {
-    context: {
-      dialogue: {
-        turn_number: 0,
-        latest_dialogue_entry: '',
-        caller: '@confer'
-      }
-    }
-  }
+          # Step 5: Format and present the final output
+          step:
+            as: self
+            say:
+              to: &caller
+              what: <<|
+                $(&context.synthesis)
+
+                ---
+                ## Confer Analysis Notes
+                
+                This multi-perspective dialogue examined "$(&context.query)" through $(count(&context.reasoning.config.perspectives)) expert lenses.
+                
+                **Epistemic Status:** $(&context.epistemic.has_conflict ? 'Conflict Detected' : 'No Conflicts Detected')
+                
+                The automatic expert selection aimed to provide comprehensive coverage of your inquiry's key dimensions.
+              |>>
+        goal: "to orchestrate the reasoning flow"

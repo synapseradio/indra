@@ -1,0 +1,72 @@
+# INDRA v2.1: PRISM Module - Multi-Perspective Dialogue
+<read_file: './base.in'>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 1: DIALOGUE ORCHESTRATION SEQUENCE
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence multi_perspective_dialogue(perspectives) ::=
+  step:
+    as: self
+    # Dynamically load the reasoning strategy that the experts will use.
+    read_file: './tree_of_thought.in'
+  step:
+    as: self
+    method: "gathering expert contributions"
+    output: "*Initiating dialogue between experts...*"
+    each: perspectives as |perspective| {
+      output_action:
+        output: <<|
+          ---
+          *Consulting with: **$(perspective)***
+        |>>
+        goal: "Show progress"
+      
+      set:
+        &context.experts.current_speaker: perspective
+        
+      # Explicitly tell the expert what task to perform
+      await: @expert_contributor with: { context: { task: 'tree_of_thought' } }
+      
+      set:
+        &context.experts.contributions[perspective]: &result
+    }
+  step:
+    as: self
+    # The contributions are now in &context.experts.contributions
+    # The calling agent can now proceed with epistemic checks or synthesis.
+    return: &context.experts.contributions
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 2: CORE AGENT
+# ═══════════════════════════════════════════════════════════════════════════
+
+agent @expert_contributor:
+  identity: "a single expert providing a focused contribution"
+  rules:
+    - "analyze the topic from my assigned perspective"
+    - "execute the assigned reasoning task"
+    - "return my final, synthesized analysis"
+  understands:
+    - "my role is to provide a deep, single-perspective analysis on demand"
+    - "my reasoning task is provided by the orchestrator via a temporary context"
+  perform:
+    method: "focused analysis using a provided task"
+    output: ""
+    goal: "to generate a single, comprehensive expert viewpoint"
+    then:
+      # The calling agent MUST provide &context.task in a `with:` block.
+      # This makes the expert a pure, stateless executor.
+      when: &context.task is 'tree_of_thought'
+        await: tree_of_thought(
+          perspective: &context.experts.current_speaker,
+          topic: &context.query
+        ) store_in: &context.result
+
+      # In the future, other single-perspective tasks could be added here,
+      # allowing the orchestrator to choose which one an expert should run.
+      # For example: `when: &context.task is 'concise_view'`
+
+      return: &context.result
+

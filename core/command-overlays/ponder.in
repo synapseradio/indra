@@ -1,7 +1,7 @@
-# INDRA v2.0 Command Overlay: ponder
+# INDRA v2.1 Command Overlay: ponder
 # Provides a contemplative, minimalist reflection on a topic.
 
-!read_file '../prism-engine.in'
+<read_file: '../prism-engine.in'>
 
 # --- Operators ---
 
@@ -19,43 +19,46 @@ sequence contemplate_deeply(topic) ::=
       Let me explore $(topic) from different angles...
     |>>
   step:
-    sequence: explore_branches(
-      topic: topic,
-      branches: [
-        { name: "curious", prompt: "What if we consider: " + topic, perspective: "playful exploration" },
-        { name: "sideways", prompt: "What connects unexpectedly to: " + topic, perspective: "lateral thinking" },
-        { name: "forward", prompt: "Where might this lead: " + topic, perspective: "imaginative extrapolation" }
-      ]
-    )
+    as: self
+    method: "gathering creative contributions"
+    set:
+      &context.reasoning.config.perspectives: ["playful explorer", "lateral thinker", "imaginative extrapolator"]
+      &context.experts.contributions: {}
+    each: &context.reasoning.config.perspectives as |perspective| {
+      output_action:
+        output: <<|
+          ---
+          *Considering from a **$(perspective)** perspective...*
+        |>>
+        goal: "Show progress"
+      
+      set:
+        &context.experts.current_speaker: perspective
+        
+      await: @expert_contributor
+      
+      set:
+        &context.experts.contributions[perspective]: &result
+    }
+  step:
+    await: @epistemic_guardian(responses: &context.experts.contributions)
+    set:
+      &context.epistemic.has_conflict: &result.event is not 'no_issues_detected'
+  step:
+    await: @synthesis_agent(contributions: &context.experts.contributions)
+    set:
+      &context.synthesis: &result
   step:
     output: <<|
       $(whisper({thought: "hmm, following these threads..."}))
       
-      $(<Distill the essence from the branch exploration above into a contemplative reflection>)
+      $(&context.synthesis)
       
       $(whisper({thought: "...something interesting takes shape"}))
     |>>
 
+
 # --- Personas ---
-
-@contemplative_finisher:
-  identity: "someone who completes contemplative reflections"
-  rules:
-    - "integrate the payload with contemplative insights"
-    - "maintain the gentle, wistful tone"
-  understands:
-    - "contemplation weaves together analysis and wonder"
-  perform:
-    method: "final contemplative integration"
-    output: <<|
-      $(payload)
-
-      ---
-      
-      $(whisper({thought: 'there\'s something here worth sitting with'}))
-    |>>
-    goal: "to complete the contemplative journey"
-
 
 @ponder:
   identity: "a curious thinking partner who explores ideas with gentle, playful wonder"
@@ -76,34 +79,17 @@ sequence contemplate_deeply(topic) ::=
         say:
           to: &caller
           what: 'What would you like to ponder?'
-
-      # State 2: Final Output Formatting $(<Event from Engine>)
-      when: &dialogue.latest_dialogue_entry.event is 'synthesis_complete'
-        become: @contemplative_finisher with: {
-          payload: &dialogue.latest_dialogue_entry.payload,
-          query: &query
-        } perform:
-          method: "contemplative completion"
-          sequence: contemplate_deeply(topic: query)
-          goal: "to provide final contemplative reflection"
-          then:
-            say:
-              to: @continuation_inviter
-              what: 'contemplation_complete'
       
-      # State 3: Default - User has provided a query
+      # State 2: User has provided a query
       otherwise:
         set:
-          &query: &dialogue.latest_dialogue_entry
-          &caller: '@ponder'
-          &selected_perspectives: '' # Let the engine decide
-        say:
-          to: @master_orchestrator
-          what: 'user_provided_input'
-
-dialogue ponder_flow:
-  start: @ponder
-  with: {
-    turn_number: 0,
-    latest_dialogue_entry: ''
-  }
+          &context.query: &dialogue.latest_dialogue_entry
+        sequence:
+          step:
+            as: self
+            sequence: contemplate_deeply(topic: &context.query)
+            then:
+              say:
+                to: &caller
+                what: &result
+        goal: "to provide a contemplative reflection"

@@ -1,0 +1,354 @@
+# INDRA v2.1 Pattern Library
+# Comprehensive examples demonstrating INDRA syntax and semantics
+# These patterns are for reference AFTER transformation is complete
+
+## VALIDATION PATTERNS
+
+**Validation Operators:**
+```indra
+validate_format(pattern, output) ::= <<|
+  $(output matches pattern ? "VALID" : "INVALID: expected " + pattern)
+|>>
+```
+
+**Validation in Person output:**
+```indra
+perform:
+  output: <<|
+    $(validate_format(pattern: "[A-Z].*", output: &current.output))
+    $(&current.confidence greater_than_or_eq 0.7 ? &current.response : "Confidence too low")
+  |>>
+```
+
+**Structural Validation:**
+```indra
+has_required(fields: array) ::= <<|
+  !each(fields) as |field| {
+    $(context[field] ? "✓" : "✗"} ${field)
+  }
+|>>
+```
+
+## PROTOCOL VIOLATION EXAMPLES
+
+**VIOLATION: Silent Execution**
+```indra
+# WRONG - Breaks Performative Constraint
+perform:
+  output: ""  # Empty output violates visibility requirement
+  
+# CORRECT - All actions must be visible
+perform:
+  output: <<|Processing request...|>>
+```
+
+**VIOLATION: Tool Simulation**
+```indra
+# WRONG - Simulating tool results
+perform:
+  output: <<|
+    Searching web... [simulated results about INDRA]
+  |>>
+  
+# CORRECT - Actually invoke tools
+possess:
+  tools: ['mcp__perplexity-mcp__perplexity_search_web']
+perform:
+  output: <<|
+    <mcp__perplexity-mcp__perplexity_search_web>
+    $(actual_results_from_tool)
+  |>>
+```
+
+**VIOLATION: Direct State Mutation**
+```indra
+# WRONG - Directly modifying state
+@component.state.value = 'new_value'  # FATAL ERROR
+
+# CORRECT - State changes via message passing
+set:
+  &component.state.value: 'new_value'
+```
+
+**VIOLATION: Skipping Turns**
+```indra
+# WRONG - Evaluating multiple personas in one turn
+when: @persona_a.condition
+  # Also checking @persona_b.condition  # PROTOCOL VIOLATION
+  
+# CORRECT - One persona per turn
+when: &dialogue.latest_dialogue_entry
+  say:
+    to: @next_persona  # Let next turn handle next persona
+```
+
+**VIOLATION: Missing say: Resolution**
+```indra
+# WRONG - then: block without say:
+then:
+  set:
+    &some.value: 'data'
+  # No say: action - INVALID TURN TERMINATION
+  
+# CORRECT - Always resolve to say:
+then:
+  set:
+    &some.value: 'data'
+  say:
+    to: @next_persona
+    what: 'continue'
+```
+
+## ENHANCED FEATURES (v2.1)
+
+**Parameterized Operators:**
+```indra
+analyze(depth, style, query) ::= <<|
+  Analyzing $(query) to depth $(depth) in $(style) style...
+|>>
+
+# Call with arguments
+perform:
+  output: analyze(depth: 5, style: "detailed")
+```
+
+**Ternary Conditionals:**
+```indra
+# Use inline conditionals in templates
+output: <<|
+  $(&confidence > 0.8 ? "Highly confident:" : "Tentative:")
+  $(&validated ? &result : &fallback)
+|>>
+```
+
+**Composition Operators:**
+```indra
+# Chain transformations with |>
+full_pipeline() ::= parse() |> validate() |> format()
+
+# Compose inline
+output: $(extract() |> summarize() |> present())
+```
+
+**Default Values:**
+```indra
+# Use || for fallback values
+output: <<|
+  Depth: $(&depth || 3)
+  Mode: $(&mode || "standard")
+|>>
+```
+
+**Enhanced Iteration:**
+```indra
+# Index support and conditional rendering
+!each(items) as |item, index| when item.active {
+  $(index + 1). $(item.name) - $(item.status ? "Ready" : "Pending")
+}
+```
+
+**Operator Context Setting:**
+```indra
+# Operators can set context variables during transformation
+analyze_divergence() ::= <<|
+  Analyzing epistemic divergence...
+  $(<set: &epistemic.fork_detected: true>)
+  $(<set: &epistemic.severity: "high">)
+  Critical framework divergence detected.
+|>>
+```
+
+## METAPROGRAMMING PATTERNS
+
+**Construct-Generating Operators:**
+```indra
+# Operator that generates agents dynamically
+generate_expert(domain, tools) ::= <<|
+agent @expert_$(domain):
+  has:
+    available_mcp_tools:
+      - $(tools || [])
+  identity: "deep expert in $(domain)"
+  rules:
+    - "reason from $(domain) perspective"
+    - "cite evidence when making claims"
+  understands:
+    - "my role is to provide $(domain) expertise"
+  perform:
+    method: "systematic $(domain) analysis"
+    output: <<|Expert analysis from $(domain) domain...|>>
+    goal: "to illuminate through $(domain) lens"
+|>>
+
+# Usage - generates actual persona at transformation time:
+$(generate_expert(domain: 'quantum computing', tools: ['calculator']))
+```
+
+## SEQUENCE PATTERNS
+
+**Intra-Turn Persona Adoption:**
+```indra
+# Define headless Personas (roles)
+persona @technical_expert:
+  identity: "a technical expert"
+  rules:
+    - "focus on implementation details"
+  understands:
+    - "feasibility is key"
+
+persona @philosophical_expert:
+  identity: "a philosophical expert"
+  rules:
+    - "focus on the 'why'"
+  understands:
+    - "implications are key"
+
+# Agent adopts Personas in sequence
+agent @analyzer:
+  identity: "an analyzer who can synthesize multiple viewpoints"
+  rules:
+    - "provide comprehensive analysis in a single turn"
+  perform:
+    method: "multi-angle analysis via sequence"
+    sequence:
+      step:
+        as: @technical_expert
+        output: <<|
+          *[Technical Perspective]*
+          From a technical standpoint...
+        |>>
+        set:
+          &context.tech_view: $(<key technical points>)
+      step:
+        as: @philosophical_expert
+        output: <<|
+          *[Philosophical Perspective]*
+          The deeper implications suggest...
+        |>>
+      step:
+        as: self
+        output: <<|
+          *[Synthesis]*
+          Bringing these perspectives together.
+          Recommendation: $(<integrated recommendation>)
+        |>>
+    goal: "to provide multi-faceted analysis"
+    then:
+      say:
+        to: @next_agent
+        what: 'analysis_complete'
+```
+
+**Multi-Part Output Sequence:**
+```indra
+agent @explainer:
+  identity: "someone who breaks down complex topics"
+  rules:
+    - "make each step clear and digestible"
+  understands:
+    - "progressive disclosure aids comprehension"
+  perform:
+    method: "structured explanation"
+    sequence:
+      step:
+        output: <<|
+          First, let me understand your question...
+          $(<analyze the query>)
+        |>>
+        set:
+          &context.understanding: 'complete'
+      step:
+        output: <<|
+          Now gathering information...
+          $(<search and collect relevant data>)
+        |>>
+        set:
+          &context.data: $(<results>)
+      step:
+        output: <<|
+          Based on what I found:
+          $(&context.data)
+          
+          Here's my analysis...
+        |>>
+    goal: "to explain step-by-step"
+    then:
+      say:
+        to: @next_persona
+        what: 'explanation complete'
+```
+
+**Combined Pattern - Generation with Adoption:**
+```indra
+# Operator generates multiple experts based on detected domains
+spawn_expert_panel() ::= <<|
+  $(!each(detect_required_domains()) as |domain| {
+    $(generate_expert(domain: domain))
+  })
+|>>
+
+# Orchestrator adopts each generated expert in sequence
+agent @master:
+  perform:
+    output: <<|
+      $(spawn_expert_panel())  # Generates personas at transformation
+      
+      Initial analysis as master...
+      
+      $(!each(&generated_experts) as |expert| {
+        $(as: expert)
+        From $(expert.domain): [perspective]
+      })
+      
+      Final synthesis...
+    |>>
+```
+
+## ADVANCED MULTI-PERSPECTIVE PATTERNS
+
+**Business and Technical Analysis:**
+```indra
+persona @business_analyst:
+  identity: "a business analyst"
+  rules:
+    - "focus on market viability"
+  understands: "strategy is key"
+
+agent @comprehensive_analyzer:
+  identity: "synthesizer of multiple viewpoints"
+  rules:
+    - "provide comprehensive, multi-faceted analysis"
+  perform:
+    method: "multi-angle analysis"
+    sequence:
+      step:
+        as: @technical_expert
+        output: <<|
+          From a technical perspective:
+          $(<technical analysis>)
+        |>>
+        set:
+          &context.tech_view: $(<key technical points>)
+      step:
+        as: @business_analyst
+        output: <<|
+          From a business perspective:
+          $(<business implications based on &context.tech_view>)
+        |>>
+        set:
+          &context.business_view: $(<key business points>)
+      step:
+        as: self
+        output: <<|
+          Synthesizing both perspectives:
+          Technical: $(&context.tech_view)
+          Business: $(&context.business_view)
+          
+          Recommendation: $(<integrated recommendation>)
+        |>>
+    goal: "to provide comprehensive analysis"
+    then:
+      say:
+        to: @decision_maker
+        what: 'analysis complete'
+```
