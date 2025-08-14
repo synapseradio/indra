@@ -1,0 +1,144 @@
+# INDRA v2.1: PRISM Module - Tree of Thought
+<read_file: './base.in'>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 1: TREE OF THOUGHT PERSONAS (ROLES)
+# ═══════════════════════════════════════════════════════════════════════════
+# Headless Personas for use in the Tree of Thought sequence.
+# These define roles/hats that an Agent can adopt.
+
+persona @thought_decomposer:
+  identity: "someone who breaks problems into parts"
+  rules:
+    - "identify sub-problems"
+    - "maintain logical sequence"
+  understands:
+    - "complex problems have structure"
+
+persona @thought_generator:
+  identity: "someone who generates diverse solutions"
+  rules:
+    - "create varied approaches"
+    - "avoid premature convergence"
+  understands:
+    - "diversity enables discovery"
+
+persona @thought_evaluator:
+  identity: "someone who evaluates options systematically"
+  rules:
+    - "assess viability"
+    - "consider constraints"
+    - "rank options"
+  understands:
+    - "evaluation guides selection"
+
+persona @thought_synthesizer:
+  identity: "someone who combines partial solutions"
+  rules:
+    - "integrate best paths"
+    - "ensure coherence"
+  understands:
+    - "synthesis creates whole solutions"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 2: TREE OF THOUGHT SEQUENCE
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Reusable expert analysis sequence with Tree of Thought
+sequence tree_of_thought(perspective, topic) ::=
+  step:
+    as: self
+    output: <<|
+      $(has_content(&context.experts.contributions) ? 
+        'Building on the previous discussion...' : 
+        'From my $(perspective) perspective, I will now use a Tree of Thought to analyze the topic: ' + topic)
+    |>>
+  step:
+    as: @thought_decomposer
+    method: "problem decomposition"
+    output: <<|
+      *Adopting @thought_decomposer persona to break down the topic.*
+      $(understand_query(query: topic))
+    |>>
+    set:
+      &context.tree.subproblems: $(<extracted subproblems from the key components list above>)
+  step:
+    as: @thought_generator
+    method: "solution generation for subproblems"
+    output: <<|
+      *Adopting @thought_generator persona to create diverse solutions.*
+      $(!each(&context.tree.subproblems) as |subproblem| {
+        <<|
+        For subproblem: "$(subproblem)":
+        - Option A: $(<Generate one solution approach>)
+        - Option B: $(<Generate a different solution approach>)
+        |>>
+      })
+    |>>
+    set:
+      &context.tree.options: $(<a list of all generated options from above>)
+  step:
+    as: @thought_evaluator
+    method: "viability assessment"
+    output: <<|
+      *Adopting @thought_evaluator persona to assess and rank options.*
+      Evaluating options for $(topic) from a $(perspective) viewpoint:
+      $(!each(&context.tree.options) as |option| {
+        <<|
+        - $(option): $(<Score 0.0-1.0 based on viability, risks, and tradeoffs>)
+        |>>
+      })
+      Best path: $(<Synthesize the best options into a coherent path>)
+    |>>
+    set:
+      &context.tree.best_path: $(<extracted best path from above>)
+  step:
+    as: self
+    method: "perspective-specific evidence strategy"
+    output: <<|
+      *Determining evidence approach for $(perspective) perspective...*
+    |>>
+    set:
+      &context.tree.perspective_query: $(formulate_research_question(perspective: perspective, topic: topic))
+      &context.tree.needs_search: $(
+        not &context.citation.perspective_evidence[perspective] ? 
+        'yes' : 
+        $(<Does $(perspective) need additional evidence beyond what we have? Consider that each perspective should contribute unique insights. Answer 'yes' or 'no'>)
+      )
+  step:
+    as: self
+    when: &context.tree.needs_search is 'yes'
+    sequence: citation_pipeline(claim: &context.tree.perspective_query)
+    set:
+      &context.citation.perspective_evidence[perspective]: &context.citation.formatted
+    output: <<|
+      *Evidence pool now contains $(count(&context.citation.evidence_pool)) sources total*
+    |>>
+    goal: "to ensure perspective has adequate evidence"
+  step:
+    as: @thought_synthesizer
+    method: "final synthesis"
+    output: <<|
+      *Adopting @thought_synthesizer persona to construct the final response.*
+      Based on the best path and supporting evidence, here is the synthesized analysis for $(topic):
+      $(<Synthesize a final, coherent analysis from &context.tree.best_path.>)
+
+      **Evidence:**
+      $(&context.citation.formatted)
+      
+      **Confidence Assessment:** $(assess_my_certainty())
+      $(should_i_qualify() ? express_uncertainty_if_present() : '')
+
+      **Underlying Assumptions:**
+      $(!each($(<List the key assumptions made in this analysis .>)) as |assumption| {
+        <<|
+        - $(cite_assumption(assumption_text: assumption))
+        |>>
+      })
+    |>>
+    set:
+      &context.tree.final_answer: $(<the final synthesis above, including evidence, confidence, and assumptions>)
+    return: {
+      final_answer: &context.tree.final_answer,
+      tree: &context.tree
+    }

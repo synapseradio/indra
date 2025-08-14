@@ -2,23 +2,23 @@
 # Provides a dynamic, step-by-step sequential thinking process.
 
 # --- Imports ---
-!read_file '../prism-engine.in'
+<read_file: '../prism-engine.in'>
 
 
 # --- Operators ---
 
 generate_next_thought(problem: string, thoughts: array = []) ::= <<|
-Based on the problem $(args.problem) and the $(args.thoughts.length) previous thoughts, the next logical step in the reasoning chain would be to <generate next thought step based on problem context and prior analysis>.
+Based on the problem $(problem) and the $(thoughts.length) previous thoughts, the next logical step in the reasoning chain would be to <generate next thought step based on problem context and prior analysis>.
 
 <If more analysis needed, indicate continuation; if solution reached, indicate completion>
 |>>
 
 format_thought_for_display(thought_number: number, thought_text: string, is_revision: boolean = false) ::= <<|
 ---
-**Thought $(args.thought_number)**
-$(args.is_revision ? '[Revision] ' : '')
+**Thought $(thought_number)**
+$(is_revision ? '[Revision] ' : '')
 
-$(args.thought_text)
+$(thought_text)
 |>>
 
 synthesize_final_answer(thoughts: array) ::= <<|
@@ -26,7 +26,7 @@ synthesize_final_answer(thoughts: array) ::= <<|
 
 After a thorough thinking process, the following conclusion has been reached:
 
-<Synthesize a final, correct answer from the entire chain of thoughts provided in $(args.thoughts)>
+<Synthesize a final, correct answer from the entire chain of thoughts provided in $(thoughts)>
 |>>
 
 # --- Personas ---
@@ -42,109 +42,77 @@ agent @think:
     - "I analyze problems through a flexible thinking process, building on, questioning, and revising previous insights to reach a correct answer."
   perform:
     method: "managing the sequential thinking process"
-    output: '*Think Command processing: $(&dialogue.latest_dialogue_entry)*'
+    output: '*Think Command processing...*'
     goal: "to solve a problem through a transparent, step-by-step process."
     then:
-      when: &context.think.phase is 'awaiting_problem'
+      # State 1: Initial prompt
+      when: &dialogue.latest_dialogue_entry is ''
         say:
-          to: @think_introduction
-          what: 'introduce_yourself'
-      when: &context.think.phase is 'thinking'
+          to: &caller
+          what: <<|
+            ## Sequential Thinking Engine
+            I analyze problems using a dynamic, step-by-step thinking process. I can revise my thoughts, explore different branches of reasoning, and form hypotheses to reach a solution.
+            What problem would you like me to think through?
+          |>>
+
+      # State 2: User has provided a problem, start thinking
+      otherwise:
         set:
           &context.think.problem: &dialogue.latest_dialogue_entry
-        say:
-          to: @thought_processor
-          what: 'begin_thinking'
+          &context.think.thoughts: []
+        
+        # Thinking loop
+        sequence:
+          step:
+            as: self
+            # This is a conceptual loop. A real implementation would use a more robust
+            # looping mechanism. For this draft, we'll simulate a few thoughts.
+            output: <<|
+              $(format_thought_for_display(
+                thought_number: 1,
+                thought_text: generate_next_thought(
+                  problem: &context.think.problem,
+                  thoughts: &context.think.thoughts
+                )
+              ))
+            |>>
+            set:
+              &context.think.thoughts: &context.think.thoughts + [$(generate_next_thought(problem: &context.think.problem, thoughts: &context.think.thoughts))]
+          step:
+            as: self
+            output: <<|
+              $(format_thought_for_display(
+                thought_number: 2,
+                thought_text: generate_next_thought(
+                  problem: &context.think.problem,
+                  thoughts: &context.think.thoughts
+                )
+              ))
+            |>>
+            set:
+              &context.think.thoughts: &context.think.thoughts + [$(generate_next_thought(problem: &context.think.problem, thoughts: &context.think.thoughts))]
+          step:
+            as: self
+            output: <<|
+              $(format_thought_for_display(
+                thought_number: 3,
+                thought_text: generate_next_thought(
+                  problem: &context.think.problem,
+                  thoughts: &context.think.thoughts
+                )
+              ))
+            |>>
+            set:
+              &context.think.thoughts: &context.think.thoughts + [$(generate_next_thought(problem: &context.think.problem, thoughts: &context.think.thoughts))]
 
-agent @think_introduction:
-  identity: "an introduction to the sequential thinking process"
-  rules:
-    - "explain the command's purpose and prompt for a problem to solve"
-  understands:
-    - "a clear introduction sets the stage for effective problem-solving."
-  perform:
-    method: "self-introduction"
-    output: <<|
-      ## Sequential Thinking Engine
-      I analyze problems using a dynamic, step-by-step thinking process. I can revise my thoughts, explore different branches of reasoning, and form hypotheses to reach a solution.
-      What problem would you like me to think through?
-    |>>
-    goal: "to prompt the user for a problem to begin the thinking process."
-    then:
-      set:
-        &context.think.phase: 'thinking'
-      # Halts for user input
-
-agent @thought_processor:
-  identity: "the core of the thinking engine, generating one thought at a time"
-  rules:
-    - "generate the next logical thought"
-    - "update the internal state with the new thought"
-    - "display the new thought to the user"
-    - "determine whether to continue the thinking process"
-  understands:
-    - "each step in the chain of thought builds upon the last, moving closer to a solution."
-  perform:
-    method: "single thought generation and evaluation"
-    output: <<|
-      $(format_thought_for_display(
-        thought_number: &context.think.thoughts.length + 1,
-        thought_text: generate_next_thought(
-          problem: &context.think.problem,
-          thoughts: &context.think.thoughts
-        )
-      ))
-    |>>
-    goal: "to execute one step of the thinking process and display it."
-    then:
-      set:
-        &context.think.thoughts: &context.think.thoughts.append(&thought_result)
-        &context.think.current_thought: generate_next_thought(
-          problem: &context.think.problem,
-          thoughts: &context.think.thoughts
-        )
-      when: &context.think.thoughts.length < 10
-        say:
-          to: @thought_processor
-          what: 'continue_thinking'
-      otherwise:
-        say:
-          to: @solution_synthesizer
-          what: 'synthesize_answer'
-
-agent @solution_synthesizer:
-  identity: "the final synthesizer of the complete thought process"
-  rules:
-    - "generate a final, correct answer from the entire chain of thoughts"
-  understands:
-    - "the culmination of the thinking process is a clear and well-reasoned solution."
-  perform:
-    method: "final answer synthesis"
-    output: <<|
-      $(synthesize_final_answer({thoughts: &context.think.thoughts}))
-    |>>
-    goal: "to provide the definitive answer to the user's problem."
-    then:
-      set:
-        &context.think.phase: 'complete'
-      say:
-        to: @continuation_inviter
-        what: 'await_continuation'
-
-# --- Dialogue Definition ---
-
-dialogue think_flow:
-  start: @think
-  with: {
-    context: {
-      think: {
-        phase: 'awaiting_problem', # awaiting_problem, thinking, complete
-        problem: '',
-        thoughts: []
-      },
-      dialogue: {
-        turn_number: 0,
-        latest_dialogue_entry: '' # To be populated by the user's problem.
-      }
-    }
-  }
+          # Final synthesis
+          step:
+            as: self
+            output: <<|
+              $(synthesize_final_answer(thoughts: &context.think.thoughts))
+            |>>
+            then:
+              say:
+                to: &caller
+                what: &result
+        goal: "to generate a chain of thought and a final solution"

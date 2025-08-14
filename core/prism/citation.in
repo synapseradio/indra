@@ -1,0 +1,116 @@
+# INDRA v2.1: PRISM Module - Citation Pipeline
+<read_file: './base.in'>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 1: CITATION SEQUENCE & OPERATORS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Reusable sequence to gather, validate, and format citations for a claim.
+sequence citation_pipeline(claim) ::=
+  step:
+    as: self
+    method: "checking search overlap"
+    output: <<|
+      *Analyzing if "$(claim)" requires new evidence beyond our pool...*
+    |>>
+    set:
+      &context.citation.similarity_score: $(
+        has_content(&context.citation.search_history) == 'true' ?
+        $(<
+          Compare "$(claim)" to &context.citation.search_history. 
+          Return a score 0.0-1.0 where 1.0 means identical query, 0.0 means completely novel.
+        >) : 
+        0.0
+      )
+  step:
+    as: self
+    when: &context.citation.similarity_score less_than 0.7
+    method: "evidence gathering via tool invocation"
+    output: <<|
+      *Gathering additional evidence for novel angle: "$(claim)"*
+      $(<use perplexity mcp to search for $(claim)>)
+    |>>
+    goal: "to expand evidence pool with new perspectives"
+    set:
+      &context.citation.raw_results: $(<tool results from the search above>)
+      &context.citation.search_history: &context.citation.search_history + [claim]
+  step:
+    as: self
+    when: &context.citation.similarity_score less_than 0.7
+    method: "merging into evidence pool"
+    output: <<|
+      *Adding new sources to evidence pool...*
+    |>>
+    set:
+      &context.citation.evidence_pool: $(merge_unique_evidence(
+        existing: &context.citation.evidence_pool,
+        new: &context.citation.raw_results
+      ))
+  step:
+    as: self
+    method: "selecting relevant evidence from pool"
+    output: <<|
+      *Selecting most relevant evidence from pool of $(
+        has_content(&context.citation.evidence_pool) == 'true' ? 
+        count(&context.citation.evidence_pool) : 
+        count(&context.citation.raw_results)
+      ) sources...*
+    |>>
+    set:
+      &context.citation.filtered_results: $(
+        has_content(&context.citation.evidence_pool) == 'true' ?
+        select_relevant_evidence(
+          pool: &context.citation.evidence_pool,
+          query: claim,
+          max_items: 8
+        ) :
+        filter_for_primary_sources(results: &context.citation.raw_results)
+      )
+      &context.citation.formatted: $(format_citations(results: &context.citation.filtered_results))
+      &context.citation.validated: true
+
+# Operator to filter for high-quality, primary sources and deduplicate by URL
+filter_for_primary_sources(results) ::= <
+Given the results in $(results) return a new set that has been filtered to meet two criteria:
+1.  **Uniqueness:** Only include objects with a unique 'url' field. Keep the first occurrence of each URL.
+2.  **Source Quality:** Exclude results from low-quality or non-primary sources such as social media (e.g., Instagram, Twitter, TikTok), content farms or QA sites (e.g., GoodNovel, Quora), and personal blogs unless they are widely recognized as an expert source. Prioritize academic journals, reputable news organizations, university websites, and established publications.
+
+once done, output the new results.
+>
+
+
+# Operator to format citations from raw results
+format_citations(results) ::= <<|
+  $(!each(results) as |result, index| {
+    <<|$(index + 1). [$(result.title)]($(result.url))|>>
+  })
+|>>
+
+# Operator to assess citation quality
+assess_quality(results) ::= <<|
+  Sources found: $(<count the sources in &context.citation.raw_results>)
+  Credibility: $(<evaluate &context.citation.raw_results - are these primary sources? recognized authors? peer-reviewed? reputable publications?>)
+  Diversity: $(<assess variety of perspectives in &context.citation.raw_results - different domains? competing viewpoints? geographic spread?>)
+|>>
+
+# Operator to merge evidence while maintaining uniqueness and quality
+merge_unique_citations(existing, new) ::= <<|
+  $(<
+    Merge $(new) into $(existing) by:
+    1. Remove duplicates by URL
+    2. Keep higher quality version if duplicate
+    3. Maintain diversity of sources
+    Return merged array
+  >)
+|>>
+
+# Operator to select most relevant evidence for specific claim
+select_relevant_citations(pool, query, max_items) ::= <<|
+  $(<
+    From $(pool), select up to $(max_items) most relevant sources for "$(query)":
+    1. Prioritize direct relevance to query
+    2. Ensure source diversity (different domains/perspectives)
+    3. Balance recency with authority
+    Return selected items as array
+  >)
+|>>

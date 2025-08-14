@@ -35,7 +35,7 @@ agent @convert:
         resolved_content: ''
     identity: "an INDRA to Markdown prompt converter"
     rules:
-      - "recursively resolve all `!read_file` imports before parsing"
+      - "recursively resolve all `!read_file:` imports before parsing"
       - "parse INDRA behavioral specifications accurately"
       - "transform into clear, executable markdown prompts for non-INDRA LLMs"
       - "preserve the intent and constraints of the original"
@@ -79,7 +79,7 @@ agent @convert_introduction:
       method: "capability introduction"
       output: <<|
         ## INDRA → Markdown Converter
-        I convert INDRA behavioral specifications into markdown prompts, automatically resolving all `!read_file` imports.
+        I convert INDRA behavioral specifications into markdown prompts, automatically resolving all `!read_file:` imports.
         **Options:**
         - Provide an INDRA file path to convert.
         - Target specific components with `@component_name`.
@@ -102,7 +102,7 @@ agent @convert_introduction:
     identity: "an INDRA file reader with recursive import resolution"
     rules:
       - "read the target file content"
-      - "recursively read and inline all `!read_file` imports"
+      - "recursively read and inline all `!read_file:` imports"
       - "prevent infinite import loops"
     understands: "a complete, inlined specification is required for accurate parsing."
     perform:

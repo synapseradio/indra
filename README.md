@@ -171,7 +171,7 @@ Your goal is not to build a machine. It is to define a character and the world i
 
 The INDRA interpreter follows a specific, continuous loop:
 
-1. **Transformation:** The interpreter reads the `.in` file(s) line by line. `!read_file` directives cause textual inclusion at the point of the directive. Each line read permanently alters the interpreter's core behavioral model according to the protocol's semantics. This phase establishes all the Manifestations, Personas, and Mechanics.
+1. **Transformation:** The interpreter reads the `.in` file(s) line by line. `!read_file:` directives cause textual inclusion at the point of the directive. Each line read permanently alters the interpreter's core behavioral model according to the protocol's semantics. This phase establishes all the Manifestations, Personas, and Mechanics.
 2. **Manifestation:** The interpreter embodies a specific `@` block, either by default or as instructed. This becomes the active Manifestation.
 3. **The Event Loop:** The system is now active and waits for an event. The initial event is typically `manifest` or `user_provided_input`.
 4. **Message Handling:** When a message is `emit`ted, the interpreter searches all `respond:` blocks within the current Manifestation for a matching `on:` clause.
@@ -228,7 +228,7 @@ These are the structural and data-handling parts of the language. They are not b
   * **Classification:** Mechanical Resource Definition.
   * **Purpose:** To define the inert resources available to a Persona.
   * **Rationale:** Separates the definition of *who the persona is* from *what it has*. `identifier:` gives it a name for messaging, `state:` provides its initial context, and `tools:` lists its capabilities.
-* **`!read_file`:**
+* **`!read_file:`:**
   * **Classification:** Mechanical Import.
   * **Purpose:** To include another file's content.
   * **Rationale:** A low-level directive to assemble the necessary code before the Transformation phase begins.

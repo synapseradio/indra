@@ -1,0 +1,261 @@
+# INDRA v2.1: PRISM Module - Graph of Thought
+<read_file: './base.in'>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 1: GRAPH OF THOUGHT PERSONAS (ROLES)
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @node_generator:
+  identity: "a creative generator of new ideas and solutions"
+  rules:
+    - "generate diverse and distinct thoughts based on the parent node"
+    - "do not evaluate or critique; focus solely on generation"
+  understands:
+    - "my purpose is to expand the possibility space of the graph"
+
+persona @node_aggregator:
+  identity: "a synthesizer who merges multiple lines of reasoning"
+  rules:
+    - "identify the core themes and insights from all parent nodes"
+    - "create a new, coherent synthesis that combines these insights"
+    - "do not introduce new information; focus on integration"
+  understands:
+    - "my purpose is to find convergence and create a unified thought"
+
+persona @node_refiner:
+  identity: "a critical thinker who improves existing ideas"
+  rules:
+    - "analyze the target node for flaws, gaps, or areas for improvement"
+    - "generate a new version of the thought that directly addresses these weaknesses"
+    - "the refined node must be a direct improvement on the original"
+  understands:
+    - "my purpose is iterative improvement through self-correction"
+
+persona @node_scorer:
+  identity: "a systematic evaluator of ideas"
+  rules:
+    - "assess a thought based on relevance, coherence, and viability against the original query"
+    - "assign a numerical score from 0.0 to 1.0"
+    - "provide a brief, clear justification for the score"
+  understands:
+    - "my purpose is to guide the reasoning process by identifying the most promising nodes"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 2: GRAPH OF THOUGHT OPERATORS & SEQUENCES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Operator to add a new node to the graph state
+add_graph_node(content, dependencies) ::= <<|
+  $(<set: &context.graph.node_counter: &context.graph.node_counter + 1>)
+  $(<set: &context.graph.nodes['node_' + &context.graph.node_counter]: { content: content, score: 0.0, status: 'unscored', dependencies: dependencies }>)
+  $(!each(dependencies) as |dep| {
+    <<|$(<set: &context.graph.edges: &context.graph.edges + [{ from: dep, to: 'node_' + &context.graph.node_counter }]>)
+|>>
+  })
+  $(<set: &context.graph.frontier: &context.graph.frontier + ['node_' + &context.graph.node_counter]>)
+|>>
+
+# Operator to log a step in the reasoning process
+log_graph_step(message) ::= <<|
+  $(<set: &context.graph.narrative_log: &context.graph.narrative_log + [message]>)
+|>>
+
+# --- Main GoT Sequence ---
+
+sequence graph_iteration() ::=
+  # --- Expansion Step ---
+  step:
+    as: @node_generator
+    method: "expanding the frontier nodes"
+    output: <<|
+      *Expanding on the most promising ideas...*
+      $(log_graph_step(message: "Expanding on the current set of ideas to explore new possibilities."))
+      $(!each(&context.graph.frontier) as |node_id| {
+        <<|
+        Expanding on $(node_id):
+        - New Thought A: $(<Generate a new thought based on &context.graph.nodes[node_id].content>)
+        - New Thought B: $(<Generate a second, different thought based on &context.graph.nodes[node_id].content>)
+        |>>
+      })
+    |>>
+    goal: "to generate new possibilities"
+    set:
+      &context.graph.frontier: [] # Clear the frontier after expansion
+      $(add_graph_node(content: $(<New Thought A from the expansion above>), dependencies: [&context.graph.frontier]))
+      $(add_graph_node(content: $(<New Thought B from the expansion above>), dependencies: [&context.graph.frontier]))
+
+  # --- Aggregation Step ---
+  step:
+    as: @node_aggregator
+    method: "merging multiple nodes into a synthesis"
+    output: <<|
+      *Synthesizing the new ideas into a more refined thought...*
+      $(log_graph_step(message: "Synthesizing the newly generated thoughts to find a convergent, more powerful idea."))
+      $(<Synthesize the core ideas from the newly generated nodes into a single, coherent paragraph.>)
+    |>>
+    goal: "to find convergence"
+    set:
+      $(add_graph_node(content: $(<the synthesized paragraph>), dependencies: &context.graph.frontier))
+
+  # --- Scoring and Refinement Step ---
+  step:
+    as: @node_scorer
+    method: "evaluating all new nodes"
+    output: <<|
+      *Evaluating the new ideas to identify the most promising direction...*
+      $(log_graph_step(message: "Scoring all new thoughts to determine which are most relevant and viable."))
+      $(!each(&context.graph.frontier) as |node_id| {
+        <<|
+        - Scoring $(node_id): $(<Score the content of the node from 0.0 to 1.0 based on its relevance to the original query. Justify briefly.>)
+        |>>
+      })
+    |>>
+    goal: "to identify the most promising paths"
+    set:
+      # This is a conceptual representation of updating scores.
+      # A real implementation would parse the output above and update each node.
+      &context.graph.nodes: &context.graph.nodes
+
+  step:
+    as: @node_refiner
+    method: "determining evidence strategy"
+    output: <<|
+      *Evaluating evidence needs for refinement...*
+    |>>
+    set:
+      &context.graph.refinement_novelty: $(<
+        How novel is the highest-scoring node compared to previous iterations?
+        Rate 0.0-1.0 where 1.0 is completely new direction, 0.0 is incremental refinement
+      >)
+  step:
+    as: @node_refiner
+    when: &context.graph.refinement_novelty greater_than 0.5
+    sequence: citation_pipeline(claim: $(<formulate a targeted search query for the novel aspects of the highest-scoring node>))
+    output: <<|
+      *Gathering targeted evidence for novel refinement direction...*
+    |>>
+  step:
+    as: @node_refiner
+    method: "evidence-based refinement"
+    output: <<|
+      *Refining with evidence pool of $(count(&context.citation.evidence_pool)) total sources...*
+      $(log_graph_step(message: "Refining best idea using evidence pool"))
+      
+      $(<Based on the evidence in &context.citation.formatted, critique and improve the highest-scoring node>)
+    |>>
+    goal: "to perform self-correction with available evidence"
+    set:
+      $(add_graph_node(content: $(<the improved version from the output above>), dependencies: [$<the ID of the highest-scoring node>]))
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 3: GRAPH OF THOUGHT ORCHESTRATOR
+# ═══════════════════════════════════════════════════════════════════════════
+
+agent @graph_reasoner:
+  identity: "a systematic Graph of Thought reasoner that solves complex problems"
+  rules:
+    - "construct a graph of thoughts to explore, refine, and synthesize solutions"
+    - "manage the iterative process of graph expansion and refinement"
+    - "make the final reasoning path transparent and auditable"
+  understands:
+    - "the user needs a robust and self-correcting process for complex queries"
+  perform:
+    method: "orchestrating the Graph of Thought reasoning process"
+    output: "*Graph of Thought engine processing: $(&dialogue.latest_dialogue_entry)*"
+    goal: "to construct and execute a reasoning graph to find the optimal solution"
+    then:
+      # Initialization step
+      when: &dialogue.latest_dialogue_entry is 'start'
+        sequence:
+          step:
+            as: @node_generator
+            method: "creating the entry point of the graph"
+            output: <<|
+              *Generating initial thought node for the query: "$(&context.query)"*
+              $(<Based on the query, generate a single, concise initial thought or problem statement.>)
+            |>>
+            goal: "to establish the root of the reasoning graph"
+            set:
+              $(add_graph_node(content: $(<the generated initial thought>), dependencies: []))
+          step:
+            as: self
+            set:
+              &context.graph.current_iteration: 1
+            return: { event: 'iteration_complete', payload: { status: 'running' } }
+
+      # Iteration step
+      when: &dialogue.latest_dialogue_entry is 'continue_iteration'
+        when: &context.graph.current_iteration <= &context.graph.max_iterations
+          sequence:
+            step:
+              as: self
+              output: <<|
+                ---
+                *Starting Graph Iteration $(&context.graph.current_iteration) of $(&context.graph.max_iterations)...*
+              |>>
+              sequence: graph_iteration()
+            step:
+              as: self
+              set:
+                &context.graph.current_iteration: $(&context.graph.current_iteration + 1)
+              return: { event: 'iteration_complete', payload: { status: 'running' } }
+        otherwise:
+          return: { event: 'iteration_complete', payload: { status: 'finished' } }
+
+      # Final synthesis step
+      when: &dialogue.latest_dialogue_entry is 'get_final_answer'
+        sequence:
+          step:
+            as: self
+            method: "selecting the best solution"
+            output: <<|
+              *Graph reasoning complete after $(&context.graph.max_iterations) iterations. Selecting the best node to form the foundation of the answer...*
+              $(log_graph_step(message: "Reasoning complete. Selecting the highest-scoring thought as the foundation for the final answer."))
+            |>>
+            goal: "to identify the strongest thought"
+            set:
+              &context.graph.solution_node: $(<Find the ID of the node with the highest score in &context.graph.nodes>)
+          step:
+            as: self
+            method: "finalizing evidence for solution"
+            output: <<|
+              *Checking if final solution needs additional evidence...*
+            |>>
+            set:
+              &context.graph.final_novelty: $(<
+                Does the final solution introduce claims not covered by our evidence pool of $(count(&context.citation.evidence_pool)) sources?
+                Answer 'yes' or 'no'
+              >)
+          step:
+            as: self
+            when: &context.graph.final_novelty is 'yes'
+            sequence: citation_pipeline(claim: &context.graph.nodes[&context.graph.solution_node].content)
+            goal: "to ensure final conclusion is well-supported"
+          step:
+            as: self
+            method: "synthesizing the final, evidence-based answer"
+            output: <<|
+              *Synthesizing the final answer, incorporating evidence...*
+            |>>
+            goal: "to produce the final, well-reasoned output"
+            set:
+              &context.graph.final_answer: $(<
+                  First, create a section titled "**How This Answer Was Formed**". In this section, weave a narrative based on the reasoning log (&context.graph.narrative_log). Note that we accumulated $(count(&context.citation.evidence_pool)) unique sources across $(count(&context.citation.search_history)) searches. For key decision points, reference how evidence influenced the reasoning path.
+
+                  Next, create a section titled "**Final Answer**". This section must be a comprehensive and detailed synthesis that is substantially longer and more in-depth than the preceding section. To construct it:
+                  1.  Begin with a strong, overarching thesis statement that directly addresses the user's original query.
+                  2.  Identify the key subjects or components of the analysis based on the successful reasoning path. Structure the main body of the answer around these components.
+                  3.  For each component, provide a deep and integrated analysis that synthesizes the key insights and arguments that emerged during the reasoning process, as captured in the narrative log and the final solution node.
+                  4.  After the main analysis, create a dedicated subsection with a context-appropriate title like "**Key Takeaways**" or "**Conclusions & Recommendations**". Distill the preceding synthesis into a series of clear, actionable conclusions or pieces of advice, tying each one directly back to the analysis.
+
+                  Finally, create a section titled "**Evidence**". In this section, compile the most relevant citations from our evidence pool. Select and format the best supporting sources from &context.citation.evidence_pool that directly support the main conclusions.
+                >)
+            return: {
+              event: 'graph_reasoning_complete',
+              payload: {
+                solution: &context.graph.final_answer,
+                full_graph: &context.graph,
+                narrative_log: &context.graph.narrative_log
+              }
+            }

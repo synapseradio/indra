@@ -21,7 +21,7 @@ persona @citation_collector:
     - "collection quality determines reasoning credibility"
 
 # Another file imports and uses this persona
-!read_file './shared/citations.in'
+<read_file: './shared/citations.in'>
 
 agent @researcher:
   identity: "a researcher who properly cites sources"
@@ -208,7 +208,7 @@ agent @simple_engine:
         what: "help_requested"
 
 # my-command.in
-!read_file './my-engine.in'
+<read_file: './my-engine.in'>
 
 agent @help_handler:
   identity: "a help provider"

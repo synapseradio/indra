@@ -36,7 +36,7 @@ has:
 **Use single quotes when:**
 - Defining event names for `say:` actions.
 - Listing tool identifiers in `available_mcp_tools:`.
-- Providing a file path in `!read_file`.
+- Providing a file path in `!read_file:`.
 - Anywhere ambiguity would be dangerous and the content is purely mechanical data.
 
 **Philosophy:** **Control.** This is you telling the interpreter, "This is a literal string. Do not interpret it, do not change it. Use it as-is."
