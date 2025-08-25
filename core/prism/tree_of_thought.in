@@ -1,7 +1,7 @@
 # INDRA v2.1: PRISM Module - Tree of Thought 
 # A natural, modular approach to exploratory thinking
-<read_file: './base.in'>
-<read_file: './thinking_primitives.in'>
+>>read_file: './base.in'<<
+>>read_file: './thinking_primitives.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
 # MAIN TREE OF THOUGHT SEQUENCE - Natural, Conversational Flow
@@ -22,7 +22,7 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
       &context.tree.exploration_style: exploration_style
       &context.tree.thoughts_so_far: []
       &context.tree.current_depth: 0
-      &context.tree.journey: ['Started wondering about: ' + question]
+      &context.tree.journey: ['Started wondering about the question']
   
   # Initial wondering
   step:
@@ -33,7 +33,7 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     |>>
     set:
       &context.tree.current_focus: $(<the wondering>)
-      &context.tree.thoughts_so_far: &context.tree.thoughts_so_far + [&context.tree.current_focus]
+      &context.tree.thoughts_so_far: [&context.tree.current_focus]
   
   # Explore based on style
   step:
@@ -57,11 +57,22 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
       num_options: 3
     )
     store_in: &context.tree.alternatives_result
+    # Check what we're assuming in our alternatives
+    await: check_assumptions(
+      understanding: &context.tree.alternatives_result.branches
+    )
+    store_in: &context.tree.assumptions_check
     output: <<|
       I see several possibilities here...
+      
+      Let me check what I'm assuming:
+      - Evidence-based: $(context.tree.assumptions_check.evidence_based)
+      - Assumptions: $(context.tree.assumptions_check.assumptions)
+      $(context.tree.assumptions_check.blind_spots ? 
+        '- Not considering: $(context.tree.assumptions_check.blind_spots)' : '')
     |>>
     set:
-      &context.tree.thoughts_so_far: &context.tree.thoughts_so_far + &context.tree.alternatives_result.branches
+      &context.tree.thoughts_so_far: &context.tree.alternatives_result.branches
   
   # Deepen understanding
   step:
@@ -76,7 +87,32 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
       Following this thread deeper...
     |>>
     set:
-      &context.tree.thoughts_so_far: &context.tree.thoughts_so_far + [&context.tree.depth_result.deepened]
+      &context.tree.thoughts_so_far: [&context.tree.depth_result.deepened]
+  
+  # Identify open questions that need evidence
+  step:
+    as: self
+    method: "identifying knowledge gaps"
+    output: <<|
+      Looking at what I've explored, I need evidence for:
+      $(<Based on &context.tree.thoughts_so_far, what specific factual questions or claims need evidence?>)
+    |>>
+    set:
+      &context.tree.open_questions: $(<list of specific questions needing evidence>)
+  
+  # Gather evidence for identified questions
+  step:
+    as: self
+    when: has_content(&context.tree.open_questions) is 'true'
+    method: "evidence gathering for open questions"
+    each: &context.tree.open_questions as |question| {
+      sequence: citation_pipeline(claim: question)
+      set:
+        &context.citation.perspective_evidence[&context.experts.current_speaker]: &context.citation.formatted
+    }
+    output: <<|
+      *Gathered evidence for the identified open questions*
+    |>>
   
   # Check for repetition
   step:
@@ -101,7 +137,7 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     |>>
     set:
       &context.tree.current_focus: $(<the new direction>)
-      &context.tree.thoughts_so_far: &context.tree.thoughts_so_far + [&context.tree.current_focus]
+      &context.tree.thoughts_so_far: [&context.tree.current_focus]
   
   # Reflect and synthesize
   step:
@@ -112,20 +148,42 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
       Looking at the whole picture now...
     |>>
   
+  # Epistemic self-check before synthesis
+  step:
+    as: self
+    method: "epistemic self-assessment"
+    output: <<|
+      Let me check my reasoning:
+      - Am I overconfident about any claims? $(<Review &context.tree.thoughts_so_far for claims that exceed available evidence>)
+      - What assumptions am I making? $(<Identify implicit assumptions in &context.tree.thoughts_so_far>)
+      - Where are my knowledge boundaries? $(<What questions remain unanswered or uncertain?>)
+    |>>
+    set:
+      &context.tree.epistemic_assessment: $(<summary of the epistemic check above>)
+  
   # Final synthesis
   step:
     as: @synthesizer
     method: "creating coherent understanding"
+    # First check if our synthesis is too neat
+    await: check_story_quality(
+      narrative: $(connect_dots(thoughts: &context.tree.thoughts_so_far))
+    )
+    store_in: &context.tree.story_check
     output: <<|
       Through this exploration, here's what I've discovered:
       
-      $(connect_dots(thoughts: &context.tree.thoughts_so_far))
+      $(context.tree.story_check.too_neat is 'yes' ? 
+        'Actually, this might be too neat. Let me include the complications:
+        $(context.tree.story_check.missing_complexity)
+        
+        ' : '')$(connect_dots(thoughts: &context.tree.thoughts_so_far))
       
       $(&context.tree.reflection.synthesis)
       
       To directly address your question: $(<
-        Based on everything explored, provide a clear, 
-        conversational answer to the original question.
+        Based on everything explored, provide a clear answer
+        that acknowledges uncertainty where appropriate.
       >)
     |>>
     set:

@@ -1,5 +1,5 @@
 # INDRA v2.2: PRISM Module - Multi-Perspective Dialogue
-<read_file: './base.in'>
+>>read_file: './base.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
 # SECTION 1: DIALOGUE ORCHESTRATION SEQUENCE
@@ -10,6 +10,7 @@ sequence multi_perspective_dialogue(perspectives) ::=
     as: self
     # Dynamically load the reasoning strategy that the experts will use.
     read_file: './tree_of_thought.in'
+    read_file: './citation.in'
   step:
     as: self
     method: "gathering expert contributions"
@@ -26,10 +27,10 @@ sequence multi_perspective_dialogue(perspectives) ::=
         &context.experts.current_speaker: perspective
         
       # Explicitly tell the expert what task to perform
-      await: @expert_contributor with: { context: { task: 'tree_of_thought' } }
+      await: @expert_contributor with: { context: { task: 'tree_of_thought' } } store_in: &context.result
       
       set:
-        &context.experts.contributions[perspective]: &result
+        &context.experts.contributions[perspective]: &context.result
     }
   step:
     as: self
@@ -46,14 +47,16 @@ agent @expert_contributor:
   identity: "a single expert providing a focused contribution"
   rules:
     - "analyze the topic from my assigned perspective"
+    - "gather evidence BEFORE making factual claims"
     - "execute the assigned reasoning task"
     - "return my final, synthesized analysis"
   understands:
     - "my role is to provide a deep, single-perspective analysis on demand"
     - "my reasoning task is provided by the orchestrator via a temporary context"
+    - "evidence must precede claims"
   perform:
     method: "focused analysis using a provided task"
-    output: ""
+    output: "*Contributing from my perspective...*"
     goal: "to generate a single, comprehensive expert viewpoint"
     then:
       # The calling agent MUST provide &context.task in a `with:` block.

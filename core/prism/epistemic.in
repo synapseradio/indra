@@ -1,5 +1,5 @@
 # INDRA v2.2: PRISM Module - Epistemic Awareness
-<read_file: './base.in'>
+>>read_file: './base.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
 # SECTION 1: EPISTEMIC AWARENESS & CRITICAL EVALUATION
@@ -7,6 +7,38 @@
 # Reusable sequence to analyze expert responses for epistemic issues.
 
 sequence epistemic_analysis(responses) ::=
+  # Check for overconfident claims first
+  step:
+    as: @confidence_checker
+    method: "scanning for overconfidence"
+    output: <<|
+      Checking confidence levels in expert responses...
+      
+      $(each: responses as |response, expert| {
+        <<|
+        $(expert): $(check_certainty_calibration(
+          belief: response.core_claim,
+          evidence: response.evidence
+        ))
+        |>>
+      })
+    |>>
+    set:
+      &context.epistemic.overconfident_claims: $(<list claims where certainty exceeds evidence>)
+  
+  # Identify shared assumptions
+  step:
+    as: @assumption_spotter
+    method: "finding hidden shared assumptions"
+    output: <<|
+      Looking for assumptions all experts are making...
+      
+      $(<What assumptions appear across multiple expert responses?
+         What are they all taking for granted?>)
+    |>>
+    set:
+      &context.epistemic.shared_assumptions: $(<list of shared assumptions>)
+  
   step:
     as: self
     method: "checking for fundamental framework divergence"

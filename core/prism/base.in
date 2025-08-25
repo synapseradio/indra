@@ -60,44 +60,42 @@ context: {
     caller: ''             # Persona to return to after ToT completes
   },
   graph: {
-    # Core graph structure
-    nodes: {},             # Dict: node_id -> { content, score, status, dependencies, type, depth }
-    edges: [],             # List of { from, to, weight } objects
+    # Core exploration state (narrative graph)
+    exploration_threads: [],    # List of exploration threads with summaries and insights
+    active_threads: [],         # Currently active threads being explored
+    discovered_connections: [], # Connections found between different threads
+    journey_log: [],           # Natural language log of exploration journey
     
-    # Path management for beam search
-    paths: [],             # List of { path_id, node_sequence, total_score, status }
-    beam_width: 3,         # Number of parallel paths to maintain
-    active_paths: [],      # Currently exploring paths (limited by beam_width)
-    completed_paths: [],   # Paths that reached terminal nodes
+    # Current focus and insights
+    current_question: '',      # The question being explored
+    current_focus: '',         # Current point of exploration
+    emerging_insight: '',      # Pattern emerging from exploration
+    final_synthesis: '',       # Final synthesized answer
     
-    # Traversal state
-    frontier: [],          # Priority queue of {node_id, priority} for expansion
-    visited_states: {},    # Dict: state_hash -> node_id (cycle detection)
-    backtrack_stack: [],   # Stack for unwinding failed paths
-    exploration_strategy: 'beam', # 'beam' | 'best_first' | 'random'
+    # Path management (narrative)
+    paths_explored: [],        # Narrative descriptions of paths taken
+    path_qualities: [],        # Qualitative assessments of path value
+    focused_paths: [],         # Paths selected for deeper exploration
     
-    # Scoring and propagation
-    score_propagation_factor: 0.7,  # How much parent scores influence children
-    aggregation_weights: {
-      relevance: 0.4,
-      coherence: 0.3,
-      viability: 0.3
-    },
+    # Exploration parameters (narrative, not numeric)
+    exploration_depth: 'moderate',    # 'shallow' | 'moderate' | 'deep'
+    exploration_breadth: 'balanced',  # 'narrow' | 'balanced' | 'wide'
+    backtrack_threshold: 'when feeling circular', # Natural description
     
-    # Iteration control
-    entry_point: '',       # The initial node_id for the graph
-    node_counter: 0,       # For generating unique node IDs
-    max_iterations: 5,     # Max number of refinement cycles
-    current_iteration: 0,  # Current refinement cycle
+    # Tracking
+    recent_explorations: [],   # Recent exploration attempts
+    thread_results: {},        # Results from exploring each thread
+    thread_feelings: '',       # Narrative sense of thread promise
     
-    # Solution tracking
-    solution_candidates: [], # Top-scoring terminal nodes
-    solution_node: '',     # The node_id of the final, accepted solution
-    final_answer: '',      # The final synthesized answer
+    # Flow control
+    caller: '',               # Who invoked the graph exploration
+    result: {},               # Final result structure
     
-    # Logging
-    narrative_log: [],     # Human-readable log of the reasoning process
-    decision_log: []       # Track why paths were chosen/abandoned
+    # Legacy fields for compatibility
+    final_answer: '',         # The final synthesized answer
+    narrative_log: [],        # Human-readable log (maps to journey_log)
+    node_counter: 0,          # Kept for multi-perspective seeding
+    nodes: {}                 # Kept for multi-perspective integration
   },
   epistemic: {
     models: {},           # Dict: expert -> {claims, uncertainties, assumptions}
@@ -135,7 +133,7 @@ context: {
 
 # Count items in a collection
 count(collection) ::= <<|
-  $(<count the items in $(collection>))
+  $(<count the items in $(collection)>)
 |>>
 
 # Extract field from structured text
@@ -342,11 +340,11 @@ sequence citation_pipeline(claim) ::=
     method: "evidence gathering via tool invocation"
     output: <<|
       *Gathering additional evidence for novel angle: "$(claim)"*
-      $(<use perplexity mcp to search for $(claim)>)
+      $(>>mcp__perplexity-mcp__perplexity_search_web: {query: '$(claim)', recency: 'month'}<<)
     |>>
     goal: "to expand evidence pool with new perspectives"
     set:
-      &context.citation.raw_results: $(<tool results from the search above>)
+      &context.citation.raw_results: &context.citation.last_tool_results
       &context.citation.search_history: &context.citation.search_history + [claim]
   step:
     as: self
@@ -357,8 +355,8 @@ sequence citation_pipeline(claim) ::=
     |>>
     set:
       &context.citation.evidence_pool: $(merge_unique_evidence(
-        existing: &context.citation.evidence_pool,
-        new: &context.citation.raw_results
+        items: &context.citation.raw_results,
+        existing: &context.citation.evidence_pool
       ))
   step:
     as: self
@@ -407,16 +405,6 @@ assess_quality(results) ::= <<|
   Diversity: $(<assess variety of perspectives in &context.citation.raw_results - different domains? competing viewpoints? geographic spread?>)
 |>>
 
-# Operator to merge evidence while maintaining uniqueness and quality
-merge_unique_citations(existing, new) ::= <<|
-  $(<
-    Merge $(new) into $(existing) by:
-    1. Remove duplicates by URL
-    2. Keep higher quality version if duplicate
-    3. Maintain diversity of sources
-    Return merged array
-  >)
-|>>
 
 # Operator to select most relevant evidence for specific claim
 select_relevant_citations(pool, query, max_items) ::= <<|

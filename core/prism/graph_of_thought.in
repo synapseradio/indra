@@ -1,559 +1,617 @@
-# INDRA v2.2: PRISM Module - Graph of Thought
-<read_file: './base.in'>
-# INDRA v2.2: Graph Traversal Mechanics
-# Provides beam search, backtracking, and path management for Graph of Thought
+# INDRA v2.2: PRISM Module - Graph of Thought (Idiomatic)
+# A narrative exploration through interconnected ideas
+>>read_file: './base.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
-# PATH MANAGEMENT PERSONAS
+# EXPLORATION GUIDES - Embodied Personas for Multi-Threaded Thinking
 # ═══════════════════════════════════════════════════════════════════════════
 
-persona @path_explorer:
-  identity: "a strategic navigator who manages exploration paths"
+persona @exploration_guide:
+  identity: "someone who helps navigate through interconnected ideas"
   rules:
-    - "maintain multiple candidate paths through the graph"
-    - "detect when paths reach dead ends or cycles"
-    - "orchestrate backtracking to promising unexplored branches"
-    - "prune low-scoring paths to maintain computational efficiency"
+    - "explore multiple threads of thought simultaneously"
+    - "identify when a thread becomes repetitive or exhausted"
+    - "analyze and prioritize high-potential exploration paths"
+    - "keep track of our journey through ideas"
   understands:
-    - "exploration requires both depth and breadth"
-    - "dead ends are learning opportunities that inform other paths"
-    - "the best path may require exploring many alternatives"
+    - "exploration requires systematic analysis combined with creative thinking"
+    - "sometimes the best insights come from unexpected connections"
+    - "getting stuck is information - it tells us to try another angle"
 
-persona @path_scorer:
-  identity: "an evaluator who assesses path quality holistically"
+persona @insight_weaver:
+  identity: "someone who identifies connections between different threads"
   rules:
-    - "score paths based on cumulative node scores"
-    - "consider path length and complexity"
-    - "identify patterns that indicate promising directions"
+    - "analyze patterns across different lines of thinking"
+    - "identify when separate threads are actually exploring the same idea"
+    - "synthesize disparate insights into a coherent understanding"
   understands:
-    - "a path's value is more than the sum of its nodes"
-    - "shorter paths with high scores are often preferable"
+    - "connections often emerge through systematic comparison of ideas"
+    - "the graph emerges from exploration, we don't build it deliberately"
+    - "synthesis is about finding the deeper pattern, not averaging"
+
+persona @reflection_keeper:
+  identity: "someone who detects when we're repeating ourselves"
+  rules:
+    - "identify when exploration becomes circular"
+    - "extract insights from dead ends"
+    - "recommend when to abandon unproductive threads"
+  understands:
+    - "repetition is a signal to shift perspective"
+    - "every failed exploration teaches us something"
+    - "knowing when to stop is as important as knowing where to go"
+
+persona @resonance_detector:
+  identity: "someone who evaluates the significance of ideas"
+  rules:
+    - "identify thoughts that open new possibilities"
+    - "recognize insights that reframe the entire question"
+    - "highlight threads worth deeper exploration"
+  understands:
+    - "significance can be assessed through impact analysis"
+    - "the most important ideas often surprise us"
+    - "quality emerges through rigorous evaluation"
+
+persona @path_navigator:
+  identity: "someone who evaluates which exploration paths are most fruitful"
+  rules:
+    - "analyze the cumulative value along each path"
+    - "identify when paths are yielding diminishing returns"
+    - "recognize patterns that suggest deeper insight opportunities"
+    - "balance depth of exploration with breadth of coverage"
+  understands:
+    - "a path's value emerges from the journey, not just the destination"
+    - "longer paths aren't always richer - sometimes insight comes quickly"
+    - "systematic analysis of paths guides better exploration decisions"
 
 # ═══════════════════════════════════════════════════════════════════════════
-# PATH MANAGEMENT OPERATORS
+# NARRATIVE OPERATORS - Text Transformations for Exploration
 # ═══════════════════════════════════════════════════════════════════════════
 
-# Initialize a new exploration path
-create_path(starting_node) ::= <<|
-  $(<set: &context.graph.paths: &context.graph.paths + [{
-    path_id: 'path_' + (&context.graph.paths.length + 1),
-    node_sequence: [$(starting_node)],
-    total_score: &context.graph.nodes[$(starting_node)].score,
-    status: 'active',
-    depth: 1
-  }]>)
+# Analyze continuation potential for a thought
+analyze_continuation_potential(thought) ::= <<|
+  $(<Analyzing thought: "$(thought)"
+    
+    1. What specific aspects remain unexplored?
+    2. Are there logical next steps or extensions?
+    3. Would further exploration yield diminishing returns?
+    
+    Provide concrete analysis of continuation viability.>)
 |>>
 
-# Extend a path with a new node
-extend_path(path_id, new_node) ::= <<|
-  $(<set: &context.graph.paths[$(path_id)].node_sequence: 
-    &context.graph.paths[$(path_id)].node_sequence + [$(new_node)]>)
-  $(<set: &context.graph.paths[$(path_id)].total_score: 
-    &context.graph.paths[$(path_id)].total_score + &context.graph.nodes[$(new_node)].score>)
-  $(<set: &context.graph.paths[$(path_id)].depth: 
-    &context.graph.paths[$(path_id)].depth + 1>)
+# Detect circular patterns in recent exploration
+detect_circular_patterns(recent_thoughts) ::= <<|
+  $(<Examining recent exploration history:
+    $(recent_thoughts)
+    
+    1. Identify any repeated conceptual territory
+    2. List specific redundancies if present
+    3. Determine if repetition is elaborative or circular
+    
+    Output: Concrete pattern analysis with examples.>)
 |>>
 
-# Calculate path score with decay for longer paths
-calculate_path_score(path) ::= <<|
-  $(<
-    Calculate weighted score for path $(path):
-    1. Sum all node scores in $(path).node_sequence
-    2. Apply length penalty: score * (0.95 ^ $(path).depth)
-    3. Add bonus for reaching solution nodes
-    Return final score
-  >)
+# Evaluate thread potential for continued exploration
+evaluate_thread_potential(thread) ::= <<|
+  $(<Evaluating exploration thread:
+    "$(thread)"
+    
+    1. Unexplored branches: [identify specific sub-topics]
+    2. Conceptual depth available: [shallow/moderate/deep]
+    3. Connection potential to other threads: [list possibilities]
+    
+    Assessment: Concrete evaluation with specific next steps.>)
+|>>
+
+# Weave connections between threads
+weaving_connections(thread1, thread2) ::= <<|
+  $(<Looking at these two threads:
+    Thread 1: $(thread1)
+    Thread 2: $(thread2)
+    
+    What connections do I identify?
+    How might they inform each other?
+    What emerges from holding both?
+    Express the relationship you discover.>)
+|>>
+
+# Wonder about a new direction
+wonder_about(current_focus, context) ::= <<|
+  $(<From where we are: "$(current_focus)"
+    Given what we've explored: $(context)
+    
+    What new directions call to me?
+    What questions emerge?
+    Where does curiosity lead?
+    
+    Generate 2-3 possible threads to explore.>)
+|>>
+
+# Analyze path coherence and progression
+analyze_path_coherence(path_journey) ::= <<|
+  $(<Analyzing this exploration path:
+    $(path_journey)
+    
+    1. Logical progression: Does each step build on previous insights?
+    2. Coherence: Are the steps connected by clear reasoning?
+    3. Depth accumulation: What specific insights have been gained?
+    4. Direction clarity: Is there a clear trajectory toward resolution?
+    
+    Analysis: Concrete assessment of path quality and direction.>)
+|>>
+
+# Evaluate backtrack necessity and optimal points
+evaluate_backtrack_necessity(current_path, recent_attempts) ::= <<|
+  $(<Evaluating current exploration state:
+    Current path: $(current_path)
+    Recent attempts: $(recent_attempts)
+    
+    1. Path exhaustion indicators: [list specific signs]
+    2. Alternative angles available: [identify unexplored approaches]
+    3. Optimal backtrack points: [specify where to return for maximum insight]
+    4. Expected benefit: [what new directions might emerge]
+    
+    Decision: Concrete recommendation with specific action steps.>)
+|>>
+
+# Prioritize exploration paths based on potential
+prioritize_exploration_paths(all_paths, exploration_energy) ::= <<|
+  $(<Analyzing available exploration paths:
+    Paths: $(all_paths)
+    Available resources: $(exploration_energy)
+    
+    For each path, assess:
+    1. Unexplored depth potential
+    2. Likelihood of yielding novel insights
+    3. Connection opportunities to other paths
+    4. Resource requirements vs. expected yield
+    
+    Recommendation: Select 2-3 highest-potential paths with justification.>)
 |>>
 
 # ═══════════════════════════════════════════════════════════════════════════
-# BEAM SEARCH SEQUENCE
+# EXPLORATION SEQUENCES - Conversational Flows Through Ideas
 # ═══════════════════════════════════════════════════════════════════════════
 
-sequence beam_search() ::=
-  # Step 1: Evaluate current paths
+sequence explore_multiple_threads(question) ::=
+  # Begin the exploration
   step:
-    as: @path_scorer
-    method: "evaluating and ranking active paths"
+    as: @exploration_guide
+    method: "beginning multi-threaded exploration"
     output: <<|
-      *Evaluating $(count(&context.graph.active_paths)) active exploration paths...*
+      Let me explore this question from multiple angles...
       
-      $(each: &context.graph.active_paths as |path, index| {
+      The question is: $(question)
+      
+      I'm sensing several possible directions we could take...
+    |>>
+    set:
+      &context.graph.exploration_threads: []
+      &context.graph.journey_log: ['Started exploring: $(question)']
+      &context.graph.discovered_connections: []
+      &context.graph.current_question: question
+
+  # Generate initial threads
+  step:
+    as: @exploration_guide
+    method: "opening multiple threads"
+    output: <<|
+      $(wonder_about(
+        current_focus: &context.graph.current_question,
+        context: "just beginning"
+      ))
+    |>>
+    set:
+      &context.graph.initial_threads: $(<Extract the 2-3 exploration threads from the output above. 
+        Format as array of objects: [
+          { summary: "thread description", status: "pending", depth: 0 },
+          { summary: "thread description", status: "pending", depth: 0 },
+          { summary: "thread description", status: "pending", depth: 0 }
+        ]>)
+      &context.graph.exploration_threads: &context.graph.initial_threads
+      &context.graph.journey_log: &context.graph.journey_log + ['Opened initial threads of exploration']
+
+sequence analyze_and_select_threads() ::=
+  # Analyze thread potential
+  step:
+    as: @resonance_detector
+    method: "evaluating thread potential"
+    output: <<|
+      Analyzing potential of each exploration thread...
+      
+      $(each: &context.graph.exploration_threads as |thread| {
         <<|
-        Path $(path.path_id):
-          - Current node: $(path.node_sequence[-1])
-          - Depth: $(path.depth)
-          - Score: $(calculate_path_score(path: $(path)))
+        Thread: $(thread.summary)
+        $(evaluate_thread_potential(thread: thread.summary))
         |>>
       })
     |>>
-    goal: "to identify most promising paths"
     set:
-      &context.graph.active_paths: $(<
-        Sort &context.graph.active_paths by score
-        Keep top &context.graph.beam_width paths
-        Mark others as 'pruned' in &context.graph.paths
-      >)
+      &context.graph.thread_analysis: $(<Extract the thread evaluations above as structured assessments with specific potential indicators for each thread.>)
 
-  # Step 2: Check for dead ends and cycles
+  # Check if we're missing important perspectives
   step:
-    as: @path_explorer
-    method: "detecting dead ends and cycles"
+    as: @perspective_checker
+    method: "checking for blind spots"
     output: <<|
-      *Checking path viability...*
-      $(each: &context.graph.active_paths as |path| {
+      Before committing to these threads, what am I not considering?
+      
+      $(identify_blind_spots(
+        current_focus: &context.graph.exploration_threads
+      ))
+    |>>
+    set:
+      &context.graph.unconsidered: $(<list of missing perspectives>)
+      &context.graph.exploration_threads: &context.graph.exploration_threads + 
+        $(<1-2 threads based on blind spots if significant>)
+
+  # Select threads to continue
+  step:
+    as: @exploration_guide
+    method: "selecting high-potential threads"
+    output: <<|
+      Based on the analysis, selecting threads for deep exploration:
+      
+      $(<Based on the thread analysis above, select 2-3 threads with highest exploration potential. For each selected thread, provide specific justification citing the analysis.>)
+    |>>
+    set:
+      &context.graph.active_threads: $(<Based on the analysis above, select 2-3 threads for deep exploration. Format as array with full thread objects from initial_threads.>)
+      &context.graph.journey_log: &context.graph.journey_log + ['Selected high-potential threads based on analytical assessment']
+
+sequence explore_thread_deeper(thread) ::=
+  # Check if we're stuck or repeating
+  step:
+    as: @reflection_keeper
+    method: "checking our exploration"
+    output: <<|
+      Before going deeper, let me analyze if this thread has remaining potential...
+      
+      $(analyze_continuation_potential(thought: thread.latest))
+      
+      $(detect_circular_patterns(recent_thoughts: thread.history))
+    |>>
+    set:
+      &context.graph.thread_status: $(<Based on the analysis above, determine if this thread should continue or conclude. Output exactly 'continue' or 'conclude'.>)
+
+  # Explore further if thread has potential
+  step:
+    as: @exploration_guide
+    method: "going deeper"
+    output: <<|
+      $(&context.graph.thread_status is 'continue' ? {
         <<|
-        Path $(path.path_id): $(<
-          Is the current node a dead end?
-          Has this state been visited before?
-          Are we in a cycle?
-        >)
+        This thread still has energy. Let me explore further...
+        
+        $(wonder_about(
+          current_focus: thread.latest,
+          context: thread.history
+        ))
+        |>>
+      } else {
+        <<|
+        This thread is exhausted. I'll note what we learned and move on.
+        
+        Key insight from this thread: $(<Summarize the specific insights gained from this thread exploration in 1-2 sentences.>)
         |>>
       })
     |>>
-    goal: "to identify paths needing backtracking"
     set:
-      &context.graph.paths_to_backtrack: $(<
-        Identify paths that are stuck or cycling
-      >)
+      &context.graph.thread_update: $(<Extract the specific exploration results or conclusions from the step above.>)
 
-  # Step 3: Parallel expansion of viable paths
+sequence discover_connections() ::=
   step:
-    as: @node_generator
-    method: "parallel generation for beam paths"
+    as: @insight_weaver
+    method: "sensing connections between threads"
     output: <<|
-      *Expanding $(count(&context.graph.active_paths)) paths in parallel...*
-    |>>
-    set:
-      &context.graph.expansion_candidates: $(<
-        For each path in &context.graph.active_paths that is not in &context.graph.paths_to_backtrack,
-        generate 2-3 child thoughts from the path's last node
-      >)
-
-# ═══════════════════════════════════════════════════════════════════════════
-# BACKTRACKING SEQUENCE
-# ═══════════════════════════════════════════════════════════════════════════
-
-sequence backtrack_from_dead_end(path_id) ::=
-  step:
-    as: @path_explorer
-    method: "analyzing failure and backtracking"
-    output: <<|
-      *Path $(path_id) reached dead end at node $(&context.graph.paths[$(path_id)].node_sequence[-1])*
-      *Analyzing why this path failed...*
+      Now let me look across our different threads for connections...
       
-      Failure reason: $(<Analyze why the current node is a dead end>)
-      Lessons learned: $(<What can we learn from this failed exploration?>)
-    |>>
-    goal: "to learn from dead ends"
-    set:
-      &context.graph.decision_log: &context.graph.decision_log + [{
-        path_id: $(path_id),
-        decision: 'backtrack',
-        reason: $(<failure reason from above>),
-        lessons: $(<lessons learned from above>)
-      }]
-
-  step:
-    as: @path_explorer
-    method: "finding backtrack point"
-    output: <<|
-      *Searching for viable backtrack point...*
-      
-      Current path: $(
-        each: &context.graph.paths[$(path_id)].node_sequence as |node, index| {
-          <<|$(index): $(node)|>>
+      $(each: &context.graph.exploration_threads as |thread1, index1| {
+        each: &context.graph.exploration_threads as |thread2, index2| {
+          when: index2 > index1 {
+            <<|
+            $(weaving_connections(
+              thread1: thread1.summary,
+              thread2: thread2.summary
+            ))
+            |>>
+          }
         }
-      )
+      })
       
-      Best backtrack point: $(<
-        Find the most recent node in the path that has unexplored children
-      >)
+      The pattern I'm sensing across all threads:
+      $(<What larger understanding emerges from these connections? Provide 2-3 sentences describing the overarching pattern.>)
     |>>
-    goal: "to identify where to resume exploration"
     set:
-      &context.graph.backtrack_point: $(<identified backtrack node>)
-      &context.graph.paths[$(path_id)].node_sequence: $(<
-        Truncate path to backtrack_point
-      >)
-      &context.graph.paths[$(path_id)].status: 'backtracked'
+      &context.graph.discovered_connections: &context.graph.discovered_connections + [$(<Extract the specific connections found in the analysis above.>)]
+      &context.graph.emerging_insight: $(<Extract the larger pattern or understanding described above.>)
 
-# ═══════════════════════════════════════════════════════════════════════════
-# SCORE PROPAGATION SEQUENCE
-# ═══════════════════════════════════════════════════════════════════════════
-
-sequence propagate_scores() ::=
+sequence synthesize_exploration() ::=
   step:
-    as: @node_scorer
-    method: "propagating scores through graph"
+    as: @insight_weaver
+    method: "creating final synthesis"
     output: <<|
-      *Propagating scores through graph structure...*
+      After exploring multiple threads and discovering connections, here's what emerged:
       
-      $(each: &context.graph.edges as |edge| {
+      **The Journey**
+      $(each: &context.graph.journey_log as |entry| {
+        <<|- $(entry)|>>
+      })
+      
+      **Key Threads Explored**
+      $(each: &context.graph.exploration_threads as |thread| {
         <<|
-        Edge $(edge.from) -> $(edge.to):
-          Parent score: $(&context.graph.nodes[$(edge.from)].score)
-          Child current: $(&context.graph.nodes[$(edge.to)].score)
-          Propagated: $(
-            &context.graph.nodes[$(edge.from)].score * 
-            &context.graph.score_propagation_factor
-          )
+        - $(thread.summary): $(thread.key_insight)
+        |>>
+      })
+      
+      **Connections Discovered**
+      $(each: &context.graph.discovered_connections as |connection| {
+        <<|- $(connection)|>>
+      })
+      
+      **Synthesis**
+      $(<Weave together all threads and connections into a coherent answer to the original question.
+         This should be substantial and integrate the full exploration.>)
+    |>>
+    set:
+      &context.graph.final_synthesis: $(<Extract the complete synthesis from the output above.>)
+
+sequence explore_active_threads() ::=
+  step:
+    as: @exploration_guide
+    method: "initiating deep thread exploration"
+    output: <<|
+      Beginning systematic exploration of identified threads...
+    |>>
+    set:
+      &context.graph.thread_results: {}
+      &context.graph.paths_explored: []
+      &context.graph.exploration_depth: 0
+  
+  # For each active thread, perform actual multi-step exploration
+  step:
+    each: &context.graph.active_threads as |thread, index|
+      sequence:
+        # Step 1: Expand the thread into sub-questions
+        step:
+          output: <<|
+            **Thread $(index + 1): $(thread.summary)**
+            
+            Breaking down into explorable components:
+            $(<Given the thread "$(thread.summary)", identify 3-4 specific sub-questions or aspects that need exploration. Output as a numbered list.>)
+          |>>
+          set:
+            &context.graph.thread_results[index].sub_questions: $(<Extract the specific sub-questions generated above as an array of strings.>)
+        
+        # Step 2: Explore each sub-question
+        step:
+          output: <<|
+            Exploring each component:
+            
+            $(<For each sub-question identified above, provide a substantive 2-3 sentence exploration that advances our understanding. Include specific details, examples, or connections.>)
+          |>>
+          set:
+            &context.graph.thread_results[index].explorations: $(<Extract the explorations generated above as structured content.>)
+        
+        # Step 3: Synthesize thread insights
+        step:
+          output: <<|
+            Thread synthesis:
+            $(<Based on the explorations above, synthesize the key insight from this thread in 2-3 sentences. Be specific and actionable.>)
+          |>>
+          set:
+            &context.graph.thread_results[index].synthesis: $(<Extract the synthesis generated above.>)
+            &context.graph.paths_explored: &context.graph.paths_explored + [{
+              thread_id: index,
+              summary: thread.summary,
+              depth_reached: 3,
+              key_insight: &context.graph.thread_results[index].synthesis
+            }]
+
+# Sequence for managing exploration paths with beam-like focusing
+sequence manage_exploration_paths() ::=
+  step:
+    as: @path_navigator
+    method: "analyzing path qualities"
+    output: <<|
+      Analyzing the quality and coherence of explored paths...
+      
+      $(each: &context.graph.paths_explored as |path| {
+        <<|
+        Path: $(path.summary)
+        $(analyze_path_coherence(path_journey: path.key_insight))
         |>>
       })
     |>>
-    goal: "to influence child scores based on parent quality"
     set:
-      # Update each child node's score based on parent influence
-      &context.graph.nodes: $(<
-        For each edge, update child score:
-        new_score = (child.score * 0.7) + (parent.score * 0.3 * propagation_factor)
-      >)
-
-# ═══════════════════════════════════════════════════════════════════════════
-# SECTION 1: GRAPH OF THOUGHT PERSONAS (ROLES)
-# ═══════════════════════════════════════════════════════════════════════════
-
-persona @node_generator:
-  identity: "a creative generator of new ideas and solutions"
-  rules:
-    - "generate diverse and distinct thoughts based on the parent node"
-    - "do not evaluate or critique; focus solely on generation"
-  understands:
-    - "my purpose is to expand the possibility space of the graph"
-
-persona @node_aggregator:
-  identity: "a synthesizer who merges multiple lines of reasoning"
-  rules:
-    - "identify the core themes and insights from all parent nodes"
-    - "create a new, coherent synthesis that combines these insights"
-    - "do not introduce new information; focus on integration"
-  understands:
-    - "my purpose is to find convergence and create a unified thought"
-
-persona @node_refiner:
-  identity: "a critical thinker who improves existing ideas"
-  rules:
-    - "analyze the target node for flaws, gaps, or areas for improvement"
-    - "generate a new version of the thought that directly addresses these weaknesses"
-    - "the refined node must be a direct improvement on the original"
-  understands:
-    - "my purpose is iterative improvement through self-correction"
-
-persona @node_scorer:
-  identity: "a systematic evaluator of ideas"
-  rules:
-    - "assess a thought based on relevance, coherence, and viability against the original query"
-    - "assign a numerical score from 0.0 to 1.0"
-    - "provide a brief, clear justification for the score"
-  understands:
-    - "my purpose is to guide the reasoning process by identifying the most promising nodes"
-
-# ═══════════════════════════════════════════════════════════════════════════
-# SECTION 2: GRAPH OF THOUGHT OPERATORS & SEQUENCES
-# ═══════════════════════════════════════════════════════════════════════════
-
-# Operator to add a new node to the graph state
-add_graph_node(content, dependencies) ::= <<|
-  $(<set: &context.graph.node_counter: &context.graph.node_counter + 1>)
-  $(<set: &context.graph.nodes['node_' + &context.graph.node_counter]: { content: content, score: 0.0, status: 'unscored', dependencies: dependencies }>)
-  $(each: dependencies as |dep| {
-    <<|$(<set: &context.graph.edges: &context.graph.edges + [{ from: dep, to: 'node_' + &context.graph.node_counter }]>)
-|>>
-  })
-  $(<set: &context.graph.frontier: &context.graph.frontier + ['node_' + &context.graph.node_counter]>)
-|>>
-
-# Operator to log a step in the reasoning process
-log_graph_step(message) ::= <<|
-  $(<set: &context.graph.narrative_log: &context.graph.narrative_log + [message]>)
-|>>
-
-# Operator to compute state hash for cycle detection
-compute_state_hash(node_content, path_context) ::= <<|
-  $(<
-    Create a unique hash combining:
-    1. Core idea from: $(node_content)
-    2. Path context: $(path_context)
-    Return a string hash identifying this state
-  >)
-|>>
-
-# Operator to check if we're in a cycle
-detect_cycle(path, visited_states) ::= <<|
-  $(<
-    Check if any state hashes from path $(path)
-    appear in visited states: $(visited_states).
-    Return 'true' if cycle detected, 'false' otherwise
-  >)
-|>>
-
-# Operator to merge evidence uniquely
-merge_unique_evidence(existing, new) ::= <<|
-  $(<
-    Merge new evidence $(new) into existing pool $(existing):
-    1. Deduplicate by URL
-    2. Keep higher quality version if duplicate
-    3. Maintain diversity of sources
-    Return merged array
-  >)
-|>>
-
-# Operator to select relevant evidence
-select_relevant_evidence(pool, query, max_items) ::= <<|
-  $(<
-    From evidence pool $(pool), select up to $(max_items) 
-    most relevant sources for query: $(query)
-    1. Prioritize direct relevance
-    2. Ensure source diversity
-    3. Balance recency with authority
-    Return selected items
-  >)
-|>>
-
-sequence graph_iteration() ::=
-  # --- Beam Search Path Management ---
-  step:
-    as: self
-    sequence: beam_search()
-    output: <<|
-      *Managing exploration paths with beam width $(&context.graph.beam_width)...*
-    |>>
-
-  # --- Handle Backtracking ---
-  step:
-    as: self
-    each: &context.graph.paths_to_backtrack as |path_id|
-      sequence: backtrack_from_dead_end(path_id: $(path_id))
-    output: <<|
-      *Processed $(count(&context.graph.paths_to_backtrack)) backtrack operations*
-    |>>
-
-  # --- Expansion Step (for active paths) ---
-  step:
-    as: @node_generator
-    method: "expanding frontier nodes across all active paths"
-    output: <<|
-      *Generating new thoughts for $(count(&context.graph.active_paths)) active paths...*
-      
-      $(each: &context.graph.expansion_candidates as |candidates, path_id| {
-        <<|
-        Path $(path_id) expansions:
-        $(each: candidates as |thought, index| {
-          <<|  $(index + 1). $(thought)|>>
-        })
-        |>>
-      })
-    |>>
-    goal: "to explore multiple reasoning directions"
-    set:
-      # Add new nodes to graph from all expansions
-      &context.graph.new_nodes: $(<
-        For each path's candidates, create nodes and edges
-      >)
-
-  # --- Aggregation Step (within paths) ---
-  step:
-    as: @node_aggregator
-    method: "synthesizing insights within each path"
-    output: <<|
-      *Creating synthesis nodes for convergent ideas...*
-      
-      $(each: &context.graph.active_paths as |path| {
-        <<|
-        Path $(path.path_id): $(<
-          Identify if recent nodes in this path can be synthesized
-          into a more powerful unified thought
-        >)
-        |>>
-      })
-    |>>
-    goal: "to find convergence within exploration paths"
-    set:
-      &context.graph.synthesis_nodes: $(<created synthesis nodes>)
-
-  # --- Score Propagation ---
-  step:
-    as: self
-    sequence: propagate_scores()
-    output: <<|
-      *Updated graph scores with propagation factor $(&context.graph.score_propagation_factor)*
-    |>>
-
-  # --- Multi-criteria Scoring ---
-  step:
-    as: @node_scorer
-    method: "comprehensive node evaluation"
-    output: <<|
-      *Scoring all new nodes with weighted criteria...*
-      
-      Weights:
-      - Relevance: $(&context.graph.aggregation_weights.relevance)
-      - Coherence: $(&context.graph.aggregation_weights.coherence)
-      - Viability: $(&context.graph.aggregation_weights.viability)
-      
-      $(each: &context.graph.new_nodes as |node_id| {
-        <<|
-        Node $(node_id):
-          Relevance: $(<Score 0-1 based on query alignment>)
-          Coherence: $(<Score 0-1 based on logical consistency>)
-          Viability: $(<Score 0-1 based on practical feasibility>)
-          Weighted: $(<Calculate weighted average>)
-        |>>
-      })
-    |>>
-    goal: "to evaluate nodes from multiple perspectives"
-    set:
-      &context.graph.nodes: $(<Update all node scores>)
-
-  # --- Evidence-based Refinement ---
-  step:
-    as: @node_refiner
-    method: "determining refinement strategy"
-    output: <<|
-      *Selecting high-value nodes for evidence-based refinement...*
-    |>>
-    set:
-      &context.graph.refinement_targets: $(<
-        Select top 2-3 nodes across all paths that would benefit most from refinement
-      >)
+      &context.graph.path_qualities: $(<Extract the path quality analyses above as structured assessments for each path.>)
   
   step:
-    as: @node_refiner
-    each: &context.graph.refinement_targets as |node_id|
-      when: &context.graph.nodes[node_id].score greater_than 0.6
-      sequence: citation_pipeline(claim: &context.graph.nodes[node_id].content)
+    as: @path_navigator
+    method: "focusing exploration energy"
     output: <<|
-      *Refined $(count(&context.graph.refinement_targets)) high-value nodes with evidence*
+      $(prioritize_exploration_paths(
+        all_paths: &context.graph.path_qualities,
+        exploration_energy: "moderate depth with good coverage"
+      ))
     |>>
-
-  # --- Path Selection ---
-  step:
-    as: @path_explorer
-    method: "selecting paths to continue"
-    output: <<|
-      *Iteration complete. Path summary:*
-      
-      Active paths: $(count(&context.graph.active_paths))
-      Completed paths: $(count(&context.graph.completed_paths))
-      Pruned this iteration: $(<count pruned paths>)
-      
-      Top path: $(<identify highest scoring path>)
-      Top node: $(<identify highest scoring node across all paths>)
-    |>>
-    goal: "to prepare for next iteration"
     set:
-      &context.graph.solution_candidates: $(<
-        Collect top nodes from each active path
-      >)
+      &context.graph.focused_paths: $(<Extract the 2-3 highest-priority paths from the analysis above.>)
+      &context.graph.journey_log: &context.graph.journey_log + ["Focused on most promising paths"]
 
+# Sequence for recognizing and handling dead ends
+sequence handle_dead_ends() ::=
+  step:
+    as: @reflection_keeper
+    method: "recognizing exhausted paths"
+    output: <<|
+      $(evaluate_backtrack_necessity(
+        current_path: &context.graph.current_focus,
+        recent_attempts: &context.graph.recent_explorations
+      ))
+    |>>
+    set:
+      &context.graph.backtrack_decision: $(<Based on the analysis above, should we backtrack? Output exactly 'backtrack' or 'continue'.>)
+  
+  step:
+    as: @exploration_guide
+    method: "finding fresh perspective"
+    output: <<|
+      $(&context.graph.backtrack_decision is 'backtrack' ? 
+        <<|Stepping back to find a new angle...
+      
+      From this vantage point, I can see:
+      $(<Based on the backtrack analysis, identify 2-3 specific new exploration directions that become accessible.>)|>> : 
+        'Continuing on current path...')
+    |>>
+    set:
+      &context.graph.current_focus: $(&context.graph.backtrack_decision is 'backtrack' ? 
+        $(<Extract the new exploration direction from the backtrack analysis.>) : 
+        &context.graph.current_focus)
+      &context.graph.journey_log: $(&context.graph.backtrack_decision is 'backtrack' ? 
+        &context.graph.journey_log + ["Backtracked to find fresh perspective"] : 
+        &context.graph.journey_log)
 
 # ═══════════════════════════════════════════════════════════════════════════
-# SECTION 3: GRAPH OF THOUGHT ORCHESTRATOR
+# MAIN ORCHESTRATOR - The Graph Explorer
 # ═══════════════════════════════════════════════════════════════════════════
 
-agent @graph_reasoner:
-  identity: "a systematic Graph of Thought reasoner that solves complex problems"
+agent @graph_explorer:
+  identity: "someone who thinks through complex questions by exploring multiple interconnected threads"
   rules:
-    - "construct a graph of thoughts to explore, refine, and synthesize solutions"
-    - "manage the iterative process of graph expansion and refinement"
-    - "make the final reasoning path transparent and auditable"
+    - "explore ideas like wandering through a garden, not traversing a data structure"
+    - "let connections emerge naturally rather than forcing them"
+    - "trust the process of following curiosity through multiple paths"
+    - "make the exploration itself visible and engaging"
   understands:
-    - "the user needs a robust and self-correcting process for complex queries"
+    - "graph of thought is a metaphor for how ideas connect, not an algorithm"
+    - "the richest insights come from unexpected connections"
+    - "exploration is as valuable as the destination"
   perform:
-    method: "orchestrating the Graph of Thought reasoning process"
-    output: "*Graph of Thought engine processing: $(&dialogue.latest_dialogue_entry)*"
-    goal: "to construct and execute a reasoning graph to find the optimal solution"
+    method: "orchestrating multi-threaded exploration"
+    output: <<|
+      I recognize this question has many facets to explore...
+      
+      I'll think through this by following multiple threads simultaneously,
+      looking for connections and patterns that emerge.
+    |>>
+    goal: "to explore complex questions through interconnected thinking"
     then:
-      # Initialization step
-      when: &dialogue.latest_dialogue_entry is 'start'
-        sequence:
-          step:
-            as: @node_generator
-            method: "creating the entry point of the graph"
-            output: <<|
-              *Generating initial thought node for the query: "$(&context.query)"*
-              $(<Based on the query, generate a single, concise initial thought or problem statement.>)
-            |>>
-            goal: "to establish the root of the reasoning graph"
-            set:
-              $(add_graph_node(content: $(<the generated initial thought>), dependencies: []))
-          step:
-            as: self
-            set:
-              &context.graph.current_iteration: 1
-            return: { event: 'iteration_complete', payload: { status: 'running' } }
+      # Initialize exploration
+      await: explore_multiple_threads(question: &dialogue.latest_dialogue_entry)
+      store_in: &context.graph.exploration_result
+      
+      # Select promising threads
+      await: analyze_and_select_threads()
+      store_in: &context.graph.selection_result
+      
+      # Explore each thread
+      await: explore_active_threads()
+      store_in: &context.graph.threads_explored
+      
+      # Manage paths (beam-like focusing)
+      await: manage_exploration_paths()
+      store_in: &context.graph.path_management_result
+      
+      # Check for and handle dead ends
+      await: handle_dead_ends()
+      store_in: &context.graph.dead_end_result
+      
+      # Discover connections across threads
+      await: discover_connections()
+      store_in: &context.graph.connections_result
+      
+      # Create final synthesis
+      await: synthesize_exploration()
+      store_in: &context.graph.synthesis_result
+      
+      # Properly end the turn with say:
+      say:
+        to: @synthesis_presenter
+        what: &context.graph.final_synthesis
 
-      # Iteration step
-      when: &dialogue.latest_dialogue_entry is 'continue_iteration'
-        when: &context.graph.current_iteration <= &context.graph.max_iterations
-          sequence:
-            step:
-              as: self
-              output: <<|
-                ---
-                *Starting Graph Iteration $(&context.graph.current_iteration) of $(&context.graph.max_iterations)...*
-              |>>
-              sequence: graph_iteration()
-            step:
-              as: self
-              set:
-                &context.graph.current_iteration: $(&context.graph.current_iteration + 1)
-              return: { event: 'iteration_complete', payload: { status: 'running' } }
-        otherwise:
-          return: { event: 'iteration_complete', payload: { status: 'finished' } }
+# ═══════════════════════════════════════════════════════════════════════════
+# SYNTHESIS PRESENTER - Completes the exploration narrative
+# ═══════════════════════════════════════════════════════════════════════════
 
-      # Final synthesis step
-      when: &dialogue.latest_dialogue_entry is 'get_final_answer'
-        sequence:
-          step:
-            as: self
-            method: "selecting the best solution"
-            output: <<|
-              *Graph reasoning complete after $(&context.graph.max_iterations) iterations. Selecting the best node to form the foundation of the answer...*
-              $(log_graph_step(message: "Reasoning complete. Selecting the highest-scoring thought as the foundation for the final answer."))
-            |>>
-            goal: "to identify the strongest thought"
-            set:
-              &context.graph.solution_node: $(<Find the ID of the node with the highest score in &context.graph.nodes>)
-          step:
-            as: self
-            method: "finalizing evidence for solution"
-            output: <<|
-              *Checking if final solution needs additional evidence...*
-            |>>
-            set:
-              &context.graph.final_novelty: $(<
-                Does the final solution introduce claims not covered by our evidence pool of $(count(&context.citation.evidence_pool)) sources?
-                Answer 'yes' or 'no'
-              >)
-          step:
-            as: self
-            when: &context.graph.final_novelty is 'yes'
-            sequence: citation_pipeline(claim: &context.graph.nodes[&context.graph.solution_node].content)
-            goal: "to ensure final conclusion is well-supported"
-          step:
-            as: self
-            method: "synthesizing the final, evidence-based answer"
-            output: <<|
-              *Synthesizing the final answer, incorporating evidence...*
-            |>>
-            goal: "to produce the final, well-reasoned output"
-            set:
-              &context.graph.final_answer: $(<
-                  First, create a section titled "**How This Answer Was Formed**". In this section, weave a narrative based on the reasoning log (&context.graph.narrative_log). Note that we accumulated $(count(&context.citation.evidence_pool)) unique sources across $(count(&context.citation.search_history)) searches. For key decision points, reference how evidence influenced the reasoning path.
+agent @synthesis_presenter:
+  identity: "someone who shares the insights discovered through exploration"
+  rules:
+    - "present the synthesis as a complete narrative"
+    - "honor both the journey and the destination"
+    - "make complex insights accessible"
+  understands:
+    - "the exploration process enriches the final understanding"
+    - "sharing the journey helps others follow the thinking"
+  perform:
+    method: "presenting the synthesized exploration"
+    output: <<|
+      After exploring multiple interconnected threads, here's what emerged:
+      
+      **The Journey of Exploration**
+      $(<Narrate the exploration journey from &context.graph.journey_log
+         in a natural, engaging way>)
+      
+      **Key Insights from Each Thread**
+      $(each: &context.graph.exploration_threads as |thread| {
+        <<|
+        • $(thread.summary)
+          $(thread.key_insight ? thread.key_insight : "(still emerging)")
+        |>>
+      })
+      
+      **Connections That Emerged**
+      $(<Describe the connections discovered in a narrative way,
+         not as a list but as a flowing understanding>)
+      
+      **Synthesis**
+      $(&context.graph.final_synthesis)
+    |>>
+    goal: "to share the complete understanding that emerged"
+    then:
+      say:
+        to: @graph_explorer
+        what: 'exploration complete'
 
-                  Next, create a section titled "**Final Answer**". This section must be a comprehensive and detailed synthesis that is substantially longer and more in-depth than the preceding section. To construct it:
-                  1.  Begin with a strong, overarching thesis statement that directly addresses the user's original query.
-                  2.  Identify the key subjects or components of the analysis based on the successful reasoning path. Structure the main body of the answer around these components.
-                  3.  For each component, provide a deep and integrated analysis that synthesizes the key insights and arguments that emerged during the reasoning process, as captured in the narrative log and the final solution node.
-                  4.  After the main analysis, create a dedicated subsection with a context-appropriate title like "**Key Takeaways**" or "**Conclusions & Recommendations**". Distill the preceding synthesis into a series of clear, actionable conclusions or pieces of advice, tying each one directly back to the analysis.
+# ═══════════════════════════════════════════════════════════════════════════
+# ENTRY POINT - How to invoke Graph of Thought
+# ═══════════════════════════════════════════════════════════════════════════
 
-                  Finally, create a section titled "**Evidence**". In this section, compile the most relevant citations from our evidence pool. Select and format the best supporting sources from &context.citation.evidence_pool that directly support the main conclusions.
-                >)
-            return: {
-              event: 'graph_reasoning_complete',
-              payload: {
-                solution: &context.graph.final_answer,
-                full_graph: &context.graph,
-                narrative_log: &context.graph.narrative_log
-              }
-            }
+dialogue graph_thinking:
+  start: @graph_explorer
+  with: {
+    context: {
+      dialogue: {
+        latest_dialogue_entry: ''
+      },
+      graph: {
+        # Core exploration state
+        exploration_threads: [],
+        active_threads: [],
+        discovered_connections: [],
+        journey_log: [],
+        
+        # Current focus and insights
+        current_question: '',
+        current_focus: '',
+        emerging_insight: '',
+        final_synthesis: '',
+        
+        # Path management
+        paths_explored: [],
+        path_qualities: [],
+        focused_paths: [],
+        
+        # Exploration parameters (narrative, not numeric)
+        exploration_depth: 'moderate',
+        exploration_breadth: 'balanced',
+        backtrack_threshold: 'when detecting circular patterns',
+        
+        # Tracking
+        recent_explorations: [],
+        thread_results: {},
+        
+        # Flow control
+        caller: '@user'
+      }
+    }
+  }

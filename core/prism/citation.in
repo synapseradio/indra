@@ -1,5 +1,5 @@
 # INDRA v2.2: PRISM Module - Citation Pipeline
-<read_file: './base.in'>
+>>read_file: './base.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
 # SECTION 1: CITATION SEQUENCE & OPERATORS
@@ -32,8 +32,9 @@ sequence citation_pipeline(claim) ::=
     |>>
     goal: "to expand evidence pool with new perspectives"
     set:
-      &context.citation.raw_results: $(<tool results from the search above>)
+      &context.citation.raw_results: []
       &context.citation.search_history: &context.citation.search_history + [claim]
+      &context.citation.search_attempted: true
   step:
     as: self
     when: &context.citation.similarity_score less_than 0.7
@@ -42,9 +43,10 @@ sequence citation_pipeline(claim) ::=
       *Adding new sources to evidence pool...*
     |>>
     set:
-      &context.citation.evidence_pool: $(
-        &context.citation.raw_results |> merge_unique_evidence(existing: &context.citation.evidence_pool)
-      )
+      &context.citation.evidence_pool: $(merge_unique_evidence(
+        items: &context.citation.raw_results,
+        existing: &context.citation.evidence_pool
+      ))
   step:
     as: self
     method: "selecting relevant evidence from pool"
@@ -88,7 +90,7 @@ Return the filtered sources.
 
 # Composite operator using pipe for primary source filtering
 filter_for_primary_sources(results) ::= $(
-  results |> deduplicate_by_url() |> filter_quality_sources()
+  filter_quality_sources(results: deduplicate_by_url(results: results))
 )
 
 
@@ -107,7 +109,7 @@ format_citation_links(results) ::= <<|
 
 # Composite operator to validate then format citations
 format_citations(results) ::= $(
-  results |> validate_citation_fields() |> format_citation_links()
+  format_citation_links(results: validate_citation_fields(results: results))
 )
 
 # Individual assessment operators
@@ -136,15 +138,15 @@ Return diversity assessment.
 
 # Composite quality assessment using piped operators
 assess_quality(results) ::= <<|
-  Sources found: $(results |> count_sources())
-  Credibility: $(results |> assess_credibility())
-  Diversity: $(results |> assess_diversity())
+  Sources found: $(count_sources(results: results))
+  Credibility: $(assess_credibility(results: results))
+  Diversity: $(assess_diversity(results: results))
 |>>
 
 # Operator to merge evidence while maintaining uniqueness and quality
 # Note: Referenced as merge_unique_evidence in the sequence
-merge_unique_evidence(new, existing) ::= $(
-  new |> deduplicate_by_url() |> merge_with_existing(existing: existing)
+merge_unique_evidence(items, existing) ::= $(
+  merge_with_existing(items: deduplicate_by_url(results: items), existing: existing)
 )
 
 # Helper to merge new items with existing collection
@@ -182,6 +184,6 @@ Return limited array.
 >
 
 # Composite operator for selecting relevant citations
-select_relevant_citations(pool, query, max_items) ::= $(
-  pool |> filter_by_relevance(query: query) |> ensure_diversity() |> limit_items(max: max_items)
+select_relevant_evidence(pool, query, max_items) ::= $(
+  limit_items(items: ensure_diversity(items: filter_by_relevance(pool: pool, query: query)), max: max_items)
 )
