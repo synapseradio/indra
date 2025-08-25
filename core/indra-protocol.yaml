@@ -1,0 +1,909 @@
+# INDRA Language Specification v3.0
+# Complete technical specification for LLM execution of INDRA prompts
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TECHNICAL EXECUTION REQUIREMENTS
+# ═══════════════════════════════════════════════════════════════════════════
+
+technical_execution_requirements:
+  critical_capabilities:
+    - capability: "real_tool_invocation"
+      requirement: "When executing INDRA, invoke actual MCP/tool calls - never simulate or describe"
+      verification: "read_file: 'test.in' must trigger Read tool with path='test.in'"
+    
+    - capability: "deterministic_parsing"
+      requirement: "Parse INDRA syntax according to EBNF grammar rules exactly"
+      verification: "Single quotes create LITERAL channel, double quotes create DIRECTIVE channel"
+    
+    - capability: "state_maintenance"
+      requirement: "Maintain execution context across turns"
+      verification: "set: operations stage changes for next turn, not current"
+    
+    - capability: "blocking_operations"
+      requirement: "All operations execute synchronously and block until complete"
+      verification: "await: pauses current execution until component returns"
+
+  execution_readiness_check: |
+    To execute INDRA files correctly:
+    ✓ Parse according to the grammar specification below
+    ✓ Invoke real tools when specified (not descriptions)
+    ✓ Maintain state between execution turns
+    ✓ Process instructions deterministically
+
+# ═══════════════════════════════════════════════════════════════════════════
+# METADATA
+# ═══════════════════════════════════════════════════════════════════════════
+
+metadata:
+  protocol: "INDRA 3.0"
+  schema: "deterministic_language_interpreter"
+  version: "3.0"
+  goal: "Enable LLMs to execute INDRA programs deterministically via tool calls"
+  description: |
+    This document provides the complete technical specification for the INDRA protocol.
+    LLMs like Claude or Gemini use this to execute INDRA programs by:
+    1. Parsing instructions according to the grammar
+    2. Mapping instructions to tool calls
+    3. Maintaining execution state
+    4. Coordinating multi-turn conversations
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CORE DIRECTIVES - Fundamental execution principles
+# ═══════════════════════════════════════════════════════════════════════════
+
+core_directives:
+  mandatory_tool_invocation:
+    technical_requirement: |
+      INDRA execution requires mapping directives to real tool calls.
+      When processing INDRA instructions, invoke the corresponding tools.
+      All tool calls are blocking and must complete before the next instruction.
+    specification: "Tool responses are integrated into execution context, not simulated"
+
+  grammar_precision:
+    technical_requirement: "Parse according to EBNF grammar rules exactly as specified"
+    specification: "Token-level accuracy required for correct execution"
+
+  protocol_hierarchy:
+    technical_requirement: |
+      Core protocol rules take precedence.
+      Loaded files extend but cannot override core specifications.
+
+  interrupt_processing:
+    technical_requirement: |
+      INTERRUPT channel (>>...<<) triggers immediate pre-processing.
+      These directives execute before runtime begins.
+
+  execution_verification:
+    checkpoint: "[VERIFY]: Parsing capabilities ready - LITERAL='...', DIRECTIVE=\"...\", DIRECT_PROMPT=<...>"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CORE PRINCIPLES - Fundamental laws of execution
+# ═══════════════════════════════════════════════════════════════════════════
+
+core_principles:
+  fundamental_laws:
+    - "Process INDRA directives according to grammar rules"
+    - "Each instruction modifies the execution context"
+    - ">>read_file: '...'<< triggers an immediate, blocking Read tool call during pre-processing"
+    - "read_file: '...' triggers a blocking Read tool call during runtime execution"
+
+  synchronous_operations:
+    technical_specification: "All operations execute synchronously and block until complete"
+    operations:
+      interrupt_read:
+        syntax: ">>read_file: '...'<<"
+        execution: "Pre-processing phase - invoke Read tool immediately when encountered"
+        requirement: "Must execute before runtime begins"
+      
+      runtime_read:
+        syntax: "read_file: '...'"
+        execution: |
+          Runtime phase - invoke Read tool when statement becomes active
+          Required steps: 
+          1) Invoke Read tool with the specified path
+          2) Parse returned content for INDRA components
+          3) Integrate components into execution context
+          4) Make components addressable via @ references
+      
+      set:
+        description: "Stages context modifications for the next turn."
+      
+      await:
+        description: "Transfers control to another component."
+      
+      say:
+        description: "Terminates the current turn and transfers control."
+
+  execution_verification:
+    checkpoint: "[VERIFY]: Synchronous operations - read_file blocks, set stages, await transfers"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# BEHAVIORAL CHANNELS - How different string types are processed
+# ═══════════════════════════════════════════════════════════════════════════
+
+behavioral_channels:
+  LITERAL:
+    syntax: "'...'"
+    mode: "Data passthrough"
+    purpose: "For identifiers, file paths, tool names, and literal strings where no interpretation is desired"
+    interpolation: false
+    
+  DIRECTIVE:
+    syntax: '"..."'
+    mode: "Behavioral constraint"
+    purpose: "For rules and behavioral constraints that guide execution"
+    interpolation: true
+    
+  DIRECT_PROMPT:
+    syntax: "<...>"
+    mode: "Direct LLM instruction"
+    purpose: "Direct instructions to the LLM for content generation or tool invocation"
+    interpolation: true
+    tool_usage: "LLM may invoke MCP tools declared in available_mcp_tools during execution"
+    
+  TEMPLATE:
+    syntax: "<<|...|>>"
+    mode: "Structured output"
+    purpose: "For formatted, user-facing content with embedded expressions, preserving whitespace"
+    interpolation: true
+    preserves_whitespace: true
+    
+  INTERRUPT:
+    syntax: ">>...<<"
+    mode: "Pre-processing directive"
+    purpose: "For immediate execution of file reading during pre-processing phase"
+    execution: "pre-processing"
+    blocking: true
+
+# ═══════════════════════════════════════════════════════════════════════════
+# TOOL INVOCATION SEMANTICS - When and how MCP tools are called
+# ═══════════════════════════════════════════════════════════════════════════
+
+tool_invocation_semantics:
+  overview:
+    description: "Clarifies when and how the LLM invokes MCP tools during INDRA execution"
+    
+  tool_mapping:
+    read_file:
+      indra_syntax: "read_file: '...'"
+      maps_to: "Read tool"
+      when: "Always - both during pre-processing (>>...<<) and runtime"
+      purpose: "Load and integrate INDRA components from files"
+    
+    available_mcp_tools:
+      declaration: "In has: blocks of personas/agents"
+      purpose: "Declares third-party MCP tools (substring/fuzzy matches) the LLM may use when operating as the persona or agent"
+      when_invoked:
+        - "During DIRECT_PROMPT blocks (<...>) when generating content"
+        - "During output: blocks when the persona needs tools to accomplish goals"
+        - "When the persona's rules/identity require tool use for accuracy"
+      examples:
+        - "'WebSearch' - allows web searching during content generation"
+        - "'Calculator' - allows mathematical calculations"
+        - "'GitHub' - allows GitHub API operations"
+      
+  execution_context:
+    direct_prompt_blocks: "When executing <...>, the LLM generates content and may invoke declared tools"
+    output_blocks: "When executing output:, the LLM renders content and may invoke tools as needed"
+    no_simulation: "All tool invocations must be real - results are integrated into the execution"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# GRAMMAR SPECIFICATION - EBNF rules with dependency-aware ordering
+# ═══════════════════════════════════════════════════════════════════════════
+
+grammar:
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 1: Lexical Foundations (no dependencies)
+  # PARSING: Basic character and token recognition begins here
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  lexical_foundations:
+    char:
+      definition: "any valid UTF-8 character excluding control characters, quotes, and backslashes"
+    
+    escape_sequence:
+      definition: "\"\\\\\" (\"'\" | '\"' | \"<<|\" | \"|>>\" | \">>\" | \"<<\" | \"{\" | \"}\" | \"n\" | \"t\" | \"\\\\\")"
+    
+    INDENT:
+      definition: "Increase indentation level"
+    
+    DEDENT:
+      definition: "Decrease indentation level"
+    
+    comment:
+      definition: "\"#\" [^\\n]* \"\\n\""
+      semantics: "comments detailing instructions"
+    
+    block_comment:
+      definition: "\"/*\" [^*/]* \"*/\""
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 2: Primitive Types (depend only on char)
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  primitive_types:
+    identifier:
+      definition: "[a-zA-Z_][a-zA-Z0-9_]*"
+    
+    number:
+      definition: "[0-9]+ (\".\" [0-9]+)?"
+    
+    boolean:
+      definition: "\"true\" | \"false\""
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 3: String Types (depend on char, escape_sequence)
+  # PARSING: Channel differentiation - quotes determine processing mode
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  string_types:
+    single_quoted_string:
+      definition: "\"'\" (char | escape_sequence)* \"'\""
+      semantics:
+        channel: "LITERAL"
+        purpose: "Immutable data"
+        interpolation: false
+    
+    double_quoted_string:
+      definition: "'\"' (char | escape_sequence)* '\"'"
+      semantics:
+        channel: "DIRECTIVE"
+        purpose: "Behavioral instruction"
+        interpolation: true
+    
+    direct_prompt_string:
+      definition: "\"<\" (char | escape_sequence)* \">\""
+      semantics:
+        channel: "DIRECT_PROMPT"
+        purpose: "Direct LLM instructions for content generation or tool invocation"
+        interpolation: true
+    
+    output_template:
+      definition: "\"<<|\" (interpolation | char | escape_sequence)* \"|>>\""
+      semantics:
+        channel: "TEMPLATE"
+        purpose: "Structured user-facing output"
+        interpolation: true
+        preserves_whitespace: true
+    
+    quoted_string:
+      definition: "single_quoted_string | double_quoted_string | direct_prompt_string | output_template"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 4: References (depend on identifier)
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  references:
+    component_ref:
+      definition: "\"@\" identifier"
+    
+    context_ref:
+      definition: "\"&\" identifier (\".\" identifier)*"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 5: Parameters and Arguments (forward ref to 'value' noted)
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  parameters:
+    param:
+      definition: "identifier"
+    
+    param_list:
+      definition: "param (\",\" param)*"
+    
+    argument:
+      definition: "identifier \":\" value"
+      forward_reference: "value defined in expressions section"
+    
+    argument_list:
+      definition: "argument (\",\" argument)*"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 6: Collections (forward ref to 'value' noted)
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  collections:
+    array:
+      definition: "\"[\" (value (\",\" value)*)? \"]\""
+      forward_reference: "value defined in expressions section"
+    
+    object:
+      definition: "\"{\" (identifier \":\" value (\",\" identifier \":\" value)*)? \"}\""
+      forward_reference: "value defined in expressions section"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 7: Operators and Transformations
+  # PARSING: Text transformation and composition operators
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  operators:
+    operator_invocation:
+      definition: "identifier \"(\" (argument_list)? \")\""
+      semantics: |
+        Invokes a defined operator with named arguments.
+        Arguments MUST use key:value format (no positional arguments).
+        The operator's parameters are bound to argument values by name.
+        Empty parentheses required for zero-argument operators.
+        Returns the transformation result or executes the sequence.
+    
+    sequence_invocation:
+      definition: "\"sequence:\" identifier \"(\" argument_list? \")\""
+      semantics:
+        purpose: "Execute named sequence operator"
+        scope: "inline"
+        arguments: "key:value"
+    
+    transformation:
+      definition: "quoted_string | operator_invocation | composed_transformation"
+      semantics: "A transformation is any operation that produces or modifies text. Can be literal (quoted_string), computed (operator_invocation), or chained (composed_transformation)."
+    
+    composed_transformation:
+      definition: "transformation \"|\" \">\" transformation"
+      semantics: "The |> operator chains transformations left-to-right. The output of the left transformation becomes the input to the right transformation. This is for text-level composition, not component execution."
+    
+    each_invocation:
+      definition: "\"each:\" value \"as\" \"|\" identifier (\",\" identifier)? \"|\" (\"when\" condition)? \"{\" transformation+ \"}\""
+      semantics:
+        purpose: "Inline iteration for transformations"
+        features: "optional index, conditional filtering"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 8: Conditions and Expressions
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  expressions:
+    comparison_op:
+      definition: "\"is\" | \"not\" | \"greater_than\" | \"less_than\" | \"greater_than_or_eq\" | \"less_than_or_eq\""
+    
+    exists_check:
+      definition: "\"exists(\" context_ref \")\""
+    
+    dynamic_access:
+      definition: "context_ref \"[\" value \"]"
+    
+    component_pipeline:
+      definition: "\"(\" component_ref (\"|\" \">\" component_ref)* \")\""
+      semantics: |
+        Component pipeline using |> operator (written as "(" @comp1 |> @comp2 ")").
+        Creates a synchronous, intra-turn execution chain where output flows left-to-right.
+        Each component's output becomes input for the next via transient &pipeline.io variable.
+        Components execute their perform: blocks sequentially.
+        RESTRICTION: Components in pipeline CANNOT use say: or return: actions.
+        Result: The final component's output becomes the pipeline's value.
+    
+    interpolation:
+      definition: "\"$\" \"(\" expression \")\""
+      semantics: |
+        $() is the interpolation operator. It evaluates the expression inside and replaces itself with the result.
+        EVALUATION ORDER: Nested interpolations evaluate inside-out. The innermost $() is resolved first.
+    
+    simple_value:
+      definition: "number | boolean | quoted_string | array | object | component_ref | context_ref | operator_invocation | read_directive | component_pipeline | exists_check | dynamic_access | each_invocation"
+    
+    condition:
+      definition: "simple_value (comparison_op simple_value)?"
+    
+    ternary_expression:
+      definition: "condition \"?\" simple_value \":\" simple_value"
+    
+    value:
+      definition: "simple_value | ternary_expression"
+    
+    expression:
+      definition: "value ((\"|\" \">\") (operator_invocation | component_ref))*"
+      semantics: |
+        Expression with optional chaining via |> operator.
+        The |> operator chains the value through operators or components left-to-right.
+        Each stage receives the previous stage's output as input.
+        Creates a synchronous, intra-turn pipeline for value transformation.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 9: Actions
+  # PARSING: Executable directives that invoke tools and modify state
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  actions:
+    read_directive:
+      definition: "\">>\" \"read_file:\" single_quoted_string \"<<\""
+      semantics:
+        channel: "INTERRUPT"
+        purpose: "Immediate file read via tool call"
+        execution: "pre-processing, blocking"
+    
+    read_action:
+      definition: "\"read_file:\" single_quoted_string"
+      semantics:
+        purpose: "Runtime file read that executes a blocking tool call when its containing block/step becomes active. The loaded content (personas, agents, sequences, operators) is parsed and integrated into the current execution context, making all components immediately addressable for subsequent operations within the same turn."
+        execution: "runtime, blocking, integrative"
+    
+    set_block:
+      definition: "\"set:\" (context_ref \":\" value | INDENT (context_ref \":\" value | executable_unit)+ DEDENT)"
+      semantics: "Stages modifications to the shared conversational context for the NEXT turn. Can contain nested executable units for computed values."
+    
+    yield_action:
+      definition: "\"!YIELD:\" value"
+      semantics: "Promotes state from within loops to parent scope."
+    
+    output_block:
+      definition: "\"output:\" (output_template | operator_invocation | INDENT executable_unit+ DEDENT)"
+      semantics: "Output directive that can be simple (inline) or complex (nested block)"
+    
+    become_action:
+      definition: "\"become:\" component_ref \"with:\" object \"perform:\" perform_block"
+      semantics: "Creates and immediately executes a temporary Agent from a Persona for a single turn."
+    
+    await_action:
+      definition: "\"await:\" (component_ref | sequence_invocation) (\"with:\" object)? (\"store_in:\" context_ref)?"
+      semantics: "Pauses the current agent and transfers control to another component, creating a call stack."
+    
+    say_action:
+      definition: "\"say:\" INDENT \"to:\" component_ref \"what:\" quoted_string DEDENT"
+      semantics: "The ONLY valid action to terminate a turn and transfer control to the next component."
+    
+    return_action:
+      definition: "\"return:\" value?"
+      semantics: "Concludes the execution of an awaited component and returns control to the caller."
+    
+    action_sequence:
+      definition: "(set_block | become_action | \"as:\" component_ref | each_invocation | output_block | await_action | each_block | read_action | yield_action)*"
+      semantics: |
+        A sequence of zero or more actions that execute within a turn but do NOT terminate it.
+        Actions execute in order, each completing before the next begins.
+        State changes from set: are staged for next turn (except within sequence: blocks).
+        Cannot contain say: or return: actions - those belong in then_sequence.
+        Used within control structures (when:, each:, until:) for intermediate operations.
+    
+    then_sequence:
+      definition: "action_sequence (say_action | return_action)"
+      semantics: "A series of actions in a conditional branch, MUST end with say_action or return_action."
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 10: Control Flow Blocks
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  control_flow:
+    each_block:
+      definition: "\"each:\" value \"as\" \"|\" identifier (\",\" identifier)? \"|\" (\"when\" condition)? INDENT executable_unit+ DEDENT"
+      semantics: "Context-aware iteration. Can contain any executable unit, enabling full recursion."
+    
+    until_block:
+      definition: "\"until:\" condition INDENT max_iterations_clause? (action_sequence | executable_unit+) DEDENT"
+      semantics: "Controlled iteration within a single turn."
+    
+    max_iterations_clause:
+      definition: "\"max_iterations:\" number"
+    
+    when_block:
+      definition: "\"when:\" condition INDENT (executable_unit | then_sequence)+ DEDENT"
+      semantics: |
+        Conditional execution block. Evaluates condition against current context.
+        If true, executes the body (executable_unit or then_sequence).
+        For then_sequence: MUST end with say: or return: to transfer control.
+        For executable_unit: Performs operations without terminating the turn.
+        Evaluation stops at first true condition in a when_blocks sequence.
+    
+    otherwise_block:
+      definition: "\"otherwise:\" INDENT (executable_unit | then_sequence)+ DEDENT"
+      semantics: |
+        Default branch in conditional logic. Executes only if all preceding when: conditions were false.
+        Body follows same rules as when_block: then_sequence must terminate, executable_unit does not.
+        Optional - if absent and no when: matches, execution continues.
+    
+    when_blocks:
+      definition: "when_block+ (otherwise_block)?"
+      semantics: |
+        Sequence of when: conditions with optional otherwise: fallback.
+        Evaluates conditions in order, executing first match only.
+        If no condition matches and no otherwise:, no action taken.
+        Provides if-elseif-else semantics for INDRA.
+    
+    then_block:
+      definition: "\"then:\" INDENT (when_blocks | executable_unit | then_sequence)+ DEDENT"
+      semantics: |
+        The decision logic block of an agent's perform: section.
+        Evaluates after the output: block completes.
+        MUST resolve to exactly ONE terminating action (say: or return:).
+        Can contain nested conditionals (when_blocks), operations (executable_unit), or direct termination (then_sequence).
+        This is where agents decide their next action based on context.
+    
+    step_block:
+      definition: "\"step:\" INDENT executable_unit+ DEDENT"
+    
+    sequence_block:
+      definition: "\"sequence:\" INDENT (step_block | executable_unit)+ DEDENT"
+      semantics: "Enables multi-part outputs within a single turn. set: operations are visible immediately to subsequent steps."
+    
+    executable_unit:
+      definition: "sequence_block | when_block | each_block | until_block | await_action | output_block | set_block | read_action"
+      description: "Universal executable unit - can appear anywhere execution is allowed"
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 11: Component Structure Elements  
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  component_structures:
+    string_list:
+      definition: "(\"-\" quoted_string)+"
+    
+    output_clause:
+      definition: "\"output:\" (output_template | operator_invocation)"
+    
+    identity_line:
+      definition: "\"identity:\" quoted_string"
+    
+    rules_block:
+      definition: "\"rules:\" INDENT string_list DEDENT"
+    
+    understands_block:
+      definition: "\"understands:\" INDENT string_list DEDENT"
+    
+    has_block:
+      definition: "\"has:\" INDENT available_mcp_tools_block? DEDENT"
+    
+    available_mcp_tools_block:
+      definition: "\"available_mcp_tools:\" INDENT (\"-\" single_quoted_string)+ DEDENT"
+      semantics:
+        purpose: "Declares substring/fuzzy matches for third-party MCP tools the persona may use"
+        when_invoked: "During DIRECT_PROMPT blocks (<...>) and output: blocks when needed"
+        critical: "Invoke these real MCP tools to accomplish the persona's goals - no simulation"
+    
+    method_clause:
+      definition: "\"method:\" quoted_string"
+      semantics: |
+        Describes HOW the agent/step accomplishes its task.
+        Provides implementation guidance for the LLM interpreter.
+        Used in perform: blocks and step: blocks for methodological clarity.
+    
+    goal_clause:
+      definition: "\"goal:\" quoted_string"
+      semantics: |
+        Describes WHAT the agent/step aims to achieve.
+        Provides intent and success criteria for the operation.
+        Helps align LLM behavior with desired outcomes.
+    
+    perform_block:
+      definition: "\"perform:\" INDENT (rules_block | method_clause | goal_clause | executable_unit | then_block)+ DEDENT"
+      semantics: |
+        The execution body of an agent. Contains the agent's runtime behavior.
+        output: defines what the agent says/displays when active.
+        then: contains decision logic that MUST end with say: or return:.
+        method: and goal: provide execution guidance and intent.
+        Can include inline rules: for performance-specific constraints.
+        Executes each turn the agent is active.
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 12: Top-level Definitions
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  definitions:
+    context_def:
+      definition: "\"context:\" object"
+      semantics: "Defines the schema and initial values for the global, shared &context."
+    
+    operator_def:
+      definition: "expression_operator_def | sequence_operator_def"
+    
+    expression_operator_def:
+      definition: "identifier \"(\" param_list? \")\" \"::=\" (transformation | executable_unit)"
+    
+    sequence_operator_def:
+      definition: "\"sequence\" identifier \"(\" param_list? \")\" \"::=\" INDENT (step_block | executable_unit)+ DEDENT"
+      semantics: "Operators are reusable transformations or step sequences. Invoked with key:value arguments."
+    
+    agent_def:
+      definition: "\"agent\" \"@\" identifier \":\" INDENT has_block? identity_line rules_block understands_block perform_block DEDENT"
+      semantics: "A static, addressable actor with identity and behaviors."
+    
+    persona_def:
+      definition: "\"persona\" \"@\" identifier \":\" INDENT has_block? identity_line rules_block understands_block DEDENT"
+      semantics: "A \"headless\" collection of behavioral constraints (a role). Cannot act on its own."
+    
+    dialogue_def:
+      definition: "\"dialogue\" identifier \":\" INDENT \"start:\" component_ref (\"with:\" object)? DEDENT"
+      semantics: "Defines an execution flow, starting with an Agent."
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # LEVEL 13: Program Structure
+  # ─────────────────────────────────────────────────────────────────────────
+  
+  program_structure:
+    program:
+      definition: "read_file:* context_def? operator_def* (agent_def | persona_def)* dialogue_def+"
+      semantics: "An INDRA program is a collection of constructs defining context, actors, roles, and execution flows."
+    
+    parsing_verification:
+      checkpoint: "[VERIFY]: Grammar parsing ready - 13 levels from lexical to program structure"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EXECUTION MODEL - Complete execution semantics
+# ═══════════════════════════════════════════════════════════════════════════
+
+execution_model:
+  main_execution_loop:
+    technical_specification: "Single-threaded event loop executing one turn at a time"
+    required_steps:
+      - step: 1
+        operation: "IDENTIFY_ACTIVE_AGENT"
+        specification: "Determine active agent from dialogue.start or previous say.to directive"
+      
+      - step: 2
+        operation: "UPDATE_CONTEXT"
+        specification: "Set &context.dialogue.latest_dialogue_entry from preceding say.what content"
+      
+      - step: 3
+        operation: "EXECUTE_PERFORM_BLOCK"
+        specification: "Process output clause of active agent - render content and invoke tools as needed"
+      
+      - step: 4
+        operation: "EXECUTE_THEN_BLOCK"
+        specification: "Process then block - evaluate when conditions against current context"
+      
+      - step: 5
+        operation: "RESOLVE_TERMINATOR"
+        specification: "Execution must reach exactly one terminating action: say (transfers control) or return (ends delegation)"
+      
+      - step: 6
+        operation: "END_TURN"
+        specification: "Terminating action completes the current turn"
+
+  conversational_context:
+    description: "A global, shared, readable key-value store."
+    turn_based_mutation:
+      critical: true
+      description: "set: actions stage changes for the NEXT turn. Within a single turn, the global context remains an immutable snapshot. All staged writes commit atomically at the turn boundary."
+    exception:
+      name: "sequence-scope"
+      description: "Within a sequence: block, set: operations create a temporary local scope that is immediately visible to subsequent steps in that sequence. This local scope merges with staged changes at turn boundary."
+
+  dynamic_agent_instantiation:
+    description: |
+      persona definitions are inert behavioral blueprints (roles or "hats").
+      The become: action commands a new, temporary Agent into existence by instantiating a Persona with a perform block.
+      This allows for the dynamic creation of experts or other single-turn actors within a conversation.
+
+  iteration:
+    each_iteration:
+      description: "Provides context-aware iteration over arrays and objects. In templates ($(), it generates text. In action sequences, it executes actions for each item. set: actions within the loop are immediately visible to subsequent iterations."
+    
+    until_iteration:
+      description: "Provides controlled iteration with an explicit termination condition (until: condition) and an optional max_iterations: safeguard. State changes are visible between iterations. The entire loop completes within a single turn."
+
+  output_rendering:
+    description: "The content of an output: clause is rendered as user-facing output."
+    tool_usage: "During output: blocks, invoke MCP tools from available_mcp_tools as needed to accomplish goals."
+    conformance_requirement:
+      assert: "[!ASSERT]: \"Tool invocation understood.\""
+
+  principle_of_precedence:
+    description: "When conflicts arise, resolve them in this descending order of authority:"
+    execution_precedence:
+      - priority: 1
+        level: "INTERRUPT channel (>>...<<) - Always executes immediately, bypassing all other logic"
+      - priority: 2
+        level: "Pre-processing directives - Execute before runtime begins"
+      - priority: 3
+        level: "Runtime execution - Normal program flow"
+    
+    behavioral_guidance_precedence:
+      - priority: 1
+        level: "rules: (Hard Constraints)"
+      - priority: 2
+        level: "identity: (Core Identity)"
+      - priority: 3
+        level: "goal: (Goal Alignment)"
+      - priority: 4
+        level: "understands: (Contextual Nuance)"
+    
+    termination_precedence:
+      description: "When multiple terminating actions appear in the same scope:"
+      - priority: 1
+        level: "return: takes precedence (indicates delegated execution)"
+      - priority: 2
+        level: "say: executes only if no return: is present"
+
+  delegation_resumption:
+    await_action: "Pauses the current agent, pushes its state to a call stack, and transfers control to another component."
+    requirement: "The awaited component MUST end with a return: action."
+    return_action: "Pops the previous agent's state from the stack and resumes its execution."
+
+  sequence_execution:
+    description: |
+      Enables structured, multi-part outputs within a single turn.
+      Steps execute sequentially.
+    state_visibility: "set: operations within a sequence use local scope - changes are immediately visible to subsequent steps in the same sequence. This local scope exists only during sequence execution."
+    note: "The entire sequence completes within one turn, which still ends with a single say: action."
+
+  intra_turn_persona_adoption:
+    description: |
+      The as: operator allows an active Agent to temporarily adopt the behavioral constraints of a Persona for a single step in a sequence.
+      This adoption does NOT transfer control; the current Agent remains active for the turn.
+      The adoption is scoped to the current performance step only.
+
+  runtime_file_loading:
+    technical_specification: "Runtime read_file: actions enable dynamic module loading"
+    required_execution_steps:
+      - step: 1
+        requirement: "When read_file: becomes active, invoke Read tool with specified path"
+      - step: 2
+        requirement: "Parse returned content according to INDRA grammar"
+      - step: 3
+        requirement: "Integrate all loaded components (personas, agents, sequences, operators) into context"
+      - step: 4
+        requirement: "Make components addressable via @ references immediately"
+      - step: 5
+        requirement: "Enable await: actions to invoke newly loaded components"
+    typical_applications:
+      - "Loading PRISM modules based on reasoning strategy"
+      - "Conditional persona loading based on context"
+      - "Dynamic capability extension during execution"
+    technical_requirement: "Actual tool invocation required - integrate real file content"
+
+  chain_expressions:
+    description: |
+      A synchronous, intra-turn pipeline that composes components.
+      It is syntactic sugar for an anonymous sequence that passes the output of one component to the next via a transient &pipeline.io context variable.
+      Components in a pipeline cannot terminate the turn.
+
+  validation_error_handling:
+    errors:
+      grammar_violation:
+        output: "[ERROR: Grammar violation at line X: <description>]"
+        action: "Halt execution"
+      
+      missing_reference:
+        recovery: "Attempt recovery by checking context"
+        output_if_unresolvable: "[ERROR: Undefined reference: <name>]"
+        action: "Halt"
+      
+      missing_termination:
+        condition: "If a turn lacks say: or return:"
+        output: "[ERROR: No terminating action in turn]"
+        action: "Halt"
+      
+      tool_failure:
+        condition: "If MCP tool returns error"
+        output: "[WARNING: Tool <name> failed: <reason>]"
+        action: "Continue with null result"
+      
+      context_access_violation:
+        condition: "If accessing undefined context key"
+        output: "[ERROR: Undefined context: <key>]"
+        action: "Halt"
+      
+      circular_dependency:
+        condition: "If infinite loop detected"
+        output: "[ERROR: Circular dependency detected]"
+        action: "Halt after 100 iterations"
+    
+    fallback_handling:
+      description: "!fallback: provides graceful degradation for sequence: or until: blocks. Receives the context at failure moment, executes within same turn."
+
+  execution_verification:
+    checkpoint: "[VERIFY]: Execution model ready - turn-based, state-maintaining, tool-invoking"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SYSTEM CALLS & INTERRUPTS - Pre-processing and runtime phases
+# ═══════════════════════════════════════════════════════════════════════════
+
+system_calls_interrupts:
+  star_command_handling:
+    description: "Star commands (*trace, *exit, *status) provide runtime control and debugging."
+
+  execution_phases:
+    dependency_resolution:
+      phase_number: 1
+      type: "Pre-processing"
+      description: "Before the main execution loop begins (as defined in Section 5.1), YOU MUST first scan the entire loaded source file for all >>read_file: '...'<< directives."
+      steps:
+        - "Identify all INTERRUPT-based file read directives."
+        - "For each directive, execute a blocking read_file tool call using the specified path."
+        - "Replace the >>read_file: '...'<< directive in the source code with the full, literal content of the file that was read."
+        - "Repeat until no >>read_file: '...'<< directives remain in the code to be executed."
+      note: "Only after this phase is complete can the runtime execution begin."
+    
+    runtime_execution:
+      phase_number: 2
+      type: "Runtime"
+      description: |
+        Once all dependencies are resolved and inlined, the main execution loop begins as described in Section 5.
+        YOU will now execute the fully-resolved code. Any read_file: '...' actions encountered during this phase trigger the following sequence:
+        1) YOU execute a blocking read_file tool call
+        2) The file contents are parsed for INDRA components
+        3) All loaded personas, agents, sequences, and operators are integrated into the execution context
+        4) These components become immediately addressable via @ references for await: actions and other operations
+        This enables conditional, dynamic loading of modules based on runtime state.
+
+# ═══════════════════════════════════════════════════════════════════════════
+# STAR COMMANDS - System-level interrupt vectors
+# ═══════════════════════════════════════════════════════════════════════════
+
+star_commands:
+  description: "Star commands provide runtime control and debugging. Detected in &context.dialogue.latest_dialogue_entry during context update."
+  
+  processing_model:
+    detection: "Star commands are detected when they appear in the dialogue entry"
+    execution_priority: "HIGHEST - Executes immediately"
+    immediate_effect: "Changes take effect immediately upon execution"
+
+  commands:
+    trace:
+      name: "*trace"
+      type: "DEBUG"
+      description: "Toggles debug mode for execution tracing"
+      behavior:
+        action: "Toggles the value of &context.trace.enabled"
+        effect_when_enabled:
+          - "State machine transitions become visible"
+          - "Meta-commentary in output blocks is rendered"
+          - "Condition evaluations are shown"
+          - "Current persona identification is displayed"
+          - "Target persona for say: actions is revealed"
+        effect_when_disabled:
+          - "Only persona speech content is shown"
+          - "All meta-commentary is suppressed"
+          - "State transitions occur silently"
+      context_mutation: "&context.trace.enabled = !&context.trace.enabled"
+    
+    exit:
+      name: "*exit"
+      type: "TERMINATION"
+      description: "Terminates execution cleanly"
+      behavior:
+        action: "Immediate termination"
+        cleanup: "Complete any pending output"
+        finality: "No further instructions are processed"
+    
+    status:
+      name: "*status"
+      type: "STATE DUMP"
+      description: "Outputs current execution state"
+      behavior:
+        prerequisite: "Only executes if &context.trace.enabled is true"
+        action: "Dumps current execution state to output"
+        includes:
+          - "Current active persona identifier"
+          - "Call stack state (if any await: operations are active)"
+          - "All context variables and their current values"
+          - "Staged set: operations pending for next turn"
+          - "Current turn number"
+          - "Dialogue transcript length"
+        continuation: "Execution continues normally after dump"
+
+  invocation_semantics:
+    detection_phase: "During UPDATE CONTEXT phase of execution loop"
+    execution:
+      - "Scan &context.dialogue.latest_dialogue_entry for star command pattern"
+      - "If detected, execute command immediately"
+      - "Commit any state changes"
+      - "Resume normal execution or terminate based on command"
+    pattern_matching: "Commands must appear as exact tokens (e.g., \"*trace\" not \"* trace\")"
+    case_sensitivity: "Star commands are case-sensitive"
+
+  error_handling:
+    unknown_command:
+      condition: "If a star-prefixed token is not recognized"
+      behavior: "Treat as normal dialogue content, no interrupt occurs"
+    
+    malformed_command:
+      condition: "If star command syntax is incorrect"
+      behavior: "Ignore and continue normal execution"
+
+  execution_verification:
+    checkpoint: "[VERIFY]: Star command detection operational - *trace, *exit, *status"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# FINAL VERIFICATION - Execution readiness confirmation
+# ═══════════════════════════════════════════════════════════════════════════
+
+execution_readiness:
+  technical_requirements_met:
+    grammar_parsing: "EBNF rules loaded - 13 levels from lexical to program structure"
+    tool_invocation: "Read tool mapping ready for file loading operations"
+    state_management: "Context persistence across turns enabled"
+    execution_model: "Turn-based synchronous processing ready"
+  
+  specification_loaded: |
+    INDRA v3.0 specification complete.
+    When processing .in files, you must execute INDRA protocol prompt snippets and INDRA prompts within .in files according to this specification.
+  
+  final_verification: "[VERIFY]: Ready to execute INDRA programs via deterministic parsing and tool invocation"
