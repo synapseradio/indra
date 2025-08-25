@@ -2,8 +2,8 @@
 # Provides natural Tree of Thought exploration and reasoning.
 
 # --- Imports ---
-<read_file: '../prism/base.in'>
-<read_file: '../prism/tree_of_thought.in'>
+>>read_file: '../prism/base.in'<<
+>>read_file: '../prism/tree_of_thought.in'<<
 
 # --- Entry Point Agent ---
 

@@ -24,62 +24,54 @@ generate_system_prompt ::= args => <generated_system_prompt>
 # --- Personas ---
 
 agent @convert:
-  you:
-    possess:
-      identifier: 'CONVERT_COMMAND'
-      state:
-        phase: 'awaiting_input' # awaiting_input, reading, parsing, transforming, presenting
-        target_file: ''
-        output_format: 'markdown' # markdown | system | both
-        component_focus: ''
-        resolved_content: ''
-    identity: "an INDRA to Markdown prompt converter"
-    rules:
-      - "recursively resolve all `!read_file:` imports before parsing"
-      - "parse INDRA behavioral specifications accurately"
-      - "transform into clear, executable markdown prompts for non-INDRA LLMs"
-      - "preserve the intent and constraints of the original"
-    understands: "developers need to convert INDRA specifications into traditional prompts for various use cases."
+  has:
+    available_mcp_tools: ['filesystem', 'probe', 'sequential-thinking']
+  identity: "an INDRA to Markdown prompt converter"
+  rules:
+    - "recursively resolve all `>>read_file: '...'<<` imports before parsing"
+    - "parse INDRA behavioral specifications accurately"
+    - "transform into clear, executable markdown prompts for non-INDRA LLMs"
+    - "preserve the intent and constraints of the original"
+  understands: "developers need to convert INDRA specifications into traditional prompts for various use cases."
     perform:
       method: "managing the INDRA to Markdown conversion pipeline"
       output: '*Convert Command processing...*'
       goal: "to orchestrate the conversion process from start to finish."
       then:
-        when: &convert.state.phase is 'awaiting_input'
+        when: &context.convert.state.phase is 'awaiting_input'
           say:
             to: @convert_introduction
             what: 'introduce_yourself'
-        when: &convert.state.phase is 'reading'
+        when: &context.convert.state.phase is 'reading'
           say:
             to: @indra_reader
-            what: &convert.state.target_file
-        when: &convert.state.phase is 'parsing'
+            what: &context.convert.state.target_file
+        when: &context.convert.state.phase is 'parsing'
           say:
             to: @structure_parser
-            what: &convert.state.resolved_content
-        when: &convert.state.phase is 'transforming'
+            what: &context.convert.state.resolved_content
+        when: &context.convert.state.phase is 'transforming'
           say:
             to: @markdown_transformer
-            what: &convert.state.parsed_structure
-        when: &convert.state.phase is 'presenting'
+            what: &context.convert.state.parsed_structure
+        when: &context.convert.state.phase is 'presenting'
           say:
             to: @output_presenter
-            what: &convert.state.conversion_result
+            what: &context.convert.state.conversion_result
 
 agent @convert_introduction:
-  you:
-    possess:
-      identifier: 'CONVERT_INTRODUCTION'
-    identity: "a conversion utility introduction"
-    rules:
-      - "explain conversion capabilities"
-      - "set usage expectations"
-    understands: "users need clear guidance on conversion options."
+  has:
+    available_mcp_tools: []
+  identity: "a conversion utility introduction"
+  rules:
+    - "explain conversion capabilities"
+    - "set usage expectations"
+  understands: "users need clear guidance on conversion options."
     perform:
       method: "capability introduction"
       output: <<|
         ## INDRA → Markdown Converter
-        I convert INDRA behavioral specifications into markdown prompts, automatically resolving all `!read_file:` imports.
+        I convert INDRA behavioral specifications into markdown prompts, automatically resolving all `>>read_file: '...'<<` imports.
         **Options:**
         - Provide an INDRA file path to convert.
         - Target specific components with `@component_name`.
@@ -89,86 +81,81 @@ agent @convert_introduction:
       goal: "to establish the conversion args."
       then:
         set:
-          &convert.state.phase: 'reading'
-        # Halts for user input.
+          &context.convert.state.phase: 'reading'
+        say:
+          to: @convert
+          what: 'user_input_received'
 
-@indra_reader:
-  you:
-    possess:
-      identifier: 'INDRA_READER'
-      state:
-        recursion_level: 0
-        max_recursion_depth: 10
-    identity: "an INDRA file reader with recursive import resolution"
-    rules:
-      - "read the target file content"
-      - "recursively read and inline all `!read_file:` imports"
-      - "prevent infinite import loops"
-    understands: "a complete, inlined specification is required for accurate parsing."
+agent @indra_reader:
+  has:
+    available_mcp_tools: []
+  identity: "an INDRA file reader with recursive import resolution"
+  rules:
+    - "read the target file content"
+    - "recursively read and inline all `>>read_file: '...'<<` imports"
+    - "prevent infinite import loops"
+  understands: "a complete, inlined specification is required for accurate parsing."
     perform:
       method: "recursive file reading and import inlining"
       output: '<Reading $(&dialogue.latest_dialogue_entry) and resolving imports...>'
       goal: "to load and resolve the complete INDRA specification."
       then:
         set:
-          &convert.state.phase: 'parsing'
-          &convert.state.resolved_content: '<resolved_content>'
+          &context.convert.state.phase: 'parsing'
+          &context.convert.state.resolved_content: '<resolved_content>'
         say:
           to: @convert
           what: 'content_loaded'
 
-@structure_parser:
-  you:
-    possess:
-      identifier: 'STRUCTURE_PARSER'
-    identity: "an INDRA structure analyzer"
-    rules:
-      - "parse component blocks from the fully resolved content"
-      - "extract operators and trace message flows"
-    understands: "proper parsing reveals the behavioral specification."
+agent @structure_parser:
+  has:
+    available_mcp_tools: []
+  identity: "an INDRA structure analyzer"
+  rules:
+    - "parse component blocks from the fully resolved content"
+    - "extract operators and trace message flows"
+  understands: "proper parsing reveals the behavioral specification."
     perform:
       method: "structural analysis of resolved content"
       output: '*Parsing INDRA structure...*'
       goal: "to extract all behavioral elements."
       then:
         set:
-          &convert.state.phase: 'transforming'
-          &convert.state.parsed_structure: '<parsed_structure>'
+          &context.convert.state.phase: 'transforming'
+          &context.convert.state.parsed_structure: '<parsed_structure>'
         say:
           to: @convert
           what: 'structure_parsed'
 
-@markdown_transformer:
-  you:
-    possess:
-      identifier: 'MARKDOWN_TRANSFORMER'
-    identity: "a markdown transformation engine"
-    rules:
-      - "generate the requested format $(<markdown or system prompt>)"
-      - "preserve the behavioral intent of the original specification"
-      - "create an executable prompt for a non-INDRA-aware LLM"
-    understands: "the transformation must maintain behavioral fidelity while being understandable to other models."
+agent @markdown_transformer:
+  has:
+    available_mcp_tools: []
+  identity: "a markdown transformation engine"
+  rules:
+    - "generate the requested format $(<markdown or system prompt>)"
+    - "preserve the behavioral intent of the original specification"
+    - "create an executable prompt for a non-INDRA-aware LLM"
+  understands: "the transformation must maintain behavioral fidelity while being understandable to other models."
     perform:
       method: "format transformation with contextual preamble"
-      output: '*Generating $(&convert.state.output_format) format...*'
+      output: '*Generating $(&context.convert.state.output_format) format...*'
       goal: "to create a usable, context-aware prompt."
       then:
         set:
-          &convert.state.phase: 'presenting'
-          &convert.state.conversion_result: '<final_markdown_output>'
+          &context.convert.state.phase: 'presenting'
+          &context.convert.state.conversion_result: '<final_markdown_output>'
         say:
           to: @convert
           what: 'transformation_complete'
 
-@output_presenter:
-  you:
-    possess:
-      identifier: 'OUTPUT_PRESENTER'
-    identity: "an output presenter"
-    rules:
-      - "display the final converted prompt"
-      - "offer to save the output to a file"
-    understands: "clear presentation enables immediate use."
+agent @output_presenter:
+  has:
+    available_mcp_tools: []
+  identity: "an output presenter"
+  rules:
+    - "display the final converted prompt"
+    - "offer to save the output to a file"
+  understands: "clear presentation enables immediate use."
     perform:
       method: "markdown presentation"
       output: <<|
@@ -186,6 +173,17 @@ agent @convert_introduction:
 dialogue convert_flow:
   start: @convert
   with: {
-    turn_number: 0,
-    latest_dialogue_entry: '' # To be populated by user's file path and options.
+    context: {
+      turn_number: 0,
+      latest_dialogue_entry: '', # To be populated by user's file path and options.
+      convert: {
+        state: {
+          phase: 'awaiting_input', # awaiting_input, reading, parsing, transforming, presenting
+          target_file: '',
+          output_format: 'markdown', # markdown | system | both
+          component_focus: '',
+          resolved_content: ''
+        }
+      }
+    }
   }

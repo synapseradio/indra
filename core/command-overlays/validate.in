@@ -2,7 +2,7 @@
 # Provides a simple, single-pass syntax and style linter for INDRA code.
 
 # --- Imports ---
-<read_file: '../prism/base.in'>
+>>read_file: '../prism/base.in'<<
 
 # --- Operators ---
 
@@ -82,8 +82,8 @@ agent @validate:
               - Errors: $(&context.validate.errors.length)
               - Warnings: $(&context.validate.warnings.length)
             |>>
-            then:
-              say:
-                to: &caller
-                what: &result
         goal: "to perform a full validation and generate a report"
+        then:
+          say:
+            to: &caller
+            what: &context.synthesis

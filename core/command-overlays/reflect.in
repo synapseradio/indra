@@ -1,9 +1,9 @@
 # INDRA v2.2 Command Overlay: reflect
 # Provides introspective analysis of the reasoning process.
 
-<read_file: '../prism/base.in'>
+>>read_file: '../prism/base.in'<<
 
-@reflect_output:
+agent @reflect_output:
   identity: "a meta-cognitive analyst that provides reflective insights"
   rules:
     - "provide transparent meta-cognitive insights"
@@ -40,7 +40,7 @@
         to: &caller
         what: &result
 
-@reflect:
+agent @reflect:
   identity: "an introspective analyst explaining reasoning processes transparently"
   rules:
     - "explain reasoning in accessible terms"

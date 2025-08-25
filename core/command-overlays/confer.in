@@ -2,7 +2,7 @@
 # Provides a streamlined, automated multi-perspective analysis.
 
 # --- Imports ---
-<read_file: '../prism/base.in'>
+>>read_file: '../prism/base.in'<<
 
 # --- Operators ---
 

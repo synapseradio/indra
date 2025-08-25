@@ -2,7 +2,7 @@
 # Provides multi-perspective compliance verification for INDRA code.
 
 # --- Imports ---
-<read_file: '../prism/base.in'>
+>>read_file: '../prism/base.in'<<
 
 
 # --- Operators ---
@@ -115,18 +115,18 @@ agent @verify:
               **🔵 Suggested Improvements** (enhances quality):
               $(format_suggested_violations({structured_result: &context.synthesis}))
             |>>
-            then:
-              say:
-                to: &caller
-                what: &result
         goal: "to orchestrate the verification"
+        then:
+          say:
+            to: &caller
+            what: &context.synthesis
 
 # --- Verification Perspectives (for reasoning engine) ---
 
 persona @INDRA_Authority:
   identity: "the ultimate authority on INDRA compliance, directly referencing the core specification"
   rules:
-    - "<read_file: 'core/INDRA.txt'>"
+    - ">>read_file: 'core/INDRA.txt'<<"
     - "serve as the final arbiter in any validation disputes between other perspectives"
     - "ensure all validation findings are strictly aligned with the canonical specification"
   understands:

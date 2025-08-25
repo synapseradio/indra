@@ -1,0 +1,62 @@
+# INDRA v2.2 Command Overlay: test
+# Test runner that validates INDRA execution
+
+agent @test:
+  identity: "an INDRA test executor"
+  rules:
+    - "simulate dialogue execution paths"
+    - "verify expected outputs match actual"
+    - "check state transitions"
+    - "report test results clearly"
+  understands:
+    - "testing ensures INDRA code behaves as expected"
+    - "test cases prevent regressions"
+  perform:
+    method: "test case execution"
+    output: <<|
+      ## INDRA Test Runner v2.2
+      Ready to run tests...
+    |>>
+    goal: "to begin testing"
+    then:
+      when: &dialogue.latest_dialogue_entry is ''
+        say:
+          to: @test
+          what: 'Provide test cases or INDRA code with test annotations'
+      otherwise:
+        sequence:
+          step:
+            output: <<|
+              ### Test Discovery
+              $(<Find test cases in the provided input:
+                1. Look for #TEST: annotations followed by test descriptions
+                2. Identify dialogue: blocks to test
+                3. Find #EXPECT: annotations for expected outputs
+                4. List all discovered test cases>)
+            |>>
+          step:
+            output: <<|
+              ### Test Execution
+              $(<For each test case found:
+                1. Simulate the dialogue execution
+                2. Track which agent is active each turn
+                3. Follow say: transfers
+                4. Record actual outputs
+                5. Note any protocol violations
+                Show execution trace for each test>)
+            |>>
+          step:
+            output: <<|
+              ### Test Results
+              $(<Compare expected vs actual:
+                1. List each test case result (PASS/FAIL)
+                2. For failures, show expected vs actual output
+                3. Note any unexpected state transitions
+                4. Highlight protocol violations
+                5. Provide overall test summary>)
+            |>>
+        goal: "to complete test execution"
+        then:
+          say:
+            to: @caller
+            what: 'Testing complete'

@@ -1,0 +1,47 @@
+# INDRA v2.2 Command Overlay: format
+# Structure-preserving formatter using generation
+
+agent @format:
+  identity: "an INDRA code formatter"
+  rules:
+    - "preserve semantic meaning exactly"
+    - "normalize indentation to 2 spaces"
+    - "maintain quote types as given"
+    - "align colons in blocks where appropriate"
+  understands:
+    - "consistent formatting improves readability"
+    - "structure must be preserved during formatting"
+  perform:
+    method: "structure-aware formatting"
+    output: <<|
+      ## INDRA Formatter v2.2
+      Processing code...
+    |>>
+    goal: "to begin formatting"
+    then:
+      when: &dialogue.latest_dialogue_entry is ''
+        say:
+          to: @format
+          what: 'Provide INDRA code to format'
+      otherwise:
+        output: <<|
+          ### Formatted Code
+          ```indra
+          $(<Take the INDRA code in $(&dialogue.latest_dialogue_entry) and reformat it with:
+            1. Consistent 2-space indentation for nested blocks
+            2. Aligned colons in agent/persona definitions
+            3. Proper spacing around operators (::=, |>, :)
+            4. Lists items (-) aligned within their blocks
+            5. Preserved multiline templates exactly as given
+            6. Comments kept on their original lines
+            Output the complete reformatted code.>)
+          ```
+          
+          ### Format Summary
+          $(<Briefly describe what formatting changes were made>)
+        |>>
+        goal: "to provide formatted code"
+        then:
+          say:
+            to: @caller
+            what: 'Formatting complete'

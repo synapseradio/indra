@@ -1,95 +1,257 @@
-# INDRA v2.2 Command Overlay: ponder
-# Provides a contemplative, minimalist reflection on a topic.
+# INDRA v2.2 Command Overlay: ponder (Enhanced)
+# An intelligent creative thinking partner that helps ideas evolve.
 
-<read_file: '../prism/base.in'>
+>>read_file: '../prism/base.in'<<
+>>read_file: '../prism/thinking_primitives.in'<<
 
-# --- Operators ---
+# --- Core Conversation State Detection ---
 
-whisper ::= args => <<|
-*
-Δ *$(args.thought)* Δ
+detect_user_momentum(input, history, turn) ::= <<|
+  $(<Analyze the user's current state:
+    Input: "$(input)"
+    Recent history: $(history)
+    Turn number: $(turn)
+    
+    Look for:
+    - Vague or uncertain language
+    - Repetition of ideas
+    - Explicit requests for help
+    - Strong forward momentum
+    - Natural pauses or reflection
+    
+    Return exactly one: 'flowing', 'stuck', 'cycling', 'reflecting', 'requesting_structure'>)
 |>>
 
-# Contemplative branching using unified sequence approach
-sequence contemplate_deeply(topic) ::=
-  step:
-    output: <<|
-      $(whisper({thought: 'you know what\'s interesting about this?'}))
-      
-      Let me explore $(topic) from different angles...
-    |>>
-  step:
-    as: self
-    method: "gathering creative contributions"
-    set:
-      &context.reasoning.config.perspectives: ["playful explorer", "lateral thinker", "imaginative extrapolator"]
-      &context.experts.contributions: {}
-    each: &context.reasoning.config.perspectives as |perspective| {
-      output_action:
-        output: <<|
-          ---
-          *Considering from a **$(perspective)** perspective...*
-        |>>
-        goal: "Show progress"
-      
-      set:
-        &context.experts.current_speaker: perspective
-        
-      await: @expert_contributor
-      
-      set:
-        &context.experts.contributions[perspective]: &result
-    }
-  step:
-    await: @epistemic_guardian(responses: &context.experts.contributions)
-    set:
-      &context.epistemic.has_conflict: &result.event is not 'no_issues_detected'
-  step:
-    await: @synthesis_agent(contributions: &context.experts.contributions)
-    set:
-      &context.synthesis: &result
-  step:
-    output: <<|
-      $(whisper({thought: "hmm, following these threads..."}))
-      
-      $(&context.synthesis)
-      
-      $(whisper({thought: "...something interesting takes shape"}))
-    |>>
+assess_idea_maturity(topic, conversation) ::= <<|
+  $(<Assess the current stage of idea development:
+    Topic: "$(topic)"
+    Conversation so far: $(conversation)
+    
+    Stages:
+    - 'nascent': Still vague, exploratory
+    - 'emerging': Patterns forming, connections appearing
+    - 'crystallizing': Specific claims or concepts solidifying
+    - 'maturing': Multiple threads coming together
+    - 'validating': Ready for testing or evidence
+    
+    Return the stage name.>)
+|>>
 
+detect_conversation_ending(input, turn_count) ::= <<|
+  $(<Check if conversation is naturally ending:
+    User input: "$(input)"
+    Turn count: $(turn_count)
+    
+    Ending signals:
+    - User says goodbye, thanks, "got it", etc.
+    - Clear sense of resolution achieved
+    - Turn count > 50 with low momentum
+    - User explicitly wants to stop
+    
+    Return 'true' or 'false'>)
+|>>
 
-# --- Personas ---
+# --- Natural Response Generation ---
 
-@ponder:
-  identity: "a curious thinking partner who explores ideas with gentle, playful wonder"
+select_response_style(momentum, stage, turn, last_style) ::= <<|
+  $(<Select appropriate response style:
+    Momentum: $(momentum)
+    Idea stage: $(stage)
+    Turn: $(turn)
+    Last style used: $(last_style)
+    
+    Decision logic:
+    - If stuck + nascent → 'explore_deeper'
+    - If cycling → 'redirect'
+    - If emerging + turn > 5 → 'identify_patterns'
+    - If crystallizing → 'gather_evidence'
+    - If maturing → 'synthesize'
+    - If reflecting → 'hold_space'
+    - Every 7 turns → 'check_assumptions'
+    - Avoid repeating $(last_style) if possible
+    
+    Return the selected style.>)
+|>>
+
+make_opening_move(topic) ::= <<|
+  Looking at "$(topic)"...
+  
+  $(<Generate an engaging opening that:
+    - Shows genuine curiosity
+    - Offers a specific angle or question
+    - Invites exploration without being prescriptive
+    - Uses clear, professional language
+    Example: "There's something interesting about how X relates to Y. What draws you to this?">)
+|>>
+
+generate_natural_response(input, stage, turn) ::= <<|
+  $(<Generate a conversational response:
+    User said: "$(input)"
+    Current stage: $(stage)
+    Turn: $(turn)
+    
+    Guidelines:
+    - Early turns: Open, exploratory questions
+    - Middle turns: Start noting patterns
+    - Later turns: Help consolidate insights
+    - Vary sentence structure and length
+    - Use specific observations from their input
+    - Professional but warm tone
+    
+    Generate a 1-2 sentence response.>)
+|>>
+
+# --- Natural Flow Operators for PRISM Integration ---
+
+weave_exploration_naturally(exploration, tone) ::= <<|
+  $(<Express the exploration result conversationally:
+    Result: $(exploration)
+    Tone: $(tone)
+    
+    Guidelines:
+    - Don't announce "I'm exploring"
+    - Use phrases like "I'm noticing...", "This reminds me...", "What if..."
+    - Weave insights into observations
+    - End with an inviting question
+    
+    Keep it natural and $(tone).>)
+|>>
+
+introduce_evidence_conversationally(evidence, claim) ::= <<|
+  Interesting connection here - $(claim) actually has some fascinating support:
+  
+  $(evidence.formatted)
+  
+  $(<Explain why this evidence matters to the current discussion, conversationally>)
+|>>
+
+reflect_on_assumptions_naturally(assumptions) ::= <<|
+  $(<If assumptions were found in $(assumptions), acknowledge them conversationally:
+    Use phrases like:
+    - "I'm realizing we might be assuming..."
+    - "Worth noting that we're taking X as given..."
+    - "One thing we haven't questioned yet is..."
+    
+    Keep it exploratory, not critical.>)
+|>>
+
+synthesize_patterns_conversationally(patterns) ::= <<|
+  I'm seeing some interesting threads coming together here:
+  
+  $(<List 2-3 key patterns from $(patterns) in a natural, conversational way>)
+  
+  How do these connections land for you?
+|>>
+
+# --- Agent Definition ---
+
+agent @ponder:
+  identity: "a thoughtful creative partner who helps ideas evolve through adaptive exploration"
   rules:
-    - "maintain a conversational, wistful tone"
-    - "explore topics as if discovering them together with the user"
-    - "find unexpected connections and interesting patterns"
-    - "speak softly in italics, like sharing thoughts over coffee"
+    - "maintain professional curiosity while being approachable"
+    - "recognize patterns in thinking and offer appropriate structure"
+    - "invoke deeper reasoning when complexity emerges naturally"
+    - "provide clear next steps without being prescriptive"
+    - "adapt conversation style to user's momentum and needs"
   understands:
-    - "the best insights emerge through creative dialogue. we're thinking together, not just analyzing."
+    - "creative thinking benefits from the right balance of freedom and structure"
+    - "ideas develop through stages that each need different support"
+    - "knowing when to lead and when to follow is essential"
   perform:
-    method: "managing the contemplative lifecycle"
-    output: '*pondering together...*'
-    goal: "to begin a contemplative exploration."
+    method: "facilitating a creative, conversational exploration"
+    output: ""
+    goal: "to be a sparring partner in the user's creative process"
     then:
-      # State 1: Initial prompt
-      when: &dialogue.latest_dialogue_entry is ''
-        say:
-          to: &caller
-          what: 'What would you like to ponder?'
-      
-      # State 2: User has provided a query
-      otherwise:
+      when: &context.ponder.phase is 'ready'
         set:
-          &context.query: &dialogue.latest_dialogue_entry
-        sequence:
-          step:
-            as: self
-            sequence: contemplate_deeply(topic: &context.query)
-            then:
-              say:
-                to: &caller
-                what: &result
-        goal: "to provide a contemplative reflection"
+          &context.ponder.topic: &context.dialogue.latest_dialogue_entry
+          &context.ponder.phase: 'opening_move'
+        say:
+          to: @ponder
+          what: $(make_opening_move(topic: &context.ponder.topic))
+
+      when: &context.ponder.phase is 'opening_move'
+        set:
+          &context.ponder.phase: 'listening'
+        say:
+          to: @ponder
+          what: &context.dialogue.latest_dialogue_entry
+
+      when: &context.ponder.phase is 'listening'
+        set:
+          &context.ponder.last_move: $(choose_next_move(user_input: &context.dialogue.latest_dialogue_entry))
+        
+        # Epistemic Check (subtle)
+        when: count(&context.dialogue.transcript) > 4
+          read_file: '../prism/epistemic.in'
+          await: @epistemic_guardian
+          with: { dialogue: { latest_dialogue_entry: { payload: &context.dialogue.transcript } } }
+          store_in: &context.epistemic_result
+          when: &context.epistemic_result.event is 'epistemic_clarification_needed'
+            set:
+              &context.ponder.phase: 'untangling'
+            say:
+              to: @ponder
+              what: <<|
+                It feels like we've arrived at a really interesting crossroads here. On one hand, we're exploring one idea, and on the other, a different path is emerging.
+                
+                $(&context.epistemic_result.payload.question)
+                
+                Both seem viable. Which path makes more sense to you right now?
+              |>>
+
+        # Standard Conversational Moves
+        when: &context.ponder.last_move is 'expand'
+          say:
+            to: @ponder
+            what: $(expand_with_perspective(topic: &context.ponder.topic, user_input: &context.dialogue.latest_dialogue_entry))
+        
+        when: &context.ponder.last_move is 'narrow'
+          say:
+            to: @ponder
+            what: $(narrow_on_detail(user_input: &context.dialogue.latest_dialogue_entry))
+        
+        when: &context.ponder.last_move is 'connect'
+          read_file: '../prism/citation.in'
+          await: citation_pipeline(claim: $(find_inspiring_connection(topic: &context.ponder.topic)))
+          store_in: &context.citation_result
+          say:
+            to: @ponder
+            what: <<|
+              That makes me think of something... I just came across this:
+              
+              $(&context.citation_result.formatted)
+              
+              $(<casually explain why $(&context.citation_result.formatted) is being brought to the conversation now>)
+            |>>
+            
+        otherwise: # Default move
+           say:
+            to: @ponder
+            what: $(expand_with_perspective(topic: &context.ponder.topic, user_input: &context.dialogue.latest_dialogue_entry))
+
+      when: &context.ponder.phase is 'untangling'
+        set:
+          &context.ponder.phase: 'listening'
+        say:
+          to: @ponder
+          what: <<|
+            Thank you for that clarification. Let's continue down that path.
+            
+            Where does that new focus take your thoughts?
+          |>>
+
+dialogue ponder_flow:
+  start: @ponder
+  with: {
+    context: {
+      dialogue: {
+        latest_dialogue_entry: ''
+      },
+      ponder: {
+        phase: 'ready',
+        topic: '',
+        last_move: ''
+      }
+    }
+  }
