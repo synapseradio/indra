@@ -1,8 +1,8 @@
-# INDRA v2.1 Command Overlay: research
+# INDRA v2.2 Command Overlay: research
 # Provides a collaborative, plan-and-execute research partner.
 
 # --- Imports ---
-<read_file: '../prism-engine.in'>
+<read_file: '../prism/base.in'>
 
 
 # --- Operators ---

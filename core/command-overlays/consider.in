@@ -1,8 +1,8 @@
-# INDRA v2.1 Command Overlay: consider
+# INDRA v2.2 Command Overlay: consider
 # Provides a deliberative, user-driven multi-perspective analysis.
 
 # --- Imports ---
-<read_file: '../prism-engine.in'>
+<read_file: '../prism/base.in'>
 
 # --- Operators ---
 

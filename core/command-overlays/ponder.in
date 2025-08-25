@@ -1,7 +1,7 @@
-# INDRA v2.1 Command Overlay: ponder
+# INDRA v2.2 Command Overlay: ponder
 # Provides a contemplative, minimalist reflection on a topic.
 
-<read_file: '../prism-engine.in'>
+<read_file: '../prism/base.in'>
 
 # --- Operators ---
 

@@ -1,5 +1,7 @@
 # INDRA: A Behavioral Transformation Protocol
 
+**Current Version: 2.2** | [Version History](./VERSION) | [Migration Guide](./docs/architecture/migration-v2.2.md)
+
 INDRA (Inferential Narrative-Driven Reasoning Actors) is not a programming language; it is a protocol for transforming a Large Language Model (LLM) into a specific, stateful, and interactive persona. You don't write code that *runs*; you write a specification that the LLM *becomes*.
 
 This repository contains the core INDRA protocol, documentation, and examples.
@@ -94,6 +96,7 @@ These concepts are a significant mental shift. The best way to learn them is by 
 This repository includes several pre-built commands demonstrating INDRA's capabilities, primarily focused on reasoning assistance.
 
 * **`/reason`** - Structured reasoning with transparent thought processes.
+* **`/think`** - Natural exploration of ideas through Tree of Thought reasoning.
 * **`/consider`** - Thoughtful analysis of complex topics.
 * **`/ponder`** - Deep reflection on conceptual questions.
 * **`/research`** - Multi-expert investigation with diverse perspectives.

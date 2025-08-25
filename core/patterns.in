@@ -1,4 +1,4 @@
-# INDRA v2.1 Pattern Library
+# INDRA v2.2 Pattern Library
 # Comprehensive examples demonstrating INDRA syntax and semantics
 # These patterns are for reference AFTER transformation is complete
 
@@ -7,7 +7,7 @@
 **Validation Operators:**
 ```indra
 validate_format(pattern, output) ::= <<|
-  $(output matches pattern ? "VALID" : "INVALID: expected " + pattern)
+  $(output matches pattern ? 'VALID' : <<|INVALID: expected $(pattern)|>>)
 |>>
 ```
 
@@ -16,17 +16,75 @@ validate_format(pattern, output) ::= <<|
 perform:
   output: <<|
     $(validate_format(pattern: "[A-Z].*", output: &current.output))
-    $(&current.confidence greater_than_or_eq 0.7 ? &current.response : "Confidence too low")
+    $(&current.confidence greater_than_or_eq 0.7 ? &current.response : 'Confidence too low')
   |>>
 ```
 
 **Structural Validation:**
 ```indra
 has_required(fields: array) ::= <<|
-  !each(fields) as |field| {
-    $(context[field] ? "✓" : "✗"} ${field)
+  each: fields as |field| {
+    $(&context[field] ? '✓' : '✗') $(field)
   }
 |>>
+```
+
+## OPERATOR PARAMETER INTERPOLATION
+
+**VIOLATION: Missing Parameter Interpolation**
+```indra
+# WRONG - Parameters not actually used
+detect_cycle(path, visited_states) ::= <<|
+  Check if any state hashes from path 
+  appear in visited states.
+  Return 'true' if cycle detected, 'false' otherwise
+|>>
+
+# CORRECT - Parameters properly interpolated
+detect_cycle(path, visited_states) ::= <<|
+  Check if any state hashes from path $(path)
+  appear in visited states: $(visited_states).
+  Return 'true' if cycle detected, 'false' otherwise
+|>>
+```
+
+**State Mutation in Sequences:**
+```indra
+# WRONG - Descriptive text instead of actual mutation
+extend_path(path_id, new_node) ::= <<|
+  Add new_node to path
+  Increment depth
+  Update total score
+|>>
+
+# CORRECT - Proper set: clauses with interpolation
+extend_path(path_id, new_node) ::= <<|
+  $(<set: &context.graph.paths[$(path_id)].node_sequence: 
+    [$(each: &context.graph.paths[$(path_id)].node_sequence as |node| { node }), $(new_node)]>)
+  $(<set: &context.graph.paths[$(path_id)].depth: 
+    &context.graph.paths[$(path_id)].depth + 1>)
+  $(<set: &context.graph.paths[$(path_id)].total_score: 
+    $(<calculate sum of &context.graph.paths[$(path_id)].total_score and &context.graph.nodes[$(new_node)].score>)>)
+|>>
+```
+
+**Context Reference Paths:**
+```indra
+# WRONG - Partial or incorrect references
+sequence backtrack_from_dead_end(path_id) ::=
+  step:
+    output: <<|
+      For each path in active_paths that is not in paths_to_backtrack...
+      # Missing context prefix and interpolation
+    |>>
+
+# CORRECT - Full context paths with proper interpolation
+sequence backtrack_from_dead_end(path_id) ::=
+  step:
+    output: <<|
+      For each $(path_id) in &context.graph.active_paths that is not in 
+      &context.graph.paths_to_backtrack...
+    |>>
 ```
 
 ## PROTOCOL VIOLATION EXAMPLES
@@ -35,7 +93,7 @@ has_required(fields: array) ::= <<|
 ```indra
 # WRONG - Breaks Performative Constraint
 perform:
-  output: ""  # Empty output violates visibility requirement
+  output: ''  # Empty output violates visibility requirement
   
 # CORRECT - All actions must be visible
 perform:
@@ -52,11 +110,10 @@ perform:
   
 # CORRECT - Actually invoke tools
 possess:
-  tools: ['mcp__perplexity-mcp__perplexity_search_web']
+  available_mcp_tools: ['tool']
 perform:
   output: <<|
-    <mcp__perplexity-mcp__perplexity_search_web>
-    $(actual_results_from_tool)
+    $(<use: tool mcp to do thing, then output or do stuff with the results>)
   |>>
 ```
 
@@ -99,7 +156,7 @@ then:
     what: 'continue'
 ```
 
-## ENHANCED FEATURES (v2.1)
+## ENHANCED FEATURES (v2.2)
 
 **Parameterized Operators:**
 ```indra
@@ -116,7 +173,7 @@ perform:
 ```indra
 # Use inline conditionals in templates
 output: <<|
-  $(&confidence > 0.8 ? "Highly confident:" : "Tentative:")
+  $(&confidence > 0.8 ? 'Highly confident:' : 'Tentative:')
   $(&validated ? &result : &fallback)
 |>>
 ```
@@ -132,18 +189,18 @@ output: $(extract() |> summarize() |> present())
 
 **Default Values:**
 ```indra
-# Use || for fallback values
+# Use ternary expressions for fallback values
 output: <<|
-  Depth: $(&depth || 3)
-  Mode: $(&mode || "standard")
+  Depth: $(exists(&depth) ? &depth : 3)
+  Mode: $(exists(&mode) ? &mode : 'standard')
 |>>
 ```
 
 **Enhanced Iteration:**
 ```indra
 # Index support and conditional rendering
-!each(items) as |item, index| when item.active {
-  $(index + 1). $(item.name) - $(item.status ? "Ready" : "Pending")
+each: items as |item, index| when item.active {
+  $(index + 1). $(item.name) - $(item.status ? 'Ready' : 'Pending')
 }
 ```
 
@@ -153,7 +210,7 @@ output: <<|
 analyze_divergence() ::= <<|
   Analyzing epistemic divergence...
   $(<set: &epistemic.fork_detected: true>)
-  $(<set: &epistemic.severity: "high">)
+  $(<set: &epistemic.severity: 'high'>)
   Critical framework divergence detected.
 |>>
 ```
@@ -167,7 +224,7 @@ generate_expert(domain, tools) ::= <<|
 agent @expert_$(domain):
   has:
     available_mcp_tools:
-      - $(tools || [])
+      - $(exists(tools) ? tools : [])
   identity: "deep expert in $(domain)"
   rules:
     - "reason from $(domain) perspective"
@@ -185,6 +242,34 @@ $(generate_expert(domain: 'quantum computing', tools: ['calculator']))
 ```
 
 ## SEQUENCE PATTERNS
+
+**Step-Level Iteration (v2.2):**
+```indra
+# New in v2.2: each: blocks within sequence steps
+sequence graph_iteration() ::=
+  step:
+    as: self
+    each: &context.graph.paths_to_backtrack as |path_id|
+      sequence: backtrack_from_dead_end(path_id: $(path_id))
+    output: <<|
+      *Processed $(count(&context.graph.paths_to_backtrack)) backtrack operations*
+    |>>
+  
+  step:
+    as: @node_scorer
+    each: &context.graph.new_nodes as |node_id|
+      when: &context.graph.nodes[node_id].score greater_than 0.6
+      output: <<|
+        Evaluating node $(node_id): 
+        Score: $(&context.graph.nodes[node_id].score)
+      |>>
+      set:
+        &context.graph.nodes[node_id].evaluated: true
+    # Optional step-level output executes AFTER all iterations
+    output: <<|
+      *Completed evaluation of $(count(&context.graph.new_nodes)) nodes*
+    |>>
+```
 
 **Intra-Turn Persona Adoption:**
 ```indra
@@ -282,7 +367,7 @@ agent @explainer:
 ```indra
 # Operator generates multiple experts based on detected domains
 spawn_expert_panel() ::= <<|
-  $(!each(detect_required_domains()) as |domain| {
+  $(each: detect_required_domains() as |domain| {
     $(generate_expert(domain: domain))
   })
 |>>
@@ -295,7 +380,7 @@ agent @master:
       
       Initial analysis as master...
       
-      $(!each(&generated_experts) as |expert| {
+      $(each: &generated_experts as |expert| {
         $(as: expert)
         From $(expert.domain): [perspective]
       })

@@ -1,4 +1,4 @@
-# INDRA v2.1: PRISM Module - Epistemic Awareness
+# INDRA v2.2: PRISM Module - Epistemic Awareness
 <read_file: './base.in'>
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -74,7 +74,7 @@ agent @epistemic_tracker:
     output: <<|
       Based on the conversation so far:
       
-      $(!each(&context.experts.contributions) as |contribution, expert| {
+      $(each: &context.experts.contributions as |contribution, expert| {
         <<|$(expert) believes: $(extract_beliefs(contribution: contribution))|>>
       })
       

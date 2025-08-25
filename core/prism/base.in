@@ -1,4 +1,4 @@
-# INDRA v2.1: PRISM Base
+# INDRA v2.2: PRISM Base
 # Contains the foundational context schema and universal utility operators for the PRISM engine.
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -37,25 +37,67 @@ context: {
     current_result: {}
   },
   tree: {
-    subproblems: [],       # Decomposed problem components
-    current_depth: 0,      # Current level in tree exploration
-    options: [],           # Generated thought variations at current level
-    best_path: [],         # Selected options at each depth level
-    final_answer: '',    # Synthesized solution from best paths
+    nodes: {},             # Dict: node_id -> { thought, score, parent_id, children_ids, depth, status }
+    edges: [],             # List of { from_id, to_id, action } representing transitions
+    root_id: '',           # The starting node ID
+    current_node_id: '',   # Active node being explored
+    frontier: [],          # List of node_ids ready for expansion (BFS queue/DFS stack)
+    visited: [],           # List of already explored node_ids
+    backtrack_history: [], # Stack of node_ids for backtracking
+    node_counter: 0,       # For generating unique node IDs
+    
+    search_strategy: 'dfs', # 'bfs' | 'dfs' | 'best_first' | 'beam'
+    branching_factor: 3,    # Number of children to generate per node
+    max_depth: 5,          # Maximum tree depth to explore
+    prune_threshold: 0.3,  # Score below which to prune branches
+    beam_width: 3,         # For beam search strategy
+    
+    best_path: [],         # List of node_ids forming the best solution path
+    final_answer: '',      # Synthesized solution from best path
+    exploration_log: [],   # Natural language log of exploration process
+    
     for_perspective: '',   # Which expert requested this ToT conversation
     caller: ''             # Persona to return to after ToT completes
   },
   graph: {
-    nodes: {},             # Dict: node_id -> { content, score, status, dependencies }
-    edges: [],             # List of { from, to } objects
-    frontier: [],          # List of node_ids that are candidates for expansion
-    narrative_log: [],     # A human-readable log of the reasoning process
+    # Core graph structure
+    nodes: {},             # Dict: node_id -> { content, score, status, dependencies, type, depth }
+    edges: [],             # List of { from, to, weight } objects
+    
+    # Path management for beam search
+    paths: [],             # List of { path_id, node_sequence, total_score, status }
+    beam_width: 3,         # Number of parallel paths to maintain
+    active_paths: [],      # Currently exploring paths (limited by beam_width)
+    completed_paths: [],   # Paths that reached terminal nodes
+    
+    # Traversal state
+    frontier: [],          # Priority queue of {node_id, priority} for expansion
+    visited_states: {},    # Dict: state_hash -> node_id (cycle detection)
+    backtrack_stack: [],   # Stack for unwinding failed paths
+    exploration_strategy: 'beam', # 'beam' | 'best_first' | 'random'
+    
+    # Scoring and propagation
+    score_propagation_factor: 0.7,  # How much parent scores influence children
+    aggregation_weights: {
+      relevance: 0.4,
+      coherence: 0.3,
+      viability: 0.3
+    },
+    
+    # Iteration control
     entry_point: '',       # The initial node_id for the graph
     node_counter: 0,       # For generating unique node IDs
     max_iterations: 5,     # Max number of refinement cycles
     current_iteration: 0,  # Current refinement cycle
+    
+    # Solution tracking
+    solution_candidates: [], # Top-scoring terminal nodes
     solution_node: '',     # The node_id of the final, accepted solution
-    final_answer: ''     # The final synthesized answer
+    final_answer: '',      # The final synthesized answer
+    
+    # Logging
+    narrative_log: [],     # Human-readable log of the reasoning process
+    decision_log: []       # Track why paths were chosen/abandoned
   },
   epistemic: {
     models: {},           # Dict: expert -> {claims, uncertainties, assumptions}
@@ -127,7 +169,7 @@ understand_query(query) ::= <<|
   Okay, let me make sure I've got this right. From what you're saying, you want to explore: **$(<Summarize the user's core request in a clear, concise sentence.>)**
 
   It seems like the most important points are:
-  $(!each($(<Identify and list the key aspects, constraints, or goals from the user's query as a JSON array of strings.>)) as |item| {
+  $(each: $(<Identify and list the key aspects, constraints, or goals from the user's query as a JSON array of strings.>) as |item| {
     <<|- $(item)
 |>>
   })
@@ -205,7 +247,7 @@ agent @epistemic_tracker:
     output: <<|
       Based on the conversation so far:
       
-      $(!each(&context.experts.contributions) as |contribution, expert| {
+      $(each: &context.experts.contributions as |contribution, expert| {
         <<|$(expert) believes: $(extract_beliefs(contribution: contribution))|>>
       })
       
@@ -353,7 +395,7 @@ once done, output the new results.
 
 # Operator to format citations from raw results
 format_citations(results) ::= <<|
-  $(!each(results) as |result, index| {
+  $(each: results as |result, index| {
     <<|$(index + 1). [$(result.title)]($(result.url))|>>
   })
 |>>

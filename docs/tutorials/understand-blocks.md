@@ -5,7 +5,7 @@
 In INDRA, `understands:` might be the most important line you write:
 
 ```indra
-# Common but weak
+
 understands:
   - "process user input"
 
@@ -188,12 +188,14 @@ Traditional programming assumes the machine has no perspective. You give it inst
 INDRA assumes the AI has perspective, and `understands:` shapes that perspective.
 
 It's the difference between:
+
 - "Do X because I said so"
 - "Do X, understanding that Y"
 
 ## Common Patterns
 
 ### Pattern 1: Domain Context
+
 ```indra
 understands:
   - "in healthcare, caution saves lives"
@@ -202,6 +204,7 @@ understands:
 ```
 
 ### Pattern 2: User Empathy
+
 ```indra
 understands:
   - "frustration often masks fear"
@@ -210,6 +213,7 @@ understands:
 ```
 
 ### Pattern 3: Task Philosophy
+
 ```indra
 understands:
   - "summarization is distillation, not reduction"

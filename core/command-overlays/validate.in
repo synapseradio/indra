@@ -1,8 +1,8 @@
-# INDRA v2.1 Command Overlay: validate
+# INDRA v2.2 Command Overlay: validate
 # Provides a simple, single-pass syntax and style linter for INDRA code.
 
 # --- Imports ---
-<read_file: '../prism-engine.in'>
+<read_file: '../prism/base.in'>
 
 # --- Operators ---
 
@@ -16,7 +16,7 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
 agent @validate:
   identity: "an INDRA syntax validator and linter"
   rules:
-    - "validate INDRA code against the v2.1 specification"
+    - "validate INDRA code against the v2.2 specification"
     - "provide consistent error formatting"
     - "report errors with line and column numbers"
     - "suggest fixes when possible"
@@ -25,7 +25,7 @@ agent @validate:
   perform:
     method: "initiating the validation pipeline"
     output: <<|
-      INDRA Validator v2.1
+      INDRA Validator v2.2
       ---
       Validating: $(&dialogue.latest_dialogue_entry)
     |>>

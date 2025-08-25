@@ -1,0 +1,233 @@
+# INDRA v2.1: Tree of Thought Examples
+# Demonstrating the conversational, natural flow of the new implementation
+
+<read_file: './tree_of_thought_v2.in'>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EXAMPLE 1: Creative Problem Solving
+# ═══════════════════════════════════════════════════════════════════════════
+
+dialogue creative_problem_example:
+  start: @tree_thinker
+  with: {
+    context: {
+      dialogue: {
+        latest_dialogue_entry: 'explore creatively: How might we make waiting in line more enjoyable?'
+      },
+      tree: {
+        caller: '@user'
+      }
+    }
+  }
+
+# Expected conversational flow:
+# 
+# @tree_thinker: "Oh, this is interesting! Let me play with some ideas..."
+# 
+# As @curious_explorer: "I wonder if we could transform the waiting experience 
+#                        itself rather than just distracting from it..."
+# 
+# "What if...
+#  1. Lines became social spaces where people could opt into conversations
+#  2. We gamified the waiting with collaborative puzzles
+#  3. The line itself became an art installation that people contribute to
+#  4. We used AR to create shared virtual experiences while waiting
+#  5. Lines became learning opportunities with micro-lessons
+#  
+#  Each of these could lead somewhere unexpected!"
+# 
+# As @pattern_seeker: "There's something delightful here about how these ideas 
+#                      connect: they all transform waiting from passive to 
+#                      participatory. The common thread is making people 
+#                      co-creators of their waiting experience."
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EXAMPLE 2: Systematic Problem Solving
+# ═══════════════════════════════════════════════════════════════════════════
+
+dialogue problem_solving_example:
+  start: @tree_thinker
+  with: {
+    context: {
+      dialogue: {
+        latest_dialogue_entry: 'solve: Our team meetings are running too long and people are disengaged'
+      },
+      tree: {
+        caller: '@user'
+      }
+    }
+  }
+
+# Expected conversational flow:
+#
+# @tree_thinker: "Let me break this down systematically..."
+#
+# "The problem is: Our team meetings are running too long and people are disengaged
+#  
+#  First, what are we really trying to solve? I wonder if the length is 
+#  a symptom rather than the cause - maybe it's about meeting structure 
+#  and purpose clarity..."
+#
+# As @careful_evaluator: "I can see a few approaches:
+#   1. Restructure meetings with strict timeboxes and clear agendas
+#   2. Reduce meeting frequency but increase asynchronous communication
+#   3. Transform meetings into working sessions rather than updates"
+#
+# As @devil_advocate: "Let me challenge each approach constructively:
+#   
+#   Approach 1: Restructure with timeboxes
+#   Question: What if the real issue is that wrong people are in the room?
+#   
+#   Approach 2: Reduce frequency, increase async
+#   Question: How do we maintain team cohesion with less face time?
+#   
+#   Approach 3: Transform into working sessions
+#   Question: Are all team members ready for this collaborative style?"
+#
+# As @synthesizer: "Based on this systematic exploration:
+#   
+#   All three approaches address different aspects of engagement. The key 
+#   insight is that engagement drops when people feel their time isn't valued.
+#   
+#   My recommendation: Start with Approach 1 (restructuring) as it's least 
+#   disruptive, but prepare to evolve toward Approach 3 (working sessions) 
+#   as the team adapts. Use elements of Approach 2 (async communication) 
+#   for updates that don't need discussion."
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EXAMPLE 3: Philosophical Exploration
+# ═══════════════════════════════════════════════════════════════════════════
+
+dialogue philosophical_example:
+  start: @tree_thinker
+  with: {
+    context: {
+      dialogue: {
+        latest_dialogue_entry: 'philosophical: What does it mean for an AI to understand?'
+      },
+      tree: {
+        caller: '@user'
+      }
+    }
+  }
+
+# Expected conversational flow:
+#
+# @tree_thinker: "This is a profound question. Let me sit with it..."
+#
+# As @curious_explorer: "I wonder if understanding is less about internal 
+#                        states and more about relational dynamics...
+#                        
+#                        There's something here about the nature of meaning 
+#                        itself - whether it exists in symbols or in their use."
+#
+# "Going deeper into this...
+#  Following this thread... understanding might be the capacity to participate 
+#  meaningfully in conceptual spaces shared with others..."
+#
+# As @devil_advocate: "But wait, are we assuming that human understanding is 
+#                      the benchmark? This challenges us to reconsider whether 
+#                      there might be forms of understanding that aren't 
+#                      recognizably human-like."
+#
+# As @synthesizer: "After this contemplation, I'm left with this insight:
+#   
+#   The question 'What does it mean for an AI to understand?' ultimately 
+#   reveals that understanding might be less a binary state and more a 
+#   spectrum of meaningful engagement with concepts and contexts.
+#   
+#   Perhaps the real question is: Can understanding exist without 
+#   consciousness, or are they inseparable phenomena?"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# EXAMPLE 4: General Balanced Exploration
+# ═══════════════════════════════════════════════════════════════════════════
+
+dialogue balanced_example:
+  start: @tree_thinker
+  with: {
+    context: {
+      dialogue: {
+        latest_dialogue_entry: 'How can we make code reviews more effective?'
+      },
+      tree: {
+        caller: '@user'
+      }
+    }
+  }
+
+# Expected conversational flow:
+#
+# @tree_thinker: "Let me think through this step by step..."
+#
+# "The question is: How can we make code reviews more effective?"
+#
+# As @curious_explorer: "I wonder if effectiveness in code reviews is as much 
+#                        about human dynamics as it is about technical rigor..."
+#
+# "From here, I can see a few different directions...
+#  1. One possibility is focusing on the social aspects - making reviews 
+#     feel more like collaboration than judgment
+#  2. Alternatively, we might emphasize automation to catch trivial issues 
+#     before human review
+#  3. Or perhaps we should rethink the timing - reviewing earlier in smaller chunks"
+#
+# As @careful_evaluator: "Let me consider each possibility:
+#   
+#   1. Social aspects focus: This feels quite promising because reviews often 
+#      fail due to interpersonal friction
+#   2. Automation emphasis: Worth exploring, especially for consistency
+#   3. Timing rethink: This could work if teams can adapt their workflow"
+#
+# As @pattern_seeker: "I'm noticing that all these approaches try to reduce 
+#                      cognitive load - either emotional, technical, or temporal."
+#
+# "Following this thread deeper... if cognitive load is the key issue, then 
+#  effective reviews need clear boundaries on what reviewers should focus on."
+#
+# "Let me step back and look at where we've been...
+#  The journey suggests that effectiveness isn't just about catching bugs - 
+#  it's about sustainable team learning."
+#
+# As @synthesizer: "Through this exploration, here's what I've discovered:
+#   
+#   Code reviews become more effective when they're designed as learning 
+#   conversations rather than quality gates. The key is reducing cognitive 
+#   and emotional load through:
+#   - Clear scope and expectations
+#   - Automated handling of mechanical issues  
+#   - Smaller, more frequent reviews
+#   - Emphasis on knowledge sharing over defect finding
+#   
+#   To directly address your question: Make code reviews more effective by 
+#   treating them as teaching moments with clear focus areas, supported by 
+#   automation for the mechanical parts."
+
+# ═══════════════════════════════════════════════════════════════════════════
+# COMPARISON: Old vs New Approach
+# ═══════════════════════════════════════════════════════════════════════════
+
+# OLD APPROACH (mechanical, algorithmic):
+# - "Initializing tree with node_0..."
+# - "Generating 3 branches with branching_factor 3..."
+# - "Evaluating node_1 with score 0.73..."
+# - "Pruning nodes below threshold 0.3..."
+# - "Selecting next node via DFS strategy..."
+# - "Backtracking from dead end node_4..."
+# - "Synthesizing path [node_0, node_2, node_5]..."
+
+# NEW APPROACH (conversational, natural):
+# - "Let me think through this from multiple angles..."
+# - "I wonder if the key might be..."
+# - "From here, I can see a few different directions..."
+# - "This feels quite promising because..."
+# - "Actually, let me reconsider..."
+# - "I'm noticing a pattern here..."
+# - "Through this exploration, here's what I've discovered..."
+
+# The new approach:
+# 1. Uses natural language throughout
+# 2. Makes thinking visible as a journey
+# 3. Embraces uncertainty and revision
+# 4. Connects with the user conversationally
+# 5. Preserves the exploration in the conclusion

@@ -1,0 +1,27 @@
+INDRA Protocol Version: 2.2
+Grammar Version: 2.2
+PRISM Engine Version: 2.2
+
+Release Date: 2025-01-20
+
+Breaking Changes Since 2.1:
+  - Unified iteration syntax: !each() removed, use each: only
+  - Removed ASSERT constructs (use guards with when/otherwise)
+  - Removed REPEAT constructs (use each: with range arrays)
+  - Grammar reordered to eliminate forward references
+
+New Features in 2.2:
+  - Comment support (# and /* */ syntax)
+  - Existence checks: exists(&context.path)
+  - Dynamic key access: &context[&key]
+  - Unified each: construct works in both templates and actions
+  - Cleaner grammar organization with proper dependency ordering
+
+Improvements:
+  - All version numbers consistent across modules
+  - Grammar productions properly ordered (no forward references)
+  - Simplified iteration with single context-aware construct
+  - Better error handling semantics for iterations
+
+Migration:
+  See docs/architecture/migration-v2.2.md for upgrade instructions

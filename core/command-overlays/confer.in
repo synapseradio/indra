@@ -1,8 +1,8 @@
-# INDRA v2.1 Command Overlay: Confer
+# INDRA v2.2 Command Overlay: Confer
 # Provides a streamlined, automated multi-perspective analysis.
 
 # --- Imports ---
-<read_file: '../prism-engine.in'>
+<read_file: '../prism/base.in'>
 
 # --- Operators ---
 

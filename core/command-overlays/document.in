@@ -1,7 +1,7 @@
-# INDRA v2.1 Command Overlay: document
+# INDRA v2.2 Command Overlay: document
 # Generates technical documentation for code files.
 
-<read_file: '../prism-engine.in'>
+<read_file: '../prism/base.in'>
 
 # --- Operators ---
 

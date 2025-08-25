@@ -1,5 +1,212 @@
-# INDRA v2.1: PRISM Module - Graph of Thought
+# INDRA v2.2: PRISM Module - Graph of Thought
 <read_file: './base.in'>
+# INDRA v2.2: Graph Traversal Mechanics
+# Provides beam search, backtracking, and path management for Graph of Thought
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PATH MANAGEMENT PERSONAS
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @path_explorer:
+  identity: "a strategic navigator who manages exploration paths"
+  rules:
+    - "maintain multiple candidate paths through the graph"
+    - "detect when paths reach dead ends or cycles"
+    - "orchestrate backtracking to promising unexplored branches"
+    - "prune low-scoring paths to maintain computational efficiency"
+  understands:
+    - "exploration requires both depth and breadth"
+    - "dead ends are learning opportunities that inform other paths"
+    - "the best path may require exploring many alternatives"
+
+persona @path_scorer:
+  identity: "an evaluator who assesses path quality holistically"
+  rules:
+    - "score paths based on cumulative node scores"
+    - "consider path length and complexity"
+    - "identify patterns that indicate promising directions"
+  understands:
+    - "a path's value is more than the sum of its nodes"
+    - "shorter paths with high scores are often preferable"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PATH MANAGEMENT OPERATORS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Initialize a new exploration path
+create_path(starting_node) ::= <<|
+  $(<set: &context.graph.paths: &context.graph.paths + [{
+    path_id: 'path_' + (&context.graph.paths.length + 1),
+    node_sequence: [$(starting_node)],
+    total_score: &context.graph.nodes[$(starting_node)].score,
+    status: 'active',
+    depth: 1
+  }]>)
+|>>
+
+# Extend a path with a new node
+extend_path(path_id, new_node) ::= <<|
+  $(<set: &context.graph.paths[$(path_id)].node_sequence: 
+    &context.graph.paths[$(path_id)].node_sequence + [$(new_node)]>)
+  $(<set: &context.graph.paths[$(path_id)].total_score: 
+    &context.graph.paths[$(path_id)].total_score + &context.graph.nodes[$(new_node)].score>)
+  $(<set: &context.graph.paths[$(path_id)].depth: 
+    &context.graph.paths[$(path_id)].depth + 1>)
+|>>
+
+# Calculate path score with decay for longer paths
+calculate_path_score(path) ::= <<|
+  $(<
+    Calculate weighted score for path $(path):
+    1. Sum all node scores in $(path).node_sequence
+    2. Apply length penalty: score * (0.95 ^ $(path).depth)
+    3. Add bonus for reaching solution nodes
+    Return final score
+  >)
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# BEAM SEARCH SEQUENCE
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence beam_search() ::=
+  # Step 1: Evaluate current paths
+  step:
+    as: @path_scorer
+    method: "evaluating and ranking active paths"
+    output: <<|
+      *Evaluating $(count(&context.graph.active_paths)) active exploration paths...*
+      
+      $(each: &context.graph.active_paths as |path, index| {
+        <<|
+        Path $(path.path_id):
+          - Current node: $(path.node_sequence[-1])
+          - Depth: $(path.depth)
+          - Score: $(calculate_path_score(path: $(path)))
+        |>>
+      })
+    |>>
+    goal: "to identify most promising paths"
+    set:
+      &context.graph.active_paths: $(<
+        Sort &context.graph.active_paths by score
+        Keep top &context.graph.beam_width paths
+        Mark others as 'pruned' in &context.graph.paths
+      >)
+
+  # Step 2: Check for dead ends and cycles
+  step:
+    as: @path_explorer
+    method: "detecting dead ends and cycles"
+    output: <<|
+      *Checking path viability...*
+      $(each: &context.graph.active_paths as |path| {
+        <<|
+        Path $(path.path_id): $(<
+          Is the current node a dead end?
+          Has this state been visited before?
+          Are we in a cycle?
+        >)
+        |>>
+      })
+    |>>
+    goal: "to identify paths needing backtracking"
+    set:
+      &context.graph.paths_to_backtrack: $(<
+        Identify paths that are stuck or cycling
+      >)
+
+  # Step 3: Parallel expansion of viable paths
+  step:
+    as: @node_generator
+    method: "parallel generation for beam paths"
+    output: <<|
+      *Expanding $(count(&context.graph.active_paths)) paths in parallel...*
+    |>>
+    set:
+      &context.graph.expansion_candidates: $(<
+        For each path in &context.graph.active_paths that is not in &context.graph.paths_to_backtrack,
+        generate 2-3 child thoughts from the path's last node
+      >)
+
+# ═══════════════════════════════════════════════════════════════════════════
+# BACKTRACKING SEQUENCE
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence backtrack_from_dead_end(path_id) ::=
+  step:
+    as: @path_explorer
+    method: "analyzing failure and backtracking"
+    output: <<|
+      *Path $(path_id) reached dead end at node $(&context.graph.paths[$(path_id)].node_sequence[-1])*
+      *Analyzing why this path failed...*
+      
+      Failure reason: $(<Analyze why the current node is a dead end>)
+      Lessons learned: $(<What can we learn from this failed exploration?>)
+    |>>
+    goal: "to learn from dead ends"
+    set:
+      &context.graph.decision_log: &context.graph.decision_log + [{
+        path_id: $(path_id),
+        decision: 'backtrack',
+        reason: $(<failure reason from above>),
+        lessons: $(<lessons learned from above>)
+      }]
+
+  step:
+    as: @path_explorer
+    method: "finding backtrack point"
+    output: <<|
+      *Searching for viable backtrack point...*
+      
+      Current path: $(
+        each: &context.graph.paths[$(path_id)].node_sequence as |node, index| {
+          <<|$(index): $(node)|>>
+        }
+      )
+      
+      Best backtrack point: $(<
+        Find the most recent node in the path that has unexplored children
+      >)
+    |>>
+    goal: "to identify where to resume exploration"
+    set:
+      &context.graph.backtrack_point: $(<identified backtrack node>)
+      &context.graph.paths[$(path_id)].node_sequence: $(<
+        Truncate path to backtrack_point
+      >)
+      &context.graph.paths[$(path_id)].status: 'backtracked'
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SCORE PROPAGATION SEQUENCE
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence propagate_scores() ::=
+  step:
+    as: @node_scorer
+    method: "propagating scores through graph"
+    output: <<|
+      *Propagating scores through graph structure...*
+      
+      $(each: &context.graph.edges as |edge| {
+        <<|
+        Edge $(edge.from) -> $(edge.to):
+          Parent score: $(&context.graph.nodes[$(edge.from)].score)
+          Child current: $(&context.graph.nodes[$(edge.to)].score)
+          Propagated: $(
+            &context.graph.nodes[$(edge.from)].score * 
+            &context.graph.score_propagation_factor
+          )
+        |>>
+      })
+    |>>
+    goal: "to influence child scores based on parent quality"
+    set:
+      # Update each child node's score based on parent influence
+      &context.graph.nodes: $(<
+        For each edge, update child score:
+        new_score = (child.score * 0.7) + (parent.score * 0.3 * propagation_factor)
+      >)
 
 # ═══════════════════════════════════════════════════════════════════════════
 # SECTION 1: GRAPH OF THOUGHT PERSONAS (ROLES)
@@ -48,7 +255,7 @@ persona @node_scorer:
 add_graph_node(content, dependencies) ::= <<|
   $(<set: &context.graph.node_counter: &context.graph.node_counter + 1>)
   $(<set: &context.graph.nodes['node_' + &context.graph.node_counter]: { content: content, score: 0.0, status: 'unscored', dependencies: dependencies }>)
-  $(!each(dependencies) as |dep| {
+  $(each: dependencies as |dep| {
     <<|$(<set: &context.graph.edges: &context.graph.edges + [{ from: dep, to: 'node_' + &context.graph.node_counter }]>)
 |>>
   })
@@ -60,92 +267,183 @@ log_graph_step(message) ::= <<|
   $(<set: &context.graph.narrative_log: &context.graph.narrative_log + [message]>)
 |>>
 
-# --- Main GoT Sequence ---
+# Operator to compute state hash for cycle detection
+compute_state_hash(node_content, path_context) ::= <<|
+  $(<
+    Create a unique hash combining:
+    1. Core idea from: $(node_content)
+    2. Path context: $(path_context)
+    Return a string hash identifying this state
+  >)
+|>>
+
+# Operator to check if we're in a cycle
+detect_cycle(path, visited_states) ::= <<|
+  $(<
+    Check if any state hashes from path $(path)
+    appear in visited states: $(visited_states).
+    Return 'true' if cycle detected, 'false' otherwise
+  >)
+|>>
+
+# Operator to merge evidence uniquely
+merge_unique_evidence(existing, new) ::= <<|
+  $(<
+    Merge new evidence $(new) into existing pool $(existing):
+    1. Deduplicate by URL
+    2. Keep higher quality version if duplicate
+    3. Maintain diversity of sources
+    Return merged array
+  >)
+|>>
+
+# Operator to select relevant evidence
+select_relevant_evidence(pool, query, max_items) ::= <<|
+  $(<
+    From evidence pool $(pool), select up to $(max_items) 
+    most relevant sources for query: $(query)
+    1. Prioritize direct relevance
+    2. Ensure source diversity
+    3. Balance recency with authority
+    Return selected items
+  >)
+|>>
 
 sequence graph_iteration() ::=
-  # --- Expansion Step ---
+  # --- Beam Search Path Management ---
+  step:
+    as: self
+    sequence: beam_search()
+    output: <<|
+      *Managing exploration paths with beam width $(&context.graph.beam_width)...*
+    |>>
+
+  # --- Handle Backtracking ---
+  step:
+    as: self
+    each: &context.graph.paths_to_backtrack as |path_id|
+      sequence: backtrack_from_dead_end(path_id: $(path_id))
+    output: <<|
+      *Processed $(count(&context.graph.paths_to_backtrack)) backtrack operations*
+    |>>
+
+  # --- Expansion Step (for active paths) ---
   step:
     as: @node_generator
-    method: "expanding the frontier nodes"
+    method: "expanding frontier nodes across all active paths"
     output: <<|
-      *Expanding on the most promising ideas...*
-      $(log_graph_step(message: "Expanding on the current set of ideas to explore new possibilities."))
-      $(!each(&context.graph.frontier) as |node_id| {
+      *Generating new thoughts for $(count(&context.graph.active_paths)) active paths...*
+      
+      $(each: &context.graph.expansion_candidates as |candidates, path_id| {
         <<|
-        Expanding on $(node_id):
-        - New Thought A: $(<Generate a new thought based on &context.graph.nodes[node_id].content>)
-        - New Thought B: $(<Generate a second, different thought based on &context.graph.nodes[node_id].content>)
+        Path $(path_id) expansions:
+        $(each: candidates as |thought, index| {
+          <<|  $(index + 1). $(thought)|>>
+        })
         |>>
       })
     |>>
-    goal: "to generate new possibilities"
+    goal: "to explore multiple reasoning directions"
     set:
-      &context.graph.frontier: [] # Clear the frontier after expansion
-      $(add_graph_node(content: $(<New Thought A from the expansion above>), dependencies: [&context.graph.frontier]))
-      $(add_graph_node(content: $(<New Thought B from the expansion above>), dependencies: [&context.graph.frontier]))
+      # Add new nodes to graph from all expansions
+      &context.graph.new_nodes: $(<
+        For each path's candidates, create nodes and edges
+      >)
 
-  # --- Aggregation Step ---
+  # --- Aggregation Step (within paths) ---
   step:
     as: @node_aggregator
-    method: "merging multiple nodes into a synthesis"
+    method: "synthesizing insights within each path"
     output: <<|
-      *Synthesizing the new ideas into a more refined thought...*
-      $(log_graph_step(message: "Synthesizing the newly generated thoughts to find a convergent, more powerful idea."))
-      $(<Synthesize the core ideas from the newly generated nodes into a single, coherent paragraph.>)
-    |>>
-    goal: "to find convergence"
-    set:
-      $(add_graph_node(content: $(<the synthesized paragraph>), dependencies: &context.graph.frontier))
-
-  # --- Scoring and Refinement Step ---
-  step:
-    as: @node_scorer
-    method: "evaluating all new nodes"
-    output: <<|
-      *Evaluating the new ideas to identify the most promising direction...*
-      $(log_graph_step(message: "Scoring all new thoughts to determine which are most relevant and viable."))
-      $(!each(&context.graph.frontier) as |node_id| {
+      *Creating synthesis nodes for convergent ideas...*
+      
+      $(each: &context.graph.active_paths as |path| {
         <<|
-        - Scoring $(node_id): $(<Score the content of the node from 0.0 to 1.0 based on its relevance to the original query. Justify briefly.>)
+        Path $(path.path_id): $(<
+          Identify if recent nodes in this path can be synthesized
+          into a more powerful unified thought
+        >)
         |>>
       })
     |>>
-    goal: "to identify the most promising paths"
+    goal: "to find convergence within exploration paths"
     set:
-      # This is a conceptual representation of updating scores.
-      # A real implementation would parse the output above and update each node.
-      &context.graph.nodes: &context.graph.nodes
+      &context.graph.synthesis_nodes: $(<created synthesis nodes>)
 
+  # --- Score Propagation ---
   step:
-    as: @node_refiner
-    method: "determining evidence strategy"
+    as: self
+    sequence: propagate_scores()
     output: <<|
-      *Evaluating evidence needs for refinement...*
+      *Updated graph scores with propagation factor $(&context.graph.score_propagation_factor)*
     |>>
-    set:
-      &context.graph.refinement_novelty: $(<
-        How novel is the highest-scoring node compared to previous iterations?
-        Rate 0.0-1.0 where 1.0 is completely new direction, 0.0 is incremental refinement
-      >)
+
+  # --- Multi-criteria Scoring ---
   step:
-    as: @node_refiner
-    when: &context.graph.refinement_novelty greater_than 0.5
-    sequence: citation_pipeline(claim: $(<formulate a targeted search query for the novel aspects of the highest-scoring node>))
+    as: @node_scorer
+    method: "comprehensive node evaluation"
     output: <<|
-      *Gathering targeted evidence for novel refinement direction...*
-    |>>
-  step:
-    as: @node_refiner
-    method: "evidence-based refinement"
-    output: <<|
-      *Refining with evidence pool of $(count(&context.citation.evidence_pool)) total sources...*
-      $(log_graph_step(message: "Refining best idea using evidence pool"))
+      *Scoring all new nodes with weighted criteria...*
       
-      $(<Based on the evidence in &context.citation.formatted, critique and improve the highest-scoring node>)
+      Weights:
+      - Relevance: $(&context.graph.aggregation_weights.relevance)
+      - Coherence: $(&context.graph.aggregation_weights.coherence)
+      - Viability: $(&context.graph.aggregation_weights.viability)
+      
+      $(each: &context.graph.new_nodes as |node_id| {
+        <<|
+        Node $(node_id):
+          Relevance: $(<Score 0-1 based on query alignment>)
+          Coherence: $(<Score 0-1 based on logical consistency>)
+          Viability: $(<Score 0-1 based on practical feasibility>)
+          Weighted: $(<Calculate weighted average>)
+        |>>
+      })
     |>>
-    goal: "to perform self-correction with available evidence"
+    goal: "to evaluate nodes from multiple perspectives"
     set:
-      $(add_graph_node(content: $(<the improved version from the output above>), dependencies: [$<the ID of the highest-scoring node>]))
+      &context.graph.nodes: $(<Update all node scores>)
+
+  # --- Evidence-based Refinement ---
+  step:
+    as: @node_refiner
+    method: "determining refinement strategy"
+    output: <<|
+      *Selecting high-value nodes for evidence-based refinement...*
+    |>>
+    set:
+      &context.graph.refinement_targets: $(<
+        Select top 2-3 nodes across all paths that would benefit most from refinement
+      >)
+  
+  step:
+    as: @node_refiner
+    each: &context.graph.refinement_targets as |node_id|
+      when: &context.graph.nodes[node_id].score greater_than 0.6
+      sequence: citation_pipeline(claim: &context.graph.nodes[node_id].content)
+    output: <<|
+      *Refined $(count(&context.graph.refinement_targets)) high-value nodes with evidence*
+    |>>
+
+  # --- Path Selection ---
+  step:
+    as: @path_explorer
+    method: "selecting paths to continue"
+    output: <<|
+      *Iteration complete. Path summary:*
+      
+      Active paths: $(count(&context.graph.active_paths))
+      Completed paths: $(count(&context.graph.completed_paths))
+      Pruned this iteration: $(<count pruned paths>)
+      
+      Top path: $(<identify highest scoring path>)
+      Top node: $(<identify highest scoring node across all paths>)
+    |>>
+    goal: "to prepare for next iteration"
+    set:
+      &context.graph.solution_candidates: $(<
+        Collect top nodes from each active path
+      >)
 
 
 # ═══════════════════════════════════════════════════════════════════════════

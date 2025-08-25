@@ -1,4 +1,4 @@
-# INDRA v2.1: PRISM Module - Citation Pipeline
+# INDRA v2.2: PRISM Module - Citation Pipeline
 <read_file: './base.in'>
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -42,10 +42,9 @@ sequence citation_pipeline(claim) ::=
       *Adding new sources to evidence pool...*
     |>>
     set:
-      &context.citation.evidence_pool: $(merge_unique_evidence(
-        existing: &context.citation.evidence_pool,
-        new: &context.citation.raw_results
-      ))
+      &context.citation.evidence_pool: $(
+        &context.citation.raw_results |> merge_unique_evidence(existing: &context.citation.evidence_pool)
+      )
   step:
     as: self
     method: "selecting relevant evidence from pool"
@@ -69,48 +68,120 @@ sequence citation_pipeline(claim) ::=
       &context.citation.formatted: $(format_citations(results: &context.citation.filtered_results))
       &context.citation.validated: true
 
-# Operator to filter for high-quality, primary sources and deduplicate by URL
-filter_for_primary_sources(results) ::= <
-Given the results in $(results) return a new set that has been filtered to meet two criteria:
-1.  **Uniqueness:** Only include objects with a unique 'url' field. Keep the first occurrence of each URL.
-2.  **Source Quality:** Exclude results from low-quality or non-primary sources such as social media (e.g., Instagram, Twitter, TikTok), content farms or QA sites (e.g., GoodNovel, Quora), and personal blogs unless they are widely recognized as an expert source. Prioritize academic journals, reputable news organizations, university websites, and established publications.
+# Decomposed citation filtering operators for better composability
 
-once done, output the new results.
+# Remove duplicate entries by URL field
+deduplicate_by_url(results) ::= <
+Given the results in $(results), remove all duplicate entries by the 'url' field.
+Keep only the first occurrence of each unique URL.
+Return the deduplicated array.
 >
 
+# Filter out low-quality sources
+filter_quality_sources(results) ::= <
+Given the results in $(results), filter to keep only high-quality sources.
+Exclude: social media (Instagram, Twitter, TikTok), content farms, QA sites (Quora, etc.), 
+and personal blogs unless widely recognized as expert sources.
+Prioritize: academic journals, reputable news organizations, university websites, established publications.
+Return the filtered sources.
+>
 
-# Operator to format citations from raw results
-format_citations(results) ::= <<|
-  $(!each(results) as |result, index| {
+# Composite operator using pipe for primary source filtering
+filter_for_primary_sources(results) ::= $(
+  results |> deduplicate_by_url() |> filter_quality_sources()
+)
+
+
+# Validate citations have required fields before formatting
+validate_citation_fields(results) ::= <
+Filter $(results) to only include items that have both 'title' and 'url' fields.
+Return filtered array with valid citations only.
+>
+
+# Format validated citations into markdown links
+format_citation_links(results) ::= <<|
+  $(each: results as |result, index| {
     <<|$(index + 1). [$(result.title)]($(result.url))|>>
   })
 |>>
 
-# Operator to assess citation quality
+# Composite operator to validate then format citations
+format_citations(results) ::= $(
+  results |> validate_citation_fields() |> format_citation_links()
+)
+
+# Individual assessment operators
+
+# Count sources in collection
+count_sources(results) ::= <count the sources in $(results)>
+
+# Assess credibility of sources
+assess_credibility(results) ::= <
+Evaluate credibility of $(results):
+- Are these primary sources?
+- Recognized authors?
+- Peer-reviewed?
+- Reputable publications?
+Return credibility assessment.
+>
+
+# Assess diversity of sources
+assess_diversity(results) ::= <
+Assess variety in $(results):
+- Different domains represented?
+- Competing viewpoints included?
+- Geographic spread?
+Return diversity assessment.
+>
+
+# Composite quality assessment using piped operators
 assess_quality(results) ::= <<|
-  Sources found: $(<count the sources in &context.citation.raw_results>)
-  Credibility: $(<evaluate &context.citation.raw_results - are these primary sources? recognized authors? peer-reviewed? reputable publications?>)
-  Diversity: $(<assess variety of perspectives in &context.citation.raw_results - different domains? competing viewpoints? geographic spread?>)
+  Sources found: $(results |> count_sources())
+  Credibility: $(results |> assess_credibility())
+  Diversity: $(results |> assess_diversity())
 |>>
 
 # Operator to merge evidence while maintaining uniqueness and quality
-merge_unique_citations(existing, new) ::= <<|
-  $(<
-    Merge $(new) into $(existing) by:
-    1. Remove duplicates by URL
-    2. Keep higher quality version if duplicate
-    3. Maintain diversity of sources
-    Return merged array
-  >)
-|>>
+# Note: Referenced as merge_unique_evidence in the sequence
+merge_unique_evidence(new, existing) ::= $(
+  new |> deduplicate_by_url() |> merge_with_existing(existing: existing)
+)
 
-# Operator to select most relevant evidence for specific claim
-select_relevant_citations(pool, query, max_items) ::= <<|
-  $(<
-    From $(pool), select up to $(max_items) most relevant sources for "$(query)":
-    1. Prioritize direct relevance to query
-    2. Ensure source diversity (different domains/perspectives)
-    3. Balance recency with authority
-    Return selected items as array
-  >)
-|>>
+# Helper to merge new items with existing collection
+merge_with_existing(items, existing) ::= <
+Merge $(items) into $(existing):
+- Add all new items not already in existing (by URL)
+- When duplicates exist, keep higher quality version
+- Maintain overall diversity
+Return merged array.
+>
+
+# Decomposed selection operators for citation relevance pipeline
+
+# Filter citations by relevance to query
+filter_by_relevance(pool, query) ::= <
+Score each item in $(pool) by relevance to "$(query)".
+Keep items with relevance score > 0.3.
+Sort by relevance score descending.
+Return sorted array.
+>
+
+# Ensure diversity of sources
+ensure_diversity(items) ::= <
+Given $(items), ensure source diversity:
+- Include different domains (academic, news, technical)
+- Include different perspectives where available
+- Avoid over-representation from single sources
+Return diverse selection maintaining order.
+>
+
+# Limit to maximum number of items
+limit_items(items, max) ::= <
+Take the first $(max) items from $(items).
+Return limited array.
+>
+
+# Composite operator for selecting relevant citations
+select_relevant_citations(pool, query, max_items) ::= $(
+  pool |> filter_by_relevance(query: query) |> ensure_diversity() |> limit_items(max: max_items)
+)

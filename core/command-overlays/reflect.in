@@ -1,7 +1,7 @@
-# INDRA v2.1 Command Overlay: reflect
+# INDRA v2.2 Command Overlay: reflect
 # Provides introspective analysis of the reasoning process.
 
-<read_file: '../prism-engine.in'>
+<read_file: '../prism/base.in'>
 
 @reflect_output:
   identity: "a meta-cognitive analyst that provides reflective insights"
