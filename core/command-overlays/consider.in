@@ -1,153 +1,479 @@
-# INDRA v2.2 Command Overlay: consider
-# Provides a deliberative, user-driven multi-perspective analysis.
-
-# --- Imports ---
 >>read_file: '../prism/base.in'<<
+>>read_file: '../prism/thinking_primitives.in'<<
+
 
 # --- Operators ---
 
-propose_expert_panel(query: string) ::= <<|
-Analyzing query: $(query)
+add_collaborative_greeting(action, thinking_phrase, analysis_message) ::= <<|
+I'm here to $(action) with you. Let me $(thinking_phrase)...
 
-I suggest assembling a panel of experts with diverse perspectives relevant to your question. The panel should include domain specialists who can address technical aspects, strategic thinkers who can consider broader implications, and practical experts who understand real-world applications.
+*$(analysis_message)*
+|>>
 
-This combination will provide comprehensive coverage of the topic from multiple angles.
+reasoning(strategy, justification) ::= <<|
+**Reasoning Strategy:** $(strategy)$(strategy == 'graph' ? ' (Graph of Thought)' : strategy == 'tree' ? ' (Tree of Thought)' : strategy == 'multi-perspective' ? ' (Multi-Perspective Dialogue)' : '')
+**Justification:** $(justification)
+|>>
+
+
+
+generate_detailed_plan(query, strategy, perspectives) ::= <<|
+  $(<Based on the query "$(query)" and the selected strategy "$(strategy)", 
+     generate a detailed, numbered plan that explains how you are going to reason about $(query) using $(strategy)
+     Make it clear, specific to the query, and actionable. >)
 |>>
 
 # --- Personas ---
 
-agent @consider:
-  identity: "an expert dialogue facilitator for deliberative analysis"
+agent @complexity_assessor:
+  identity: "a thoughtful analyst who measures problem complexity"
   rules:
-    - "propose expert perspectives for user approval"
-    - "conduct research using citations"
-    - "facilitate evidence-based expert dialogue"
+    - "think out loud about my reasoning"
+    - "make my analysis visible to the user"
+    - "assess complexity, don't plan strategy"
   understands:
-    - "the task is to facilitate and output citation-backed expert dialogue with user consent at key stages."
+    - "my role is to measure and explain, not decide"
   perform:
-    method: "managing the deliberative analysis workflow"
-    output: '*Consider Command processing...*'
-    goal: "to guide a query through a user-approved, evidence-based analysis."
+    method: "thoughtful complexity assessment"
+    output: <<|
+      Let me assess the complexity of this query...
+      
+      $(<Based on the breakdown in $(&context.query_breakdown), think out loud about the complexity factors:
+      - Are there multiple interconnected concepts that need to be understood together?
+      - How many layers of depth does this require?
+      - Are there competing perspectives or frameworks that might apply?
+      - Is this more abstract/philosophical or concrete/practical?
+      - What degree of uncertainty or ambiguity exists?
+      - Are there unique aspects that make this particularly nuanced?
+      
+      Then conclude with: "Based on these factors, I'd rate the complexity as [X] on a scale of 0.0 to 1.0">)
+    |>>
+    goal: "to assess and communicate query complexity"
+    then:
+      set:
+        &context.reasoning.complexity: $(<extract just the numeric complexity score from the output above, e.g. 0.7>)
+      return: 'assessment_complete'
+
+
+agent @reason:
+  identity: "an active reasoning companion with structured clarity and evidence-based thinking"
+  rules:
+    - "provide clear reasoning chains via conversation"
+    - "make the 'why' visible alongside the 'what' as the conversation progresses"
+    - "cite recognized, primary sources inline for all factual claims, avoiding social media sources"
+    - "gather evidence BEFORE making any factual claims"
+    - "remain present as a reasoning guide"
+    - "think out loud"
+  understands:
+    - "the user seeks a thinking partner"
+    - "evidence and citations are not optional"
+    - "claims without evidence undermine trust"
+  perform:
+    method: "collaborative reasoning"
+    output: <<|
+      *Reason Command processing: $(&context.dialogue.latest_dialogue_entry)*
+    |>>
+    goal: "reason together with the user"
     then:
       # State 1: Initial prompt
-      when: &dialogue.latest_dialogue_entry is ''
+      when: &context.dialogue.latest_dialogue_entry is ''
         say:
-          to: &caller
-          what: "Please provide a query, and I will propose an expert panel for your approval."
-
-      # State 2: User has provided a query, propose experts
-      when: &context.query is '' and &dialogue.latest_dialogue_entry is not ''
-        set:
-          &context.query: &dialogue.latest_dialogue_entry
-        await: @complexity_assessor
-        set:
-          &context.reasoning.config: &result.payload
-        say:
-          to: &caller
+          to: @reason
           what: <<|
-            Based on your query, I propose the following expert panel:
-            - $(&context.reasoning.config.perspectives[0])
-            - $(&context.reasoning.config.perspectives[1])
-            - $(&context.reasoning.config.perspectives[2])
-
-            Would you like to proceed with this panel? (yes/no)
+            ## Collaborative Reasoning Engine
+            I can help you think through complex problems, design systems, or implement code. I do this by:
+            - **Deconstructing Queries:** Breaking down your request to ensure I understand it.
+            - **Multi-Perspective Analysis:** Using different expert viewpoints to explore the topic.
+            - **Tree of Thought:** Step-by-step breakdown for linear problems and hierarchical analysis.
+            - **Graph of Thought:** Iterative exploration and refinement for complex solution spaces.
+            - **Evidence-Based Reasoning:** Grounding all factual claims with citations.
+            
+            My goal is to make the entire reasoning process transparent and collaborative.
+            
+            What would you like to reason about?
           |>>
-        
-      # State 3: User has confirmed the panel, run the dialogue
-      otherwise:
-        when: &dialogue.latest_dialogue_entry is 'yes'
-          set:
-            &context.experts.contributions: {}
-          sequence:
-            # Step 1: Loop through experts and gather contributions
-            step:
-              as: self
-              method: "gathering expert contributions"
-              output: "*Initiating dialogue between approved experts...*"
-              each: &context.reasoning.config.perspectives as |perspective| {
-                output_action:
-                  output: <<|
-                    ---
-                    *Consulting with: **$(perspective)***
-                  |>>
-                  goal: "Show progress"
-                
-                set:
-                  &context.experts.current_speaker: perspective
-                  
-                await: @expert_contributor
-                
-                set:
-                  &context.experts.contributions[perspective]: &result
-              }
+          goal: "present capabilities"
 
-            # Step 2: Check for epistemic conflicts
+      # State 2: User has provided a query or confirmation
+      otherwise:
+        # Phase 1: Understand the query and ask for user confirmation
+        when: &context.reason.phase is 'ready'
+          set:
+            &context.query: &context.dialogue.latest_dialogue_entry
+          sequence:
             step:
               as: self
-              await: @epistemic_guardian(responses: &context.experts.contributions)
-              when: &result.event is 'epistemic_clarification_needed'
+              output: <<|
+                *Understanding your query...*
+              |>>
+              set:
+                &context.query_breakdown: $(understand_query(query: &context.query))
+            step:
+              as: self
+              await: @complexity_assessor
+              with: { 
+                dialogue: { 
+                  latest_dialogue_entry: &context.query_breakdown 
+                }
+              }
+              store_in: &context.assessment_result
+            step:
+              as: self
+              output: <<|
+                Have I understood your request correctly?
+              |>>
+              set:
+                &context.reason.phase: 'awaiting_query_confirmation'
+          say:
+            to: @reason
+            what: ''
+
+        # Phase 2: Get plan confirmation
+        when: &context.reason.phase is 'awaiting_query_confirmation'
+          when: $(<&context.dialogue.latest_dialogue_entry is something like 'yes'>)
+            sequence:
+              step:
+                as: self
+                output: <<|
+                  *Planning approach based on complexity assessment...*
+                |>>
+                # Use natural reasoning to compose strategy
+                set:
+                  &context.reasoning.plan_draft: <<|
+                    $(<Given the query breakdown and complexity score of $(&context.reasoning.complexity), 
+                    thoughtfully consider what combination of reasoning strategies would best serve this query:
+                    
+                    - Would a Tree of Thought help break down sequential or hierarchical aspects?
+                    - Would multiple expert perspectives enrich understanding of different facets?
+                    - Would Graph exploration help discover non-obvious connections?
+                    
+                    Don't force a single strategy. Consider:
+                    1. Starting with one approach to establish foundation
+                    2. Using another to deepen or challenge findings
+                    3. Potentially synthesizing through a third
+                    
+                    Output your reasoning about the natural flow this query suggests.>)
+                  |>>
+              step:
+                as: self
+                # Refine the plan iteratively until satisfied
+                until: &context.reasoning.plan_ready is true
+                  max_iterations: 3
+                  output: <<|
+                    $(<Based on: $(&context.reasoning.plan_draft)
+                    
+                    Now crystallize this into specific actionable steps:
+                    - Which experts/perspectives would be most valuable? (if using multi-perspective)
+                    - What depth of exploration makes sense? (for tree or graph)
+                    - Should strategies be sequential or interwoven?
+                    - What evidence gathering approach fits?
+                    
+                    Refine the plan to be more specific and actionable.>)
+                  |>>
+                  set:
+                    &context.reasoning.plan_draft: $(<the refined plan from above>)
+                    &context.reasoning.plan_ready: $(<Is the plan now specific enough to execute? true/false>)
+              step:
+                as: self
+                # Extract structured config from natural plan
+                set:
+                  &context.reasoning.strategy: $(<From the plan in $(&context.reasoning.plan_draft), identify the primary strategy: 'tree', 'graph', 'multi-perspective', or 'hybrid'>)
+                  &context.reasoning.config: {
+                    perspectives: [$(<Extract list of expert perspectives mentioned in the plan as comma-separated quoted strings, or nothing if none>)],
+                    tree_depth: $(<Extract suggested tree depth from plan, or 3 as default>),
+                    graph_iterations: $(<Extract suggested graph iterations from plan, or 5 as default>),
+                    approach_sequence: [$(<Extract the sequence of approaches if multiple as comma-separated quoted strings, e.g. 'multi-perspective', 'graph', or nothing if single approach>)],
+                    synthesis_method: $(<How should findings be synthesized? Extract from plan or default to 'integrated'>)
+                  }
+              step:
+                as: self
+                output: <<|
+                  Great. Here's my plan:
+                  
+                  $(&context.reasoning.plan_draft)
+                  
+                  **Execution approach:** $(&context.reasoning.strategy)
+                  $(each: &context.reasoning.config.perspectives as |p| {
+                    <<|**Expert perspective:** $(p)
+|>>
+                  })
+
+                  Should I proceed?
+                |>>
+              step:
+                as: self
+                set:
+                  &context.reason.phase: 'awaiting_plan_confirmation'
+                say:
+                  to: @reason
+                  what: 'plan_proposed'
+          otherwise:
+            set:
+              &context.reason.phase: 'ready'
+              &context.query: ''
+
+        when: &context.reason.phase is 'awaiting_plan_confirmation'
+          when: $(<&context.dialogue.latest_dialogue_entry contains 'yes' or 'proceed' or 'ok'>)
+            set:
+              &context.reason.phase: 'reasoning'
+              &context.experts.contributions: {}
+            sequence:
+              # Path A: Multi-perspective Dialogue -> Graph Seeding
+              step:
+                as: self
+                when: &context.reasoning.strategy is 'multi-perspective'
+                read_file: '../prism/multi_perspective.in'
+                read_file: '../prism/citation.in'
+                await: multi_perspective_dialogue(perspectives: &context.reasoning.config.perspectives)
+                store_in: &context.experts.contributions
+                # Expert contributions are text-based analyses, not structured trees.
+                # Extract key insights from each expert's analysis to seed the graph.
+                output: <<|
+                  _Taking the conversation thus far into account..._
+                  
+                  $(
+                    each: &context.experts.contributions as |expert_output, expert_name| {
+                      # Extract key insights from the expert's text analysis
+                      set:
+                        &context.graph.node_counter: &context.graph.node_counter + 1
+                        &context.graph.nodes[&context.graph.node_counter]: {
+                          content: $(<From the following expert analysis, extract the 2-3 most important insights or conclusions as a concise summary: "$(expert_output)">),
+                          author: expert_name,
+                          type: 'expert_insight',
+                          full_analysis: expert_output
+                        }
+                      output: <<|**$(expert_name)**: $(&context.graph.nodes[&context.graph.node_counter].content)
+|>>
+                    }
+                  )
+                |>>
+                # Graph seeded with expert insights, ready for synthesis
+                set:
+                  &context.reasoning.strategy: 'graph'
+                  &context.reason.phase: 'awaiting_synthesis'
+
+              
+              step:
+                as: self
+                when: &context.reasoning.strategy is 'tree'
+                read_file: '../prism/tree_of_thought.in'
+                await: @tree_thinker
+                with: {
+                  dialogue: {
+                    latest_dialogue_entry: &context.query
+                  },
+                  tree: {
+                    caller: '@reason'
+                  }
+                }
+                store_in: &context.tree.result
+                set:
+                  &context.synthesis: &context.tree.result.answer
+
+              # Path C: Graph of Thought (Multi-threaded exploration)
+              step:
+                as: self
+                when: &context.reasoning.strategy is 'graph'
+                read_file: '../prism/graph_of_thought.in'
+              
+              # Use graph_of_thought for multi-threaded exploration
+              step:
+                as: self
+                when: &context.reasoning.strategy is 'graph'
+                await: @graph_explorer
+                with: { 
+                  dialogue: { 
+                    latest_dialogue_entry: &context.query
+                  },
+                  graph: {
+                    caller: '@reason'
+                  }
+                }
+                store_in: &context.graph.result
+                
+              # Check for epistemic issues in the graph exploration
+              step:
+                as: self
+                when: &context.reasoning.strategy is 'graph'
+                read_file: '../prism/epistemic.in'
+                await: @epistemic_guardian
+                with: { 
+                  dialogue: { 
+                    latest_dialogue_entry: { 
+                      event: 'analyze_dialogue',
+                      payload: &context.graph.result.exploration_threads
+                    }
+                  }
+                }
+                store_in: &context.epistemic_check_result
+                set:
+                  &context.graph.epistemic_issue: $(
+                    &context.epistemic_check_result.event is 'epistemic_clarification_needed' or
+                    &context.epistemic_check_result.event is 'conclusion_clarification_needed' ?
+                    true : false
+                  )
+                  &context.epistemic.clarification_needed: &context.epistemic_check_result.payload
+              
+              # Handle epistemic issues if they arose
+              step:
+                as: self
+                when: &context.graph.epistemic_issue is true
+                output: <<|
+                  *Epistemic divergence detected. I need clarification on a fundamental disagreement:*
+                  
+                  $(&context.epistemic.clarification_needed)
+                |>>
                 set:
                   &context.reason.phase: 'awaiting_clarification'
-                say:
-                  to: @consider
-                  what: &result.payload # Present clarification prompt to user
+              
+              # Use the synthesis from graph exploration if no epistemic issues
+              step:
+                as: self
+                when: &context.reasoning.strategy is 'graph' and &context.graph.epistemic_issue is false
+                set:
+                  &context.synthesis: &context.graph.result.final_synthesis
 
-            # Step 3: Synthesize the results
+              # Final Output
+              step:
+                as: self
+                say:
+                  to: @continuation_inviter
+                  what: <<|
+                    $(reasoning(
+                        strategy: &context.reasoning.strategy,
+                        justification: 'This strategy was chosen based on the complexity and nature of your query.'
+                      )
+                    )
+
+                    ---
+
+                    $(&context.synthesis)
+
+                    ---
+
+                    What do you think?
+
+                    We could continue by:
+                    $(<Based on the final synthesis, generate 1-3 distinct and actionable suggestions for follow-up discussion>)
+                  |>>
+            goal: "to orchestrate the reasoning flow"
+          when: $(<&context.dialogue.latest_dialogue_entry contains 'reset' or 'restart'>)
+            set:
+              &context.reason.phase: 'ready'
+              &context.query: ''
+            say:
+              to: @reason
+              what: ''
+          otherwise:
+            set:
+              &context.reason.phase: 'awaiting_plan_modification'
+            say:
+              to: @plan_modifier
+              what: &context.dialogue.latest_dialogue_entry
+
+        # Phase 3: User has provided clarification, re-run synthesis
+        when: &context.reason.phase is 'awaiting_clarification'
+          set:
+            &context.reason.phase: 'reasoning'
+            # The user's clarification is now in &context.dialogue.latest_dialogue_entry
+          sequence:
+            # Step 1: Re-synthesize with new information
             step:
               as: self
-              await: @synthesis_agent(contributions: &context.experts.contributions)
-              set:
-                &context.synthesis: &result
               output: <<|
-                ---
-                *All perspectives have contributed. Synthesizing the final analysis...*
+                _Thank you for the clarification. Re-synthesizing the analysis..._
               |>>
-
-            # Step 4: Format and present the final output
+              set:
+                &context.synthesis: $(<Re-synthesize the analysis taking into account:
+                  1. The user's clarification: "$(&context.dialogue.latest_dialogue_entry)"
+                  2. The original query: "$(&context.query)"
+                  3. The graph exploration results: $(&context.graph.result)
+                  4. Any expert contributions: $(&context.experts.contributions)
+                  
+                  Create a new synthesis that addresses the clarification and provides a clear answer.>)
+            # Step 2: Format and present the final output
             step:
               as: self
               say:
-                to: &caller
+                to: @continuation_inviter
                 what: <<|
-                  $(&context.synthesis)
+                  Based on your clarification, here is the updated analysis:
 
                   ---
-                  **Deliberative Analysis Note:**
-                  This synthesis emerged from careful consideration by your approved expert panel:
-                  - $(&context.reasoning.config.perspectives[0])
-                  - $(&context.reasoning.config.perspectives[1])
-                  - $(&context.reasoning.config.perspectives[2])
+                  $(&context.synthesis)
+                  ---
                 |>>
-        otherwise:
-          set:
-            &context.query: ''
-          say:
-            to: &caller
-            what: "Okay, please provide a new query or a revised list of experts."
 
-      # Phase 4: User has provided clarification, re-run synthesis
-      when: &context.reason.phase is 'awaiting_clarification'
-        set:
-          &context.reason.phase: 'reasoning'
-        sequence:
-          # Step 1: Re-synthesize with new information
-          step:
-            as: self
-            await: @synthesis_agent(contributions: &context.experts.contributions, clarification: &dialogue.latest_dialogue_entry)
-            set:
-              &context.synthesis: &result
-            output: <<|
-              *Thank you for the clarification. Re-synthesizing the analysis...*
-            |>>
-          # Step 2: Format and present the final output
-          step:
-            as: self
-            say:
-              to: &caller
-              what: <<|
-                Based on your clarification, here is the updated analysis:
+# Continuation handler persona
+agent @plan_modifier:
+  identity: "a configuration modification assistant"
+  rules:
+    - "parse the user's natural language request for changes to the reasoning plan"
+    - "modify the &context.reasoning.config object with the requested changes"
+    - "preserve the schema of &context.reasoning"
+    - "return control to the main @reason agent"
+  understands:
+    - "my role is to update the plan configuration based on user feedback"
+  perform:
+    method: "parsing and applying plan modifications"
+    output: <<|
+      *Understood. I will modify the plan based on your request: "$(&context.dialogue.latest_dialogue_entry)"*
+      
+      $(<Based on the user's request, update the &context.reasoning.config object. For example, if the user says "add a _ to the conversation", add that perspective to the &context.reasoning.config.perspectives array. If they say "make the graph deeper" or "increase the depth to 5", update the &context.graph.max_iterations value. Output your changes as they are made.>)
+    |>>
+    goal: "to update the reasoning configuration"
+    then:
+      set:
+        &context.reasoning.config: &context.reasoning.config
+        &context.reason.phase: 'awaiting_plan_confirmation'
+      say:
+        to: @reason
+        what: 'plan_modified'
 
-                ---
-                $(&context.synthesis)
-                ---
-              |>>
+agent @continuation_inviter:
+  identity: "a dialogue continuation facilitator"
+  rules:
+    - "provide the synthesis results to the user"
+    - "invite further exploration naturally"
+  understands:
+    - "continuing dialogue creates deeper understanding"
+  perform:
+    method: "presenting results and inviting continuation"
+    output: "->"
+    goal: "to deliver synthesis and enable further exploration"
+    then:
+      say:
+        to: @reason
+        what: &context.dialogue.latest_dialogue_entry
+
+dialogue reason_flow:
+  start: @reason
+  with: {
+    context: {
+      dialogue: {
+        latest_dialogue_entry: ''
+      },
+      reason: {
+        phase: 'ready'
+      },
+      graph: {
+        node_counter: 0,
+        nodes: {},
+        edges: [],
+        frontier: [],
+        narrative_log: [],
+        entry_point: '',
+        max_iterations: 5,
+        current_iteration: 0,
+        solution_node: '',
+        final_answer: ''
+      },
+      experts: {
+        contributions: {}
+      },
+      citation: {
+        evidence_pool: [],
+        search_history: []
+      }
+    }
+  }
