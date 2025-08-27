@@ -1,4 +1,4 @@
-# INDRA v2.2 Pattern Library
+# INDRA v3.0 Pattern Library
 # Comprehensive examples demonstrating INDRA syntax and semantics
 # These patterns are for reference AFTER transformation is complete
 
@@ -156,7 +156,7 @@ then:
     what: 'continue'
 ```
 
-## ENHANCED FEATURES (v2.2)
+## ENHANCED FEATURES (v3.0)
 
 **Parameterized Operators:**
 ```indra
@@ -243,9 +243,9 @@ $(generate_expert(domain: 'quantum computing', tools: ['calculator']))
 
 ## SEQUENCE PATTERNS
 
-**Step-Level Iteration (v2.2):**
+**Step-Level Iteration (v3.0):**
 ```indra
-# New in v2.2: each: blocks within sequence steps
+# New in v3.0: each: blocks within sequence steps
 sequence graph_iteration() ::=
   step:
     as: self

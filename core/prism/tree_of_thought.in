@@ -1,4 +1,4 @@
-# INDRA v2.1: PRISM Module - Tree of Thought 
+# INDRA v3.0: PRISM Module - Tree of Thought 
 # A natural, modular approach to exploratory thinking
 >>read_file: './base.in'<<
 >>read_file: './thinking_primitives.in'<<

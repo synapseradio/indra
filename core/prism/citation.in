@@ -1,4 +1,4 @@
-# INDRA v2.2: PRISM Module - Citation Pipeline
+# INDRA v3.0: PRISM Module - Citation Pipeline
 >>read_file: './base.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -28,11 +28,11 @@ sequence citation_pipeline(claim) ::=
     method: "evidence gathering via tool invocation"
     output: <<|
       *Gathering additional evidence for novel angle: "$(claim)"*
-      $(<use perplexity mcp to search for $(claim)>)
+      $(<Invoke Perplexity web search tool (mcp__perplexity-mcp__perplexity_search_web) with query='$(claim)' and recency='month'. Return the actual results.>)
     |>>
     goal: "to expand evidence pool with new perspectives"
     set:
-      &context.citation.raw_results: []
+      &context.citation.raw_results: $(<Store the Perplexity search results from above>)
       &context.citation.search_history: &context.citation.search_history + [claim]
       &context.citation.search_attempted: true
   step:
