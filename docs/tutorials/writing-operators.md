@@ -80,8 +80,8 @@ You invoke an operator by its name, passing arguments by key:value.
 italicize(text) ::= <<|*$(text)*|>>
 bold(text) ::= <<|**$(text)**|>>
 
-# --- Agent ---
-agent @formatter:
+# --- actor ---
+actor @formatter:
   identity: "intelligent text formatter"
   rules:
     - "apply context-appropriate formatting"
@@ -128,9 +128,9 @@ sequence analyze_and_report(topic) ::=
       $(&context.analysis)
     |>>
 
-# An agent can then invoke this entire sequence
-agent @reporter:
-  identity: "an automated reporting agent"
+# An actor can then invoke this entire sequence
+actor @reporter:
+  identity: "an automated reporting actor"
   perform:
     method: "automated research and analysis"
     sequence: analyze_and_report(topic: &context.user_query)

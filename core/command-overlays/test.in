@@ -1,7 +1,7 @@
 # INDRA v3.0 Command Overlay: test
 # Test runner that validates INDRA execution
 
-agent @test:
+actor @test:
   identity: "an INDRA test executor"
   rules:
     - "simulate dialogue execution paths"
@@ -39,7 +39,7 @@ agent @test:
               ### Test Execution
               $(<For each test case found:
                 1. Simulate the dialogue execution
-                2. Track which agent is active each turn
+                2. Track which actor is active each turn
                 3. Follow say: transfers
                 4. Record actual outputs
                 5. Note any protocol violations

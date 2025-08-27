@@ -4,7 +4,7 @@
 
 **User:** what is the healthiest path to find meaning according to existentialists
 
-**Agent:**
+**actor:**
 Okay, let me make sure I've got this right. From what you're saying, you want to explore: **The user wants to understand the most beneficial way to discover purpose from an existentialist viewpoint.**
 
 It seems like the most important points are:
@@ -24,7 +24,7 @@ Have I understood your request correctly? (yes/no)
 
 **User:** y
 
-**Agent:**
+**actor:**
 Great. Here is the plan to address your query:
 
 The plan to address your query about the healthiest path to find meaning according to existentialists, using a multi-perspective dialogue strategy, will involve the following steps:
@@ -43,7 +43,7 @@ Do you approve this plan? (yes/no)
 
 **User:** y
 
-**Agent:**
+**actor:**
 *Reason Command processing: y*
 *Seeding the main reasoning graph with insights from all expert trees...*
 *Consulting with: **Sartre***
@@ -562,7 +562,7 @@ Or, if you're ready for something new, just let me know what you'd like to reaso
 
 **User:** let's look at all three. dive deeper into practical applications and ethical implications of de Beauvoir's work. same for will to power. Is Kierkergaard's concept faith dependent upon a non-secular worldview ?
 
-**Agent:**
+**actor:**
 *Reason Command processing: let's look at all three. dive deeper into practical applications and ethical implications of de Beauvoir's work. same for will to power. Is Kierkergaard's concept faith dependent upon a non-secular worldview ?*
 *Running Graph Iteration 1...*
 *Running Graph Iteration 2...*

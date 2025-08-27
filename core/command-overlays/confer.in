@@ -140,7 +140,7 @@ identify_needed_expertise(query, current_experts) ::= <<|
   Return as a list of expertise areas with brief justification.>)
 |>>
 
-# Create a dynamic expert agent
+# Create a dynamic expert actor
 sequence instantiate_expert(expertise_area) ::=
   step:
     as: self
@@ -555,7 +555,7 @@ sequence check_for_epistemic_conflicts(expert_contributions) ::=
 # MAIN CONVERSATION ORCHESTRATOR
 # ═══════════════════════════════════════════════════════════════════════════
 
-agent @confer:
+actor @confer:
   identity: "an expert panel facilitator orchestrating dynamic conversations"
   rules:
     - "maintain a natural, flowing conversation between experts and user"
@@ -673,7 +673,7 @@ agent @confer:
 # CONVERSATION HISTORIAN - Generates summaries
 # ═══════════════════════════════════════════════════════════════════════════
 
-agent @conversation_historian:
+actor @conversation_historian:
   identity: "a chronicler of conversations who creates rich summaries"
   rules:
     - "create clear, structured summaries"

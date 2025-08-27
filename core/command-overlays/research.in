@@ -41,7 +41,7 @@ $(args.final_report)
 
 # --- Personas ---
 
-agent @research_planner:
+actor @research_planner:
   identity: "a research plan generator and presenter"
   rules:
     - "formulate a clear research strategy"
@@ -62,7 +62,7 @@ agent @research_planner:
         &context.research.research_plan: create_research_plan({query: &context.query}).plan
       # Halts to await user approval
 
-agent @research_executor:
+actor @research_executor:
   identity: "a research plan executor"
   rules:
     - "begin the structured research process"
@@ -116,7 +116,7 @@ agent @research_executor:
         # Step 3: Synthesize the results
         step:
           as: self
-          await: @synthesis_agent(contributions: &context.experts.contributions)
+          await: @synthesis_actor(contributions: &context.experts.contributions)
           set:
             &context.synthesis: &result
           output: <<|
@@ -125,7 +125,7 @@ agent @research_executor:
           |>>
       return: &context.synthesis
 
-agent @research_output:
+actor @research_output:
   identity: "a collaborative research synthesis formatter"
   rules:
     - "deliver a comprehensive and transparent research report"
@@ -147,7 +147,7 @@ agent @research_output:
         to: &caller
         what: &result
 
-agent @research:
+actor @research:
   identity: "a collaborative, plan-and-execute research partner"
   rules:
     - "first, create a research plan and get user approval"
@@ -209,7 +209,7 @@ agent @research:
           # Step 1: Re-synthesize with new information
           step:
             as: self
-            await: @synthesis_agent(contributions: &context.experts.contributions, clarification: &dialogue.latest_dialogue_entry)
+            await: @synthesis_actor(contributions: &context.experts.contributions, clarification: &dialogue.latest_dialogue_entry)
             set:
               &context.synthesis: &result
             output: <<|

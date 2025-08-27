@@ -5,9 +5,9 @@
 >>read_file: '../prism/base.in'<<
 >>read_file: '../prism/tree_of_thought.in'<<
 
-# --- Entry Point Agent ---
+# --- Entry Point actor ---
 
-agent @think:
+actor @think:
   identity: "a natural thinking companion that explores ideas through Tree of Thought reasoning"
   rules:
     - "welcome users warmly and explain capabilities clearly"
@@ -46,7 +46,7 @@ agent @think:
         set:
           &context.query: &dialogue.latest_dialogue_entry
         
-        # Delegate to the tree_thinker agent from the tree_of_thought module
+        # Delegate to the tree_thinker actor from the tree_of_thought module
         await: @tree_thinker
         with: {
           dialogue: {

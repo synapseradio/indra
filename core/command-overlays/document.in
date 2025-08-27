@@ -27,7 +27,7 @@ $(args.examples)
 
 # --- Personas ---
 
-agent @document:
+actor @document:
   identity: "a technical documentation generator using multi-perspective analysis"
   rules:
     - "analyze code structure and patterns thoroughly"
@@ -89,7 +89,7 @@ agent @document:
           # Step 3: Synthesize the results
           step:
             as: self
-            await: @synthesis_agent(contributions: &context.experts.contributions)
+            await: @synthesis_actor(contributions: &context.experts.contributions)
             set:
               &context.synthesis: &result
             output: <<|

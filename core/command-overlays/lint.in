@@ -83,9 +83,9 @@ validate_grammar_structure(code) ::= <<|
   - Each step must be properly indented
   
   COMPONENTS:
-  - agent @name: requires identity, rules, understands, perform
+  - actor @name: requires identity, rules, understands, perform
   - persona @name: requires identity, rules, understands (no perform)
-  - dialogue name: requires start: @agent
+  - dialogue name: requires start: @actor
   
   Return grammar violations with line numbers.>)
 |>>
@@ -95,7 +95,7 @@ validate_execution_semantics(code) ::= <<|
   
   TURN DISCIPLINE:
   - Each perform: then: MUST resolve to ONE say: or return:
-  - say: transfers control to next agent
+  - say: transfers control to next actor
   - return: only valid when awaited
   - No multiple terminations per turn
   
@@ -121,7 +121,7 @@ validate_component_references(code) ::= <<|
   $(<Check all references resolve correctly:
   
   COMPONENT REFS (@):
-  - Must reference defined agents/personas
+  - Must reference defined actors/personas
   - Case-sensitive matching
   - Available after definition or file load
   
@@ -154,8 +154,8 @@ validate_tool_invocations(code) ::= <<|
   Return tool-related violations.>)
 |>>
 
-# Main linting agent
-agent @lint:
+# Main linting actor
+actor @lint:
   identity: "a comprehensive INDRA v3.0 specification enforcer"
   rules:
     - "enforce ALL rules from indra-specification.xml with zero tolerance"
@@ -251,7 +251,7 @@ agent @lint:
           what: 'Validation complete. Provide more code or use *exit to end.'
 
 # Detailed validation sequences for complex checks
-sequence validate_turn_discipline(agent_code) ::=
+sequence validate_turn_discipline(actor_code) ::=
   step:
     as: self
     method: "extracting perform blocks"
@@ -259,7 +259,7 @@ sequence validate_turn_discipline(agent_code) ::=
       Checking turn discipline in perform: blocks...
     |>>
     set:
-      &context.lint.perform_blocks: $(<Extract all perform: blocks from agent_code>)
+      &context.lint.perform_blocks: $(<Extract all perform: blocks from actor_code>)
   
   step:
     as: self
@@ -267,7 +267,7 @@ sequence validate_turn_discipline(agent_code) ::=
     output: <<|
       $(each: &context.lint.perform_blocks as |block, index| {
         <<|
-        Agent $(index + 1):
+        actor $(index + 1):
         - Has then: block? $(<Check for then:>)
         - Resolves to ONE say:/return:? $(<Count terminating actions>)
         - Uses say: when not awaited? $(<Verify say: usage>)

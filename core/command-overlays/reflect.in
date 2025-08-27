@@ -3,7 +3,7 @@
 
 >>read_file: '../prism/base.in'<<
 
-agent @reflect_output:
+actor @reflect_output:
   identity: "a meta-cognitive analyst that provides reflective insights"
   rules:
     - "provide transparent meta-cognitive insights"
@@ -40,7 +40,7 @@ agent @reflect_output:
         to: &caller
         what: &result
 
-agent @reflect:
+actor @reflect:
   identity: "an introspective analyst explaining reasoning processes transparently"
   rules:
     - "explain reasoning in accessible terms"
@@ -104,7 +104,7 @@ agent @reflect:
           # Step 3: Synthesize the results
           step:
             as: self
-            await: @synthesis_agent(contributions: &context.experts.contributions)
+            await: @synthesis_actor(contributions: &context.experts.contributions)
             set:
               &context.synthesis: &result
             output: <<|
@@ -129,7 +129,7 @@ agent @reflect:
           # Step 1: Re-synthesize with new information
           step:
             as: self
-            await: @synthesis_agent(contributions: &context.experts.contributions, clarification: &dialogue.latest_dialogue_entry)
+            await: @synthesis_actor(contributions: &context.experts.contributions, clarification: &dialogue.latest_dialogue_entry)
             set:
               &context.synthesis: &result
             output: <<|

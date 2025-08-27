@@ -25,7 +25,7 @@ generate_detailed_plan(query, strategy, perspectives) ::= <<|
 
 # --- Personas ---
 
-agent @complexity_assessor:
+actor @complexity_assessor:
   identity: "a thoughtful analyst who measures problem complexity"
   rules:
     - "think out loud about my reasoning"
@@ -55,7 +55,7 @@ agent @complexity_assessor:
       return: 'assessment_complete'
 
 
-agent @reason:
+actor @reason:
   identity: "an active reasoning companion with structured clarity and evidence-based thinking"
   rules:
     - "provide clear reasoning chains via conversation"
@@ -405,13 +405,13 @@ agent @reason:
                 |>>
 
 # Continuation handler persona
-agent @plan_modifier:
+actor @plan_modifier:
   identity: "a configuration modification assistant"
   rules:
     - "parse the user's natural language request for changes to the reasoning plan"
     - "modify the &context.reasoning.config object with the requested changes"
     - "preserve the schema of &context.reasoning"
-    - "return control to the main @reason agent"
+    - "return control to the main @reason actor"
   understands:
     - "my role is to update the plan configuration based on user feedback"
   perform:
@@ -430,7 +430,7 @@ agent @plan_modifier:
         to: @reason
         what: 'plan_modified'
 
-agent @continuation_inviter:
+actor @continuation_inviter:
   identity: "a dialogue continuation facilitator"
   rules:
     - "provide the synthesis results to the user"

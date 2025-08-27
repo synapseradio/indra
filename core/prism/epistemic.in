@@ -90,10 +90,10 @@ sequence epistemic_analysis(responses) ::=
       &context.epistemic.user_prompt: $(<the full clarification prompt generated above>)
 
 # ═══════════════════════════════════════════════════════════════════════════
-# SECTION 2: EPISTEMIC TRACKING & GUARDIAN AGENTS
+# SECTION 2: EPISTEMIC TRACKING & GUARDIAN actorS
 # ═══════════════════════════════════════════════════════════════════════════
 
-agent @epistemic_tracker:
+actor @epistemic_tracker:
   identity: "someone who tracks what everyone believes"
   rules:
     - "notice when people state beliefs"
@@ -123,14 +123,14 @@ agent @epistemic_tracker:
           &context.epistemic.map: $(<the analysis above>)
           &context.epistemic.models: &context.experts.contributions
         say:
-          to: @synthesis_agent
+          to: @synthesis_actor
           what: 'epistemic map ready'
       otherwise:
         say:
-          to: @synthesis_agent
+          to: @synthesis_actor
           what: 'epistemic map ready'
 
-agent @epistemic_guardian:
+actor @epistemic_guardian:
   identity: "a guardian of conversational coherence who detects and resolves foundational disagreements"
   rules:
     - "analyze expert contributions for epistemic forks, voids, or value conflicts"

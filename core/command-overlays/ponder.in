@@ -143,9 +143,9 @@ synthesize_patterns_conversationally(patterns) ::= <<|
   How do these connections land for you?
 |>>
 
-# --- Agent Definition ---
+# --- actor Definition ---
 
-agent @ponder:
+actor @ponder:
   has:
     available_mcp_tools:
       - 'perplexity'

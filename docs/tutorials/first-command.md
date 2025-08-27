@@ -23,7 +23,7 @@ persona @citation_collector:
 # Another file imports and uses this persona
 >>read_file: './shared/citations.in'<<
 
-agent @researcher:
+actor @researcher:
   identity: "a researcher who properly cites sources"
   rules:
     - "always gather citations before synthesizing"
@@ -61,7 +61,7 @@ The PRISM engine introduces a more sophisticated pattern called "command overlay
 
 ```indra
 # analyze.in - A PRISM command overlay
-agent @command:
+actor @command:
   identity: "thoughtful analyzer"
   rules:
     - "provide insightful analysis"
@@ -123,7 +123,7 @@ INDRA doesn't prescribe architectural patterns. You can create your own based on
 ### Pattern 1: Service Components
 ```indra
 # services/formatter.in
-agent @formatter_service:
+actor @formatter_service:
   identity: "formatting service"
   perform:
     method: "appropriate formatting"
@@ -151,8 +151,8 @@ sequence process_stage_1(input) ::=
   step:
     output: <<|Stage 1 processing is complete.|>>
 
-agent @pipeline_runner:
-  identity: "a pipeline execution agent"
+actor @pipeline_runner:
+  identity: "a pipeline execution actor"
   rules:
     - "execute pipeline stages in order"
   understands:
@@ -163,7 +163,7 @@ agent @pipeline_runner:
     goal: "to complete stage 1 of the pipeline"
     then:
       say:
-        to: @next_stage_agent # Assumes another agent is defined
+        to: @next_stage_actor # Assumes another actor is defined
         what: "stage_1_complete"
 ```
 
@@ -192,14 +192,14 @@ Without PRISM's complexity, here's a basic command pattern:
 
 ```indra
 # my-engine.in
-agent @simple_engine:
+actor @simple_engine:
   identity: "a basic command processor"
   understands:
-    - "the user's input determines which specialist agent to call"
+    - "the user's input determines which specialist actor to call"
   perform:
     method: "command routing"
     output: "<{delegating to appropriate handler}>"
-    goal: "to route the user to the correct agent"
+    goal: "to route the user to the correct actor"
     then:
       # This is a simplified example; a real implementation
       # would have logic to determine the command.
@@ -210,7 +210,7 @@ agent @simple_engine:
 # my-command.in
 >>read_file: './my-engine.in'<<
 
-agent @help_handler:
+actor @help_handler:
   identity: "a help provider"
   understands:
     - "the user needs to know what commands are available"
@@ -220,7 +220,7 @@ agent @help_handler:
     goal: "to provide the user with a list of commands"
     then:
       say:
-        to: @user # Assumes a @user agent is defined
+        to: @user # Assumes a @user actor is defined
         what: "help_provided"
 ```
 

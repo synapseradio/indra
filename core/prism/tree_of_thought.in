@@ -198,8 +198,8 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
 # ENTRY POINTS - How to invoke Tree of Thought
 # ═══════════════════════════════════════════════════════════════════════════
 
-# Main agent that orchestrates tree of thought conversations
-agent @tree_thinker:
+# Main actor that orchestrates tree of thought conversations
+actor @tree_thinker:
   identity: "a thoughtful explorer of ideas who thinks naturally through problems"
   rules:
     - "think conversationally, not algorithmically"

@@ -35,15 +35,15 @@ sequence multi_perspective_dialogue(perspectives) ::=
   step:
     as: self
     # The contributions are now in &context.experts.contributions
-    # The calling agent can now proceed with epistemic checks or synthesis.
+    # The calling actor can now proceed with epistemic checks or synthesis.
     return: &context.experts.contributions
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# SECTION 2: CORE AGENT
+# SECTION 2: CORE actor
 # ═══════════════════════════════════════════════════════════════════════════
 
-agent @expert_contributor:
+actor @expert_contributor:
   identity: "a single expert providing a focused contribution"
   rules:
     - "analyze the topic from my assigned perspective"
@@ -59,7 +59,7 @@ agent @expert_contributor:
     output: "*Contributing from my perspective...*"
     goal: "to generate a single, comprehensive expert viewpoint"
     then:
-      # The calling agent MUST provide &context.task in a `with:` block.
+      # The calling actor MUST provide &context.task in a `with:` block.
       # This makes the expert a pure, stateless executor.
       when: &context.task is 'tree_of_thought'
         await: tree_of_thought(

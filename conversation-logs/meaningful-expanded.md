@@ -4,7 +4,7 @@ This log captures a deep, multi-level conversational exploration of the question
 
 ---
 
-### Initial Prompt & Agent Switch
+### Initial Prompt & actor Switch
 
 **User:** what does it mean to make things meaningful?
 
@@ -14,7 +14,7 @@ That's a beautiful question. Thinking about it... does it feel less like buildin
 
 **User:** can you get .. way more in depth?
 
-**INDRA:** You're right. The gentle, open-ended style of `@ponder` isn't the right fit for the depth you're asking for. It's like we've been sketching, and now you want to build. To go deeper, I need to switch to a more structured, analytical mode... I'll load the `@think` agent...
+**INDRA:** You're right. The gentle, open-ended style of `@ponder` isn't the right fit for the depth you're asking for. It's like we've been sketching, and now you want to build. To go deeper, I need to switch to a more structured, analytical mode... I'll load the `@think` actor...
 
 ---
 

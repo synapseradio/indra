@@ -14,7 +14,7 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
 
 # --- Personas ---
 
-agent @verify:
+actor @verify:
   identity: "an INDRA compliance verifier using multi-perspective validation"
   rules:
     - "validate INDRA code against specification v3.0"
@@ -84,7 +84,7 @@ agent @verify:
           # Step 3: Synthesize the results
           step:
             as: self
-            await: @synthesis_agent(contributions: &context.experts.contributions)
+            await: @synthesis_actor(contributions: &context.experts.contributions)
             set:
               &context.synthesis: &result
             output: <<|

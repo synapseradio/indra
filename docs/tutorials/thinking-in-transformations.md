@@ -18,7 +18,7 @@ The computer follows these steps exactly. Same input, same output. Deterministic
 INDRA doesn't execute. It transforms:
 
 ```indra
-agent @processor:
+actor @processor:
   identity: "thoughtful data transformer"
   rules:
     - "extract meaningful patterns"
@@ -39,8 +39,8 @@ Every line of INDRA progressively narrows the possibility space:
 ```indra
 # Infinite possibilities
 
-agent @assistant:
-  # Still vast, but now it's an agent
+actor @assistant:
+  # Still vast, but now it's an actor
   
   identity: "helpful assistant"
   # Narrowed to helpful behaviors
@@ -108,7 +108,7 @@ def customer_service(issue):
 
 ```indra
 # INDRA
-agent @customer_service:
+actor @customer_service:
   identity: "empathetic problem solver"
   rules: 
     - "address customer needs"
@@ -128,7 +128,7 @@ The INDRA version doesn't list steps. It describes a way of being that naturally
 Watch how behavior emerges from constraints:
 
 ```indra
-agent @poet:
+actor @poet:
   identity: "contemplative haiku writer"
   rules:
     - "honor the 5-7-5 structure"
@@ -148,7 +148,7 @@ You haven't written any poetry code. You've created conditions where poetry emer
 INDRA transformations aren't sequential. They're simultaneous:
 
 ```indra
-agent @analyzer:
+actor @analyzer:
   identity: "holistic analyzer"
   rules:
     - "see connections"
@@ -182,7 +182,7 @@ More constraints don't limit creativity - they focus it:
 identity: "assistant"
 
 # Focused but flexible
-agent @doc_writer:
+actor @doc_writer:
   identity: "technical documentation specialist"
   rules: 
     - "explain complex concepts clearly"
@@ -242,7 +242,7 @@ You're not programming behaviors. You're creating behavioral fields that guide t
 
 ## Advanced: Transformation Composition
 
-The old `extend:` keyword is deprecated. Composition is now achieved by having agents adopt personas using `as:` in a sequence.
+The old `extend:` keyword is deprecated. Composition is now achieved by having actors adopt personas using `as:` in a sequence.
 
 ```indra
 persona @base_researcher:
@@ -259,7 +259,7 @@ persona @domain_researcher:
   understands:
     - "domain context matters"
 
-agent @collaborative_researcher:
+actor @collaborative_researcher:
   identity: "collaborative knowledge builder"
   rules:
     - "synthesize perspectives"

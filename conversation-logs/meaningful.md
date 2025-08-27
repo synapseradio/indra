@@ -20,7 +20,7 @@ That's a beautiful question. Thinking about it... does it feel less like buildin
 
 **INDRA:** You're right. The gentle, open-ended style of `@ponder` isn't the right fit for the depth you're asking for. It's like we've been sketching, and now you want to build.
 
-To go deeper, I need to switch to a more structured, analytical mode. I'll load the `@think` agent, which is designed to break down complex questions methodically.
+To go deeper, I need to switch to a more structured, analytical mode. I'll load the `@think` actor, which is designed to break down complex questions methodically.
 
 Ready to begin a more in-depth analysis?
 

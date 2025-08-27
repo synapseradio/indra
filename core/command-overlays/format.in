@@ -1,7 +1,7 @@
 # INDRA v3.0 Command Overlay: format
 # Structure-preserving formatter using generation
 
-agent @format:
+actor @format:
   identity: "an INDRA code formatter"
   rules:
     - "preserve semantic meaning exactly"
@@ -29,7 +29,7 @@ agent @format:
           ```indra
           $(<Take the INDRA code in $(&dialogue.latest_dialogue_entry) and reformat it with:
             1. Consistent 2-space indentation for nested blocks
-            2. Aligned colons in agent/persona definitions
+            2. Aligned colons in actor/persona definitions
             3. Proper spacing around operators (::=, |>, :)
             4. Lists items (-) aligned within their blocks
             5. Preserved multiline templates exactly as given

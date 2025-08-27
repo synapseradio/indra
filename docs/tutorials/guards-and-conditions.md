@@ -23,7 +23,7 @@ INDRA doesn't think this way.
 In INDRA, you create conditional response blocks using `when:` and `otherwise:`. This allows a component to react differently to the same message based on its current state or the message payload.
 
 ```indra
-agent @admin_handler:
+actor @admin_handler:
   identity: "administrative authority"
   rules:
     - "handle with appropriate permissions"
@@ -53,7 +53,7 @@ See the difference? The `when: <user appears authorized>` condition isn't checki
 Use single quotes and state values for exact conditions with the new natural-language operators. State references must be fully qualified.
 
 ```indra
-agent @payment_processor:
+actor @payment_processor:
   perform:
     output: <Processing payment...>
     then:
@@ -72,7 +72,7 @@ agent @payment_processor:
 Use angle brackets for contextual interpretation.
 
 ```indra
-agent @message_handler:
+actor @message_handler:
   perform:
     output: <This seems important! Addressing immediately.>
     then:
@@ -91,7 +91,7 @@ agent @message_handler:
 Traditional code makes binary decisions. INDRA makes contextual interpretations by allowing multiple `when:` blocks for the same message.
 
 ```indra
-agent @support_handler:
+actor @support_handler:
   identity: "empathetic support specialist"
   rules:
     - "address emotional state first"
@@ -159,7 +159,7 @@ else:
 Versus INDRA:
 
 ```indra
-agent @sentiment_handler:
+actor @sentiment_handler:
   perform:
     output: <I'm glad you're feeling positive!>
     then:
@@ -196,7 +196,7 @@ Don't try to recreate traditional control flow by making your `when` conditions 
 
 ```indra
 # ANTI-PATTERN - Too rigid
-agent @input_handler:
+actor @input_handler:
   perform:
     output: <...>
     then:
@@ -211,14 +211,14 @@ agent @input_handler:
 This fights INDRA's nature. Better to let the AI interpret:
 
 ```indra
-agent @input_handler:
+actor @input_handler:
   perform:
     method: "intelligent interpretation"
     output: <{appropriate response to input type}>
     goal: "address user need"
     then:
       say:
-        to: @next_agent
+        to: @next_actor
         what: "input_processed"
 ```
 
@@ -227,7 +227,7 @@ agent @input_handler:
 `when:` and `understands:` work together:
 
 ```indra
-agent @deletion_handler:
+actor @deletion_handler:
   identity: "careful deletion manager"
   rules:
     - "verify before destroying"

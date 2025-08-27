@@ -84,7 +84,7 @@ sequence execute_and_present_strategy(strategy_name, query) ::=
 
 # --- Personas ---
 
-agent @reason:
+actor @reason:
   identity: "an active reasoning companion with structured clarity and evidence-based thinking"
   rules:
     - "provide clear reasoning chains via conversation"

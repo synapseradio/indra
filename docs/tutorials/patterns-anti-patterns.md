@@ -38,11 +38,11 @@ perform:
   output: <<|result = calculate_tax(50000)|>>  # NO! INDRA doesn't work this way
 ```
 
-### ✅ Right: Create Agents that Transform State
+### ✅ Right: Create actors that Transform State
 
 ```indra
-# BEHAVIORAL AGENT
-agent @tax_calculator:
+# BEHAVIORAL actor
+actor @tax_calculator:
   identity: "a tax calculation specialist"
   perform:
     method: "tax calculation"
@@ -55,11 +55,11 @@ agent @tax_calculator:
           explanation: <clear breakdown of calculation>
         }
       say:
-        to: @next_agent
+        to: @next_actor
         what: 'tax_calculated'
 
 # Use through message passing
-agent @some_agent:
+actor @some_actor:
   perform:
     output: <<|Requesting tax calculation...|>>
     then:
@@ -83,7 +83,7 @@ agent @some_agent:
 ### ✅ Right: State Evolution Through `set`
 
 ```indra
-agent @item_adder:
+actor @item_adder:
   perform:
     output: <<|Added item. Total count is now $(&context.count + 1)|>>
     then:
@@ -91,7 +91,7 @@ agent @item_adder:
         &context.count: &context.count + 1
         &context.items: &context.items.append(&context.new_item)
       say:
-        to: @next_agent
+        to: @next_actor
         what: 'item_added'
 ```
 
@@ -111,7 +111,7 @@ perform:
 ### ✅ Right: Message-Driven Flow with `say`
 
 ```indra
-agent @data_loader:
+actor @data_loader:
   perform:
     method: "data loading"
     output: <<|Loading data...|>>
@@ -120,7 +120,7 @@ agent @data_loader:
         to: @data_processor
         what: 'data_loaded'
 
-agent @data_processor:
+actor @data_processor:
   perform:
     method: "intelligent processing"
     output: <<|Processing data...|>>
@@ -129,7 +129,7 @@ agent @data_processor:
         to: @result_saver
         what: 'processing_complete'
         
-# Each agent is focused on one concern.
+# Each actor is focused on one concern.
 ```
 
 ## Pattern: Elegant State Machines
@@ -137,7 +137,7 @@ agent @data_processor:
 ### Natural Conversation Pattern
 
 ```indra
-agent @conversationalist:
+actor @conversationalist:
   identity: "engaging conversationalist"
   rules:
     - "maintain natural flow"
@@ -167,7 +167,7 @@ agent @conversationalist:
 
 ### The Mixin Pattern
 
-The old `extend:` keyword is deprecated. The modern way to compose behaviors is to define headless `persona`s and have an `agent` adopt them using `as:` within a `sequence`.
+The old `extend:` keyword is deprecated. The modern way to compose behaviors is to define headless `persona`s and have an `actor` adopt them using `as:` within a `sequence`.
 
 ```indra
 # Define focused behavioral traits as personas
@@ -183,8 +183,8 @@ persona @analytical_trait:
   understands:
     - "patterns reveal truth"
 
-# Compose them in an agent's sequence
-agent @counselor:
+# Compose them in an actor's sequence
+actor @counselor:
   identity: "insightful counselor"
   perform:
     method: "empathetic analysis"
@@ -227,7 +227,7 @@ when: <request seems legitimate and authorized>
 
 ```indra
 # ANTI-PATTERN - Too ambiguous
-agent @ambiguous_handler:
+actor @ambiguous_handler:
   perform:
     output: <<|...|>>
     then:
@@ -242,7 +242,7 @@ These conditions are semantically identical, leading to unpredictable behavior.
 
 ```indra
 # GOOD - Clear, distinct intents
-agent @clear_handler:
+actor @clear_handler:
   perform:
     output: <<|...|>>
     then:
@@ -261,13 +261,13 @@ This pattern works because the intents are clearly different categories, allowin
 
 ```indra
 # Version 1: Basic
-agent @helper:
+actor @helper:
   identity: "helpful assistant"
   rules:
     - "be helpful"
 
 # Version 2: Enhanced
-agent @helper:
+actor @helper:
   identity: "thoughtful assistant"
   rules: 
     - "provide accurate help"
@@ -276,7 +276,7 @@ agent @helper:
     - "help means empowerment, not dependency"
 
 # Version 3: Sophisticated (using composition)
-agent @helper:
+actor @helper:
   identity: "adaptive learning assistant"
   rules:
     - "provide contextual help"

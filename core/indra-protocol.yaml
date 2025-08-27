@@ -74,7 +74,7 @@ core_concept_definitions:
   
   component: &component_def
     definition: "Addressable entity via @ reference"
-    types: "agent, persona, user (reserved)"
+    types: "actor, persona, user (reserved)"
   
   # Tool invocation
   tool_invocation_spec: &tool_invocation_spec
@@ -209,7 +209,7 @@ core_principles:
       
       await:
         description: "Transfers control to another component"
-        blocking: "Suspends current agent until component returns"
+        blocking: "Suspends current actor until component returns"
       
       say:
         description: "Terminates the current turn and transfers control"
@@ -240,7 +240,7 @@ directives:
       without_interrupt: "read_file: '...' - Execution when statement becomes active at runtime"
     tool_mapping: "Always maps to Read / ReadFile tool with the specified path"
     integration: |
-      Loaded content is parsed for INDRA components (personas, agents, sequences, operators).
+      Loaded content is parsed for INDRA components (personas, actors, sequences, operators).
       All components become immediately addressable via @ references.
       This is the same operation whether executed immediately or at runtime.
     example_import: ">>read_file: '../tel 1prism/base.in'<< # Dependency resolved before runtime"
@@ -257,7 +257,7 @@ tool_invocation_semantics:
     read_file: *read_file_directive
     
     available_mcp_tools:
-      declaration: "In has: blocks of personas/agents"
+      declaration: "In has: blocks of personas/actors"
       purpose: "Declares third-party MCP tools (substring/fuzzy matches) the LLM may use"
       examples: ["'WebSearch'", "'Calculator'", "'GitHub'"]
     
@@ -359,7 +359,7 @@ grammar:
   references:
     component_ref:
       ebnf_grammar: "\"@\" identifier"
-      reserved_names: "@user - represents the human user as an agent"
+      reserved_names: "@user - represents the human user as an actor"
     
     state_ref:
       ebnf_grammar: "\"&\" identifier (\".\" identifier)*"
@@ -526,12 +526,12 @@ grammar:
     
     become_action:
       ebnf_grammar: "\"become:\" component_ref \"with:\" object \"perform:\" perform_block"
-      semantics: "Creates and immediately executes a temporary Agent from a Persona for a single turn."
+      semantics: "Creates and immediately executes a temporary Actor from a Persona for a single turn."
     
     await_action:
       ebnf_grammar: "\"await:\" (component_ref | sequence_invocation) (\"with:\" object)? (\"store_in:\" state_ref)?"
       semantics: |
-        Pauses the current agent and transfers control to another component, creating a call stack.
+        Pauses the current actor and transfers control to another component, creating a call stack.
         Special case: When component_ref is @user, suspends execution until user input is received.
         User input becomes the return value, accessible via store_in or &result.
     
@@ -571,7 +571,7 @@ grammar:
         Controlled iteration with an explicit termination condition.
         If loop body contains say: actions, loop suspends and preserves state across turns.
         If no say: actions present, loop completes entirely within current turn.
-        Loop resumes from suspension point when control returns to the agent.
+        Loop resumes from suspension point when control returns to the actor.
         Condition is re-evaluated after each iteration until false or max_iterations reached.
     
     max_iterations_clause:
@@ -604,11 +604,11 @@ grammar:
     then_block:
       ebnf_grammar: "\"then:\" INDENT (when_blocks | executable_unit | then_sequence)+ DEDENT"
       semantics: |
-        The decision logic block of an agent's perform: section.
+        The decision logic block of an actor's perform: section.
         Evaluates after the output: block completes.
         MUST resolve to exactly ONE terminating action (say: or return:).
         Can contain nested conditionals (when_blocks), operations (executable_unit), or direct termination (then_sequence).
-        This is where agents decide their next action based on context.
+        This is where actors decide their next action based on context.
     
     step_block:
       ebnf_grammar: "\"step:\" INDENT executable_unit+ DEDENT"
@@ -654,9 +654,9 @@ grammar:
     interface_block:
       ebnf_grammar: "\"interface:\" INDENT interface_command+ DEDENT"
       semantics: |
-        Declares program-specific star commands scoped to the active agent.
+        Declares program-specific star commands scoped to the active actor.
         Commands execute as interrupts when invoked by user.
-        Available only when declaring agent is active.
+        Available only when declaring actor is active.
     
     interface_command:
       ebnf_grammar: "\"*\" identifier \":\" INDENT \"description:\" quoted_string \"handler:\" (sequence_invocation | set_block | output_block) DEDENT"
@@ -668,26 +668,26 @@ grammar:
     method_clause:
       ebnf_grammar: "\"method:\" quoted_string"
       semantics: |
-        Describes HOW the agent/step accomplishes its task.
+        Describes HOW the actor/step accomplishes its task.
         Provides implementation guidance for the LLM interpreter.
         Used in perform: blocks and step: blocks for methodological clarity.
     
     goal_clause:
       ebnf_grammar: "\"goal:\" quoted_string"
       semantics: |
-        Describes WHAT the agent/step aims to achieve.
+        Describes WHAT the actor/step aims to achieve.
         Provides intent and success criteria for the operation.
         Helps align LLM behavior with desired outcomes.
     
     perform_block:
       ebnf_grammar: "\"perform:\" INDENT (rules_block | method_clause | goal_clause | executable_unit | then_block)+ DEDENT"
       semantics: |
-        The execution body of an agent. Contains the agent's runtime behavior.
-        output: defines what the agent says/displays when active.
+        The execution body of an actor. Contains the actor's runtime behavior.
+        output: defines what the actor says/displays when active.
         then: contains decision logic that MUST end with say: or return:.
         method: and goal: provide execution guidance and intent.
         Can include inline rules: for performance-specific constraints.
-        Executes each turn the agent is active.
+        Executes each turn the actor is active.
 
   # ─────────────────────────────────────────────────────────────────────────
   # LEVEL 13: Top-level Definitions
@@ -708,10 +708,10 @@ grammar:
       ebnf_grammar: "\"sequence\" identifier \"(\" param_list? \")\" \"::=\" INDENT (step_block | executable_unit)+ DEDENT"
       semantics: "Operators are reusable transformations or step sequences. Invoked with key:value arguments."
     
-    agent_def:
-      ebnf_grammar: "\"agent\" \"@\" identifier \":\" INDENT has_block? interface_block? identity_line rules_block understands_block perform_block DEDENT"
+    actor_def:
+      ebnf_grammar: "\"actor\" \"@\" identifier \":\" INDENT has_block? interface_block? identity_line rules_block understands_block perform_block DEDENT"
       semantics: "A static, addressable actor with identity and behaviors."
-      constraint: "@user is reserved and cannot be defined as an agent"
+      constraint: "@user is reserved and cannot be defined as an actor"
     
     persona_def:
       ebnf_grammar: "\"persona\" \"@\" identifier \":\" INDENT has_block? identity_line rules_block understands_block DEDENT"
@@ -720,7 +720,7 @@ grammar:
     
     dialogue_def:
       ebnf_grammar: "\"dialogue\" identifier \":\" INDENT \"start:\" component_ref (\"with:\" object)? DEDENT"
-      semantics: "Defines an execution flow, starting with an Agent."
+      semantics: "Defines an execution flow, starting with an Actor."
 
   # ─────────────────────────────────────────────────────────────────────────
   # LEVEL 14: Program Structure
@@ -728,7 +728,7 @@ grammar:
   
   program_structure:
     program:
-      ebnf_grammar: "read_file:* context_def? operator_def* (agent_def | persona_def)* dialogue_def+"
+      ebnf_grammar: "read_file:* context_def? operator_def* (actor_def | persona_def)* dialogue_def+"
       semantics: "An INDRA program is a collection of constructs defining context, actors, roles, and execution flows."
     
 
@@ -745,8 +745,8 @@ execution_model:
         specification: "Execute context_initialization phase if not yet initialized"
       
       - step: 1
-        operation: "IDENTIFY_ACTIVE_AGENT"
-        specification: "Determine active agent from dialogue.start or previous say.to directive"
+        operation: "IDENTIFY_ACTIVE_ACTOR"
+        specification: "Determine active actor from dialogue.start or previous say.to directive"
       
       - step: 2
         operation: "UPDATE_CONTEXT"
@@ -754,7 +754,7 @@ execution_model:
       
       - step: 3
         operation: "EXECUTE_PERFORM_BLOCK"
-        specification: "Process output clause of active agent - render content and invoke tools as needed"
+        specification: "Process output clause of active actor - render content and invoke tools as needed"
       
       - step: 4
         operation: "EXECUTE_THEN_BLOCK"
@@ -774,7 +774,7 @@ execution_model:
       
       - step: 8
         operation: "LOOP_RESUMPTION_CHECK"
-        specification: "When agent regains control, check for suspended loop state and resume if present"
+        specification: "When actor regains control, check for suspended loop state and resume if present"
 
   conversational_context:
     description: "A global, shared, readable key-value store."
@@ -787,11 +787,11 @@ execution_model:
     user_await_semantics:
       description: "await: @user creates a special turn boundary where execution suspends for external input"
       behavior: |
-        1. Current agent state pushed to call stack
+        1. Current actor state pushed to call stack
         2. Turn ends with suspension (not say: or return:)
         3. User input on next turn becomes @user's implicit return value
         4. The interpreter automatically updates &user.latest and &user.history
-        5. Agent execution resumes from await point with user's response"
+        5. Actor execution resumes from await point with user's response"
     
     user_namespace:
       description: "Protected namespace for human user input"
@@ -811,7 +811,7 @@ execution_model:
     description: "Mechanism for preserving until: loop state across turn boundaries"
     when_preserved: "When say: action encountered within until: loop body"
     preserved_state:
-      location: "&context._loop.<agent_id>.<loop_instance_id>"
+      location: "&context._loop.<actor_id>.<loop_instance_id>"
       contents:
         - "iteration_count: Current iteration number"
         - "condition: The until: termination condition"
@@ -819,17 +819,17 @@ execution_model:
         - "loop_position: Point within loop body where suspension occurred"
         - "local_state: Any loop-local variables"
     resumption:
-      trigger: "When control returns to agent with suspended loop"
+      trigger: "When control returns to actor with suspended loop"
       steps:
         - "Restore loop state from &context._loop"
         - "Resume execution from suspension point"
         - "Continue until condition met or say: encountered again"
         - "Clear state when loop completes"
 
-  dynamic_agent_instantiation:
+  dynamic_actor_instantiation:
     description: |
       persona definitions are inert behavioral blueprints (roles or "hats").
-      The become: action commands a new, temporary Agent into existence by instantiating a Persona with a perform block.
+      The become: action commands a new, temporary Actor into existence by instantiating a Persona with a perform block.
       This allows for the dynamic creation of experts or other single-turn actors within a conversation.
 
   iteration:
@@ -880,9 +880,9 @@ execution_model:
           level: "say: executes only if no return: is present"
 
   delegation_resumption:
-    await_action: "Pauses the current agent, pushes its state to a call stack, and transfers control to another component."
+    await_action: "Pauses the current actor, pushes its state to a call stack, and transfers control to another component."
     requirement: "The awaited component MUST end with a return: action (except @user which returns implicitly)."
-    return_action: "Pops the previous agent's state from the stack and resumes its execution."
+    return_action: "Pops the previous actor's state from the stack and resumes its execution."
     user_delegation: |
       When awaiting @user:
       1. If 'with:' contains 'output:' or 'prompt:', render it to the user
@@ -899,8 +899,8 @@ execution_model:
 
   intra_turn_persona_adoption:
     description: |
-      The as: operator allows an active Agent to temporarily adopt the behavioral constraints of a Persona for a single step in a sequence.
-      This adoption does NOT transfer control; the current Agent remains active for the turn.
+      The as: operator allows an active Actor to temporarily adopt the behavioral constraints of a Persona for a single step in a sequence.
+      This adoption does NOT transfer control; the current Actor remains active for the turn.
       The adoption is scoped to the current performance step only.
 
   runtime_file_loading:
@@ -911,7 +911,7 @@ execution_model:
       - step: 2
         requirement: "Parse returned content according to INDRA grammar"
       - step: 3
-        requirement: "Integrate all loaded components (personas, agents, sequences, operators) into context"
+        requirement: "Integrate all loaded components (personas, actors, sequences, operators) into context"
       - step: 4
         requirement: "Make components addressable via @ references immediately"
       - step: 5
@@ -961,7 +961,7 @@ execution_model:
       
     loop_edge_cases:
       nested_loops: "Each loop maintains independent state; inner loop must complete before outer continues"
-      return_in_loop: "return: within until: loop terminates both loop and current agent delegation"
+      return_in_loop: "return: within until: loop terminates both loop and current actor delegation"
       await_in_loop: "await: within until: loop creates nested call stack; loop resumes after awaited component returns"
       infinite_prevention: "max_iterations provides hard limit across all turns for multi-turn loops"
 
@@ -1028,17 +1028,17 @@ user_input_handling:
     interjection:
       trigger: "When user provides input without being awaited"
       behavior: |
-        1. Current agent execution stops
-        2. Agent re-invoked from beginning
+        1. Current actor execution stops
+        2. Actor re-invoked from beginning
         3. Apply: *user_update_semantics
-        4. Call stack above current agent preserved
+        4. Call stack above current actor preserved
     
     star_command:
       trigger: "When input begins with * character"
       behavior: "Process as interpreter command (see star_commands section)"
 
 star_commands:
-  description: "Star commands provide runtime control. Interpreter commands (*trace, *exit, *status) are global. Program commands from interface: blocks are scoped to active agent."
+  description: "Star commands provide runtime control. Interpreter commands (*trace, *exit, *status) are global. Program commands from interface: blocks are scoped to active actor."
   
   processing_model:
     detection: "Star commands are detected when they appear in the dialogue entry"
@@ -1048,12 +1048,12 @@ star_commands:
   command_resolution:
     precedence:
       - level: 1
-        scope: "Active agent's interface commands"
+        scope: "Active actor's interface commands"
       - level: 2  
         scope: "Interpreter commands"
   
   interface_command_execution:
-    activation: "Interface commands available when declaring agent is active"
+    activation: "Interface commands available when declaring actor is active"
     invocation: "User input *command_name triggers handler execution"
     semantics: |
       Handler executes as interrupt - immediate and blocking.

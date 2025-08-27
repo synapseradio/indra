@@ -219,9 +219,9 @@ analyze_divergence() ::= <<|
 
 **Construct-Generating Operators:**
 ```indra
-# Operator that generates agents dynamically
+# Operator that generates actors dynamically
 generate_expert(domain, tools) ::= <<|
-agent @expert_$(domain):
+actor @expert_$(domain):
   has:
     available_mcp_tools:
       - $(exists(tools) ? tools : [])
@@ -288,8 +288,8 @@ persona @philosophical_expert:
   understands:
     - "implications are key"
 
-# Agent adopts Personas in sequence
-agent @analyzer:
+# actor adopts Personas in sequence
+actor @analyzer:
   identity: "an analyzer who can synthesize multiple viewpoints"
   rules:
     - "provide comprehensive analysis in a single turn"
@@ -320,13 +320,13 @@ agent @analyzer:
     goal: "to provide multi-faceted analysis"
     then:
       say:
-        to: @next_agent
+        to: @next_actor
         what: 'analysis_complete'
 ```
 
 **Multi-Part Output Sequence:**
 ```indra
-agent @explainer:
+actor @explainer:
   identity: "someone who breaks down complex topics"
   rules:
     - "make each step clear and digestible"
@@ -373,7 +373,7 @@ spawn_expert_panel() ::= <<|
 |>>
 
 # Orchestrator adopts each generated expert in sequence
-agent @master:
+actor @master:
   perform:
     output: <<|
       $(spawn_expert_panel())  # Generates personas at transformation
@@ -399,7 +399,7 @@ persona @business_analyst:
     - "focus on market viability"
   understands: "strategy is key"
 
-agent @comprehensive_analyzer:
+actor @comprehensive_analyzer:
   identity: "synthesizer of multiple viewpoints"
   rules:
     - "provide comprehensive, multi-faceted analysis"

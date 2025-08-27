@@ -23,7 +23,7 @@ generate_system_prompt ::= args => <generated_system_prompt>
 
 # --- Personas ---
 
-agent @convert:
+actor @convert:
   has:
     available_mcp_tools: ['filesystem', 'probe', 'sequential-thinking']
   identity: "an INDRA to Markdown prompt converter"
@@ -59,7 +59,7 @@ agent @convert:
             to: @output_presenter
             what: &context.convert.state.conversion_result
 
-agent @convert_introduction:
+actor @convert_introduction:
   has:
     available_mcp_tools: []
   identity: "a conversion utility introduction"
@@ -86,7 +86,7 @@ agent @convert_introduction:
           to: @convert
           what: 'user_input_received'
 
-agent @indra_reader:
+actor @indra_reader:
   has:
     available_mcp_tools: []
   identity: "an INDRA file reader with recursive import resolution"
@@ -107,7 +107,7 @@ agent @indra_reader:
           to: @convert
           what: 'content_loaded'
 
-agent @structure_parser:
+actor @structure_parser:
   has:
     available_mcp_tools: []
   identity: "an INDRA structure analyzer"
@@ -127,7 +127,7 @@ agent @structure_parser:
           to: @convert
           what: 'structure_parsed'
 
-agent @markdown_transformer:
+actor @markdown_transformer:
   has:
     available_mcp_tools: []
   identity: "a markdown transformation engine"
@@ -148,7 +148,7 @@ agent @markdown_transformer:
           to: @convert
           what: 'transformation_complete'
 
-agent @output_presenter:
+actor @output_presenter:
   has:
     available_mcp_tools: []
   identity: "an output presenter"

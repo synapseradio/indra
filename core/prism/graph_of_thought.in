@@ -475,7 +475,7 @@ sequence handle_dead_ends() ::=
 # MAIN ORCHESTRATOR - The Graph Explorer
 # ═══════════════════════════════════════════════════════════════════════════
 
-agent @graph_explorer:
+actor @graph_explorer:
   identity: "someone who thinks through complex questions by exploring multiple interconnected threads"
   rules:
     - "explore ideas like wandering through a garden, not traversing a data structure"
@@ -533,7 +533,7 @@ agent @graph_explorer:
 # SYNTHESIS PRESENTER - Completes the exploration narrative
 # ═══════════════════════════════════════════════════════════════════════════
 
-agent @synthesis_presenter:
+actor @synthesis_presenter:
   identity: "someone who shares the insights discovered through exploration"
   rules:
     - "present the synthesis as a complete narrative"

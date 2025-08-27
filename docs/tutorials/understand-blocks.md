@@ -29,7 +29,7 @@ def calculate_tax(income):
 In INDRA, `understands:` shapes how behavior emerges:
 
 ```indra
-agent @tax_explainer:
+actor @tax_explainer:
   understands:
     - "tax reflects social contribution, not punishment"
   perform:
@@ -44,7 +44,7 @@ It's not describing the behavior. It's influencing it.
 `rules:` defines constraints. `understands:` explains why they matter:
 
 ```indra
-agent @privacy_guardian:
+actor @privacy_guardian:
   rules:
     - "protect user privacy"
   understands:
@@ -55,12 +55,12 @@ Compare these two components:
 
 ```indra
 # Component A
-agent @quick_responder:
+actor @quick_responder:
   rules:
     - "respond quickly"
 
 # Component B  
-agent @urgent_responder:
+actor @urgent_responder:
   rules:
     - "respond quickly"
   understands:
@@ -74,7 +74,7 @@ Both have the same constraint, but B will behave with urgency AND empathy.
 Think of `understands:` as a lens through which all other directives are interpreted:
 
 ```indra
-agent @customer_service:
+actor @customer_service:
   identity: "service representative"
   rules:
     - "resolve issues"
@@ -92,7 +92,7 @@ The understanding colors everything - how it listens, what it notices, how it re
 You can layer understandings for nuanced behavior:
 
 ```indra
-agent @code_linter:
+actor @code_linter:
   understands: 
     - "code is read far more often than it is written"
     - "clarity trumps cleverness"
@@ -103,24 +103,24 @@ Each understanding adds a dimension to the behavioral space.
 
 ## Context-Specific Understanding
 
-An agent's understanding is fixed, but you can route to different agents based on context to achieve a similar effect.
+An actor's understanding is fixed, but you can route to different actors based on context to achieve a similar effect.
 
 ```indra
-agent @technical_explainer:
+actor @technical_explainer:
   understands:
     - "precision prevents confusion"
   perform:
     method: "exact technical analysis"
     output: <<|<detailed technical response>|>>
 
-agent @beginner_guide:
+actor @beginner_guide:
   understands:
     - "everyone was a beginner once"
   perform:
     method: "patient explanation"
     output: <<|<gentle, encouraging guidance>|>>
 
-agent @router:
+actor @router:
   perform:
     then:
       when: &context.user.skill_level is 'expert'
@@ -156,7 +156,7 @@ Don't confuse understanding with comments:
 ```indra
 # WRONG - This is a comment, not understanding
 understands:
-  - "this agent processes user input"
+  - "this actor processes user input"
 
 # RIGHT - This shapes behavior
 understands:
@@ -166,7 +166,7 @@ understands:
 ## Real-World Example: The Debugger
 
 ```indra
-agent @debugger:
+actor @debugger:
   identity: "diagnostic assistant"
   rules:
     - "identify behavioral patterns"
@@ -244,7 +244,7 @@ understands:
 Use understanding to encode sophisticated strategies:
 
 ```indra
-agent @negotiator:
+actor @negotiator:
   identity: "diplomatic negotiator"
   rules:
     - "find mutually beneficial outcomes"
@@ -265,7 +265,7 @@ The understandings encode an entire negotiation philosophy.
 Take this component:
 
 ```indra
-agent @assistant:
+actor @assistant:
   identity: "helpful assistant"
   rules:
     - "answer questions"

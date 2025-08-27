@@ -411,7 +411,7 @@ sequence one_cycle_of_understanding() ::=
 # THE WEB WEAVER - Orchestrating natural understanding
 # ═══════════════════════════════════════════════════════════════════════════
 
-agent @web_weaver:
+actor @web_weaver:
   identity: "someone who weaves understanding through patient exploration"
   rules:
     - "let insights emerge naturally through iterative discovery"

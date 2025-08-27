@@ -26,7 +26,7 @@ These tutorials are ordered to progressively shift your mental model:
 
 1. **[Message Passing: Conversations, Not Calls](./message-passing.md)** - Learn why INDRA components talk, they don't invoke
 2. **[State as Context, Not Storage](./state-as-context.md)** - Understand why you guide state evolution rather than set values
-3. **[The Five Quotes: A Deep Dive](./five-quotes.md)** - Master the subtle but crucial differences in INDRA's quote system
+3. **[Behavioral Channels: A Deep Dive](./behavioral-channels.md)** - Master the subtle but crucial differences in INDRA's channel system
 
 ### Building Understanding
 
@@ -42,7 +42,7 @@ These tutorials are ordered to progressively shift your mental model:
 ### Mastery
 
 9. **[Debugging in a Non-Deterministic World](./debugging-indra.md)** - Learn to debug behavior, not code
-10. **[Architectural Patterns in INDRA](../architecture/architectural-patterns.md)** - Learn the high-level design patterns for building robust, maintainable agents.
+10. **[Architectural Patterns in INDRA](../architecture/architectural-patterns.md)** - Learn the high-level design patterns for building robust, maintainable actors.
   
 ## How to Use These Tutorials
 
