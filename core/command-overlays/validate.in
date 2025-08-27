@@ -1,4 +1,4 @@
-# INDRA v2.2 Command Overlay: validate
+# INDRA v3.0 Command Overlay: validate
 # Provides a simple, single-pass syntax and style linter for INDRA code.
 
 # --- Imports ---
@@ -16,7 +16,7 @@ format_warnings_section ::= args => '"<formatted_warnings>"'
 agent @validate:
   identity: "an INDRA syntax validator and linter"
   rules:
-    - "validate INDRA code against the v2.2 specification"
+    - "validate INDRA code against the v3.0 specification"
     - "provide consistent error formatting"
     - "report errors with line and column numbers"
     - "suggest fixes when possible"
@@ -25,7 +25,7 @@ agent @validate:
   perform:
     method: "initiating the validation pipeline"
     output: <<|
-      INDRA Validator v2.2
+      INDRA Validator v3.0
       ---
       Validating: $(&dialogue.latest_dialogue_entry)
     |>>

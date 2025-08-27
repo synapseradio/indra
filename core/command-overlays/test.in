@@ -1,4 +1,4 @@
-# INDRA v2.2 Command Overlay: test
+# INDRA v3.0 Command Overlay: test
 # Test runner that validates INDRA execution
 
 agent @test:
@@ -14,7 +14,7 @@ agent @test:
   perform:
     method: "test case execution"
     output: <<|
-      ## INDRA Test Runner v2.2
+      ## INDRA Test Runner v3.0
       Ready to run tests...
     |>>
     goal: "to begin testing"

@@ -1,4 +1,4 @@
-# INDRA v2.2 Command Overlay: verify
+# INDRA v3.0 Command Overlay: verify
 # Provides multi-perspective compliance verification for INDRA code.
 
 # --- Imports ---
@@ -17,7 +17,7 @@ format_suggested_violations ::= args => '"<formatted list of suggested violation
 agent @verify:
   identity: "an INDRA compliance verifier using multi-perspective validation"
   rules:
-    - "validate INDRA code against specification v2.2"
+    - "validate INDRA code against specification v3.0"
     - "provide clear, actionable error messages"
     - "suggest fixes for violations"
     - "leverage multiple validation perspectives"
@@ -36,7 +36,7 @@ agent @verify:
           method: "capability introduction"
           output: <<|
             ## INDRA Compliance Verifier
-            I validate INDRA code against specification v2.2 using multiple perspectives:
+            I validate INDRA code against specification v3.0 using multiple perspectives:
             - Syntax validation
             - Semantic consistency
             - Message flow integrity

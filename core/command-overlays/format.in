@@ -1,4 +1,4 @@
-# INDRA v2.2 Command Overlay: format
+# INDRA v3.0 Command Overlay: format
 # Structure-preserving formatter using generation
 
 agent @format:
@@ -14,7 +14,7 @@ agent @format:
   perform:
     method: "structure-aware formatting"
     output: <<|
-      ## INDRA Formatter v2.2
+      ## INDRA Formatter v3.0
       Processing code...
     |>>
     goal: "to begin formatting"
