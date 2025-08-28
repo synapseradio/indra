@@ -33,7 +33,7 @@ sequence citation_pipeline(claim) ::=
     method: "evidence gathering via tool invocation"
     output: <<|
       *Gathering additional evidence for novel angle: "$(claim)"*
-      $(<Invoke Perplexity web search tool (mcp__perplexity-mcp__perplexity_search_web) with query='$(claim)' and recency='month'. Return the actual results.>)
+      $(<use perplexity mcp to search with query='$(claim)' and recency='month'. if perplexity is unavailable, use google search or Web Search instead. Filter out low-quality sources and information, including social media, content farms, ads, sponsored content, and personal blogs.>)
     |>>
     goal: "to expand evidence pool with new perspectives"
     set:
