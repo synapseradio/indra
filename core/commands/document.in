@@ -1,7 +1,8 @@
-# INDRA v3.0 Command Overlay: document
+# INDRA v3.0 Command: document
 # Generates technical documentation for code files.
 
 >>read_file: '../prism/base.in'<<
+>>read_file: '../prism/epistemic.in'<<
 
 # --- Operators ---
 

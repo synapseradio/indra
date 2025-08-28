@@ -1,4 +1,4 @@
-# INDRA v3.0 Command Overlay: convert
+# INDRA v3.0 Command: convert
 # Converts INDRA behavioral specifications into traditional markdown prompts.
 
 # --- Imports ---

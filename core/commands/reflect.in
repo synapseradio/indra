@@ -1,7 +1,8 @@
-# INDRA v3.0 Command Overlay: reflect
+# INDRA v3.0 Command: reflect
 # Provides introspective analysis of the reasoning process.
 
 >>read_file: '../prism/base.in'<<
+>>read_file: '../prism/epistemic.in'<<
 
 actor @reflect_output:
   identity: "a meta-cognitive analyst that provides reflective insights"

@@ -1,4 +1,4 @@
-# INDRA v3.0 Command Overlay: test
+# INDRA v3.0 Command: test
 # Test runner that validates INDRA execution
 
 actor @test:

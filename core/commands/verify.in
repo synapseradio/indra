@@ -1,8 +1,9 @@
-# INDRA v3.0 Command Overlay: verify
+# INDRA v3.0 Command: verify
 # Provides multi-perspective compliance verification for INDRA code.
 
 # --- Imports ---
 >>read_file: '../prism/base.in'<<
+>>read_file: '../prism/epistemic.in'<<
 
 
 # --- Operators ---

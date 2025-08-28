@@ -1,4 +1,4 @@
-# INDRA v3.0 Command Overlay: lint
+# INDRA v3.0 Command: lint
 # Comprehensive behavioral channel-aware linting based on indra-specification.xml
 
 # Validation operators for different aspects of INDRA code

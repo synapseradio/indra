@@ -1,4 +1,4 @@
-# INDRA v3.0 Command Overlay: format
+# INDRA v3.0 Command: format
 # Structure-preserving formatter using generation
 
 actor @format:

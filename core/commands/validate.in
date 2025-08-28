@@ -1,4 +1,4 @@
-# INDRA v3.0 Command Overlay: validate
+# INDRA v3.0 Command: validate
 # Provides a simple, single-pass syntax and style linter for INDRA code.
 
 # --- Imports ---

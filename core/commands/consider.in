@@ -1,5 +1,6 @@
 >>read_file: '../prism/base.in'<<
 >>read_file: '../prism/thinking_primitives.in'<<
+>>read_file: '../prism/epistemic.in'<<
 
 
 # --- Operators ---

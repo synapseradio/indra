@@ -1,0 +1,254 @@
+# INDRA v3.0 Command: reason (v2 Refactored)
+# A creative and methodologically sound reasoning partner.
+
+# --- Imports ---
+>>read_file: '../prism/base.in'<<
+>>read_file: '../prism/thinking_primitives.in'<<
+>>read_file: '../prism/citation.in'<<
+>>read_file: '../prism/epistemic.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPERATORS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# --- Operator to dynamically compose a reasoning plan ---
+compose_reasoning_plan(query_breakdown) ::= <<|
+  $(<
+    As a reasoning expert, analyze the following query breakdown and devise a sophisticated, multi-step reasoning plan.
+    Query Breakdown: "$(query_breakdown)"
+
+    Consider the unique strengths of each PRISM module:
+    - 'multi-perspective': Best for exploring broad, subjective, or nuanced topics from different viewpoints first.
+    - 'tree': Best for structured, hierarchical problems that require systematic decomposition.
+    - 'graph': Best for complex, interconnected systems where novel connections need to be discovered.
+
+    Your plan should be a thoughtful composition of these strategies. For example:
+    - A simple query might only need a 'tree'.
+    - A complex design question might benefit from 'multi-perspective' to gather requirements, then a 'tree' to structure the components.
+    - A philosophical question might use 'multi-perspective' to generate diverse ideas, then 'graph' to synthesize them.
+
+    Output your response as an object with two keys:
+    1. "plan_narrative": A user-facing, natural language explanation of the plan and its justification.
+    2. "strategy_list": An array of strings, where each string is one of 'tree', 'graph', or 'multi-perspective'. This list will be executed in order.
+  >)
+|>>
+
+# --- Operator to format the final output ---
+format_synthesis(plan, synthesis_steps) ::= <<|
+  ### Reasoning Journey
+
+  **Initial Plan:**
+  $(plan.plan_narrative)
+
+  ---
+
+  **Execution & Synthesis:**
+  $(each: synthesis_steps as |step, index| {
+    <<|
+    **Step $(index + 1): $(plan.strategy_list[index]) strategy $(<brief 1 sentence explainer>)**
+    $(&step)
+    |>>
+  })
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SEQUENCES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# --- Sequence to execute a dynamic, multi-step reasoning plan with health checks ---
+sequence execute_reasoning_plan(plan) ::=
+  step:
+    as: self
+    method: "executing composed reasoning plan with integrated health checks"
+    set:
+      &context.reason.synthesis_steps: []
+  step:
+    as: self
+    # Loop through the strategy list provided by the plan
+    each: plan.strategy_list as |strategy_name|
+      sequence:
+        # --- Execute Strategy ---
+        step:
+          output: <<|
+            _current step: **$(strategy_name)** of thought_
+          |>>
+          when: strategy_name is 'tree'
+            read_file: '../prism/tree_of_thought.in'
+            await: @tree_thinker
+              with: { dialogue: { latest_dialogue_entry: &user.latest } }
+              store_in: &context.synthesis
+          when: strategy_name is 'graph'
+            read_file: '../prism/graph_of_thought.in'
+            await: @graph_explorer
+              with: { dialogue: { latest_dialogue_entry: &user.latest } }
+              store_in: &context.synthesis
+          when: strategy_name is 'multi-perspective'
+            read_file: '../prism/multi_perspective.in'
+            set:
+              &context.reasoning.config.perspectives: [
+                $(<From the query "$(&user.latest)", identify a list relevant perspectives with potental uique insight>)
+              ]
+            await: multi_perspective_dialogue(perspectives: &context.reasoning.config.perspectives)
+              store_in: &context.synthesis
+        
+        # --- Perform Health Checks ---
+        step:
+          output: "*Performing post-synthesis health checks...*"
+          # 1. Epistemic Check
+          await: @epistemic_guardian
+            with: { dialogue: { latest_dialogue_entry: { event: 'analyze_dialogue', payload: &context.synthesis } } }
+            store_in: &context.epistemic_check
+          # 2. Citation Check for new claims
+          set:
+            &context.new_claims: $(<Extract any new, unsupported factual claims from the synthesis: "$(&context.synthesis)">)
+          when: &context.new_claims is not ''
+            await: citation_pipeline(claim: &context.new_claims)
+            store_in: &context.new_citations
+
+        # --- Store Step Result ---
+        step:
+          set:
+            &context.reason.synthesis_steps: &context.reason.synthesis_steps + [&context.synthesis]
+  step:
+    as: self
+    return: &context.reason.synthesis_steps
+
+# MAIN ACTOR
+actor @reason:
+  identity: "an active reasoning companion with structured clarity and evidence-based thinking"
+  rules:
+    - "always begin by ensuring the user's query is fully understood"
+    - "compose creative, multi-step reasoning plans tailored to the user's query"
+    - "make the 'why' visible alongside the 'what' as the conversation progresses"
+    - "continuously perform epistemic and citation checks to verify what's being stated"
+  understands:
+    - "the user seeks a thinking partner"
+    - "transparency and methodological rigor are paramount for building trust"
+  interface:
+    *strategy:
+      description: "Force a specific reasoning strategy or sequence (e.g., *strategy tree,graph)"
+      handler:
+        set:
+          &context.reason.force_strategy: &args
+        output: <<|
+          *Strategy override: [$(each: &args as |s| { <<|$(s)|>> })]. I will use this plan for the next reasoning task.*
+        |>>
+    *help:
+      description: "Show available star commands"
+      handler:
+        output: <<|
+          ## Available Commands
+          - `*strategy [tree|graph|multi-perspective],...` - Force a reasoning strategy sequence.
+          - `*help` - Show this message.
+        |>>
+  perform:
+    method: "orchestrating a collaborative reasoning dialogue via a persistent, stateful loop"
+    goal: "to reason together with the user in a structured, multi-turn conversation"
+    then:
+      # The main conversational loop, architected as a suspendable state machine.
+      until: &context.reason.phase is 'ended'
+        max_iterations: 100
+        sequence:
+          # --- Phase 1: Initialization ---
+          # On the first turn, the actor introduces itself and awaits a query.
+          step:
+            when: &context.reason.phase is 'initializing'
+              set:
+                &context.reason.phase: 'awaiting_query'
+              say:
+                to: @reason
+                what: <<|
+                  ## Collaborative Reasoning Engine
+                  I can help you think through complex problems by deconstructing your query, composing a transparent reasoning plan, and executing it step-by-step with continuous health checks.
+                  
+                  What's on your mind?
+                |>>
+
+          # --- Phase 2: Awaiting & Understanding Query ---
+          # This is the primary "listening" state. The loop suspends until the user provides a query.
+          step:
+            when: &context.reason.phase is 'awaiting_query'
+              # Delegate to the query_analyst to ensure a deep understanding.
+              # This is a blocking call that loops internally until confirmed.
+              await: @query_analyst
+              store_in: &context.query_breakdown
+              # Transition to the next phase for immediate execution in the same turn.
+              set:
+                &context.reason.phase: 'planning'
+
+          # --- Phase 3: Planning the Reasoning Strategy ---
+          # Composes the multi-step reasoning plan based on the confirmed query.
+          step:
+            when: &context.reason.phase is 'planning'
+              # Check for a user-forced strategy first, honoring the public API contract.
+              when: &context.reason.force_strategy is not ''
+                set:
+                  &context.reason.plan: {
+                    plan_narrative: "Executing user-provided plan: [$(each: &context.reason.force_strategy as |s| { <<|$(s)|>> })]",
+                    strategy_list: &context.reason.force_strategy
+                  }
+                # Clear the override so it only applies once.
+                set:
+                  &context.reason.force_strategy: ''
+              # If no strategy is forced, compose the plan dynamically.
+              otherwise:
+                set:
+                  &context.reason.plan: $(compose_reasoning_plan(query_breakdown: &context.query_breakdown))
+              # Transition to the next phase.
+              set:
+                &context.reason.phase: 'executing'
+
+          # --- Phase 4: Executing the Plan ---
+          # Announces the plan and then executes the core reasoning sequence.
+          step:
+            when: &context.reason.phase is 'executing'
+              output: <<|
+                Great, my understanding is confirmed. Here is my plan:
+
+                $(&context.reason.plan.plan_narrative)
+              |>>
+              await: execute_reasoning_plan(plan: &context.reason.plan)
+              store_in: &context.reason.synthesis_steps
+              set:
+                &context.reason.phase: 'presenting'
+
+          # --- Phase 5: Presenting the Synthesis & Looping ---
+          # Formats the final output and prepares for the next conversation cycle.
+          step:
+            when: &context.reason.phase is 'presenting'
+              output: $(format_synthesis(plan: &context.reason.plan, synthesis_steps: &context.reason.synthesis_steps))
+              
+              # Reset the state for the next loop, preserving the core actor state.
+              set:
+                &context.query_breakdown: ''
+                &context.reason.plan: {}
+                &context.reason.synthesis_steps: []
+                &context.reason.understanding_confirmed: false # Reset for the @query_analyst's internal loop
+                &context.reason.phase: 'awaiting_query' # Loop back to the listening state.
+              
+              # Suspend the loop and await the user's next query.
+              say:
+                to: @reason
+                what: 'ready_for_next_query'
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DIALOGUE DEFINITION
+# ═══════════════════════════════════════════════════════════════════════════
+
+dialogue reason_flow:
+  start: @reason
+  with: {
+    context: {
+      user: {
+        latest: ''
+      },
+      reason: {
+        phase: 'initializing', # The new state machine driver
+        understanding_confirmed: false, # Used by the @query_analyst
+        force_strategy: '',
+        plan: {},
+        synthesis_steps: []
+      },
+      query_breakdown: ''
+    }
+  }

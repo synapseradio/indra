@@ -1,8 +1,9 @@
-# INDRA v3.0 Command Overlay: research
+# INDRA v3.0 Command: research
 # Provides a collaborative, plan-and-execute research partner.
 
 # --- Imports ---
 >>read_file: '../prism/base.in'<<
+>>read_file: '../prism/epistemic.in'<<
 
 
 # --- Operators ---

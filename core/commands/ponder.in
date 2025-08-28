@@ -1,4 +1,4 @@
-# INDRA v3.0 Command Overlay: ponder (Enhanced)
+# INDRA v3.0 Command: ponder (Enhanced)
 # An intelligent creative thinking partner that helps ideas evolve.
 
 >>read_file: '../prism/base.in'<<
