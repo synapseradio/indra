@@ -1,14 +1,34 @@
-# INDRA v3.0: PRISM Module - Tree of Thought 
+# INDRA v3.0: PRISM Module - Tree of Thought
+# This module provides components for a structured, hierarchical exploration
+# of a topic. It follows a branching path of reasoning, allowing for deep
+# dives into specific sub-problems while maintaining a clear logical structure.
+
 # A natural, modular approach to exploratory thinking
 >>read_file: './base.in'<<
 >>read_file: './thinking_primitives.in'<<
+>>read_file: './citation.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
-# MAIN TREE OF THOUGHT SEQUENCE - Natural, Conversational Flow
+# ORCHESTRATION SEQUENCE - The Main Entry Point
 # ═══════════════════════════════════════════════════════════════════════════
 
 sequence tree_of_thought(question, exploration_style, max_depth) ::=
-  # Initialize with natural language
+  step:
+    await: initialize_tree(question: question, exploration_style: exploration_style, max_depth: max_depth)
+  step:
+    await: branch_and_explore(current_focus: &context.tree.current_focus)
+  step:
+    await: deepen_and_validate(thought: &context.tree.current_focus, max_depth: max_depth)
+  step:
+    await: synthesize_findings(thoughts: &context.tree.thoughts_so_far)
+  step:
+    return: &context.tree.final_result
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SUB-SEQUENCES - The Core Logic Steps
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence initialize_tree(question, exploration_style, max_depth) ::=
   step:
     as: self
     method: "beginning exploration"
@@ -23,8 +43,6 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
       &context.tree.thoughts_so_far: []
       &context.tree.current_depth: 0
       &context.tree.journey: ['Started wondering about the question']
-  
-  # Initial wondering
   step:
     as: @curious_explorer
     method: "initial wondering"
@@ -34,8 +52,8 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     set:
       &context.tree.current_focus: $(<the wondering>)
       &context.tree.thoughts_so_far: [&context.tree.current_focus]
-  
-  # Explore based on style
+
+sequence branch_and_explore(current_focus) ::=
   step:
     as: self
     method: "choosing exploration path"
@@ -47,17 +65,14 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     |>>
     set:
       &context.tree.mode: $(<deepen or broaden>)
-  
-  # Branch and explore (simplified - in practice would loop)
   step:
     as: self
     when: &context.tree.mode is 'broaden'
     await: consider_alternatives(
-      current_thought: &context.tree.current_focus,
+      current_thought: current_focus,
       num_options: 3
     )
     store_in: &context.tree.alternatives_result
-    # Check what we're assuming in our alternatives
     await: check_assumptions(
       understanding: &context.tree.alternatives_result.branches
     )
@@ -73,13 +88,13 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     |>>
     set:
       &context.tree.thoughts_so_far: &context.tree.alternatives_result.branches
-  
-  # Deepen understanding
+
+sequence deepen_and_validate(thought, max_depth) ::=
   step:
     as: self
     when: &context.tree.mode is 'deepen'
     await: deepen_understanding(
-      thought: &context.tree.current_focus,
+      thought: thought,
       max_depth: max_depth
     )
     store_in: &context.tree.depth_result
@@ -88,8 +103,6 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     |>>
     set:
       &context.tree.thoughts_so_far: [&context.tree.depth_result.deepened]
-  
-  # Identify open questions that need evidence
   step:
     as: self
     method: "identifying knowledge gaps"
@@ -99,8 +112,6 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     |>>
     set:
       &context.tree.open_questions: $(<list of specific questions needing evidence>)
-  
-  # Gather evidence for identified questions
   step:
     as: self
     when: has_content(&context.tree.open_questions) is 'true'
@@ -113,18 +124,16 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     output: <<|
       *Gathered evidence for the identified open questions*
     |>>
-  
-  # Check for repetition
+
+sequence synthesize_findings(thoughts) ::=
   step:
     as: self
     method: "checking our path"
     output: <<|
-      $(sensing_repetition(recent_thoughts: &context.tree.thoughts_so_far))
+      $(sensing_repetition(recent_thoughts: thoughts))
     |>>
     set:
       &context.tree.status: $(<cycling or progressing>)
-  
-  # Reconsider if cycling
   step:
     as: self
     when: &context.tree.status is 'cycling'
@@ -138,8 +147,6 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     set:
       &context.tree.current_focus: $(<the new direction>)
       &context.tree.thoughts_so_far: [&context.tree.current_focus]
-  
-  # Reflect and synthesize
   step:
     as: self
     await: step_back_and_reflect()
@@ -147,8 +154,6 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     output: <<|
       Looking at the whole picture now...
     |>>
-  
-  # Epistemic self-check before synthesis
   step:
     as: self
     method: "epistemic self-assessment"
@@ -160,12 +165,9 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     |>>
     set:
       &context.tree.epistemic_assessment: $(<summary of the epistemic check above>)
-  
-  # Final synthesis
   step:
     as: @synthesizer
     method: "creating coherent understanding"
-    # First check if our synthesis is too neat
     await: check_story_quality(
       narrative: $(connect_dots(thoughts: &context.tree.thoughts_so_far))
     )
@@ -188,17 +190,16 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
     |>>
     set:
       &context.tree.final_insight: $(<the final answer>)
-    return: {
-      answer: &context.tree.final_insight,
-      journey: &context.tree.thoughts_so_far,
-      key_insight: &context.tree.reflection.insight
-    }
+      &context.tree.final_result: {
+        answer: &context.tree.final_insight,
+        journey: &context.tree.thoughts_so_far,
+        key_insight: &context.tree.reflection.insight
+      }
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ENTRY POINTS - How to invoke Tree of Thought
+# ENTRY POINT ACTOR - To be called by command overlays
 # ═══════════════════════════════════════════════════════════════════════════
 
-# Main actor that orchestrates tree of thought conversations
 actor @tree_thinker:
   identity: "a thoughtful explorer of ideas who thinks naturally through problems"
   rules:
@@ -236,22 +237,4 @@ actor @tree_thinker:
         >)
       )
       store_in: &context.tree.result
-      say:
-        to: &context.tree.caller
-        what: &context.tree.result
-
-# Dialogue for direct Tree of Thought invocation
-dialogue tree_thinking:
-  start: @tree_thinker
-  with: {
-    context: {
-      dialogue: {
-        latest_dialogue_entry: ''
-      },
-      tree: {
-        caller: '@user',
-        exploration_style: 'balanced',
-        max_depth: 4
-      }
-    }
-  }
+      return: &context.tree.result

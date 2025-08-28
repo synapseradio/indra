@@ -1,4 +1,9 @@
 # INDRA v3.0: PRISM Module - Epistemic Awareness
+# This module provides components to analyze the foundational soundness
+# of any set of claims or reasoning. It is used to detect conflicting
+# assumptions, divergent conclusions, or other forms of logical
+# inconsistency.
+
 >>read_file: './base.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════

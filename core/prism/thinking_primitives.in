@@ -1,4 +1,11 @@
-# INDRA v3.0: PRISM Module - Thinking Primitives
+# INDRA v.3.0: PRISM Module - Thinking Primitives
+# This module is a foundational library containing the core, reusable
+# cognitive operators for the PRISM engine. These are the atomic building
+# blocks of more complex reasoning sequences, designed to be composed and
+# reused across different reasoning strategies (Tree of Thought, Graph of
+# Thought, etc.).
+
+>>read_file: './base.in'<<
 # Shared thinking operators and personas for tree-of-thought and reasoning systems
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -500,3 +507,5 @@ sequence check_story_quality(narrative) ::=
       too_neat: &context.story.too_neat,
       missing_complexity: &context.story.missing_complications
     }
+
+

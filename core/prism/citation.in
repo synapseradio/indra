@@ -1,4 +1,9 @@
 # INDRA v3.0: PRISM Module - Citation Pipeline
+# This module provides a complete, reusable pipeline for gathering,
+# validating, and formatting evidence for factual claims. It is designed
+# to be invoked by any actor or sequence that needs to ground its
+# reasoning in external evidence.
+
 >>read_file: './base.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -60,15 +65,16 @@ sequence citation_pipeline(claim) ::=
     set:
       &context.citation.filtered_results: $(
         has_content(&context.citation.evidence_pool) == 'true' ?
-        select_relevant_evidence(
-          pool: &context.citation.evidence_pool,
-          query: claim,
-          max_items: 8
-        ) :
-        filter_for_primary_sources(results: &context.citation.raw_results)
+        &context.citation.evidence_pool |> select_relevant_evidence(query: claim, max_items: 8)
+        :
+        &context.citation.raw_results |> filter_for_primary_sources
       )
-      &context.citation.formatted: $(format_citations(results: &context.citation.filtered_results))
+      &context.citation.formatted: &context.citation.filtered_results |> format_citations
       &context.citation.validated: true
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SECTION 2: COMPOSABLE FILTERING & FORMATTING OPERATORS
+# ═══════════════════════════════════════════════════════════════════════════
 
 # Decomposed citation filtering operators for better composability
 
@@ -89,9 +95,7 @@ Return the filtered sources.
 >
 
 # Composite operator using pipe for primary source filtering
-filter_for_primary_sources(results) ::= $(
-  filter_quality_sources(results: deduplicate_by_url(results: results))
-)
+filter_for_primary_sources(results) ::= results |> deduplicate_by_url |> filter_quality_sources
 
 
 # Validate citations have required fields before formatting
@@ -108,9 +112,7 @@ format_citation_links(results) ::= <<|
 |>>
 
 # Composite operator to validate then format citations
-format_citations(results) ::= $(
-  format_citation_links(results: validate_citation_fields(results: results))
-)
+format_citations(results) ::= results |> validate_citation_fields |> format_citation_links
 
 # Individual assessment operators
 
@@ -184,6 +186,4 @@ Return limited array.
 >
 
 # Composite operator for selecting relevant citations
-select_relevant_evidence(pool, query, max_items) ::= $(
-  limit_items(items: ensure_diversity(items: filter_by_relevance(pool: pool, query: query)), max: max_items)
-)
+select_relevant_evidence(pool, query, max_items) ::= pool |> filter_by_relevance(query: query) |> ensure_diversity |> limit_items(max: max_items)

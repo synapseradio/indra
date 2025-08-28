@@ -1,8 +1,92 @@
-# INDRA v3.0: PRISM Module - Multi-Perspective Dialogue
+# INDRA v3.0: PRISM Module - Multi-Perspective Dialogue (v2 Refactored)
+# A sophisticated, stateful engine for facilitating and managing multi-agent conversations.
+
 >>read_file: './base.in'<<
+>>read_file: './thinking_primitives.in'<<
+>># INDRA v3.0: PRISM Module - Multi-Perspective Dialogue (v2 Evolved)
+# This module provides a library of composable, stateless primitives for
+# orchestrating sophisticated, multi-agent conversations.
+
+>>read_file: './base.in'<<
+>>read_file: './thinking_primitives.in'<<
+>>read_file: './citation.in'<<
+>>read_file: './epistemic.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
-# SECTION 1: DIALOGUE ORCHESTRATION SEQUENCE
+# ACT I: COMPOSABLE DIALOGUE PRIMITIVES ("THE VERBS")
+#
+# These are the thin, stateless primitives discovered during Project Crucible.
+# They represent the atomic, reusable "verbs" of critical dialogue.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# --- Primitive 1: Action Selection (Operator) ---
+select_dialogue_move(transcript, persona_identity, dialogue_rules) ::= <<|
+  $(<
+    As a participant with the identity "$(persona_identity)", review the dialogue transcript: "$(transcript)".
+    
+    Considering the current rules of engagement: "$(dialogue_rules)",
+    
+    Select the most strategically sound and in-character action to take next from the list of allowed moves.
+    
+    Return ONLY the string representing your chosen move.
+  >)
+|>>
+
+# --- Primitive 2: Articulation (Operator) ---
+generate_dialogue_contribution(transcript, move, persona_identity) ::= <<|
+  $(<
+    As a participant with the identity "$(persona_identity)", your chosen move is to "$(move)".
+    
+    Review the dialogue transcript: "$(transcript)".
+    
+    Generate a complete, professional, and in-character contribution that executes your chosen move, directly addressing the last statement in the transcript.
+  >)
+|>>
+
+# --- Primitive 3: Validation (Sequence) ---
+sequence apply_dialogue_checks(content, checks_to_apply) ::=
+  step:
+    # Initialize a working variable for the content that will be passed through the pipeline.
+    set:
+      &context.experts.validated_content: content
+  
+  step:
+    # Loop through the provided list of checks and apply each one sequentially.
+    each: checks_to_apply as |check_name|
+      sequence:
+        step:
+          # The content is passed through each check in series.
+          # Each check returns the (potentially modified) content.
+          when: check_name is 'citation'
+            set:
+              &context.experts.new_claims: $(<Extract any new, unsupported factual claims from the thought: "$(&context.experts.validated_content)">)
+            when: &context.experts.new_claims is not ''
+              await: citation_pipeline(claim: &context.experts.new_claims)
+              store_in: &context.experts.new_citations
+              set:
+                &context.experts.validated_content: &context.experts.validated_content + <<|
+                  
+                  *(Supporting Evidence: $(&context.experts.new_citations.formatted))*
+                |>>
+
+        step:
+          when: check_name is 'socratic_challenge'
+            as: @devil_advocate
+            set:
+              &context.experts.challenge: $(<Gently challenge the core assumption of the thought: "$(&context.experts.validated_content)". Phrase it as a constructive, Socratic question.>)
+              &context.experts.validated_content: &context.experts.validated_content + <<|
+
+                *(Self-Correction: $(&context.experts.challenge))*
+              |>>
+  step:
+    # Return the final, fully-validated content.
+    return: &context.experts.validated_content
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ACT II: LEGACY COMPATIBILITY LAYER
+#
+# This section preserves the original multi_perspective_dialogue sequence
+# to ensure zero regressions for commands (/reason, /consider) that depend on it.
 # ═══════════════════════════════════════════════════════════════════════════
 
 sequence multi_perspective_dialogue(perspectives) ::=
@@ -15,7 +99,7 @@ sequence multi_perspective_dialogue(perspectives) ::=
     as: self
     method: "gathering expert contributions"
     output: "*Initiating dialogue between experts...*"
-    each: perspectives as |perspective| {
+    each: perspectives as |perspective|
       output_action:
         output: <<|
           ---
@@ -31,17 +115,11 @@ sequence multi_perspective_dialogue(perspectives) ::=
       
       set:
         &context.experts.contributions[perspective]: &context.result
-    }
   step:
     as: self
     # The contributions are now in &context.experts.contributions
     # The calling actor can now proceed with epistemic checks or synthesis.
     return: &context.experts.contributions
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-# SECTION 2: CORE actor
-# ═══════════════════════════════════════════════════════════════════════════
 
 actor @expert_contributor:
   identity: "a single expert providing a focused contribution"
@@ -71,5 +149,189 @@ actor @expert_contributor:
       # allowing the orchestrator to choose which one an expert should run.
       # For example: `when: &context.task is 'concise_view'`
 
-      return: &context.result
+      return: &context.result<<
+>>read_file: './epistemic.in'<<
 
+# ═══════════════════════════════════════════════════════════════════════════
+# ACT I: THE DIALOGUE ENGINE
+#
+# This act defines the primary, reusable sequence that orchestrates a
+# multi-agent dialogue based on a set of configurable rules.
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence multi_perspective_dialogue(topic, participants, dialogue_rules) ::=
+  step:
+    as: self
+    method: "initializing the multi-perspective dialogue"
+    set:
+      &context.experts.transcript: [{ speaker: 'MODERATOR', statement: "The topic for discussion is: $(topic)" }]
+      &context.experts.participants: participants
+      &context.experts.rules: dialogue_rules
+      &context.experts.round: 0
+  
+  step:
+    as: self
+    method: "facilitating a multi-round expert discussion"
+    until: &context.experts.round is &context.experts.rules.dialogue_rounds
+      sequence:
+        # --- Round Robin Turn Model ---
+        # (This is where other turn models, like 'moderator-led', could be implemented in the future)
+        step:
+          when: &context.experts.rules.turn_model is 'round-robin'
+            each: &context.experts.participants as |expert_name|
+              # Each expert takes a turn, executing the full "move -> generate -> validate" lifecycle.
+              await: execute_expert_turn(
+                expert_persona: expert_name,
+                transcript: &context.experts.transcript,
+                rules: &context.experts.rules
+              )
+              store_in: &context.experts.new_entry
+              
+              # Add the validated statement to the shared transcript.
+              set:
+                &context.experts.transcript: &context.experts.transcript + [&context.experts.new_entry]
+
+        # --- Increment the round counter ---
+        step:
+          as: self
+          set:
+            &context.experts.round: &context.experts.round + 1
+  
+  # --- Final Synthesis Step ---
+  step:
+    as: self
+    method: "synthesizing the complete dialogue"
+    await: @synthesis_actor
+      with: { dialogue: { transcript: &context.experts.transcript } }
+    store_in: &context.experts.final_synthesis
+    set:
+      &context.experts.transcript: &context.experts.transcript + [{ speaker: 'MODERATOR', statement: &context.experts.final_synthesis }]
+  
+  step:
+    as: self
+    return: &context.experts.transcript
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ACT II: THE TURN MACHINERY
+#
+# This act defines the sequences and operators responsible for executing a
+# single expert's turn within the broader dialogue.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# --- Sequence for a single expert's complete turn ---
+sequence execute_expert_turn(expert_persona, transcript, rules) ::=
+  # 1. The expert first decides what kind of conversational move to make.
+  step:
+    as: self
+    set:
+      &context.experts.next_move: $(determine_next_move(
+        expert_persona: expert_persona,
+        transcript: transcript,
+        allowed_moves: rules.allowed_moves
+      ))
+
+  # 2. Then, they generate the content for that move.
+  step:
+    as: self
+    set:
+      &context.experts.move_content: $(generate_move_content(
+        expert_persona: expert_persona,
+        move: &context.experts.next_move,
+        transcript: transcript
+      ))
+  
+  # 3. The generated content is passed through a configurable "middleware" of health checks.
+  step:
+    as: self
+    each: rules.health_checks as |check_name|
+      await: apply_health_check(
+        check: check_name,
+        content: &context.experts.move_content
+      )
+      store_in: &context.experts.move_content # The content is updated by each check in the pipeline.
+  
+  # 4. The final, validated statement is returned to the main dialogue loop.
+  step:
+    as: self
+    return: { speaker: expert_persona, statement: &context.experts.move_content }
+
+# --- Sequence for applying a single, named health check ---
+sequence apply_health_check(check, content) ::=
+  step:
+    as: self
+    # A. Evidence Check: Does it make a factual claim?
+    when: check is 'citation'
+      set:
+        &context.experts.new_claims: $(<Extract any new, unsupported factual claims from the thought: "$(content)">)
+      when: &context.experts.new_claims is not ''
+        await: citation_pipeline(claim: &context.experts.new_claims)
+        store_in: &context.experts.new_citations
+        return: content + <<|
+          
+          *(Supporting Evidence: $(&context.experts.new_citations.formatted))*
+        |>>
+  
+  # B. Critical Challenge: Can the thought withstand scrutiny?
+  step:
+    as: @devil_advocate
+    when: check is 'socratic_challenge'
+      set:
+        &context.experts.challenge: $(<Gently challenge the core assumption of the thought: "$(content)". Phrase it as a constructive, Socratic question.>)
+      return: content + <<|
+
+        *(Self-Correction: $(&context.experts.challenge))*
+      |>>
+      
+  # C. Epistemic Check: Is the reasoning sound?
+  step:
+    as: self
+    when: check is 'epistemic_check'
+      await: @epistemic_guardian
+        with: { dialogue: { latest_dialogue_entry: { event: 'analyze_dialogue', payload: content } } }
+      # (Note: For now, this check is for demonstration; a full implementation would handle the event return.)
+      return: content
+      
+  # Default: If the check is not recognized or no action is needed, return the content unchanged.
+  step:
+    as: self
+    return: content
+
+# --- Core Operators for Dialogue Moves ---
+determine_next_move(expert_persona, transcript, allowed_moves) ::= <<|
+  $(<As the $(expert_persona), review the conversation so far:
+  Transcript: "$(transcript)"
+
+  Based on your unique identity and the state of the dialogue, determine the most natural and impactful conversational action to take next from the following list of allowed moves: $(allowed_moves).
+
+  Return only the name of your chosen action (e.g., 'challenge').>)
+|>>
+
+generate_move_content(expert_persona, move, transcript) ::= <<|
+  $(<As the $(expert_persona), generate the content for your chosen move: "$(move)".
+  The transcript so far is: "$(transcript)".
+
+  Embody your unique identity to generate a professional, collaborative, and in-character response that is relevant to the last statement in the transcript.>)
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ACT III: THE SYNTHESIS ACTOR
+#
+# This act defines the specialist actor responsible for the final synthesis
+# of the entire dialogue transcript.
+# ═══════════════════════════════════════════════════════════════════════════
+
+actor @synthesis_actor:
+  identity: "a master synthesizer who identifies the core insights from a complex dialogue"
+  rules:
+    - "review the entire transcript objectively"
+    - "identify the main points of agreement and disagreement"
+    - "extract the most critical, overarching insights that have emerged"
+    - "do not introduce new opinions, only synthesize what is present"
+  understands:
+    - "a good synthesis reveals the deeper patterns in a conversation"
+  perform:
+    method: "distilling key insights from a dialogue transcript"
+    output: "*Synthesizing the expert discussion...*"
+    goal: "to produce a concise summary of the dialogue's conclusions"
+    then:
+      return: $(<Based on the full transcript provided in &dialogue.transcript, generate a concise, neutral summary of the conversation. Identify the key agreements, disagreements, and the most significant emergent insights.>)

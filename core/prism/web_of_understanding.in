@@ -1,6 +1,12 @@
-# INDRA v3.0: Web of Understanding
+# INDRA v3.0: PRISM Module - Web of Understanding
+# This module provides components for a highly associative and intuitive
+# reasoning process. It is less structured than Tree or Graph of Thought,
+# focusing on the organic emergence and connection of insights, akin to
+# a mind-mapping or brainstorming process.
+
 # A natural reasoning system that weaves insights together organically
 >>read_file: './base.in'<<
+>>read_file: './citation.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
 # JOURNEY WEAVERS - Natural exploration guides

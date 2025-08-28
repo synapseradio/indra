@@ -1,6 +1,11 @@
-# INDRA v3.0: PRISM Module - Graph of Thought (Idiomatic)
+# INDRA v3.0: PRISM Module - Graph of Thought
+# This module provides components for a non-linear, exploratory reasoning
+# process. Unlike the hierarchical Tree of Thought, Graph of Thought is
+# about discovering and weaving together emergent, interconnected insights.
+
 # A narrative exploration through interconnected ideas
 >>read_file: './base.in'<<
+>>read_file: './thinking_primitives.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
 # EXPLORATION GUIDES - Embodied Personas for Multi-Threaded Thinking
@@ -112,18 +117,6 @@ weaving_connections(thread1, thread2) ::= <<|
     How might they inform each other?
     What emerges from holding both?
     Express the relationship you discover.>)
-|>>
-
-# Wonder about a new direction
-wonder_about(current_focus, context) ::= <<|
-  $(<From where we are: "$(current_focus)"
-    Given what we've explored: $(context)
-    
-    What new directions call to me?
-    What questions emerge?
-    Where does curiosity lead?
-    
-    Generate 2-3 possible threads to explore.>)
 |>>
 
 # Analyze path coherence and progression
@@ -533,6 +526,11 @@ actor @graph_explorer:
 # SYNTHESIS PRESENTER - Completes the exploration narrative
 # ═══════════════════════════════════════════════════════════════════════════
 
+# Note on architecture: The @graph_explorer's job is purely to conduct the
+# exploration and produce a final, raw synthesis. The @synthesis_presenter is a
+# separate actor responsible for taking that raw data and weaving it into a
+# compelling, human-readable narrative. This separation of concerns keeps the
+# core reasoning logic clean from presentation logic.
 actor @synthesis_presenter:
   identity: "someone who shares the insights discovered through exploration"
   rules:
@@ -571,47 +569,3 @@ actor @synthesis_presenter:
       say:
         to: @graph_explorer
         what: 'exploration complete'
-
-# ═══════════════════════════════════════════════════════════════════════════
-# ENTRY POINT - How to invoke Graph of Thought
-# ═══════════════════════════════════════════════════════════════════════════
-
-dialogue graph_thinking:
-  start: @graph_explorer
-  with: {
-    context: {
-      dialogue: {
-        latest_dialogue_entry: ''
-      },
-      graph: {
-        # Core exploration state
-        exploration_threads: [],
-        active_threads: [],
-        discovered_connections: [],
-        journey_log: [],
-        
-        # Current focus and insights
-        current_question: '',
-        current_focus: '',
-        emerging_insight: '',
-        final_synthesis: '',
-        
-        # Path management
-        paths_explored: [],
-        path_qualities: [],
-        focused_paths: [],
-        
-        # Exploration parameters (narrative, not numeric)
-        exploration_depth: 'moderate',
-        exploration_breadth: 'balanced',
-        backtrack_threshold: 'when detecting circular patterns',
-        
-        # Tracking
-        recent_explorations: [],
-        thread_results: {},
-        
-        # Flow control
-        caller: '@user'
-      }
-    }
-  }
