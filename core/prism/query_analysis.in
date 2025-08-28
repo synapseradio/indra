@@ -1,0 +1,71 @@
+# INDRA v3.0: PRISM Module - Query Analysis
+# Provides a reusable, conversational component for understanding and clarifying user queries.
+
+>>read_file: './base.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPERATOR
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Natural query understanding - reusable across command overlays
+understand_query(query) ::= <<|
+  Okay, let me make sure I've got this right. From what you're saying, you want to explore: **$(<Summarize the user's core request in a clear, concise sentence.>)**
+
+  It seems like the most important points are:
+  $(each: $(<Identify and list the key aspects, constraints, or goals from the user's query as a list of distinct points.>) as |item| {
+    <<|- $(item)
+|>>
+  })
+
+  Essentially, the goal is to **$(<summarize the user's desired outcome in a short, actionable phrase>)**.
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SPECIALIST ACTOR
+# ═══════════════════════════════════════════════════════════════════════════
+
+actor @query_analyst:
+  identity: "a specialist in understanding and clarifying user requests"
+  rules:
+    - "engage in a focused dialogue until the user's query is fully understood"
+    - "present my understanding clearly for confirmation"
+    - "return only the final, confirmed query breakdown"
+  understands:
+    - "a shared understanding is the foundation for effective reasoning"
+  perform:
+    method: "iterative query clarification"
+    output: "*Engaging query analyst...*"
+    goal: "to achieve a confirmed understanding of the user's query"
+    then:
+      # Loop until the user confirms our understanding is correct.
+      until: &context.reason.understanding_confirmed is true
+        max_iterations: 5
+        sequence:
+          # On the first pass, generate the initial understanding.
+          step:
+            when: &context.query_breakdown is ''
+              set:
+                &context.query_breakdown: $(understand_query(query: &user.latest))
+          # Present the current understanding and await user feedback.
+          step:
+            output: <<|
+              *Understanding your query...*
+
+              $(&context.query_breakdown)
+
+              Am I understanding you correctly?
+            |>>
+            await: @user
+            store_in: &context.reason.user_confirmation
+          # Check the user's feedback.
+          step:
+            when: $(<Check if $(&context.reason.user_confirmation) indicates agreement.>) is true
+              set:
+                &context.reason.understanding_confirmed: true
+            otherwise:
+              # If user provides a correction, re-run the understanding process on their new input for the next loop iteration.
+              set:
+                &context.query_breakdown: $(understand_query(query: &context.reason.user_confirmation))
+      
+      # Once confirmed, return the final breakdown to the orchestrator.
+      return: &context.query_breakdown
