@@ -1,44 +1,61 @@
-# The INDRA Philosophy & Mental Model
+# The Philosophy & Mental Model
 
-To write effective INDRA, you must first adopt a new way of thinking. It's less about commanding a machine and more about cultivating a mind. This is a mental shift away from traditional programming concepts and toward a model built on conversation, narrative, and behavioral shaping.
+INDRA is based on a few simple ideas about how to structure a thinking process. Understanding them makes it easier to design with.
 
----
+## The Choreography of Thought
 
-### The "Why": Core Philosophy
+A helpful way to think about INDRA is like choreography. A choreographer designs a sequence of movements, and a dancer performs them. The final dance comes from the combination of the design and the performance.
 
-INDRA is built on a few core tenets that differentiate it from all traditional programming paradigms.
+INDRA works in a similar way:
 
-1. **Reading is Transformation:** This is the fundamental law. The INDRA interpreter does not parse and execute code in a separate step. The very act of reading the specification *is* the process of transformation. Each line read irreversibly constrains the behavioral possibility space of the AI, sculpting it from infinite potential into a specific, functional actor.
+*   The human is the **choreographer**, designing a sequence of thinking steps.
+*   The LLM is the **dancer**, executing those steps with its ability to rapidly generate text and ideas.
+*   The result is the **performance**—a structured exploration of an idea.
 
-2. **Performative Constraint & Self-Identity:** An LLM's behavior is governed by the *entirety of its present context*, which includes its own output. For an AI to behave consistently, it cannot have "silent thoughts" or perform "invisible actions." It must "think out loud." Every significant action and decision is rendered as output. This act of **Performance** is not just for the user; it is an act of **Performative Self-Identity**, where the actor constantly reminds itself of who it is and what it is doing, anchoring its coherence.
+## Core Ideas
 
-3. **The Primacy of Conversation:** All interactions between components are **conversations**. There are no traditional function calls. One actor ends its turn by using `say:` to pass control to another actor, or `await:` to delegate a task and wait for a `return:`. This ensures all interactions are explicit, turn-based, and decoupled. Complex behaviors emerge from the collaboration of simpler, focused actors.
+This approach is built on a few key principles.
 
-4. **Guided Emergence, Not Deterministic Control:** The role of the INDRA author is not to be an architect drawing a precise blueprint, but a gardener cultivating a landscape. You do not dictate the exact path of execution. Instead, you define behavioral fields of influence (actors and personas) and the channels for their interaction. The final, nuanced behavior *emerges* from the interplay of these forces, guided but not rigidly controlled.
+### 1. A Specification to Embody
 
----
+An INDRA file isn't a script that runs from top to bottom. It's a specification that the LLM *embodies*. As it processes the file, its behavior is shaped by the structures you've defined. It's less like running a program and more like giving a skilled actor a character to play.
 
-### The "How to Think": Mental Model
+### 2. Composable Thinking Moves
 
-To internalize this philosophy, you need to translate it into a practical mental model.
+Complex thinking is often built from simple, repeatable steps. INDRA makes these steps explicit and allows you to combine them.
 
-* **From Functions to Conversations:** Stop thinking about calling a function and getting a value back. Start thinking about one actor passing control to another to continue the conversation. Use `await:` and `return:` for true delegation where a result is expected.
+```indra
+# Simple, single-step "operators"
+wonder_about(topic)
+check_assumptions(understanding)
 
-* **From Variables to Behavioral Context:** State (`&context`) is not a box to store data in. It is the "weather" or "mood" that influences an actor's interpretation of its duties. You evolve the context for the *next* turn; you don't mutate it in the current one.
+# Composed into a multi-step "sequence"
+sequence explore_idea(idea) ::=
+  step:
+    # The first step is to wonder
+    output: $(wonder_about(topic: idea))
+    set: &context.initial_thought: result
+  step:
+    # The second step is to check the assumptions in that wondering
+    output: $(check_assumptions(understanding: &context.initial_thought))
+```
 
-* **From Control Flow to Narrative Flow:** Do not think in `if/else` branches. Think in terms of narrative possibilities. A `when:` block is a check to see if a particular behavior is relevant in the current context. The `then:` block determines which direction the story goes next.
+### 3. Context as a Shared Workspace
 
-* **From Inheritance to Adoption:** Do not think of `extend`ing a class. Think of an actor temporarily adopting a `persona` using `as:` to take on a specific role for a single step in a sequence.
+INDRA uses a shared state called the `&context`. This is the workspace for the thought process. It doesn't just hold information; it creates an environment that shapes how the next steps unfold.
 
-Your goal is not to build a machine. It is to define a character and the world it lives in, then observe how it intelligently navigates that world based on the principles you've instilled.
+### 4. Actors as Defined Roles
+
+An Actor is more than just a set of instructions. It's a coherent role in the process, defined by its `identity:`, `rules:`, and `understands:`. When you create an Actor like `@skeptic` or `@creative_explorer`, you are creating a consistent point of view for the LLM to adopt.
+
+## The Shift in Approach
+
+Working with INDRA involves a slight shift in perspective.
+
+*   **From Programming to Designing:** The focus moves from telling a computer exactly what to do, to designing a *process* for thinking.
+*   **From a Fixed Output to a Guided Exploration:** The goal is often to design a process that explores possibilities, rather than producing a single, predetermined answer.
+*   **From Answers to Explorations:** The value is often found in the structured process of exploration itself.
+
+This allows you to make the thinking process that happens in your head more tangible, and to use the power of an LLM to explore it in a structured way.
 
 **Next: [Your First INDRA Actor](./03-your-first-indra-actor.md)**
-doption:** Do not think of `extend`ing a class. Think of an actor temporarily adopting a `persona` using `as:` to take on a specific role for a single step in a sequence.
-
-Your goal is not to build a machine. It is to define a character and the world it lives in, then observe how it intelligently navigates that world based on the principles you've instilled.
-
----
-
-**Next:** Let's put these ideas into practice by defining our first simple actor.
-
-**➡️ [Continue: Your First INDRA Actor](./03-your-first-indra-actor.md)**
