@@ -4,7 +4,7 @@ David Foster Wallace's *Infinite Jest* stands as one of the most significant phi
 
 ## The Entertainment as Philosophical Limit Case
 
-At the heart of *Infinite Jest* lies a philosophical thought experiment disguised as plot device: "The Entertainment," a film so irresistibly captivating that viewers become catatonic, unable to stop watching until death. This isn't merely dystopian speculation but a rigorous exploration of free will at its breaking point. Wallace asks: if a stimulus could be perfectly calibrated to our neural reward systems, would choosing to watch it even constitute a choice? 
+At the heart of *Infinite Jest* lies a philosophical thought experiment disguised as plot device: "The Entertainment," a film so irresistibly captivating that viewers become catatonic, unable to stop watching until death. This isn't merely dystopian speculation but a rigorous exploration of free will at its breaking point. Wallace asks: if a stimulus could be perfectly calibrated to our neural reward systems, would choosing to watch it even constitute a choice?
 
 The Entertainment represents what neuroscience now recognizes as a supernormal stimulus—an artificial trigger that hijacks evolutionary reward circuits more powerfully than anything in nature (Stanford Medicine, 2025). Wallace's prescience here is remarkable; writing in the 1990s, he anticipated how algorithms would optimize for engagement, creating addictive loops that override rational decision-making. The novel's portrayal of viewers who understand The Entertainment will kill them yet cannot resist watching poses a fundamental challenge to conventional notions of autonomy and rational choice ([Audible, 2025](https://www.audible.com/blog/summary-infinite-jest-by-david-foster); [YouTube, 2025](https://www.youtube.com/watch?v=UgCpbVgydGc)).
 
@@ -64,30 +64,30 @@ The novel's ultimate philosophical contribution lies not in systematic argument 
 
 ## References
 
-Audible. (2025). *Summary: Infinite Jest by David Foster Wallace*. https://www.audible.com/blog/summary-infinite-jest-by-david-foster
+Audible. (2025). *Summary: Infinite Jest by David Foster Wallace*. <https://www.audible.com/blog/summary-infinite-jest-by-david-foster>
 
-Britannica. (2025). *David Foster Wallace*. https://www.britannica.com/biography/David-Foster-Wallace
+Britannica. (2025). *David Foster Wallace*. <https://www.britannica.com/biography/David-Foster-Wallace>
 
-David Robson. (2025). *Fiction and future: Wallace's predictions of COVID, AI, Netflix, and nationalism*. https://davidrobson.com/blogs/dispatch-from-the-head/posts/7614630/fiction-and-future-wallace-s-predictions-of-covid-ai-netflix-and-nationalism
+David Robson. (2025). *Fiction and future: Wallace's predictions of COVID, AI, Netflix, and nationalism*. <https://davidrobson.com/blogs/dispatch-from-the-head/posts/7614630/fiction-and-future-wallace-s-predictions-of-covid-ai-netflix-and-nationalism>
 
-Goodreads. (2025). *Infinite Jest*. https://www.goodreads.com/book/show/6706157
+Goodreads. (2025). *Infinite Jest*. <https://www.goodreads.com/book/show/6706157>
 
-Leora BH. (2025). *How substance use affects memory, mood, and cognition*. https://www.leorabh.com/blog/how-substance-use-affects-memory-mood-and-cognition
+Leora BH. (2025). *How substance use affects memory, mood, and cognition*. <https://www.leorabh.com/blog/how-substance-use-affects-memory-mood-and-cognition>
 
-Literary Review. (2025). *Bandanna on the run*. https://literaryreview.co.uk/bandanna-on-the-run
+Literary Review. (2025). *Bandanna on the run*. <https://literaryreview.co.uk/bandanna-on-the-run>
 
-Modern Therapy Group. (2025). *Brain damage from substance use*. https://moderntherapygroup.com/brain-damage-from-substance-use/
+Modern Therapy Group. (2025). *Brain damage from substance use*. <https://moderntherapygroup.com/brain-damage-from-substance-use/>
 
-Noema Magazine. (2025). *How we became captives of social media*. https://www.noemamag.com/how-we-became-captives-of-social-media/
+Noema Magazine. (2025). *How we became captives of social media*. <https://www.noemamag.com/how-we-became-captives-of-social-media/>
 
-Not Boring. (2025). *Means and meaning*. https://www.notboring.co/p/means-and-meaning
+Not Boring. (2025). *Means and meaning*. <https://www.notboring.co/p/means-and-meaning>
 
-Philosophics Blog. (2025). *Modernism tag*. https://philosophics.blog/tag/modernism/
+Philosophics Blog. (2025). *Modernism tag*. <https://philosophics.blog/tag/modernism/>
 
-Stanford Medicine. (2025). *Addiction science: Human brain ancient wiring*. https://med.stanford.edu/news/insights/2025/08/addiction-science-human-brain-ancient-wiring.html
+Stanford Medicine. (2025). *Addiction science: Human brain ancient wiring*. <https://med.stanford.edu/news/insights/2025/08/addiction-science-human-brain-ancient-wiring.html>
 
-UnHerd. (2025). *David Foster Wallace: Prophet of American loneliness*. https://unherd.com/2025/08/david-foster-wallace-prophet-of-american-loneliness/?lang=us
+UnHerd. (2025). *David Foster Wallace: Prophet of American loneliness*. <https://unherd.com/2025/08/david-foster-wallace-prophet-of-american-loneliness/?lang=us>
 
-Wikipedia. (2025). *Encyclopedic novel*. https://en.wikipedia.org/wiki/Encyclopedic_novel
+Wikipedia. (2025). *Encyclopedic novel*. <https://en.wikipedia.org/wiki/Encyclopedic_novel>
 
-YouTube. (2025). *Infinite Jest video*. https://www.youtube.com/watch?v=UgCpbVgydGc
+YouTube. (2025). *Infinite Jest video*. <https://www.youtube.com/watch?v=UgCpbVgydGc>
