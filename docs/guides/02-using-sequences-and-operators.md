@@ -1,90 +1,122 @@
-# Guide: Reusability with Sequences & Operators
+# On Sequences and Operators
 
-As your INDRA programs grow, you'll find yourself repeating patterns of actions or transformations. INDRA provides two powerful constructs for creating reusable logic: **Operators** and **Sequences**. Understanding when to use each is key to writing clean, maintainable `.in` files.
+In INDRA, the process of thinking is given form through composition. The two fundamental units of this composition are **Operators** and **Sequences**. Understanding their distinct roles is the key to designing clear and expressive thought processes.
 
----
+An Operator is a single, focused cognitive act. A Sequence is a narrative of those acts, woven together into a coherent journey.
 
-### Operators: Reusable Transformations
+## Operators (`::=`): The Atomic Moves of Thought
 
-An **operator** is a reusable, parameterized **transformation**. Its primary purpose is to take some input, process it, and return a new value. Operators are best for logic that creates, expresses, or modifies simple ideas or high level, natural language operations.
+An Operator is the smallest unit of cognitive work. It is a stateless, reusable transformation that captures a single, focused "move" of the mind.
 
-They are defined using the `::=` syntax.
+**Key Qualities:**
 
-#### Example: An Operator to Format a Title
+*   **Atomic:** An Operator does one thing well.
+*   **Stateless:** It holds no memory of past invocations.
+*   **Transformational:** Its purpose is to take an input and return a new insight or expression.
 
-Imagine you frequently need to create a formatted title string. Instead of writing the template repeatedly, you can define an operator.
+### Example: The Act of Wondering
+
+Here is the foundational Operator `wonder_about`. It captures the simple, creative act of finding an interesting angle on a topic.
 
 ```indra
-# --- Operator Definition ---
-format_title(text, level) ::= <<|
-  $(level == 1 ? '#' : '##') $(text)
-  ---
+# Takes a topic, returns a generative question or angle.
+wonder_about(topic) ::= <<|
+  $(<What interesting question or angle comes to mind about $(topic)?>)
 |>>
-
-# --- Invocation ---
-actor @documenter:
-  perform:
-    output: <<|
-      $(format_title(text: 'Main Section', level: 1))
-      Here is the main content.
-
-      $(format_title(text: 'Subsection', level: 2))
-      Here is the subsection content.
-    |>>
-    then:
-      await: @user
 ```
 
-* **Definition:** `format_title(text, level) ::= ...` defines an operator that takes two parameters, `text` and `level`.
-* **Invocation:** `$(format_title(text: '...', level: ...))` calls the operator. The call is wrapped in an interpolation `$(...)` because we want to insert the *result* of the operator into our output string.
-* **Key Idea:** Operators are like functions that return values. They are perfect for encapsulating logic related to data manipulation, formatting, and generation.
+This Operator can now be used by any Actor to initiate a line of thought, to perform the atomic act of wondering.
 
----
+## Sequences (`sequence`): The Choreography of Inquiry
 
-### Sequences: Reusable Action Blocks
+A Sequence is a stateful orchestration of multiple steps. It defines a process, a narrative of thinking where each step can build on the last. If Operators are the individual brushstrokes, Sequences are the composition of the painting.
 
-A **sequence** is a reusable, parameterized block of **actions**. Its primary purpose is to execute a series of steps, such as `set`, `await`, or `output`. Sequences are best for logic that involves performing a multi-step process.
+**Key Qualities:**
 
-They are defined using the `sequence ... ::= ...` syntax.
+*   **Stateful:** A Sequence can create and modify a local context (`set: &...`) that is **immediately available** to subsequent steps within that same Sequence.
+*   **Procedural:** It executes a series of steps in a defined order.
+*   **Orchestrational:** It manages a flow of logic, calling Operators and shaping the cognitive environment for the inquiry.
 
-#### Example: A Sequence to Greet and Update a Counter
+### Example: A Multi-Step Exploration
 
-Let's encapsulate the common pattern of greeting a user and incrementing a turn counter into a sequence.
+This Sequence defines a simple, three-step process for an initial exploration of an idea:
 
 ```indra
-# --- Sequence Definition ---
-sequence greet_and_update(actor_name) ::=
+sequence explore_thoroughly(thought) ::=
+  # Step 1: Use an operator to have an initial thought.
+  step:
+    set:
+      &context.exploration.initial_wonder: $(wonder_about(topic: thought))
+  
+  # Step 2: Use another operator on the result of the first step.
+  # The '&context.exploration.initial_wonder' variable is immediately available.
+  step:
+    set:
+      &context.exploration.assumptions: $(identify_assumptions(understanding: &context.exploration.initial_wonder))
+  
+  # Step 3: Synthesize the results into a final output.
   step:
     output: <<|
-      Hello from $(actor_name)! This is turn $(&context.turn_count).
-    |>>
-  step:
-    set: &context.turn_count: &context.turn_count + 1
-
-# --- Invocation ---
-actor @greeter_a:
-  perform:
-    then:
-      # Invoke the sequence of actions
-      sequence: greet_and_update(actor_name: 'Greeter A')
+      When wondering about "$(thought)", I found myself thinking:
+      > "$(&context.exploration.initial_wonder)"
       
-      say:
-        to: @greeter_b
-        what: 'continue'
+      The key assumption I'm making here is:
+      > "$(&context.exploration.assumptions)"
+    |>>
 ```
 
-* **Definition:** `sequence greet_and_update(...) ::= ...` defines a sequence of actions.
-* **`step:`**: Each `step` block within the sequence is executed in order.
-* **State Scope:** A crucial feature of sequences is that `set:` operations are visible to subsequent steps *within the same sequence execution*. This allows you to chain actions that depend on each other.
-* **Invocation:** `sequence: greet_and_update(...)` executes the defined steps. Notice it's not wrapped in `$(...)`, because it doesn't return a value; it *performs actions*.
+The flow of state is what gives a Sequence its narrative power. The `set:` command within a Sequence has *immediate effect* in its local scope, allowing `step 2` to build directly on the insight from `step 1`.
+
+## The Pipe Operator (`|>`): A Fluent Composition
+
+The pipe operator `|>` is a more fluid way to compose Operators. It allows for the creation of elegant, readable "thought pipelines," where the output of one Operator flows directly into the next.
+
+### Example: From Nested Calls to a Clean Flow
+
+A series of transformations could be written with nested Operator calls:
+
+```indra
+# Nested and harder to read
+set:
+  &context.analysis: $(summarize_insights(insights: identify_key_points(text: &user.latest)))
+```
+
+The pipe operator reframes this as a clear, linear journey:
+
+```indra
+# A clean, readable pipeline
+set:
+  &context.analysis: $(&user.latest |> identify_key_points |> summarize_insights)
+```
+
+This reads like a story: "Take the user's latest input, identify the key points, and then summarize the insights." It makes the cognitive process self-documenting.
+
+## On Designing Your Own Primitives
+
+The real expressive power of INDRA emerges when you define your own Operators and Sequences, capturing the unique cognitive moves of your own domain.
+
+For example, a musician might define these primitives:
+
+```indra
+# An operator to find a complementary chord
+find_harmony(chord) ::= <...>
+
+# An operator to suggest a rhythmic variation
+vary_rhythm(melody) ::= <...>
+
+# A sequence that orchestrates a compositional step
+sequence develop_motif(motif) ::=
+  step:
+    set:
+      &rhythm_idea: $(vary_rhythm(melody: motif))
+  step:
+    set:
+      &harmony_idea: $(find_harmony(chord: motif.root_note))
+  step:
+    output: "A possible development: $(&rhythm_idea) over $(&harmony_idea)"
+```
+
+You have now codified a piece of domain-specific intuition into a reusable, expressive thought process.
 
 ---
-
-### When to Use Which?
-
-* Use an **Operator** when you need to create, format, or transform a piece of data that you will then use (e.g., assign it to a variable or include it in an output). Think of them as **value-producers**.
-* Use a **Sequence** when you need to perform a series of actions that change the state of the application or produce multiple outputs. Think of them as **action-performers**.
-
-By effectively using operators and sequences, you can build complex INDRA applications from simple, reusable, and understandable parts.
-
-**Previous: [Guide: Writing Reasoning Tools](./01-writing-reasoning-tools.md)**
+**Next:** [Building Conversational Assistants](./03-building-a-conversational-assistant.md)
