@@ -1,5 +1,5 @@
 # INDRA v3.0: PRISM Base
-# Contains the foundational context schema and universal utility operators for the PRISM engine.
+# Contains the foundational context schema and universal utility operators for the PRISM library.
 
 # ═══════════════════════════════════════════════════════════════════════════
 # GLOBAL CONTEXT SCHEMA

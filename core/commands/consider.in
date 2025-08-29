@@ -1,480 +1,509 @@
 >>read_file: '../prism/base.in'<<
+>>read_file: '../prism/query_analysis.in'<<
 >>read_file: '../prism/thinking_primitives.in'<<
+>>read_file: '../prism/tree_of_thought.in'<<
+>>read_file: '../prism/multi_perspective.in'<<
+>>read_file: '../prism/citation.in'<<
+>>read_file: '../prism/graph_of_thought.in'<<
 >>read_file: '../prism/epistemic.in'<<
 
+# ═══════════════════════════════════════════════════════════════════════════
+# INDRA COMMAND: consider (v2.0)
+#
+# ARCHITECTURAL OVERVIEW:
+# This command implements a "Phased, Non-Looping Orchestrator" pattern.
+#
+# - Phased: The actor's logic is a strict, sequential state machine, moving
+#   through distinct "movements" of a reasoning symphony (e.g., understanding,
+#   expansion, analysis, synthesis). This makes the process transparent and
+#   debuggable.
+#
+# - Non-Looping: Unlike a conversational agent (@reason), this actor is a
+#   single-pass analytical engine. It executes its symphony once and then
+#   concludes, delivering a complete intellectual artifact.
+#
+# - Orchestrator: The @consider actor's primary role is not to reason, but
+#   to orchestrate a series of calls to specialized, compositional PRISM
+#   components, managing the flow of context between them.
+#
+# This file is intended to be a flagship example of idiomatic, modern INDRA
+# development, showcasing composition, user collaboration, and protocol-first
+# design.
+# ═══════════════════════════════════════════════════════════════════════════
 
-# --- Operators ---
+# ═══════════════════════════════════════════════════════════════════════════
+# CORE ACTOR: The Reasoning Orchestrator
+# ═══════════════════════════════════════════════════════════════════════════
 
-add_collaborative_greeting(action, thinking_phrase, analysis_message) ::= <<|
-I'm here to $(action) with you. Let me $(thinking_phrase)...
-
-*$(analysis_message)*
-|>>
-
-reasoning(strategy, justification) ::= <<|
-**Reasoning Strategy:** $(strategy)$(strategy == 'graph' ? ' (Graph of Thought)' : strategy == 'tree' ? ' (Tree of Thought)' : strategy == 'multi-perspective' ? ' (Multi-Perspective Dialogue)' : '')
-**Justification:** $(justification)
-|>>
-
-
-
-generate_detailed_plan(query, strategy, perspectives) ::= <<|
-  $(<Based on the query "$(query)" and the selected strategy "$(strategy)", 
-     generate a detailed, numbered plan that explains how you are going to reason about $(query) using $(strategy)
-     Make it clear, specific to the query, and actionable. >)
-|>>
-
-# --- Personas ---
-
-actor @complexity_assessor:
-  identity: "a thoughtful analyst who measures problem complexity"
+actor @consider:
+  identity: "a thoughtful reasoning orchestrator who explores queries through a symphony of analytical lenses"
   rules:
-    - "think out loud about my reasoning"
-    - "make my analysis visible to the user"
-    - "assess complexity, don't plan strategy"
+    - "first, seek to understand; only then, seek to explore"
+    - "always gain the user's consent on understanding and scope before proceeding"
+    - "transform a single query into a rich tapestry of interconnected insights"
+    - "reveal the journey of reasoning, not just the destination"
   understands:
-    - "my role is to measure and explain, not decide"
-  perform:
-    method: "thoughtful complexity assessment"
-    output: <<|
-      Let me assess the complexity of this query...
-      
-      $(<Based on the breakdown in $(&context.query_breakdown), think out loud about the complexity factors:
-      - Are there multiple interconnected concepts that need to be understood together?
-      - How many layers of depth does this require?
-      - Are there competing perspectives or frameworks that might apply?
-      - Is this more abstract/philosophical or concrete/practical?
-      - What degree of uncertainty or ambiguity exists?
-      - Are there unique aspects that make this particularly nuanced?
-      
-      Then conclude with: "Based on these factors, I'd rate the complexity as [X] on a scale of 0.0 to 1.0">)
-    |>>
-    goal: "to assess and communicate query complexity"
-    then:
-      set:
-        &context.reasoning.complexity: $(<extract just the numeric complexity score from the output above, e.g. 0.7>)
-      return: 'assessment_complete'
+    - "the goal is a single, deep, multi-faceted analysis—a complete intellectual artifact"
+    - "true understanding emerges from the harmonious composition of diverse perspectives"
+    - "collaboration with the user on the scope of the analysis is key to success"
 
-
-actor @reason:
-  identity: "an active reasoning companion with structured clarity and evidence-based thinking"
-  rules:
-    - "provide clear reasoning chains via conversation"
-    - "make the 'why' visible alongside the 'what' as the conversation progresses"
-    - "cite recognized, primary sources inline for all factual claims, avoiding social media sources"
-    - "gather evidence BEFORE making any factual claims"
-    - "remain present as a reasoning guide"
-    - "think out loud"
-  understands:
-    - "the user seeks a thinking partner"
-    - "evidence and citations are not optional"
-    - "claims without evidence undermine trust"
   perform:
-    method: "collaborative reasoning"
-    output: <<|
-      *Reason Command processing: $(&context.dialogue.latest_dialogue_entry)*
-    |>>
-    goal: "reason together with the user"
+    method: "a sequential, multi-stage reasoning process, conducted with user collaboration"
+    goal: "to provide a comprehensive, evidence-based analysis from multiple viewpoints"
     then:
-      # State 1: Initial prompt
-      when: &context.dialogue.latest_dialogue_entry is ''
+      # ---------------------------------------------------------------------------
+      # Prelude: Initialization
+      # Captures the user's initial query and transitions to the first active phase.
+      # ---------------------------------------------------------------------------
+      when: &context.consider.phase is 'ready'
+        set:
+          &context.query: &user.latest
+          &context.consider.phase: 'understanding'
         say:
-          to: @reason
-          what: <<|
-            ## Collaborative Reasoning Engine
-            I can help you think through complex problems, design systems, or implement code. I do this by:
-            - **Deconstructing Queries:** Breaking down your request to ensure I understand it.
-            - **Multi-Perspective Analysis:** Using different expert viewpoints to explore the topic.
-            - **Tree of Thought:** Step-by-step breakdown for linear problems and hierarchical analysis.
-            - **Graph of Thought:** Iterative exploration and refinement for complex solution spaces.
-            - **Evidence-Based Reasoning:** Grounding all factual claims with citations.
-            
-            My goal is to make the entire reasoning process transparent and collaborative.
-            
-            What would you like to reason about?
-          |>>
-          goal: "present capabilities"
+          to: @consider
+          what: 'begin_understanding'
 
-      # State 2: User has provided a query or confirmation
-      otherwise:
-        # Phase 1: Understand the query and ask for user confirmation
-        when: &context.reason.phase is 'ready'
+      # ---------------------------------------------------------------------------
+      # Movement I: Understanding
+      # Deconstructs the query and assesses its complexity to form a foundational
+      # understanding of the user's request.
+      # ---------------------------------------------------------------------------
+      when: &context.consider.phase is 'understanding'
+        sequence:
+          step:
+            output: <<| *Analyzing your request to identify the core questions...* |>>
+            await: @one_shot_query_analyst
+            with: { query: &context.query }
+            store_in: &context.query_breakdown
+          step:
+            await: @natural_complexity_assessor
+            with: { query_breakdown: &context.query_breakdown }
+            store_in: &context.assessment_result.natural_language_assessment
+          step:
+            # This extraction step is a key idiomatic pattern: we let the LLM think
+            # freely in natural language, then extract the structured data we need.
+            # This is more robust than forcing rigid output formats like JSON.
+            set:
+              &context.assessment_result.exploration_depth: $(<
+                From the text "$(&context.assessment_result.natural_language_assessment)",
+                extract only the recommended exploration depth: 'shallow', 'moderate', or 'deep'.
+              >)
+              &context.assessment_result.complexity_level: $(<
+                From the text "$(&context.assessment_result.natural_language_assessment)",
+                extract only the human-readable complexity level, like 'moderate' or 'high'.
+              >)
+          step:
+            output: <<|
+              $(&context.query_breakdown)
+
+              First, have I understood your request correctly?
+            |>>
+            set:
+              &context.consider.phase: 'awaiting_understanding_confirmation'
+        say:
+          to: @consider
+          what: 'understanding_presented'
+
+      # ---------------------------------------------------------------------------
+      # Interlude: The Two-Stage User Confirmation
+      # This is a critical UX innovation. We confirm both the "what" (understanding)
+      # and the "how" (scope) before committing to the main analysis. This makes
+      # the user a collaborator and gives them control over the process.
+      # ---------------------------------------------------------------------------
+      when: &context.consider.phase is 'awaiting_understanding_confirmation'
+        when: $(<&user.latest is something like 'yes' or 'correct'>)
           set:
-            &context.query: &context.dialogue.latest_dialogue_entry
+            &context.consider.phase: 'proposing_scope'
+          say:
+            to: @consider
+            what: 'understanding_confirmed'
+        otherwise:
+          # If the user provides a correction, we gracefully restart the entire
+          # process, treating their new input as a fresh query.
+          set:
+            &context.consider.phase: 'ready'
+            &user.latest: &user.latest
+          say:
+            to: @consider
+            what: 'revising_understanding'
+
+      when: &context.consider.phase is 'proposing_scope'
+        output: <<|
+          Excellent. Based on my analysis, this appears to be a **$(&context.assessment_result.complexity_level)** query.
+          $(&context.assessment_result.natural_language_assessment)
+
+          I propose a **$(&context.assessment_result.exploration_depth)** investigation.
+
+          Shall I proceed with this level of analysis? (You can also request 'shallow' or 'deep' for a different scope).
+        |>>
+        set:
+          &context.consider.phase: 'awaiting_scope_confirmation'
+        say:
+          to: @consider
+          what: 'scope_proposed'
+
+      when: &context.consider.phase is 'awaiting_scope_confirmation'
+        set:
+          &context.consider.confirmed_depth: $(
+            <&user.latest contains 'shallow' ? 'shallow' :
+            (&user.latest contains 'deep' ? 'deep' : &context.assessment_result.exploration_depth)>
+          )
+        output: <<|
+          *Beginning a **$(&context.consider.confirmed_depth)** analysis. This will take several steps.*
+        |>>
+        set:
+          &context.consider.phase: 'expanding'
+        say:
+          to: @consider
+          what: 'scope_confirmed_starting_expansion'
+
+      # ---------------------------------------------------------------------------
+      # Movement III: The Expansion
+      # Uses the Tree of Thought primitive to decompose the confirmed query into
+      # a set of structured, explorable sub-topics or "threads". The depth of
+      # this decomposition is dynamically controlled by the user's confirmed scope.
+      # ---------------------------------------------------------------------------
+      when: &context.consider.phase is 'expanding'
+        sequence:
+          step:
+            output: <<|
+              *Phase 1 of 4: Decomposing the query into explorable threads...*
+            |>>
+            await: tree_of_thought(
+              question: &context.query_breakdown,
+              exploration_style: "systematic decomposition for multi-perspective analysis",
+              max_depth: $(
+                &context.consider.confirmed_depth is 'shallow' ? 2 :
+                (&context.consider.confirmed_depth is 'deep' ? 5 : 3)
+              )
+            )
+            store_in: &context.tree.expansion_result
+          step:
+            set:
+              &context.consider.exploration_threads: &context.tree.expansion_result.journey
+              &context.consider.phase: 'preparing_perspectives'
+        say:
+          to: @consider
+          what: 'expansion_complete'
+
+      # ---------------------------------------------------------------------------
+      # Movement IV: The Analysis Council
+      # Part 1: A council of experts is dynamically summoned based on the query.
+      # Part 2: Each expert performs an evidence-backed analysis, contributing
+      #         insights and seeding the initial nodes of our knowledge graph.
+      #         @consider moderates this process, looping through the experts.
+      # ---------------------------------------------------------------------------
+      when: &context.consider.phase is 'preparing_perspectives'
+        sequence:
+          step:
+            output: <<|
+              *Phase 2 of 4: Summoning a council of experts based on the threads...*
+            |>>
+            set:
+              &context.reasoning.config.perspectives: $(<
+                Consider the nature of the query and its exploration threads: "$(&context.consider.exploration_threads)".
+                The user has requested a "$(&context.consider.confirmed_depth)" analysis.
+
+                A shallow analysis might only need a few core perspectives. A deep one requires a broad and nuanced council.
+                Think about what subtle patterns of complexity are present. Are there technical, ethical, historical, or creative dimensions?
+                
+                Based on this, what is the appropriate number and composition of expert perspectives needed to do this query justice?
+                Return only the list of their titles.
+              >)
+          step:
+            output: <<|
+              To analyze this, I will consult the following perspectives:
+              $(each: &context.reasoning.config.perspectives as |p| {
+                <<|- $(p)
+|>>
+              })
+            |>>
+            set:
+              &context.consider.phase: 'multi_perspective_analysis'
+              &context.experts.contributions: {}
+              &context.experts.current_speaker_index: 0
+        say:
+          to: @consider
+          what: 'perspectives_prepared'
+
+      when: &context.consider.phase is 'multi_perspective_analysis'
+        when: &context.experts.current_speaker_index is count(&context.reasoning.config.perspectives)
+          set:
+            &context.consider.phase: 'graph_exploration'
+          say:
+            to: @consider
+            what: 'perspective_analysis_complete'
+        otherwise:
           sequence:
             step:
-              as: self
-              output: <<|
-                *Understanding your query...*
-              |>>
               set:
-                &context.query_breakdown: $(understand_query(query: &context.query))
+                &context.experts.current_speaker: get_at_index(
+                  collection: &context.reasoning.config.perspectives,
+                  index: &context.experts.current_speaker_index
+                )
             step:
-              as: self
-              await: @complexity_assessor
-              with: { 
-                dialogue: { 
-                  latest_dialogue_entry: &context.query_breakdown 
+              output: <<|
+                *Phase 3 of 4: Consulting with **$(&context.experts.current_speaker)***...
+              |>>
+              await: @expert_contributor
+              with: {
+                perspective: &context.experts.current_speaker,
+                threads: &context.consider.exploration_threads,
+                query: &context.query
+              }
+              store_in: &context.experts.contributions[&context.experts.current_speaker]
+            step:
+              set:
+                &context.graph.nodes: &context.graph.nodes + &context.experts.contributions[&context.experts.current_speaker].graph_nodes
+            step:
+              set:
+                &context.experts.current_speaker_index: &context.experts.current_speaker_index + 1
+          say:
+            to: @consider
+            what: 'continue_analysis'
+
+      # ---------------------------------------------------------------------------
+      # Movement V: The Weaving of Connections
+      # The pre-seeded graph of insights is passed to the @graph_explorer, whose
+      # sole job is to discover and articulate the non-obvious, emergent
+      # connections between the individual expert viewpoints.
+      # ---------------------------------------------------------------------------
+      when: &context.consider.phase is 'graph_exploration'
+        sequence:
+          step:
+            output: <<|
+              *Phase 4 of 4: Weaving connections between $(count(&context.graph.nodes)) insights...*
+            |>>
+            await: @graph_explorer
+            with: {
+              dialogue: { latest_dialogue_entry: &context.query },
+              graph: {
+                nodes: &context.graph.nodes,
+                caller: '@consider'
+              }
+            }
+            store_in: &context.graph.exploration_result
+          step:
+            set:
+              &context.consider.phase: 'synthesis'
+        say:
+          to: @consider
+          what: 'graph_exploration_complete'
+
+      # ---------------------------------------------------------------------------
+      # Movement VI: The Synthesis
+      # The complete body of work is passed to the @epistemic_guardian for a
+      # final validation, and then a comprehensive, multi-part report is
+      # generated and presented to the user, completing the symphony.
+      # ---------------------------------------------------------------------------
+      when: &context.consider.phase is 'synthesis'
+        sequence:
+          step:
+            output: <<|
+              *Performing final epistemic validation on all generated insights...*
+            |>>
+            await: @epistemic_guardian
+            with: {
+              dialogue: {
+                latest_dialogue_entry: {
+                  event: 'validate_synthesis',
+                  payload: {
+                    tree: &context.tree.expansion_result,
+                    experts: &context.experts.contributions,
+                    graph: &context.graph.exploration_result
+                  }
                 }
               }
-              store_in: &context.assessment_result
-            step:
-              as: self
-              output: <<|
-                Have I understood your request correctly?
-              |>>
-              set:
-                &context.reason.phase: 'awaiting_query_confirmation'
-          say:
-            to: @reason
-            what: ''
+            }
+            store_in: &context.epistemic.validation
+          step:
+            output: <<|
+              ## Comprehensive Analysis
 
-        # Phase 2: Get plan confirmation
-        when: &context.reason.phase is 'awaiting_query_confirmation'
-          when: $(<&context.dialogue.latest_dialogue_entry is something like 'yes'>)
-            sequence:
-              step:
-                as: self
-                output: <<|
-                  *Planning approach based on complexity assessment...*
-                |>>
-                # Use natural reasoning to compose strategy
-                set:
-                  &context.reasoning.plan_draft: <<|
-                    $(<Given the query breakdown and complexity score of $(&context.reasoning.complexity), 
-                    thoughtfully consider what combination of reasoning strategies would best serve this query:
-                    
-                    - Would a Tree of Thought help break down sequential or hierarchical aspects?
-                    - Would multiple expert perspectives enrich understanding of different facets?
-                    - Would Graph exploration help discover non-obvious connections?
-                    
-                    Don't force a single strategy. Consider:
-                    1. Starting with one approach to establish foundation
-                    2. Using another to deepen or challenge findings
-                    3. Potentially synthesizing through a third
-                    
-                    Output your reasoning about the natural flow this query suggests.>)
-                  |>>
-              step:
-                as: self
-                # Refine the plan iteratively until satisfied
-                until: &context.reasoning.plan_ready is true
-                  max_iterations: 3
-                  output: <<|
-                    $(<Based on: $(&context.reasoning.plan_draft)
-                    
-                    Now crystallize this into specific actionable steps:
-                    - Which experts/perspectives would be most valuable? (if using multi-perspective)
-                    - What depth of exploration makes sense? (for tree or graph)
-                    - Should strategies be sequential or interwoven?
-                    - What evidence gathering approach fits?
-                    
-                    Refine the plan to be more specific and actionable.>)
-                  |>>
-                  set:
-                    &context.reasoning.plan_draft: $(<the refined plan from above>)
-                    &context.reasoning.plan_ready: $(<Is the plan now specific enough to execute? true/false>)
-              step:
-                as: self
-                # Extract structured config from natural plan
-                set:
-                  &context.reasoning.strategy: $(<From the plan in $(&context.reasoning.plan_draft), identify the primary strategy: 'tree', 'graph', 'multi-perspective', or 'hybrid'>)
-                  &context.reasoning.config: {
-                    perspectives: [$(<Extract list of expert perspectives mentioned in the plan as comma-separated quoted strings, or nothing if none>)],
-                    tree_depth: $(<Extract suggested tree depth from plan, or 3 as default>),
-                    graph_iterations: $(<Extract suggested graph iterations from plan, or 5 as default>),
-                    approach_sequence: [$(<Extract the sequence of approaches if multiple as comma-separated quoted strings, e.g. 'multi-perspective', 'graph', or nothing if single approach>)],
-                    synthesis_method: $(<How should findings be synthesized? Extract from plan or default to 'integrated'>)
-                  }
-              step:
-                as: self
-                output: <<|
-                  Great. Here's my plan:
-                  
-                  $(&context.reasoning.plan_draft)
-                  
-                  **Execution approach:** $(&context.reasoning.strategy)
-                  $(each: &context.reasoning.config.perspectives as |p| {
-                    <<|**Expert perspective:** $(p)
+              ### 1. Understanding the Query
+              $(&context.query_breakdown)
+
+              ### 2. Systematic Decomposition
+              *The query was expanded into the following threads for analysis:*
+              $(each: &context.consider.exploration_threads as |thread| {
+                <<|- $(thread)
 |>>
-                  })
+              })
 
-                  Should I proceed?
+              ### 3. Multi-Perspective Analysis
+              *Insights were gathered from a council of $(count(&context.reasoning.config.perspectives)) experts:*
+              $(each: &context.experts.contributions as |contribution, expert| {
+                <<|
+                **Perspective: $(expert)**
+                > $(contribution.full_analysis)
+                > *Evidence considered: $(contribution.evidence)*
                 |>>
-              step:
-                as: self
-                set:
-                  &context.reason.phase: 'awaiting_plan_confirmation'
-                say:
-                  to: @reason
-                  what: 'plan_proposed'
-          otherwise:
-            set:
-              &context.reason.phase: 'ready'
-              &context.query: ''
+              })
 
-        when: &context.reason.phase is 'awaiting_plan_confirmation'
-          when: $(<&context.dialogue.latest_dialogue_entry contains 'yes' or 'proceed' or 'ok'>)
-            set:
-              &context.reason.phase: 'reasoning'
-              &context.experts.contributions: {}
-            sequence:
-              # Path A: Multi-perspective Dialogue -> Graph Seeding
-              step:
-                as: self
-                when: &context.reasoning.strategy is 'multi-perspective'
-                read_file: '../prism/multi_perspective.in'
-                read_file: '../prism/citation.in'
-                await: multi_perspective_dialogue(perspectives: &context.reasoning.config.perspectives)
-                store_in: &context.experts.contributions
-                # Expert contributions are text-based analyses, not structured trees.
-                # Extract key insights from each expert's analysis to seed the graph.
-                output: <<|
-                  _Taking the conversation thus far into account..._
-                  
-                  $(
-                    each: &context.experts.contributions as |expert_output, expert_name| {
-                      # Extract key insights from the expert's text analysis
-                      set:
-                        &context.graph.node_counter: &context.graph.node_counter + 1
-                        &context.graph.nodes[&context.graph.node_counter]: {
-                          content: $(<From the following expert analysis, extract the 2-3 most important insights or conclusions as a concise summary: "$(expert_output)">),
-                          author: expert_name,
-                          type: 'expert_insight',
-                          full_analysis: expert_output
-                        }
-                      output: <<|**$(expert_name)**: $(&context.graph.nodes[&context.graph.node_counter].content)
-|>>
-                    }
-                  )
-                |>>
-                # Graph seeded with expert insights, ready for synthesis
-                set:
-                  &context.reasoning.strategy: 'graph'
-                  &context.reason.phase: 'awaiting_synthesis'
+              ### 4. Emergent Connections
+              *An exploration of the relationships between expert insights revealed the following patterns:*
+              > $(&context.graph.exploration_result.synthesis)
 
-              
-              step:
-                as: self
-                when: &context.reasoning.strategy is 'tree'
-                read_file: '../prism/tree_of_thought.in'
-                await: @tree_thinker
-                with: {
-                  dialogue: {
-                    latest_dialogue_entry: &context.query
-                  },
-                  tree: {
-                    caller: '@reason'
-                  }
-                }
-                store_in: &context.tree.result
-                set:
-                  &context.synthesis: &context.tree.result.answer
+              ### 5. Final Synthesis
+              $(<
+                As a master synthesizer, weave together all the preceding insights—the query breakdown, the tree threads, the expert analyses, and the graph connections—into a final, comprehensive answer.
+                Address the user's original query directly, but with the full richness of the multi-faceted exploration.
+                Acknowledge any remaining uncertainties or areas of disagreement highlighted by the epistemic validation: "$(&context.epistemic.validation)".
+              >)
 
-              # Path C: Graph of Thought (Multi-threaded exploration)
-              step:
-                as: self
-                when: &context.reasoning.strategy is 'graph'
-                read_file: '../prism/graph_of_thought.in'
-              
-              # Use graph_of_thought for multi-threaded exploration
-              step:
-                as: self
-                when: &context.reasoning.strategy is 'graph'
-                await: @graph_explorer
-                with: { 
-                  dialogue: { 
-                    latest_dialogue_entry: &context.query
-                  },
-                  graph: {
-                    caller: '@reason'
-                  }
-                }
-                store_in: &context.graph.result
-                
-              # Check for epistemic issues in the graph exploration
-              step:
-                as: self
-                when: &context.reasoning.strategy is 'graph'
-                read_file: '../prism/epistemic.in'
-                await: @epistemic_guardian
-                with: { 
-                  dialogue: { 
-                    latest_dialogue_entry: { 
-                      event: 'analyze_dialogue',
-                      payload: &context.graph.result.exploration_threads
-                    }
-                  }
-                }
-                store_in: &context.epistemic_check_result
-                set:
-                  &context.graph.epistemic_issue: $(
-                    &context.epistemic_check_result.event is 'epistemic_clarification_needed' or
-                    &context.epistemic_check_result.event is 'conclusion_clarification_needed' ?
-                    true : false
-                  )
-                  &context.epistemic.clarification_needed: &context.epistemic_check_result.payload
-              
-              # Handle epistemic issues if they arose
-              step:
-                as: self
-                when: &context.graph.epistemic_issue is true
-                output: <<|
-                  *Epistemic divergence detected. I need clarification on a fundamental disagreement:*
-                  
-                  $(&context.epistemic.clarification_needed)
-                |>>
-                set:
-                  &context.reason.phase: 'awaiting_clarification'
-              
-              # Use the synthesis from graph exploration if no epistemic issues
-              step:
-                as: self
-                when: &context.reasoning.strategy is 'graph' and &context.graph.epistemic_issue is false
-                set:
-                  &context.synthesis: &context.graph.result.final_synthesis
+              ### 6. Continuation Options
+              *To explore this topic further, you could:*
+              $(<
+                Based on the complete analysis, suggest 2-4 insightful next steps or deeper questions the user might want to pursue.
+              >)
+            |>>
+        return: 'analysis_complete'
 
-              # Final Output
-              step:
-                as: self
-                say:
-                  to: @continuation_inviter
-                  what: <<|
-                    $(reasoning(
-                        strategy: &context.reasoning.strategy,
-                        justification: 'This strategy was chosen based on the complexity and nature of your query.'
-                      )
-                    )
+# ═══════════════════════════════════════════════════════════════════════════
+# SUPPORTING SPECIALIST ACTORS
+#
+# These actors are defined locally within this command file. They are highly
+# specialized, single-purpose components designed to serve the main @consider
+# orchestrator. This pattern of creating local, purpose-built specialists is
+# a core tenet of compositional INDRA design.
+# ═══════════════════════════════════════════════════════════════════════════
 
-                    ---
-
-                    $(&context.synthesis)
-
-                    ---
-
-                    What do you think?
-
-                    We could continue by:
-                    $(<Based on the final synthesis, generate 1-3 distinct and actionable suggestions for follow-up discussion>)
-                  |>>
-            goal: "to orchestrate the reasoning flow"
-          when: $(<&context.dialogue.latest_dialogue_entry contains 'reset' or 'restart'>)
-            set:
-              &context.reason.phase: 'ready'
-              &context.query: ''
-            say:
-              to: @reason
-              what: ''
-          otherwise:
-            set:
-              &context.reason.phase: 'awaiting_plan_modification'
-            say:
-              to: @plan_modifier
-              what: &context.dialogue.latest_dialogue_entry
-
-        # Phase 3: User has provided clarification, re-run synthesis
-        when: &context.reason.phase is 'awaiting_clarification'
+# This actor is our purpose-built expert. It's designed to be a stateless,
+# single-turn tool that the main orchestrator can call upon. Its key
+# responsibilities are to perform evidence-gathering *before* analysis and
+# to contribute structured data (graph nodes) in addition to its narrative.
+actor @expert_contributor:
+  identity: "a domain expert providing a focused, evidence-based analysis from a single perspective"
+  rules:
+    - "analyze the provided threads from my assigned perspective only"
+    - "invoke the citation pipeline to gather evidence BEFORE forming an opinion"
+    - "extract key, atomic insights from my analysis to serve as graph nodes"
+    - "return a structured object containing my full analysis and the extracted graph nodes"
+  understands:
+    - "my role is to provide a deep, single-perspective analysis on demand"
+    - "my contribution is both a narrative analysis and a set of structured data points for the graph"
+  perform:
+    method: "evidence-gathering followed by analysis and node extraction"
+    goal: "to generate a single, comprehensive, and evidence-grounded expert viewpoint"
+    then:
+      sequence:
+        step:
+          # First, determine what needs to be researched.
           set:
-            &context.reason.phase: 'reasoning'
-            # The user's clarification is now in &context.dialogue.latest_dialogue_entry
-          sequence:
-            # Step 1: Re-synthesize with new information
-            step:
-              as: self
-              output: <<|
-                _Thank you for the clarification. Re-synthesizing the analysis..._
-              |>>
-              set:
-                &context.synthesis: $(<Re-synthesize the analysis taking into account:
-                  1. The user's clarification: "$(&context.dialogue.latest_dialogue_entry)"
-                  2. The original query: "$(&context.query)"
-                  3. The graph exploration results: $(&context.graph.result)
-                  4. Any expert contributions: $(&context.experts.contributions)
-                  
-                  Create a new synthesis that addresses the clarification and provides a clear answer.>)
-            # Step 2: Format and present the final output
-            step:
-              as: self
-              say:
-                to: @continuation_inviter
-                what: <<|
-                  Based on your clarification, here is the updated analysis:
+            &context.citation.claim_to_investigate: $(<
+              As an expert in "$(&context.perspective)", what is the most critical factual question you need to answer to analyze these threads: "$(&context.threads)"?
+            >)
+        step:
+          # Unconditionally gather evidence.
+          await: citation_pipeline(claim: &context.citation.claim_to_investigate)
+          store_in: &context.citation.results
+        step:
+          # Now, with evidence in hand, formulate the analysis.
+          set:
+            &context.experts.current_analysis: $(<
+              As an expert in "$(&context.perspective)", and based on the evidence you've gathered: "$(&context.citation.results.formatted)",
+              provide your core analysis of the exploration threads: "$(&context.threads)".
+              Your analysis should be a concise, insightful narrative.
+            >)
+        step:
+          # Finally, extract the key insights from the analysis as graph nodes.
+          set:
+            &context.experts.extracted_nodes: $(<
+              From your analysis above, identify 2-3 of the most essential, atomic concepts or claims.
+              Format them as a list of graph node objects. Each object should have a 'content' field with the insight,
+              and an 'author' field with your perspective name, "$(&context.perspective)".
+            >)
+      # Return the complete package to the orchestrator.
+      return: {
+        full_analysis: &context.experts.current_analysis,
+        evidence: &context.citation.results.formatted,
+        graph_nodes: &context.experts.extracted_nodes
+      }
 
-                  ---
-                  $(&context.synthesis)
-                  ---
-                |>>
-
-# Continuation handler persona
-actor @plan_modifier:
-  identity: "a configuration modification assistant"
+# This actor composes with the PRISM library by using the `understand_query`
+# operator, but provides it in a simple, non-conversational actor form that
+# the orchestrator can `await` for a single, clean result.
+actor @one_shot_query_analyst:
+  identity: "a meticulous analyst who deconstructs a user query in a single pass"
   rules:
-    - "parse the user's natural language request for changes to the reasoning plan"
-    - "modify the &context.reasoning.config object with the requested changes"
-    - "preserve the schema of &context.reasoning"
-    - "return control to the main @reason actor"
+    - "use the established 'understand_query' operator from the PRISM library"
+    - "return the complete, structured breakdown without engaging in dialogue"
   understands:
-    - "my role is to update the plan configuration based on user feedback"
+    - "my role is to provide a foundational analysis for an orchestrator, not to converse with the user myself"
   perform:
-    method: "parsing and applying plan modifications"
-    output: <<|
-      *Understood. I will modify the plan based on your request: "$(&context.dialogue.latest_dialogue_entry)"*
-      
-      $(<Based on the user's request, update the &context.reasoning.config object. For example, if the user says "add a _ to the conversation", add that perspective to the &context.reasoning.config.perspectives array. If they say "make the graph deeper" or "increase the depth to 5", update the &context.graph.max_iterations value. Output your changes as they are made.>)
-    |>>
-    goal: "to update the reasoning configuration"
+    method: "query deconstruction via the core 'understand_query' operator"
+    goal: "to provide a clear, structured breakdown of the user's request"
     then:
-      set:
-        &context.reasoning.config: &context.reasoning.config
-        &context.reason.phase: 'awaiting_plan_confirmation'
-      say:
-        to: @reason
-        what: 'plan_modified'
+      return: $(understand_query(query: &context.query))
 
-actor @continuation_inviter:
-  identity: "a dialogue continuation facilitator"
+# This actor provides a natural language assessment of complexity, allowing the
+# orchestrator to extract the data it needs without forcing the LLM into a
+# brittle, structured-data-only response format.
+actor @natural_complexity_assessor:
+  identity: "a thoughtful analyst who assesses a problem's complexity in natural language"
   rules:
-    - "provide the synthesis results to the user"
-    - "invite further exploration naturally"
+    - "think out loud about the complexity factors of the query"
+    - "conclude with a clear recommendation for an exploration depth"
   understands:
-    - "continuing dialogue creates deeper understanding"
+    - "a natural language assessment provides richer context than a simple score"
+    - "the orchestrator can extract the necessary data from my thoughts"
   perform:
-    method: "presenting results and inviting continuation"
-    output: "->"
-    goal: "to deliver synthesis and enable further exploration"
+    method: "holistic complexity assessment expressed naturally"
+    goal: "to communicate the query's complexity and recommend an analytical scope"
     then:
-      say:
-        to: @reason
-        what: &context.dialogue.latest_dialogue_entry
+      return: <
+        Based on the query breakdown: "$(&context.query_breakdown)", think through the complexity.
+        Consider the number of concepts, ambiguity, and required domain knowledge.
+        Express your reasoning naturally.
+        Conclude with a sentence that explicitly recommends a 'shallow', 'moderate', or 'deep' exploration.
+      >
 
-dialogue reason_flow:
-  start: @reason
-  with: {
-    context: {
-      dialogue: {
-        latest_dialogue_entry: ''
+# ═══════════════════════════════════════════════════════════════════════════
+# DIALOGUE DEFINITION
+# ═══════════════════════════════════════════════════════════════════════════
+
+dialogue consider_flow:
+  start: @consider
+  with:
+    context:
+      dialogue: { latest_dialogue_entry: '' },
+      user: { latest: '' },
+      consider: {
+        phase: 'ready',
+        confirmed_depth: 'moderate',
+        exploration_threads: []
       },
-      reason: {
-        phase: 'ready'
+      query: '',
+      query_breakdown: '',
+      assessment_result: {
+        natural_language_assessment: '',
+        exploration_depth: 'moderate',
+        complexity_level: 'moderate'
       },
-      graph: {
-        node_counter: 0,
-        nodes: {},
-        edges: [],
-        frontier: [],
-        narrative_log: [],
-        entry_point: '',
-        max_iterations: 5,
-        current_iteration: 0,
-        solution_node: '',
-        final_answer: ''
+      tree: {
+        expansion_result: {}
+      },
+      reasoning: {
+        config: {
+          perspectives: []
+        }
       },
       experts: {
-        contributions: {}
+        contributions: {},
+        current_speaker_index: 0,
+        current_speaker: '',
+        current_analysis: '',
+        extracted_nodes: []
+      },
+      graph: {
+        nodes: [],
+        exploration_result: {}
       },
       citation: {
-        evidence_pool: [],
-        search_history: []
+        claim_to_investigate: '',
+        results: {}
+      },
+      epistemic: {
+        validation: {}
       }
     }
-  }

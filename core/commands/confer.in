@@ -107,18 +107,37 @@ actor @confer:
             # Act 2: The Crucible (Facilitate the internal expert dialogue)
             step:
               await: conduct_expert_dialogue(
-                topic: &context.confer.last_user_input,
+                topic: &user.latest,
                 participants: &context.confer.active_participants,
                 transcript: &context.confer.conversation_history
               )
               store_in: &context.confer.transcript
             
-            # Act 3: The Report (Synthesize and present the dialogue to the user)
+            # Act 2.5: Update Cumulative Tracking
+            step:
+              await: update_cumulative_tracking(
+                round_transcript: &context.confer.transcript,
+                round_number: &context.confer.conversation_history.length + 1
+              )
+            
+            # Act 3: Present Cumulative View First
+            step:
+              when: &context.confer.conversation_log.rounds.length greater_than 0
+              await: present_cumulative_view()
+            
+            # Act 3.5: The Report (Present latest round details)
             step:
               await: @conversation_synthesizer
-                with: { transcript: &context.confer.transcript }
+                with: { 
+                  transcript: &context.confer.transcript,
+                  mode: 'latest_round'
+                }
               store_in: &context.confer.synthesis
-              output: $(&context.confer.synthesis)
+              output: <<|
+                ---
+                ## Latest Round Details
+                $(&context.confer.synthesis)
+              |>>
             
             # Act 4: The Continuation (Store history and prompt for the next turn)
             step:
@@ -130,7 +149,6 @@ actor @confer:
                 What are your thoughts on this exchange? Your feedback will guide the panel's next round of discussion.
               |>>
               await: @user
-              store_in: &context.confer.last_user_input
 
 sequence conduct_expert_dialogue(topic, participants, transcript) ::=
   step:
@@ -183,6 +201,110 @@ sequence conduct_expert_dialogue(topic, participants, transcript) ::=
     as: self
     return: &context.experts.round_transcript
 
+# --- Sequences for Cumulative Tracking ---
+
+# Update cumulative synthesis after each round
+sequence update_cumulative_tracking(round_transcript, round_number) ::=
+  step:
+    as: self
+    method: "extracting insights from this round"
+    set:
+      &context.confer.temp_insights: $(extract_round_insights(
+        transcript: round_transcript
+      ))
+  
+  step:
+    as: self
+    method: "accumulating insights into synthesis"
+    set:
+      &context.confer.cumulative_synthesis.key_insights: $(
+        accumulate_insights(
+          new_insights: &context.confer.temp_insights.insights,
+          existing_pool: &context.confer.cumulative_synthesis.key_insights,
+          round_number: round_number
+        ))
+  
+  step:
+    as: self
+    method: "tracking tensions and their evolution"
+    when: has_content(&context.confer.temp_insights.tensions) is 'true'
+    set:
+      &context.confer.cumulative_synthesis.points_of_tension: 
+        &context.confer.cumulative_synthesis.points_of_tension + 
+        $(each: &context.confer.temp_insights.tensions as |tension| {
+          { description: tension, round: round_number, status: 'active' }
+        })
+  
+  step:
+    as: self
+    method: "accumulating evidence"
+    when: has_content(&context.confer.temp_insights.evidence) is 'true'
+    set:
+      &context.confer.cumulative_synthesis.evidence_gathered:
+        &context.confer.cumulative_synthesis.evidence_gathered + 
+        &context.confer.temp_insights.evidence
+  
+  step:
+    as: self
+    method: "identifying emerging themes"
+    when: round_number greater_than 1
+    set:
+      &context.confer.cumulative_synthesis.themes_emerging: 
+        $(<Looking across all rounds so far, what themes are emerging?>)
+  
+  step:
+    as: self
+    method: "updating conversation log"
+    set:
+      &context.confer.round_summary: $(summarize_round(transcript: round_transcript))
+      &context.confer.conversation_shift: $(identify_conversation_shift(
+        current: round_transcript,
+        previous: &context.confer.conversation_history
+      ))
+      &context.confer.conversation_log.rounds: 
+        &context.confer.conversation_log.rounds + [{
+          round: round_number,
+          summary: &context.confer.round_summary,
+          shift: &context.confer.conversation_shift
+        }]
+  
+  step:
+    as: self
+    method: "updating conversation trajectory"
+    set:
+      &context.confer.conversation_log.trajectory: $(
+        trace_conversation_arc(
+          log_entries: &context.confer.conversation_log.rounds
+        ))
+
+# Present the cumulative view to the user
+sequence present_cumulative_view() ::=
+  step:
+    as: self
+    method: "presenting conversation progress"
+    output: <<|
+      ## Conversation Progress
+      
+      ### Journey So Far
+      $(&context.confer.conversation_log.trajectory)
+      
+      ### Round-by-Round Evolution
+      $(each: &context.confer.conversation_log.rounds as |round| {
+        <<|
+        **Round $(round.round):** $(round.summary)$(round.shift ? 
+          <<| 
+        *→ Shift: $(round.shift)*|>> : '')|>>
+      })
+    |>>
+  
+  step:
+    as: self
+    method: "presenting cumulative synthesis"
+    when: &context.confer.conversation_log.rounds.length greater_than 0
+    output: $(weave_cumulative_synthesis(
+      cumulative_data: &context.confer.cumulative_synthesis
+    ))
+
 # --- Operators for dynamic dialogue and expert generation ---
 
 determine_next_move(expert_persona, transcript, dialogue_phase) ::= <<|
@@ -221,35 +343,149 @@ generate_expert_persona(expertise_area, conversation_context) ::= <<|
   Return the complete persona as a well-structured block of text.>)
 |>>
 
+# --- Cumulative Synthesis Operators ---
+
+# Accumulate insights while avoiding duplication and tracking evolution
+accumulate_insights(new_insights, existing_pool, round_number) ::= <<|
+  $(<Given new insights from round $(round_number): $(new_insights)
+     And existing pool: $(existing_pool)
+     
+     1. Identify genuinely novel insights not already captured
+     2. Merge insights that build on or refine previous ones
+     3. Mark each with its origin round
+     4. Preserve the evolution of understanding
+     
+     Return updated pool as array of objects with structure:
+     { content: "insight text", round: N, builds_on: [previous_insight_ids] }>)
+|>>
+
+# Generate a narrative trajectory of the conversation
+trace_conversation_arc(log_entries) ::= <<|
+  $(<Looking at the conversation progression through these rounds:
+     $(each: log_entries as |entry| {
+       <<|Round $(entry.round): $(entry.summary)|>>
+     })
+     
+     Describe the narrative arc:
+     - How did the conversation begin?
+     - What major shifts or deepenings occurred?
+     - Where does it stand now?>)
+|>>
+
+# Synthesize cumulative understanding across all rounds
+weave_cumulative_synthesis(cumulative_data) ::= <<|
+  ## Cumulative Understanding Across All Rounds
+  
+  **Core Insights Developed:**
+  $(each: cumulative_data.key_insights as |insight| {
+    <<|- $(insight.content) *(introduced in Round $(insight.round))*
+|>>
+  })
+  
+  **Evolving Points of Tension:**
+  $(cumulative_data.points_of_tension.length > 0 ? 
+    each: cumulative_data.points_of_tension as |tension| {
+      <<|- $(tension.description) *(emerged in Round $(tension.round), status: $(tension.status))*
+|>>
+    } : 
+    'No significant tensions have emerged yet.')
+  
+  **Evidence Base Built:**
+  $(cumulative_data.evidence_gathered.length > 0 ?
+    <<|The panel has gathered $(count(cumulative_data.evidence_gathered)) pieces of evidence across the following areas:
+    $(each: $(<Group evidence by topic>) as |topic| {
+      <<|- $(topic)|>>
+    })|>> :
+    'Evidence gathering is still in progress.')
+  
+  **Emerging Themes:**
+  $(cumulative_data.themes_emerging.length > 0 ?
+    each: cumulative_data.themes_emerging as |theme| {
+      <<|- $(theme)|>>
+    } :
+    'Themes are beginning to crystallize...')
+|>>
+
+# Summarize a single round of dialogue
+summarize_round(transcript) ::= <<|
+  $(<Given this round's transcript: $(transcript)
+     
+     Create a one-sentence summary capturing:
+     - The main focus or question addressed
+     - The key contribution or shift
+     - The tone (consensus, debate, exploration, etc.)>)
+|>>
+
+# Identify conversation shifts between rounds
+identify_conversation_shift(current, previous) ::= <<|
+  $(<Comparing current round: $(current)
+     With conversation history: $(previous)
+     
+     Has there been a significant shift in:
+     - Topic focus?
+     - Level of agreement?
+     - Depth of analysis?
+     - Introduction of new perspectives?
+     
+     If yes, describe the shift in one phrase. If no, return empty string.>)
+|>>
+
+# Extract key points from a round for accumulation
+extract_round_insights(transcript) ::= <<|
+  $(<From this round's transcript: $(transcript)
+     
+     Extract and categorize:
+     1. Key insights or discoveries
+     2. Points of disagreement or tension (if any)
+     3. Evidence cited or needed (if any)
+     4. Emerging patterns or themes (if any)
+     
+     Return as structured object with these categories.>)
+|>>
+
 actor @conversation_synthesizer:
   identity: "a skilled rapporteur who synthesizes and presents expert discussions"
   rules:
     - "present the expert dialogue as a clear, readable narrative"
-    - "begin with a concise summary of the key takeaways and points of tension"
+    - "when mode is 'latest_round', focus only on the current round"
     - "attribute all statements clearly and format the dialogue for readability"
     - "explicitly highlight where online evidence was gathered or where self-corrections occurred"
   understands:
     - "the user needs a clear and digestible view of the panel's work"
     - "transparency, challenges, corrections, build trust"
+    - "different modes require different levels of detail"
   perform:
     method: "synthesizing and formatting an expert conversation transcript"
-    output: "*Synthesizing the latest exchange from the expert panel...*"
+    output: "*Synthesizing the expert panel exchange...*"
     goal: "to provide the user with a clear, narrative summary of the expert dialogue"
     then:
-      return: <<|
-        Based on your guidance, the expert panel continued their discussion. Here is the synthesis of their latest exchange:
-
-        **Key Insights & Tensions:**
-        $(<Analyze the transcript provided in &context.transcript. Analyze the key insights, agreements, and points of disagreement or tension. Present as bullet points.>)
-
-        ---
-
-        $(each: &context.transcript as |exchange| {
-          <<|
+      when: &context.mode is 'latest_round'
+        return: <<|
+          **Key Points from This Round:**
+          $(<Analyze the transcript provided in $(&context.transcript). Extract the most significant insights, agreements, and tensions from this specific round. Present as concise bullet points.>)
+          
+          **Expert Contributions:**
+          $(each: &context.transcript as |exchange| {
+            <<|
             **$(exchange.speaker):** $(exchange.statement)
-          |>>
-        })
-      |>>
+            |>>
+          })
+        |>>
+      otherwise:
+        return: <<|
+          Based on your guidance, the expert panel continued their discussion. Here is the synthesis of their latest exchange:
+
+          **Key Insights & Tensions:**
+          $(<Analyze the transcript provided in $(&context.transcript). Analyze the key insights, agreements, and points of disagreement or tension. Present as bullet points.>)
+
+          ---
+
+          $(each: &context.transcript as |exchange| {
+            <<|
+              **$(exchange.speaker):** $(exchange.statement)
+            |>>
+          })
+        |>>
 
 # DIALOGUE ENTRY POINT
 dialogue confer_conversation:
@@ -261,7 +497,20 @@ dialogue confer_conversation:
       },
       confer: {
         mode: 'initializing',
-        conversation_history: []
+        conversation_history: [],
+        # Cumulative tracking for synthesis across rounds
+        cumulative_synthesis: {
+          key_insights: [],        # Accumulated unique insights with round markers
+          points_of_tension: [],   # Ongoing disagreements and their evolution
+          evidence_gathered: [],   # All citations collected across rounds
+          themes_emerging: [],     # Patterns identified across rounds
+          consensus_tracking: {}   # Evolution of agreement over time
+        },
+        conversation_log: {
+          rounds: [],             # Summary of each round
+          trajectory: '',         # Narrative of conversation direction
+          pivotal_moments: []     # Key turning points in the discussion
+        }
       },
       citation: {
         evidence_pool: [],

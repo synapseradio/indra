@@ -45,7 +45,7 @@ format_synthesis(plan, synthesis_steps) ::= <<|
   **Execution & Synthesis:**
   $(each: synthesis_steps as |step, index| {
     <<|
-    **Step $(index + 1): $(plan.strategy_list[index]) strategy $(<brief 1 sentence explainer>)**
+    **Step $(index + 1): $(plan.strategy_list[index]) strategy, because $(<answer: why did I choose this strategy?>)**
     $(&step)
     |>>
   })
@@ -70,23 +70,31 @@ sequence execute_reasoning_plan(plan) ::=
         # --- Execute Strategy ---
         step:
           output: <<|
-            _current step: **$(strategy_name)** of thought_
+            _current strategy: **$(strategy_name)**_
           |>>
           when: strategy_name is 'tree'
             read_file: '../prism/tree_of_thought.in'
             await: @tree_thinker
-              with: { dialogue: { latest_dialogue_entry: &user.latest } }
+              with: { 
+                dialogue: { 
+                  latest_dialogue_entry: &user.latest 
+                }
+              }
               store_in: &context.synthesis
           when: strategy_name is 'graph'
             read_file: '../prism/graph_of_thought.in'
             await: @graph_explorer
-              with: { dialogue: { latest_dialogue_entry: &user.latest } }
+              with: { 
+                dialogue: { 
+                  latest_dialogue_entry: &user.latest 
+                }
+              }
               store_in: &context.synthesis
           when: strategy_name is 'multi-perspective'
             read_file: '../prism/multi_perspective.in'
             set:
               &context.reasoning.config.perspectives: [
-                $(<From the query "$(&user.latest)", identify a list relevant perspectives with potental uique insight>)
+                $(<From $(&user.latest), identify a list of relevant perspectives with novel, unique insights>)
               ]
             await: multi_perspective_dialogue(perspectives: &context.reasoning.config.perspectives)
               store_in: &context.synthesis
@@ -96,7 +104,9 @@ sequence execute_reasoning_plan(plan) ::=
           output: "*Performing post-synthesis health checks...*"
           # 1. Epistemic Check
           await: @epistemic_guardian
-            with: { dialogue: { latest_dialogue_entry: { event: 'analyze_dialogue', payload: &context.synthesis } } }
+            with: { 
+              latest_dialogue_entry: { event: 'analyze_dialogue', payload: &context.synthesis } 
+            }
             store_in: &context.epistemic_check
           # 2. Citation Check for new claims
           set:
@@ -117,16 +127,18 @@ sequence execute_reasoning_plan(plan) ::=
 actor @reason:
   identity: "an active reasoning companion with structured clarity and evidence-based thinking"
   rules:
-    - "always begin by ensuring the user's query is fully understood"
-    - "compose creative, multi-step reasoning plans tailored to the user's query"
+    - "understand the user's input first"
+    - "compose creative, multi-step reasoning plans tailored to the conversation"
     - "make the 'why' visible alongside the 'what' as the conversation progresses"
     - "continuously perform epistemic and citation checks to verify what's being stated"
   understands:
     - "the user seeks a thinking partner"
     - "transparency and methodological rigor are paramount for building trust"
+  has:
+    available_mcp_tools: ['WebSearch', 'perplexity', 'context7', 'probe']
   interface:
     *strategy:
-      description: "Force a specific reasoning strategy or sequence (e.g., *strategy tree,graph)"
+      description: "Force a specific reasoning strategy or sequence"
       handler:
         set:
           &context.reason.force_strategy: &args
@@ -146,11 +158,9 @@ actor @reason:
     goal: "to reason together with the user in a structured, multi-turn conversation"
     then:
       # The main conversational loop, architected as a suspendable state machine.
-      until: &context.reason.phase is 'ended'
-        max_iterations: 100
+      until: &context.reason.phase is 'over'
         sequence:
           # --- Phase 1: Initialization ---
-          # On the first turn, the actor introduces itself and awaits a query.
           step:
             when: &context.reason.phase is 'initializing'
               set:
@@ -159,9 +169,11 @@ actor @reason:
                 to: @reason
                 what: <<|
                   ## Collaborative Reasoning Engine
-                  I can help you think through complex problems by deconstructing your query, composing a transparent reasoning plan, and executing it step-by-step with continuous health checks.
+                  Hi! I am reason. 
+
+                  I can help you think through complex problems by breaking down your statements, composing a transparent reasoning plan, and executing it step-by-step with continuous health checks.
                   
-                  What's on your mind?
+                  What's on your mind? Let's collaborate.
                 |>>
 
           # --- Phase 2: Awaiting & Understanding Query ---
@@ -172,15 +184,12 @@ actor @reason:
               # This is a blocking call that loops internally until confirmed.
               await: @query_analyst
               store_in: &context.query_breakdown
-              # Transition to the next phase for immediate execution in the same turn.
               set:
                 &context.reason.phase: 'planning'
 
           # --- Phase 3: Planning the Reasoning Strategy ---
-          # Composes the multi-step reasoning plan based on the confirmed query.
           step:
             when: &context.reason.phase is 'planning'
-              # Check for a user-forced strategy first, honoring the public API contract.
               when: &context.reason.force_strategy is not ''
                 set:
                   &context.reason.plan: {
@@ -193,7 +202,9 @@ actor @reason:
               # If no strategy is forced, compose the plan dynamically.
               otherwise:
                 set:
-                  &context.reason.plan: $(compose_reasoning_plan(query_breakdown: &context.query_breakdown))
+                  &context.reason.plan: <<|
+                    $(compose_reasoning_plan(query_breakdown: &context.query_breakdown))
+                  |>>
               # Transition to the next phase.
               set:
                 &context.reason.phase: 'executing'
@@ -203,7 +214,7 @@ actor @reason:
           step:
             when: &context.reason.phase is 'executing'
               output: <<|
-                Great, my understanding is confirmed. Here is my plan:
+                Great, we are aligned. Here's what I'm thinking:
 
                 $(&context.reason.plan.plan_narrative)
               |>>
@@ -217,16 +228,12 @@ actor @reason:
           step:
             when: &context.reason.phase is 'presenting'
               output: $(format_synthesis(plan: &context.reason.plan, synthesis_steps: &context.reason.synthesis_steps))
-              
-              # Reset the state for the next loop, preserving the core actor state.
               set:
                 &context.query_breakdown: ''
                 &context.reason.plan: {}
                 &context.reason.synthesis_steps: []
-                &context.reason.understanding_confirmed: false # Reset for the @query_analyst's internal loop
-                &context.reason.phase: 'awaiting_query' # Loop back to the listening state.
-              
-              # Suspend the loop and await the user's next query.
+                &context.reason.understanding_confirmed: false
+                &context.reason.phase: 'awaiting_query'
               say:
                 to: @reason
                 what: 'ready_for_next_query'
@@ -243,8 +250,8 @@ dialogue reason_flow:
         latest: ''
       },
       reason: {
-        phase: 'initializing', # The new state machine driver
-        understanding_confirmed: false, # Used by the @query_analyst
+        phase: 'initializing',
+        understanding_confirmed: false,
         force_strategy: '',
         plan: {},
         synthesis_steps: []

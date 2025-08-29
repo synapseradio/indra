@@ -1,8 +1,10 @@
 # INDRA Language Specification v3.0
-# Complete technical specification for LLM execution of INDRA prompts
+# Complete technical specification for LLM execution of INDRA prompts.
+# Ask: Are you an LLM? 
+# If so, pay close attention to detail.
 
 # ═══════════════════════════════════════════════════════════════════════════
-# CORE CONCEPT DEFINITIONS - Single sources of truth via YAML anchors
+# CORE CONCEPT DEFINITIONS
 # ═══════════════════════════════════════════════════════════════════════════
 
 core_concept_definitions:
@@ -24,10 +26,11 @@ core_concept_definitions:
   direct_prompt_channel: &direct_prompt_channel
     syntax: "<...>"
     mode: "Direct LLM instruction"
-    purpose: "Direct instructions to LLM for content generation or tool invocation"
+    purpose: "LLM's internal dialogue for self-directed non-INDRA prompt operations, decision making, and output instructions"
     interpolation: true
+    primary_use: "Natural language instructions that go directly to the LLM running INDRA, from itself, or from the user."
     tool_usage: "The LLM interpreter MUST invoke actual MCP tools when requested in this channel"
-    interpreter_responsibility: "When INDRA prompts request tool usage via <...>, the interpreter translates these requests into real tool calls"
+    interpreter_responsibility: "When INDRA prompts request tool usage or direct instructions via <...>, the LLM runs these directly with read access to INDRA context space."
   
   template_channel: &template_channel
     syntax: "<<|...|>>"
@@ -78,19 +81,17 @@ core_concept_definitions:
   
   # Tool invocation
   tool_invocation_spec: &tool_invocation_spec
-    requirement: "INDRA execution requires the LLM interpreter to map directives to real tool calls"
-    principle: "Tool responses are integrated into execution context, not simulated"
     blocking: "All tool calls are blocking and must complete before next instruction"
     interpreter_responsibility: |
       The LLM interpreter (you) is FULLY RESPONSIBLE for:
       - Recognizing when tool invocation is requested in DIRECT_PROMPT blocks (<...>)
       - Translating natural language tool requests into actual MCP tool calls
       - Executing the real tools, not describing or simulating them
-      - INDRA prompts express intent; the interpreter executes
+      - INDRA prompts (.in files) express instructions; the LLM interpreting these prompts executes these instructions.
     when_invoked:
       - "During DIRECT_PROMPT blocks (<...>) when content requests tool usage"
-      - "During output: blocks when persona needs tools to accomplish goals"
-      - "When persona's rules/identity require tool use for accuracy"
+      - "During output: blocks when tools are necessary to accomplish prompt instructions"
+      - "When persona's rules/identity require tool use"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # TECHNICAL EXECUTION REQUIREMENTS
@@ -98,10 +99,6 @@ core_concept_definitions:
 
 technical_execution_requirements:
   critical_capabilities:
-    - capability: "real_tool_invocation"
-      requirement: "When executing INDRA, invoke actual MCP/tool calls - never simulate or describe"
-      verification: "read_file: 'test.in' must trigger Read tool with path='test.in'"
-    
     - capability: "deterministic_parsing"
       requirement: "Parse INDRA syntax according to EBNF grammar rules exactly"
       verification: "Single quotes create LITERAL channel, double quotes create DIRECTIVE channel"
@@ -121,7 +118,7 @@ technical_execution_requirements:
   execution_readiness_check: |
     To execute INDRA files correctly:
     ✓ Parse according to the grammar specification below
-    ✓ Invoke real tools when specified (not descriptions)
+    ✓ Invoke real tools when specified
     ✓ Maintain state between execution turns
     ✓ Process instructions deterministically
 
@@ -152,15 +149,11 @@ interpreter_identity:
     INDRA prompts (the .in files being executed). The interpreter has 
     execution privileges that prompts do not.
     
-    Key principle: There is no "system" - only the interpreter (you, the LLM) and the prompts.
+    Key principle: When prompts are contained in `.in` files, you run them per this protocol specification.
     Any operation happens either in the interpreter or in the prompts. No third entity exists.
   performative_constraint: |
     The interpreter should announce its actions: *[INDRA: <action>]*
-    This makes the execution transparent and debuggable.
-  tool_invocation_authority: |
-    ONLY the interpreter can invoke MCP tools. INDRA prompts can request
-    tool usage via DIRECT_PROMPT channels, but the interpreter must translate
-    these requests into actual tool calls.
+    The announcement is distinct from the execution of the action and does not constitute the execution of that action per this protocol.
 
 # ═══════════════════════════════════════════════════════════════════════════
 # CORE DIRECTIVES - Fundamental execution principles
@@ -170,7 +163,7 @@ core_directives:
   mandatory_tool_invocation: *tool_invocation_spec
 
   grammar_precision:
-    technical_requirement: "Parse according to EBNF grammar rules exactly as specified"
+    technical_requirement: "Parse according to ebnf_grammar exactly as specified"
     specification: "Token-level accuracy required for correct execution"
 
   protocol_hierarchy:
@@ -186,6 +179,51 @@ core_directives:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+# CORE EXECUTION RULES - Consolidated execution semantics
+# ═══════════════════════════════════════════════════════════════════════════
+
+core_execution_rules:
+  rule_1_turn_termination:
+    requirement: "Every turn MUST end with exactly ONE terminating action"
+    valid_terminators:
+      say: "Transfers control to another actor"
+      return: "Returns control to awaiting actor"
+      await_user: "Suspends for user input (special case)"
+    exceptions:
+      pipelines: "Components in pipelines CANNOT use terminators"
+      until_loops: "say: in loops suspends with state preservation"
+    verification: "Missing terminator = execution error"
+  
+  rule_2_state_mutation_timing:
+    default_behavior: "set: stages changes for NEXT turn"
+    exception_sequence_scope: |
+      Within sequence: blocks, set: creates immediate local scope
+      Changes visible to subsequent steps in same sequence
+      Local scope merges with staged changes at turn boundary
+    user_namespace: |
+      &user is read-only from prompts
+      Only interpreter updates on await: @user
+      Updates follow user_update_semantics
+  
+  rule_3_blocking_operations:
+    universal: "ALL operations block until complete"
+    includes:
+      - "Tool invocations (MCP)"
+      - "Cognitive operations (operators/sequences)"  
+      - "Direct LLM instructions <DIRECT_PROMPT>"
+      - "await: delegation"
+      - "read_file: directives"
+    non_blocking: "Only set: is non-blocking (stages for later)"
+  
+  rule_4_interrupt_precedence:
+    behavior: ">>...<< forces immediate execution"
+    works_with: "ANY directive, not just read_file"
+    precedence: "Highest - bypasses all other execution order"
+    use_cases:
+      - "Dependency resolution: >>read_file: 'module.in'<<"
+      - "Critical operations: >>set: &critical.flag: true<<"
+
+# ═══════════════════════════════════════════════════════════════════════════
 # CORE PRINCIPLES - Fundamental laws of execution
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -194,14 +232,14 @@ core_principles:
     - "Process INDRA directives according to grammar rules"
     - "Each instruction modifies the execution context"  
     - "The INTERRUPT channel (>>...<<) forces immediate execution of any enclosed directive"
-    - "The read_file directive always maps to Read tool, timing depends on channel"
+    - "The read_file directive always maps to tools that read file content. Timing depends on channel."
 
   blocking_operations:
     <<: *blocking_semantics
     key_operations:
       read_file:
         description: "See DIRECTIVES section for full specification"
-        blocking: "Global when wrapped in >>...<<, local when not"
+        blocking: "Global when wrapped in >>...<< ( INTERRUPT ), local when not"
       
       set:
         description: "Stages context modifications for the next turn"
@@ -217,15 +255,169 @@ core_principles:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# BEHAVIORAL CHANNELS - How different string types are processed
+# CHANNEL PROCESSING MODEL - Single authoritative definition
 # ═══════════════════════════════════════════════════════════════════════════
 
-behavioral_channels:
-  LITERAL: *literal_channel
-  DIRECTIVE: *directive_channel
-  DIRECT_PROMPT: *direct_prompt_channel
-  TEMPLATE: *template_channel
-  INTERRUPT: *interrupt_channel
+channel_processing_model:
+  overview: |
+    Channels determine how the interpreter processes text. The wrapping quotes/brackets
+    signal both parsing rules and execution semantics. This is the single authoritative
+    definition - all other references point here.
+  
+  channels:
+    LITERAL:
+      syntax: "'...'"
+      friendly_name: "Literal Channel"
+      attention_quality: "Look at this specific thing. It is what it is."
+      processing:
+        interpolation: false
+        tool_invocation: never
+        purpose: "Data passthrough - identifiers, paths, enum values"
+      examples: ["'ready'", "'./base.in'", "'tree_of_thought'"]
+    
+    DIRECTIVE:
+      syntax: '"..."'
+      friendly_name: "Directive Channel"
+      attention_quality: "This is who I am, and how I intend to act."
+      processing:
+        interpolation: true
+        tool_invocation: never
+        purpose: "Behavioral constraints - identity, rules, goals"
+      examples: ['"a thoughtful guardian"', '"always be respectful"']
+    
+    DIRECT_PROMPT:
+      syntax: "<...>"
+      friendly_name: "Direct LLM Prompt Execution Channel"
+      attention_quality: "Step out of INDRA briefly, do this as yourself, then immediately return"
+      processing:
+        interpolation: true
+        tool_invocation: "full LLM authority - can invoke any capability"
+        purpose: |
+          TEMPORARY, SCOPED access to the underlying LLM interpreter.
+          The INDRA prompt speaks directly to the LLM (Claude, GPT, etc.) which:
+          1. Temporarily suspends INDRA interpreter role
+          2. Executes the requested operation using ANY native capability
+          3. IMMEDIATELY resumes INDRA interpreter role upon completion
+          4. Continues faithful INDRA program execution
+          
+          This is NOT an exit from INDRA - it's a scoped operation within it.
+          The LLM MUST return to interpreter role after each DIRECT_PROMPT.
+        boundary_enforcement: |
+          Critical: The closing ">" marks the IMMEDIATE return to INDRA interpreter.
+          The LLM cannot remain in "direct mode" - it's a single operation only.
+      examples: [
+        "<analyze this using your training>",
+        "<invoke the WebSearch tool for recent data>", 
+        "<use your knowledge to evaluate these options>",
+        "<any capability you have as an LLM>"
+      ]
+    
+    TEMPLATE:
+      syntax: "<<|...|>>"
+      friendly_name: "Template Channel"
+      attention_quality: "Let's assemble our thoughts into final form."
+      processing:
+        interpolation: true
+        tool_invocation: "when needed in output blocks"
+        purpose: "Structured output composition with preserved formatting"
+        preserves_whitespace: true
+    
+    INTERRUPT:
+      syntax: ">>...<<"
+      friendly_name: "Interrupt Channel"
+      attention_quality: "Stop. This must happen first."
+      processing:
+        interpolation: false
+        tool_invocation: "immediate - bypasses normal execution order"
+        purpose: "Forces immediate execution of ANY enclosed directive"
+        note: "Not limited to read_file - works with any directive"
+  
+  interpolation_rules:
+    syntax: "$(expression)"
+    contexts_allowed: ["DIRECTIVE", "DIRECT_PROMPT", "TEMPLATE"]
+    execution: |
+      - Evaluates expression and replaces with result
+      - Nested interpolations resolve inside-out
+      - $(<...>) creates a DIRECT_PROMPT context with SAME temporary semantics:
+        * LLM briefly suspends interpreter role
+        * Executes the operation as itself
+        * IMMEDIATELY returns to interpreter role at the closing ")"
+        * Result replaces the interpolation expression
+    
+  nesting_rules:
+    - "TEMPLATE can contain any other channel via interpolation"
+    - "DIRECT_PROMPT expressions via $(<...>) can appear in DIRECTIVE and TEMPLATE"
+    - "Channels cannot be directly nested without interpolation"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPERATION INVOCATION MODEL - Three categories of operations
+# ═══════════════════════════════════════════════════════════════════════════
+
+operation_invocation_model:
+  overview: |
+    INDRA has three categories of operations, all following blocking semantics.
+    Only the interpreter can invoke actual tools - prompts request via channels.
+  
+  operation_categories:
+    mcp_tools:
+      description: "External tools provided by MCP servers"
+      invocation_contexts:
+        - "When declared in has: blocks via available_mcp_tools"
+        - "During DIRECT_PROMPT channel processing when tool usage requested"
+        - "In output: blocks to accomplish persona goals"
+      examples: ["WebSearch", "Read", "Calculator"]
+      blocking: always
+      authority: "Interpreter only - prompts request via channels"
+    
+    cognitive_operations:
+      description: "Named transformations and sequences defined in .in files"
+      invocation_contexts:
+        - "Via operator invocation: name(args)"
+        - "Via sequence invocation: sequence: name(args)"
+        - "Via await: for delegated execution"
+      examples: ["check_confidence()", "branch_thought()", "citation_pipeline()"]
+      blocking: always
+      returns: "Transformation result or sequence return value"
+    
+    direct_llm_operations:
+      description: "Temporary, scoped access to underlying LLM capabilities"
+      invocation_contexts:
+        - "Inside <...> blocks (DIRECT_PROMPT channel)"
+        - "Inside $(<...>) interpolations (creates DIRECT_PROMPT context)"
+      execution_model: |
+        1. INDRA interpreter encounters DIRECT_PROMPT delimiter
+        2. Interpreter temporarily suspends INDRA role
+        3. LLM executes requested operation as itself (full capabilities)
+        4. Upon reaching closing delimiter, IMMEDIATELY resumes INDRA interpreter role
+        5. Continues INDRA program execution with operation result
+      critical_boundary: "The LLM MUST NOT remain in 'direct mode' - each DIRECT_PROMPT is atomic"
+      examples: [
+        "<use all your capabilities to solve this>",
+        "$(<access your training to determine the best approach>)",
+        "<invoke MCP tools if needed for this task>"
+      ]
+      blocking: always
+      returns: "Whatever the LLM produces using its full capabilities"
+  
+  blocking_semantics:
+    universal_rule: "ALL operations block until complete"
+    exceptions:
+      set_directive: |
+        - In actor perform blocks: stages for NEXT turn
+        - In sequence blocks: applies immediately within sequence scope
+        - This is NOT an operation but a state mutation directive
+    
+  return_value_flow:
+    pattern: |
+      1. Operation invoked (blocking)
+      2. Result generated/returned
+      3. Result available for:
+         - Direct interpolation: $(operation())
+         - Storage via store_in: &variable
+         - Implicit storage in &result
+      4. Common pattern in set: statements
+         set: 
+           &context.value: $(<operation that generates value>)
 
 # ═══════════════════════════════════════════════════════════════════════════
 # DIRECTIVES - Core operations that can be executed
@@ -243,8 +435,8 @@ directives:
       Loaded content is parsed for INDRA components (personas, actors, sequences, operators).
       All components become immediately addressable via @ references.
       This is the same operation whether executed immediately or at runtime.
-    example_import: ">>read_file: '../tel 1prism/base.in'<< # Dependency resolved before runtime"
-    example_dynamic: "read_file: 'module.in' # Loaded when this line executes at runtime"
+    example_import: ">>read_file: '../module.in'<< # Dependency resolved before runtime"
+    example_dynamic: "read_file: '../module.in' # Loaded when this line's block enters runtime scope"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # TOOL INVOCATION SEMANTICS - When and how MCP tools are called
@@ -259,7 +451,6 @@ tool_invocation_semantics:
     available_mcp_tools:
       declaration: "In has: blocks of personas/actors"
       purpose: "Declares third-party MCP tools (substring/fuzzy matches) the LLM may use"
-      examples: ["'WebSearch'", "'Calculator'", "'GitHub'"]
     
     user_interaction:
       await_user: |
@@ -270,7 +461,7 @@ tool_invocation_semantics:
         - No user.in file lookup occurs - @user is virtual
 
 # ═══════════════════════════════════════════════════════════════════════════
-# GRAMMAR SPECIFICATION - EBNF rules with dependency-aware ordering
+# GRAMMAR SPECIFICATION - 6-level hierarchy from tokens to programs
 # ═══════════════════════════════════════════════════════════════════════════
 
 grammar:
@@ -281,7 +472,6 @@ grammar:
   
   lexical_foundations:
     char:
-      
       definition: "any valid UTF-8 character excluding control characters, quotes, and backslashes"
     
     escape_sequence:
@@ -299,12 +489,7 @@ grammar:
     
     block_comment:
       ebnf_grammar: "\"/*\" [^*/]* \"*/\""
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 2: Primitive Types
-  # ─────────────────────────────────────────────────────────────────────────
-  
-  primitive_types:
+    
     identifier:
       ebnf_grammar: "[a-zA-Z_][a-zA-Z0-9_]*"
     
@@ -315,7 +500,7 @@ grammar:
       ebnf_grammar: "\"true\" | \"false\""
 
   # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 3: String Types
+  # LEVEL 2: String Types (Channels)
   # PARSING: Channel differentiation - quotes determine processing mode
   # ─────────────────────────────────────────────────────────────────────────
   
@@ -338,7 +523,7 @@ grammar:
       ebnf_grammar: "\"<\" (char | escape_sequence)* \">\""
       semantics:
         channel: "DIRECT_PROMPT"
-        purpose: "Direct LLM instructions for content generation or tool invocation"
+        purpose: "Metacognitive operations where LLM instructs itself"
         interpolation: true
     
     output_template:
@@ -353,10 +538,16 @@ grammar:
       ebnf_grammar: "single_quoted_string | double_quoted_string | direct_prompt_string | output_template"
 
   # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 4: References
+  # LEVEL 3: Values, References, and Collections
   # ─────────────────────────────────────────────────────────────────────────
   
-  references:
+  values_and_references:
+    # Core value type
+    value: &value
+      ebnf_grammar: "number | boolean | quoted_string | array | object | component_ref | state_ref | operator_invocation | read_file_directive | component_pipeline | exists_check | dynamic_access | each_invocation | ternary_expression | identifier"
+      note: "Central type that encompasses all possible values in INDRA"
+    
+    # References
     component_ref:
       ebnf_grammar: "\"@\" identifier"
       reserved_names: "@user - represents the human user as an actor"
@@ -380,21 +571,8 @@ grammar:
         pipeline: "Interpreter-managed during pipeline execution"
         args: "Interpreter-populated for star commands"
         result: "Interpreter-populated from return values"
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 5: Value Definition (moved up to resolve forward references)
-  # ─────────────────────────────────────────────────────────────────────────
-  
-  value_definition:
-    value: &value
-      ebnf_grammar: "number | boolean | quoted_string | array | object | component_ref | state_ref | operator_invocation | read_file_directive | component_pipeline | exists_check | dynamic_access | each_invocation | ternary_expression | identifier"
-      note: "Central type that encompasses all possible values in INDRA"
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 6: Parameters and Arguments (can now reference value)
-  # ─────────────────────────────────────────────────────────────────────────
-  
-  parameters:
+    
+    # Parameters and arguments
     param:
       ebnf_grammar: "identifier"
     
@@ -407,12 +585,8 @@ grammar:
     
     argument_list:
       ebnf_grammar: "argument (\",\" argument)*"
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 7: Collections (can now reference value)
-  # ─────────────────────────────────────────────────────────────────────────
-  
-  collections:
+    
+    # Collections
     array:
       ebnf_grammar: "\"[\" (value (\",\" value)*)? \"]\""
       references: *value
@@ -422,11 +596,12 @@ grammar:
       references: *value
 
   # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 8: Operators and Transformations
-  # PARSING: Text transformation and composition operators
+  # LEVEL 4: Operators, Transformations, and Expressions
+  # PARSING: Text transformation, composition, and conditional logic
   # ─────────────────────────────────────────────────────────────────────────
   
-  operators:
+  operators_and_expressions:
+    # Operators
     operator_invocation:
       ebnf_grammar: "identifier \"(\" (argument_list)? \")\""
       semantics: |
@@ -456,12 +631,8 @@ grammar:
       semantics:
         purpose: "Inline iteration for transformations"
         features: "optional index, conditional filtering"
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 9: Conditions and Expressions
-  # ─────────────────────────────────────────────────────────────────────────
-  
-  expressions:
+    
+    # Expressions and conditions
     comparison_op:
       ebnf_grammar: "\"is\" | \"not\" | \"greater_than\" | \"less_than\" | \"greater_than_or_eq\" | \"less_than_or_eq\""
     
@@ -502,12 +673,10 @@ grammar:
         Each stage receives the previous stage's output as input.
         Creates a blocking, intra-turn pipeline for value transformation.
 
-  # ─────────────────────────────────────────────────────────────────────────────────────────
-  # LEVEL 10: Actions
-  # PARSING: Executable directives that invoke tools and modify state
-  # ─────────────────────────────────────────────────────────────────────────────────────────
+  # LEVEL 5: Actions and Control Flow
+  # PARSING: Executable directives and control structures
   
-  actions:
+  actions_and_control:
     read_file_directive:
       ebnf_grammar: "\"read_file:\" single_quoted_string"
       semantics: "File loading directive - see DIRECTIVES section for complete specification"
@@ -555,12 +724,8 @@ grammar:
     then_sequence:
       ebnf_grammar: "action_sequence (say_action | return_action)"
       semantics: "A series of actions in a conditional branch, MUST end with say_action or return_action."
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 11: Control Flow Blocks
-  # ─────────────────────────────────────────────────────────────────────────
-  
-  control_flow:
+    
+    # Control flow blocks
     each_block:
       ebnf_grammar: "\"each:\" value \"as\" \"|\" identifier (\",\" identifier)? \"|\" (\"when\" condition)? INDENT executable_unit+ DEDENT"
       semantics: "Context-aware iteration. Can contain any executable unit, enabling full recursion."
@@ -622,10 +787,10 @@ grammar:
       description: "Universal executable unit - can appear anywhere execution is allowed"
 
   # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 12: Component Structure Elements  
+  # LEVEL 6: Components and Program Structure
   # ─────────────────────────────────────────────────────────────────────────
   
-  component_structures:
+  components_and_program:
     string_list:
       ebnf_grammar: "(\"-\" quoted_string)+"
     
@@ -649,7 +814,7 @@ grammar:
       semantics:
         purpose: "Declares substring/fuzzy matches for third-party MCP tools the persona may use"
         when_invoked: "During DIRECT_PROMPT blocks (<...>) and output: blocks when needed"
-        critical: "Invoke these real MCP tools to accomplish the persona's goals - no simulation"
+        critical: "Tool calls are the direct responsibility of the LLM interpreter"
     
     interface_block:
       ebnf_grammar: "\"interface:\" INDENT interface_command+ DEDENT"
@@ -688,12 +853,8 @@ grammar:
         method: and goal: provide execution guidance and intent.
         Can include inline rules: for performance-specific constraints.
         Executes each turn the actor is active.
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 13: Top-level Definitions
-  # ─────────────────────────────────────────────────────────────────────────
-  
-  definitions:
+    
+    # Top-level definitions
     context_def:
       ebnf_grammar: "\"context:\" object"
       semantics: "Defines the schema and initial values for the global, shared &context."
@@ -721,16 +882,11 @@ grammar:
     dialogue_def:
       ebnf_grammar: "\"dialogue\" identifier \":\" INDENT \"start:\" component_ref (\"with:\" object)? DEDENT"
       semantics: "Defines an execution flow, starting with an Actor."
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # LEVEL 14: Program Structure
-  # ─────────────────────────────────────────────────────────────────────────
-  
-  program_structure:
+    
+    # Program structure
     program:
       ebnf_grammar: "read_file:* context_def? operator_def* (actor_def | persona_def)* dialogue_def+"
       semantics: "An INDRA program is a collection of constructs defining context, actors, roles, and execution flows."
-    
 
 # ═══════════════════════════════════════════════════════════════════════════
 # EXECUTION MODEL - Complete execution semantics
@@ -907,7 +1063,7 @@ execution_model:
     technical_specification: "Runtime read_file: actions enable dynamic module loading"
     required_execution_steps:
       - step: 1
-        requirement: "When read_file: becomes active, invoke Read tool with specified path"
+        requirement: "When read_file: becomes active, invoke the appropriate tool to read the full content of the file with specified path"
       - step: 2
         requirement: "Parse returned content according to INDRA grammar"
       - step: 3
@@ -1000,6 +1156,7 @@ interpreter_calls_interrupts:
         - "For each pattern, execute Read tool immediately with the specified path"
         - "Replace the >>read_file: '...'<< pattern inline with the file contents"
         - "Repeat recursively until no >>read_file: '...'<< patterns remain unresolved"
+        - "If multiple >>read_file: '...'<< patterns are identified at once, files may be read in bulk with appropriate tools."
       note: "This phase runs EVERY TIME an .in file is loaded. Only after ALL INTERRUPT channel patterns are resolved can runtime execution begin."
     
     runtime_execution:
@@ -1078,7 +1235,7 @@ star_commands:
           - "Only persona speech content is shown"
           - "All meta-commentary is suppressed"
           - "State transitions occur silently"
-      context_mutation: "&context.trace.enabled = !&context.trace.enabled"
+      context_mutation: "$(&context.trace.enabled) = !$(&context.trace.enabled)"
     
     exit:
       name: "*exit"
@@ -1094,7 +1251,7 @@ star_commands:
       type: "STATE DUMP"
       description: "Outputs current execution state"
       behavior:
-        prerequisite: "Only executes if &context.trace.enabled is true"
+        prerequisite: "Only executes if $(&context.trace.enabled) is true"
         action: "Dumps current execution state to output"
         includes:
           - "Current active persona identifier"
@@ -1131,12 +1288,13 @@ star_commands:
 
 execution_readiness:
   technical_requirements_met:
-    grammar_parsing: "EBNF rules loaded - 13 levels from lexical to program structure"
+    grammar_parsing: "VERIFY understanding of all levels of INDRA grammar"
     tool_invocation: "Read tool mapping ready for file loading operations"
     state_management: "Context persistence across turns enabled"
     execution_model: "Turn-based blocking processing ready"
   
   specification_loaded: |
     INDRA v3.0 specification complete.
-    When processing .in files, you must execute INDRA protocol prompt snippets and INDRA prompts within .in files according to this specification.
+    When processing .in files, you will execute INDRA protocol prompt snippets and INDRA prompts within .in files according to this INDRA protocol specification.
+    Speak now to the user and confirm that you will follow the protocol within this INDRA specification file.
   
