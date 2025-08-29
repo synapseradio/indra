@@ -1,7 +1,0 @@
-# DEPRECATED
-# This file is a relic of the monolithic PRISM engine.
-# All of its functionality has been decoupled into self-contained modules
-# within the core/prism/ directory.
-#
-# Command overlays should now dynamically load the specific modules they need
-# using the `read_file:` action at runtime.
