@@ -1,45 +1,87 @@
 # Protocol: The Execution Model
 
-The INDRA interpreter operates on a simple but strict execution model: a **single-threaded, turn-based event loop**. Every action in an INDRA program happens within a "turn," and each turn is executed to completion before the next one begins. This ensures that the flow of conversation is always predictable and explicit.
+The INDRA Execution Model defines the "physics" of a cognitive process. It's a turn-based system that governs how actors communicate, how state evolves, and how control flows through a conversation. Understanding this model is key to choreographing complex and predictable reasoning architectures.
 
-### The Turn
+At its heart, the model is a simple loop: an actor performs a turn, and at the end of that turn, it passes control to another actor (or back to itself). But within that simplicity lies a sophisticated process for managing state and ensuring coherence.
 
-An actor's turn consists of two main phases:
+---
 
-1.  **Performance:** The `perform:` block of the active actor is executed. This always involves rendering the `output:` clause, which is the visible, user-facing part of the turn.
-2.  **Decision:** The `then:` block is executed immediately after the `output`. This is where the actor decides what to do next, based on the current state of the `&context`.
+### The Anatomy of a Turn
 
-### Turn Termination: Transferring Control
+Every turn in INDRA follows a precise, eight-step sequence. This ensures that operations happen in a predictable order, which is crucial for building reliable systems.
 
-This is the most critical rule of the execution model: **every turn must end with a terminating action.** An actor cannot simply "finish" its turn and do nothing. It must explicitly hand off control to another component or pause for input.
+Let's say Actor A is performing its turn:
 
-There are three terminating actions:
+1. **Activation:** Actor A's `perform:` block is activated.
+2. **Method Execution:** The `method:` string is evaluated.
+3. **Goal Execution:** The `goal:` string is evaluated.
+4. **`then:` Block Evaluation:** The logic inside the `then:` block is executed from top to bottom.
+5. **State Mutation Staging:** Any `set:` operations encountered are *staged*, but **not yet applied**. They are held in a temporary queue for this turn.
+6. **Sequence Execution:** If a `sequence:` is called, its steps are executed immediately. `set:` operations *inside a sequence* are applied instantly within the sequence's scope.
+7. **Terminating Action:** The turn must end with a single terminating action, like `say:`, `return:`, or `await:`. This action determines which actor will take the next turn and what information is passed to them.
+8. **State Commit:** After the turn has officially ended, the staged `set:` operations from step 5 are now committed to the global `&context`, making them available for the *next* turn.
 
-1.  **`say: to: @another_actor`**
-    *   **Purpose:** To end the current turn and pass control to another actor.
-    *   **Analogy:** This is like saying, "I'm done, it's your turn to speak now."
-    *   **Flow:** The current actor's turn ends immediately, and the interpreter schedules `@another_actor` to take the next turn.
+### The Two Horizons of State: Immediate vs. Staged
 
-2.  **`await: @some_component`**
-    *   **Purpose:** To delegate a task to another component and pause execution until a result is received.
-    *   **Analogy:** This is like asking a question and waiting for an answer. It creates a "call stack."
-    *   **Flow:** The current actor's execution is suspended. The interpreter activates `@some_component`. When that component finishes, it must use `return:` to send a value back, at which point the original actor wakes up and continues its `then:` block.
-    *   **Special Case:** `await: @user` is a unique version of this action. It suspends the actor's turn and waits for input from the human, but does not require an explicit `return:` from another component. The user's input implicitly becomes the return value.
+This distinction between when a state change is *staged* and when it is *committed* is the most critical concept in the execution model.
 
-3.  **`return: some_value`**
-    *   **Purpose:** To conclude the execution of an awaited component and return a value to the caller.
-    *   **Analogy:** This is providing the answer to the question that was asked via `await:`.
-    *   **Flow:** This action "pops the call stack," ending the current component's turn and resuming the execution of the actor that was waiting for it.
+- **Inside a `sequence`:** State is **immediate**. When you `set:` a variable in step 1, it is instantly available in step 2. This allows you to build a narrative of thought where each step directly informs the next.
 
-### Blocking Operations
+- **Inside an actor's `perform:` block:** State is **staged for the next turn**. When an actor changes a variable with `set:`, it's making a plan for the future. The change only becomes "real" after its turn is over. This prevents actors from reacting to their own state changes within a single turn, creating a more stable and predictable system.
 
-All operations in INDRA are **blocking**. When an actor performs an action, whether it's generating output, setting a context variable, or awaiting another component, that action must fully complete before the next one begins. This single-threaded, blocking model removes ambiguity and ensures a deterministic flow of logic within a turn.
+**Example:**
 
-### Execution Order: Interrupts vs. Runtime
+```indra
+actor @state_example:
+  perform:
+    then:
+      # 1. Stage a change to the context.
+      set: &context.value: "new value"
 
-The interpreter processes an INDRA file in distinct phases:
+      # 2. Check the value.
+      when: &context.value is "new value"
+        # This block will NOT execute on this turn, because the
+        # change to &context.value has not been committed yet.
+        # It will only be "new value" on the *next* actor's turn.
+        output: "I see the new value."
+      otherwise:
+        # This block WILL execute.
+        output: "I see the old value."
+```
 
-1.  **Dependency Resolution (Pre-Runtime):** Before any actor takes a turn, the interpreter scans the entire file for directives wrapped in the **Interrupt Channel** (`>>...<<`). It executes these immediately. This is primarily used for `>>read_file: '...'<<` to ensure all necessary code is loaded before the program starts.
-2.  **Runtime Execution:** After all interrupts are handled, the `dialogue` block is initiated, and the `start` actor takes the first turn. The turn-based loop continues from here. Any `read_file` directives encountered *without* the interrupt channel are executed dynamically as part of a turn.
+### The Flow of Control: Delegation and Return
 
-**Next: [Protocol: State and Context](./04-state-and-context.md)**
+Actors don't have to do all the thinking themselves. They can delegate tasks to other actors or sequences using `await:`.
+
+- **`await:`:** This command pauses the current actor and passes control to another component. It's like asking a colleague for help. The calling actor waits patiently until the awaited component is finished.
+- **`return:`:** This is how an awaited component hands back its results. It's a special terminating action that can *only* be used by a component that has been `await`ed. It ends the sub-task and gives the result back to the original caller.
+- **`store_in:`:** This is how the original actor catches the result from the `return:` statement.
+
+This creates a **call stack**, allowing you to build complex reasoning by composing the capabilities of many specialist actors.
+
+**Example:**
+
+```indra
+actor @orchestrator:
+  perform:
+    then:
+      # 1. Delegate the task of analysis to a specialist.
+      await: @query_analyst
+      with: { query: &user.latest }
+      store_in: &context.analysis_result
+
+      # 3. Use the result to continue its own work.
+      output: "The analyst reported: $(&context.analysis_result)"
+
+actor @query_analyst:
+  perform:
+    then:
+      # 2. Perform its specialized task and return the result.
+      set: &result: $(understand_query(query: &context.query))
+      return: &result
+```
+
+By mastering these three concepts—the turn anatomy, the two horizons of state, and the delegation model—you can design cognitive processes of any complexity with confidence and precision.
+
+---
+**Next: [State and Context](./04-state-and-context.md)**

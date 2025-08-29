@@ -38,9 +38,9 @@ actor @my_actor:
       await: @user
 ```
 
-*   **`actor @my_actor:`**: Declares an active component with the address `@my_actor`.
-*   **`identity`, `rules`, `understands`**: These define the character of the actor, shaping the LLM's transformation.
-*   **`perform:`**: This block is the actor's "script" for its turn. It contains the logic for what to say (`output`) and what to do next (`then`).
+* **`actor @my_actor:`**: Declares an active component with the address `@my_actor`.
+* **`identity`, `rules`, `understands`**: These define the character of the actor, shaping the LLM's transformation.
+* **`perform:`**: This block is the actor's "script" for its turn. It contains the logic for what to say (`output`) and what to do next (`then`).
 
 ---
 
@@ -73,8 +73,8 @@ This `@expert_analyst` persona can't do anything by itself. However, another act
 
 INDRA includes one special, pre-defined component: `@user`.
 
-*   **`@user` is a reserved component that represents you, the human.**
-*   You cannot define `@user` as an actor or persona; it exists automatically.
-*   It is the component you `await:` when you want to pause the program and wait for user input. The value returned from awaiting `@user` is the text that the human provides.
+* **`@user` is a reserved component that represents you, the human.**
+* You cannot define `@user` as an actor or persona; it exists automatically.
+* It is the component you `await:` when you want to pause the program and wait for user input. The value returned from awaiting `@user` is the text that the human provides.
 
 **Next: [Protocol: The Execution Model](./03-the-execution-model.md)**

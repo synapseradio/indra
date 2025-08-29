@@ -1251,7 +1251,6 @@ star_commands:
       type: "STATE DUMP"
       description: "Outputs current execution state"
       behavior:
-        prerequisite: "Only executes if $(&context.trace.enabled) is true"
         action: "Dumps current execution state to output"
         includes:
           - "Current active persona identifier"

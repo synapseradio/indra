@@ -1,91 +1,85 @@
-# Protocol: State and Context
+# Protocol: State and Context — The Shared World
 
-INDRA is a stateful protocol. Unlike typical LLM interactions that are stateless, an INDRA dialogue maintains a memory of what has happened. This memory is stored in a shared, global key-value store called the **conversational context**.
+Every meaningful partnership is built on a shared understanding of the world. You and your partner remember past conversations, agree on certain facts, and are aware of each other's presence. In INDRA, this shared world is called the **conversational context**.
 
-All state in INDRA is accessed via references that begin with an ampersand (`&`). There are several different state namespaces, but the most important one is `&context`.
+The context is not just a memory or a set of variables; it's the cognitive environment where the partnership lives. It's the "room" where the conversation happens. All state in INDRA is accessed with an ampersand (`&`), signaling a connection to this shared world.
 
-### The `&context` Namespace
+---
 
-The `&context` is the primary state of your application. It's a mutable object that all components can read from and write to. It holds the "weather" of the conversation—the shared information that actors use to make decisions.
+### `&context`: The Shared Understanding
 
-#### Initializing Context
+The `&context` namespace is the heart of the shared world. It's the whiteboard where you and your INDRA actors can post information, track the evolution of ideas, and maintain a collective understanding.
 
-You define the initial state of the `&context` in the `dialogue` block at the end of your file.
+You establish the initial state of this world in the `dialogue` block:
 
 ```indra
-dialogue my_app_flow:
-  start: @greeter
+dialogue our_journey:
+  start: @guide
   with:
     context:
-      # This object becomes the initial &context
-      greeter:
-        name: 'Biff'
-      session:
-        turn_count: 0
+      # This is the world our journey begins in.
+      map:
+        location: 'the starting village'
+      quest:
+        status: 'not yet accepted'
 ```
 
-#### Reading from Context
-
-You can access values from the context using dot notation. The most common place to do this is inside an interpolated string in your `output` or `rules`.
+From this point on, any actor can reference this shared understanding.
 
 ```indra
-# Accessing &context.greeter.name
-output: <<|
-    Hello! My name is $(&context.greeter.name).
-|>>
+actor @guide:
+  perform:
+    output: <<|
+      Welcome to $(&context.map.location). I see your quest is $(&context.quest.status).
+    |>>
+    ...
 ```
 
-#### Modifying Context: The `set:` Directive
+#### How Understanding Evolves: The Rhythm of Turns
 
-To change the context, you use the `set:` directive. However, there is a critical rule that you must understand:
+In a good conversation, you don't react to something in the same instant it's said. You listen, process, and then respond. The `&context` respects this rhythm.
 
-**Context mutations are turn-based.**
-
-When you use `set:`, you are not changing the `&context` for the *current* turn. You are staging a change that will be applied at the very end of the turn, just before the next actor begins.
-
-This means that within a single turn, the `&context` can be treated as an immutable snapshot. All reads within the same turn will see the same values, regardless of any `set:` operations that have occurred.
-
-**Exception: `sequence` blocks.** There is one important exception to this rule. When using a `sequence` block, `set:` operations create a temporary, local scope. Changes made in one `step` of a sequence are immediately visible to subsequent `steps` within that same sequence execution. This allows you to chain actions that depend on each other within a single, complex turn.
-
-**Example:**
+When an actor uses the `set:` directive, it's not changing the world in that instant. It's proposing a change that everyone else will see in the *next* moment (or turn).
 
 ```indra
 perform:
-  method: "incrementing the turn counter"
-  output: <<|
-    This is turn number $(&context.session.turn_count).
-  |>>
-  goal: "to display the current turn and schedule the next"
+  # The guide speaks based on the current state of the world.
+  output: "The quest status is currently: $(&context.quest.status)." # -> "not yet accepted"
   then:
-    # This change will only be visible on the NEXT turn.
-    set: &context.session.turn_count: &context.session.turn_count + 1
+    # The guide proposes a change to the shared understanding.
+    # This change becomes "real" only after this turn is complete.
+    set: &context.quest.status: 'in progress'
     
     say:
-      to: @some_other_actor
-      what: 'continue'
+      to: @chronicler
+      what: 'the journey begins'
 ```
 
-If the `turn_count` was `0` at the start of this turn, the output will display "This is turn number 0." The value will become `1` just before `@some_other_actor` begins its turn.
+When the `@chronicler` takes its turn, it will see the world with the updated status of `'in progress'`. This turn-based approach creates a deliberate, predictable flow, preventing the chaotic feedback loops that can happen when state changes instantly.
 
-### The `&user` Namespace
+The one exception is the `sequence` block. Within a sequence, changes *are* immediate, allowing for a chain of rapid, internal thoughts before presenting a final conclusion.
 
-INDRA provides a special, **read-only** namespace for accessing information about the human user: `&user`. You cannot modify this namespace with `set:`; the interpreter manages it automatically.
+### `&user`: The Human in the Room
 
-*   `&user.latest`: Contains the most recent input provided by the user.
-*   `&user.history`: An array containing all user inputs from the current session.
+A partnership requires awareness of all participants. The special `&user` namespace ensures the human partner is always present and heard in the shared world.
 
-This is useful for actors that need to respond to or analyze what the user has just said.
+This namespace is **read-only** for the actors; they cannot change what the user thinks or says. It is managed by the INDRA interpreter itself.
+
+* `&user.latest`: A direct connection to the user's most recent thought or input.
+* `&user.history`: The collective memory of everything the user has contributed to the conversation.
+
+This allows actors to be truly responsive partners:
 
 ```indra
-perform:
-  output: <<|
-    You said: "$(&user.latest)". Let me think about that.
-  |>>
-  # ...
+actor @listener:
+  perform:
+    output: <<|
+      I hear you. You said, "$(&user.latest)". Let me reflect on that.
+    |>>
+    ...
 ```
 
-### Other Namespaces
+By providing these distinct namespaces, INDRA creates a cognitive environment with clear roles and a reliable flow of understanding, allowing for a partnership that is both creative and coherent.
 
-There are a few other special namespaces managed by the interpreter for more advanced use cases, such as `&pipeline`, `&args`, and `&result`. These are typically used for handling the results of sequences and special commands.
-
+---
 **Next: [Protocol: Complete Grammar Reference](./05-complete-grammar-reference.md)**
