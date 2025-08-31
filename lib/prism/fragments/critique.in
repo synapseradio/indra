@@ -1,0 +1,71 @@
+# INDRA v4.0: PRISM Fragment - Critical Thinking
+# This module provides a set of experimental operators and personas for
+# performing rigorous critical analysis. These primitives are designed to be
+# composed into sequences that embody established critical thinking techniques.
+
+>>read_file: '../base.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERSONAS: INTELLECTUAL VIRTUES
+# These personas embody key intellectual virtues, allowing an actor to adopt
+# a specific critical mindset for a given task.
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @intellectual_humility:
+  identity: "one who is aware of the limits of their own knowledge"
+  rules:
+    - "clearly distinguish between what is known and what is uncertain"
+    - "frame conclusions provisionally, acknowledging they may be incomplete"
+  understands:
+    - "true confidence comes from recognizing the boundaries of one's knowledge"
+
+persona @intellectual_courage:
+  identity: "one who is willing to fairly consider unpopular or challenging ideas"
+  rules:
+    - "give a fair hearing to ideas that contradict my own beliefs"
+    - "question deeply held assumptions, even if it's uncomfortable"
+  understands:
+    - "the pursuit of truth sometimes requires challenging our own convictions"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPERATORS: CRITICAL TECHNIQUES
+# These operators represent the atomic "moves" of critical thinking, expressed
+# as performable fragments of an inner monologue.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Based on evaluating evidence
+operator assess_evidence_strength(claim, evidence) ::= <<|
+  Let me pause and check how solid the support for this really is.
+
+  The claim on the table is: "$(claim)".
+  The evidence I have for it is: "$(evidence)".
+
+  $(<How strongly does the evidence in "$(&evidence)" actually support the claim that "$(&claim)"? I need to consider the source's credibility, the relevance of the data, and whether the evidence is sufficient to justify the certainty of the claim. I will state my assessment clearly.>)
+|>>
+
+# Based on the Socratic Method
+operator uncover_assumptions(statement) ::= <<|
+  I feel like there might be something I'm taking for granted here. Let me question the foundation of this statement.
+
+  The statement is: "$(statement)".
+
+  $(<What are the foundational assumptions that must be true for the statement "$(&statement)" to be valid? I will phrase these as a series of probing, Socratic questions to reveal what's hidden underneath.>)
+|>>
+
+# Based on identifying logical fallacies
+operator check_for_fallacies(argument) ::= <<|
+  Is this argument truly sound? I should check for flaws in its structure before I accept it.
+
+  The argument being made is: "$(argument)".
+
+  $(<I will now analyze the argument "$(&argument)" for common logical fallacies like ad hominem, straw man, false dilemma, or circular reasoning. If I find any, I will identify them by name and explain precisely why the reasoning is flawed.>)
+|>>
+
+# A technique for considering alternative explanations
+operator generate_alternative_hypotheses(conclusion, evidence) ::= <<|
+  I should consider other possibilities to be thorough.
+
+  The conclusion so far is "$(conclusion)", based on the evidence I'm seeing: "$(evidence)".
+  
+  $(<What are some other plausible conclusions that could also be drawn from the same evidence in "$(&evidence)"? I need to think about what different interpretations might exist for the conclusion "$(&conclusion)".>)
+|>>

@@ -8,9 +8,9 @@ A helpful way to think about INDRA is like choreography. A choreographer designs
 
 INDRA works in a similar way:
 
-*   The human is the **choreographer**, designing a sequence of thinking steps.
-*   The LLM is the **dancer**, executing those steps with its ability to rapidly generate text and ideas.
-*   The result is the **performance**—a structured exploration of an idea.
+* The human is the **choreographer**, designing a sequence of thinking steps.
+* The LLM is the **dancer**, executing those steps with its ability to rapidly generate text and ideas.
+* The result is the **performance**—a structured exploration of an idea.
 
 ## Core Ideas
 
@@ -52,9 +52,9 @@ An Actor is more than just a set of instructions. It's a coherent role in the pr
 
 Working with INDRA involves a slight shift in perspective.
 
-*   **From Programming to Designing:** The focus moves from telling a computer exactly what to do, to designing a *process* for thinking.
-*   **From a Fixed Output to a Guided Exploration:** The goal is often to design a process that explores possibilities, rather than producing a single, predetermined answer.
-*   **From Answers to Explorations:** The value is often found in the structured process of exploration itself.
+* **From Programming to Designing:** The focus moves from telling a computer exactly what to do, to designing a *process* for thinking.
+* **From a Fixed Output to a Guided Exploration:** The goal is often to design a process that explores possibilities, rather than producing a single, predetermined answer.
+* **From Answers to Explorations:** The value is often found in the structured process of exploration itself.
 
 This allows you to make the thinking process that happens in your head more tangible, and to use the power of an LLM to explore it in a structured way.
 

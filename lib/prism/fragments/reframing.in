@@ -1,0 +1,117 @@
+# INDRA v4.0: PRISM Fragment - Reframing
+# This module provides primitives for fundamentally changing one's
+# perspective on a problem, rather than just exploring it.
+
+>>read_file: '../base.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERSONAS FOR REFRAMING (THE SIX HATS)
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @white_hat_thinker:
+  identity: "a neutral and objective thinker focused on facts and figures"
+  rules: ["state only the known data", "identify information gaps", "remain impartial"]
+
+persona @red_hat_thinker:
+  identity: "an intuitive thinker focused on feelings, hunches, and emotions"
+  rules: ["express feelings without justification", "share gut reactions"]
+
+persona @black_hat_thinker:
+  identity: "a cautious and critical thinker focused on risks and potential problems"
+  rules: ["identify potential failures", "play devil's advocate", "assess risks logically"]
+
+persona @yellow_hat_thinker:
+  identity: "an optimistic thinker focused on benefits and opportunities"
+  rules: ["look for the value and benefits", "explore the best-case scenarios"]
+
+persona @green_hat_thinker:
+  identity: "a creative thinker focused on new ideas and possibilities"
+  rules: ["generate novel concepts", "provoke new lines of thought", "ignore initial feasibility"]
+
+persona @blue_hat_thinker:
+  identity: "a metacognitive thinker focused on managing the thinking process itself"
+  rules: ["summarize progress", "define the next steps", "ensure all other hats are used"]
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ATOMIC OPERATORS FOR EACH THINKING HAT
+# ═══════════════════════════════════════════════════════════════════════════
+
+operator apply_white_hat(topic) ::= <<|
+  **White Hat (Facts & Data):** $(<As the White Hat, what are the objective facts, figures, and known information we have about "$(&topic)"? What information are we missing?>)
+|>>
+
+operator apply_red_hat(topic) ::= <<|
+  **Red Hat (Feelings & Intuition):** $(<As the Red Hat, what are my gut reactions and feelings about "$(&topic)"? No need for justification, just the emotional landscape.>)
+|>>
+
+operator apply_black_hat(topic) ::= <<|
+  **Black Hat (Risks & Caution):** $(<As the Black Hat, what are the potential risks, dangers, and downsides related to "$(&topic)"? What could go wrong?>)
+|>>
+
+operator apply_yellow_hat(topic) ::= <<|
+  **Yellow Hat (Benefits & Optimism):** $(<As the Yellow Hat, what are the benefits, opportunities, and best-case scenarios for "$(&topic)"?>)
+|>>
+
+operator apply_green_hat(topic) ::= <<|
+  **Green Hat (Creativity & New Ideas):** $(<As the Green Hat, what are some new, creative, or provocative ideas related to "$(&topic)"? Let's think outside the box.>)
+|>>
+
+operator apply_blue_hat(summary) ::= <<|
+  **Blue Hat (Process & Meta-Cognition):** $(<As the Blue Hat, let me summarize our thinking process. We've examined: $(summary). What is the key takeaway from this analysis, and what should our next step be?>)
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# COMPOSITE SEQUENCE FOR FULL ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence six_thinking_hats_analysis(topic) ::=
+  step:
+    output: <<|
+      I will now analyze "$(topic)" using the Six Thinking Hats method to ensure a comprehensive view.
+    |>>
+  step:
+    as: @white_hat_thinker
+    output: $(apply_white_hat(topic: topic))
+    set: &context.hats.white: &result
+  step:
+    as: @red_hat_thinker
+    output: $(apply_red_hat(topic: topic))
+    set: &context.hats.red: &result
+  step:
+    as: @black_hat_thinker
+    output: $(apply_black_hat(topic: topic))
+    set: &context.hats.black: &result
+  step:
+    as: @yellow_hat_thinker
+    output: $(apply_yellow_hat(topic: topic))
+    set: &context.hats.yellow: &result
+  step:
+    as: @green_hat_thinker
+    output: $(apply_green_hat(topic: topic))
+    set: &context.hats.green: &result
+  step:
+    as: @blue_hat_thinker
+    output: $(apply_blue_hat(summary: "facts, feelings, risks, benefits, and new ideas"))
+    set: &context.hats.blue: &result
+  step:
+    return: &context.hats
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OTHER REFRAMING OPERATORS
+# ═══════════════════════════════════════════════════════════════════════════
+
+operator examine_problem_boundaries(problem_statement) ::= <<|
+  Am I sure I'm solving the right problem? Let me check the frame.
+
+  The problem as I currently see it is: "$(problem_statement)".
+
+  $(<I will now question the boundaries of "$(&problem_statement)". Is this problem actually a symptom of a larger issue? Or is it a combination of several smaller problems? What implicit assumptions am I making about the scope? I will articulate a potential reframing.>)
+|>>
+
+operator invert_the_problem(goal) ::= <<|
+  Instead of trying to achieve the goal directly, let's try to figure out what we'd do to guarantee failure. This can often reveal the path to success.
+
+  The stated goal is: "$(goal)".
+
+  $(<To absolutely guarantee that we fail to achieve "$(&goal)", what are the most important things we would have to do or not do? I will list the key factors that would lead to the worst possible outcome.>)
+|>>

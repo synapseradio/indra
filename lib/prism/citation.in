@@ -1,8 +1,9 @@
-# INDRA v3.0: PRISM Module - Citation Pipeline
+# INDRA v4.0: PRISM Module - Citation Pipeline
 # This module provides a complete, reusable pipeline for gathering,
 # validating, and formatting evidence for factual claims. It is designed
 # to be invoked by any actor or sequence that needs to ground its
 # reasoning in external evidence.
+# CRITICAL: IF THIS FILE IS LOADED, ONLINE RESEARCH MUST BE CONDUCTED WITH CITATIONS. CITATIONS MUST RESOLVE TO REAL URLs AND CANNOT EXIST WITHOUT RESEARCH VIA WEB SEARCH TOOLS.
 
 >>read_file: './base.in'<<
 
@@ -79,14 +80,14 @@ sequence citation_pipeline(claim) ::=
 # Decomposed citation filtering operators for better composability
 
 # Remove duplicate entries by URL field
-deduplicate_by_url(results) ::= <
+operator deduplicate_by_url(results) ::= <
 Given the results in $(results), remove all duplicate entries by the 'url' field.
 Keep only the first occurrence of each unique URL.
 Return the deduplicated array.
 >
 
 # Filter out low-quality sources
-filter_quality_sources(results) ::= <
+operator filter_quality_sources(results) ::= <
 Given the results in $(results), filter to keep only high-quality sources.
 Exclude: social media (Instagram, Twitter, TikTok), content farms, QA sites (Quora, etc.), 
 and personal blogs unless widely recognized as expert sources.
@@ -95,32 +96,32 @@ Return the filtered sources.
 >
 
 # Composite operator using pipe for primary source filtering
-filter_for_primary_sources(results) ::= results |> deduplicate_by_url |> filter_quality_sources
+operator filter_for_primary_sources(results) ::= results |> deduplicate_by_url |> filter_quality_sources
 
 
 # Validate citations have required fields before formatting
-validate_citation_fields(results) ::= <
+operator validate_citation_fields(results) ::= <
 Filter $(results) to only include items that have both 'title' and 'url' fields.
 Return filtered array with valid citations only.
 >
 
 # Format validated citations into markdown links
-format_citation_links(results) ::= <<|
+operator format_citation_links(results) ::= <<|
   $(each: results as |result, index| {
     <<|$(index + 1). [$(result.title)]($(result.url))|>>
   })
 |>>
 
 # Composite operator to validate then format citations
-format_citations(results) ::= results |> validate_citation_fields |> format_citation_links
+operator format_citations(results) ::= results |> validate_citation_fields |> format_citation_links
 
 # Individual assessment operators
 
 # Count sources in collection
-count_sources(results) ::= <count the sources in $(results)>
+operator count_sources(results) ::= <count the sources in $(results)>
 
 # Assess credibility of sources
-assess_credibility(results) ::= <
+operator assess_credibility(results) ::= <
 Evaluate credibility of $(results):
 - Are these primary sources?
 - Recognized authors?
@@ -130,7 +131,7 @@ Return credibility assessment.
 >
 
 # Assess diversity of sources
-assess_diversity(results) ::= <
+operator assess_diversity(results) ::= <
 Assess variety in $(results):
 - Different domains represented?
 - Competing viewpoints included?
@@ -139,7 +140,7 @@ Return diversity assessment.
 >
 
 # Composite quality assessment using piped operators
-assess_quality(results) ::= <<|
+operator assess_quality(results) ::= <<|
   Sources found: $(count_sources(results: results))
   Credibility: $(assess_credibility(results: results))
   Diversity: $(assess_diversity(results: results))
@@ -147,12 +148,12 @@ assess_quality(results) ::= <<|
 
 # Operator to merge evidence while maintaining uniqueness and quality
 # Note: Referenced as merge_unique_evidence in the sequence
-merge_unique_evidence(items, existing) ::= $(
+operator merge_unique_evidence(items, existing) ::= $(
   merge_with_existing(items: deduplicate_by_url(results: items), existing: existing)
 )
 
 # Helper to merge new items with existing collection
-merge_with_existing(items, existing) ::= <
+operator merge_with_existing(items, existing) ::= <
 Merge $(items) into $(existing):
 - Add all new items not already in existing (by URL)
 - When duplicates exist, keep higher quality version
@@ -163,7 +164,7 @@ Return merged array.
 # Decomposed selection operators for citation relevance pipeline
 
 # Filter citations by relevance to query
-filter_by_relevance(pool, query) ::= <
+operator filter_by_relevance(pool, query) ::= <
 Score each item in $(pool) by relevance to "$(query)".
 Keep items with relevance score > 0.3.
 Sort by relevance score descending.
@@ -171,7 +172,7 @@ Return sorted array.
 >
 
 # Ensure diversity of sources
-ensure_diversity(items) ::= <
+operator ensure_diversity(items) ::= <
 Given $(items), ensure source diversity:
 - Include different domains (academic, news, technical)
 - Include different perspectives where available
@@ -180,10 +181,10 @@ Return diverse selection maintaining order.
 >
 
 # Limit to maximum number of items
-limit_items(items, max) ::= <
+operator limit_items(items, max) ::= <
 Take the first $(max) items from $(items).
 Return limited array.
 >
 
 # Composite operator for selecting relevant citations
-select_relevant_evidence(pool, query, max_items) ::= pool |> filter_by_relevance(query: query) |> ensure_diversity |> limit_items(max: max_items)
+operator select_relevant_evidence(pool, query, max_items) ::= pool |> filter_by_relevance(query: query) |> ensure_diversity |> limit_items(max: max_items)

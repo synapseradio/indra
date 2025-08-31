@@ -8,10 +8,10 @@ This guide explores the patterns for building these stateful, multi-turn agents.
 
 The foundation of any conversational agent is the `await: @user` directive. It is a simple, explicit instruction to the INDRA interpreter to:
 
-1.  Pause the execution of the current Actor.
-2.  Yield control entirely to the human user.
-3.  Wait for the user to provide their next input.
-4.  When input is received, resume the Actor's execution.
+1. Pause the execution of the current Actor.
+2. Yield control entirely to the human user.
+3. Wait for the user to provide their next input.
+4. When input is received, resume the Actor's execution.
 
 This primitive is what transforms an Actor from a simple command-line tool into a conversational agent.
 
@@ -59,9 +59,9 @@ This loop creates a cycle of **Listen -> Think -> Respond -> Wait**. With each t
 
 A few key elements help transform a simple bot into a more thoughtful agent.
 
-1.  **A Dedicated State Namespace:** In the `dialogue` block, create a dedicated space in the `&context` for your agent to maintain its state (e.g., `&context.my_agent`). This becomes its memory.
+1. **A Dedicated State Namespace:** In the `dialogue` block, create a dedicated space in the `&context` for your agent to maintain its state (e.g., `&context.my_agent`). This becomes its memory.
 
-2.  **An Initialization State:** The first time the agent runs, it should introduce itself and set up its initial state.
+2. **An Initialization State:** The first time the agent runs, it should introduce itself and set up its initial state.
 
     ```indra
     # In the agent's perform block:
@@ -72,11 +72,11 @@ A few key elements help transform a simple bot into a more thoughtful agent.
       await: @user
     ```
 
-3.  **State Analysis Operators:** The "thinking" part of the loop is often best handled by specialized Operators that analyze the entire state of the conversation, not just the user's last sentence. The `@ponder` agent uses operators like:
-    *   `detect_user_momentum`: Is the user making progress or are they stuck?
-    *   `assess_idea_maturity`: How developed is the core idea of the conversation?
+3. **State Analysis Operators:** The "thinking" part of the loop is often best handled by specialized Operators that analyze the entire state of the conversation, not just the user's last sentence. The `@ponder` agent uses operators like:
+    * `detect_user_momentum`: Is the user making progress or are they stuck?
+    * `assess_idea_maturity`: How developed is the core idea of the conversation?
 
-4.  **Adaptive Response Logic:** The agent can change its behavior based on its analysis. This is how it evolves from a simple script to an intelligent conversationalist.
+4. **Adaptive Response Logic:** The agent can change its behavior based on its analysis. This is how it evolves from a simple script to an intelligent conversationalist.
 
     ```indra
     # Inside the main loop...

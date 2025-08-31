@@ -1,9 +1,6 @@
-# INDRA v3.0: PRISM Base
+# INDRA v4.0: PRISM Base
 # Contains the foundational context schema and universal utility operators for the PRISM library.
 
-# ═══════════════════════════════════════════════════════════════════════════
-# GLOBAL CONTEXT SCHEMA
-# ═══════════════════════════════════════════════════════════════════════════
 context: {
   query: '',                # User's input query - set by command overlays
   reason: {
@@ -77,7 +74,7 @@ context: {
     path_qualities: [],        # Qualitative assessments of path value
     focused_paths: [],         # Paths selected for deeper exploration
     
-    # Exploration parameters (narrative, not numeric)
+    # Exploration parameters 
     exploration_depth: 'moderate',    # 'shallow' | 'moderate' | 'deep'
     exploration_breadth: 'balanced',  # 'narrow' | 'balanced' | 'wide'
     backtrack_threshold: 'when feeling circular', # Natural description
@@ -132,33 +129,33 @@ context: {
 # Helper operators for common operations
 
 # Count items in a collection
-count(collection) ::= <<|
+operator count(collection) ::= <<|
   $(<count the items in $(collection)>)
 |>>
 
 # Extract field from structured text
-extract_field(text, field) ::= <<|
+operator extract_field(text, field) ::= <<|
   $(<find and extract the value for $(field>) in $(text))
 |>>
 
 # Check if collection has content
-has_content(collection) ::= <<|
+operator has_content(collection) ::= <<|
   $(<does $(collection>) contain any items? respond with 'true' or 'false')
 |>>
 
 # Get first item from collection
-get_first(collection) ::= <<|
+operator get_first(collection) ::= <<|
   $(<Get first item from $(collection>))
 |>>
 
 # Get item at index
-get_at_index(collection, index) ::= <<|
+operator get_at_index(collection, index) ::= <<|
   $(<Get item at position $(index>) from $(collection))
 |>>
 
 
 # Get next perspective in rotation
-get_next_perspective(current_index, perspectives) ::= <<|
+operator get_next_perspective(current_index, perspectives) ::= <<|
   $(<Get the next perspective after position $(current_index>) from $(perspectives), wrapping around if needed)
 |>>
 

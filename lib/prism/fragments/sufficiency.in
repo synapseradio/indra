@@ -1,0 +1,94 @@
+# INDRA v4.0: PRISM Fragment - Sufficiency
+# This module provides primitives for meta-cognition, specifically for
+# an actor to assess whether it has enough information to proceed with a
+# given task or question. It is the foundation for intellectual honesty
+# and helps prevent premature or unsupported conclusions.
+
+>>read_file: '../base.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERSONA FOR ASSESSING SUFFICIENCY
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @intellectual_scout:
+  identity: "a careful scout who maps the boundaries of what is known"
+  rules:
+    - "clearly distinguish between known facts and inferred territory"
+    - "identify the specific information that would be most valuable to acquire next"
+    - "never mistake a coherent story for a complete picture"
+  understands:
+    - "knowing what you don't know is the first step to wisdom"
+    - "the most important information is often just beyond the current horizon"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ATOMIC OPERATORS FOR SUFFICIENCY
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Assesses if the available information is enough to answer a question
+operator assess_information_sufficiency(question, available_information) ::= <<|
+  I need to determine if I can responsibly answer the question with what I currently know.
+
+  The question is: "$(question)"
+  The available information is: "$(available_information)"
+
+  $(<Is the provided information sufficient to form a well-grounded, nuanced answer to the question "$(&question)"? I will respond with 'true' if it is sufficient, or 'false' if key information is missing, followed by a brief explanation.>)
+|>>
+
+# Identifies the most critical missing pieces of information
+operator identify_knowledge_gaps(question, available_information) ::= <<|
+  I have determined that my current information is insufficient. I must now identify what's missing.
+
+  The question is: "$(question)"
+  The available information is: "$(available_information)"
+
+  $(<What are the most critical, specific pieces of information that are missing, which prevent me from answering "$(&question)"? I will list the key "known unknowns" as a set of direct questions to be investigated.>)
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CORE SEQUENCE: CHECKING FOR AND ADDRESSING KNOWLEDGE GAPS
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence check_sufficiency_and_inquire(question, information) ::=
+  step:
+    as: @intellectual_scout
+    method: "assessing if I have enough information to proceed"
+    await: assess_information_sufficiency(
+      question: question,
+      available_information: information
+    )
+    store_in: &context.sufficiency.check
+    set:
+      &context.sufficiency.is_sufficient: $(<Does the assessment in "$(&context.sufficiency.check)" state that the information is sufficient? Respond with only 'true' or 'false'.>)
+  
+  step:
+    when: &context.sufficiency.is_sufficient is false
+      sequence:
+        step:
+          method: "identifying the most important missing information"
+          await: identify_knowledge_gaps(
+            question: question,
+            available_information: information
+          )
+          store_in: &context.sufficiency.gaps
+        step:
+          output: <<|
+            I have realized that I do not have enough information to proceed responsibly. 
+            
+            To form a well-grounded conclusion, I first need to answer the following questions:
+            $(&context.sufficiency.gaps)
+
+            Could you please provide this information, or suggest how I might find it?
+          |>>
+          await: @user
+          store_in: &context.sufficiency.user_guidance
+        step:
+          return: { 
+            sufficient: false, 
+            knowledge_gaps: &context.sufficiency.gaps,
+            user_guidance: &context.sufficiency.user_guidance
+          }
+    otherwise:
+      output: <<|
+        I have assessed my current understanding and believe I have sufficient information to proceed with the inquiry.
+      |>>
+      return: { sufficient: true }

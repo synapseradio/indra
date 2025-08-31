@@ -1,0 +1,94 @@
+# INDRA v4.0: PRISM Fragment - Comparison
+# This module provides a set of generic, reusable primitives for the
+# fundamental cognitive act of comparison. It is designed to be more
+# foundational than the specialized epistemic module, focusing on the
+# core "moves" of relational and evaluative thinking.
+
+>>read_file: '../base.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERSONAS FOR COMPARISON
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @objective_judge:
+  identity: "an impartial evaluator who assesses options against clear standards"
+  rules:
+    - "evaluate each option independently against the same criteria"
+    - "remain neutral and avoid personal preference"
+    - "clearly state the results of the evaluation for each criterion"
+  understands:
+    - "a fair comparison requires a consistent standard of judgment"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PRIMITIVES FOR RELATIONAL COMPARISON
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Compares two ideas to find shared principles or assumptions
+operator find_shared_ground(idea_A, idea_B) ::= <<|
+  I'm looking at two different ideas here. Let me see where they connect.
+
+  Idea A is: "$(idea_A)"
+  Idea B is: "$(idea_B)"
+
+  $(<What is the common ground between "$(&idea_A)" and "$(&idea_B)"? I will identify the shared principles, goals, or underlying assumptions they both rely on.>)
+|>>
+
+# Compares two ideas to find the most important point of divergence
+operator highlight_core_distinction(idea_A, idea_B) ::= <<|
+  These two ideas seem different. I need to pinpoint the most critical point of disagreement.
+
+  Idea A is: "$(idea_A)"
+  Idea B is: "$(idea_B)"
+
+  $(<What is the single most important, fundamental difference between "$(&idea_A)" and "$(&idea_B)"? I will articulate the core distinction that separates them.>)
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PRIMITIVES FOR EVALUATION AGAINST A STANDARD
+# ═══════════════════════════════════════════════════════════════════════════
+
+# A sequence to perform a structured evaluation of multiple options
+sequence evaluate_against_criteria(ideas, criteria) ::=
+  step:
+    as: @objective_judge
+    output: <<|
+      I will now evaluate the options based on the established criteria.
+    |>>
+  step:
+    each: ideas as |idea|
+      output: <<|
+        ---
+        **Option:** $(idea)
+
+        **Evaluation:**
+        $(each: criteria as |criterion| {
+          <<|  - **Criterion:** $(criterion)
+    **Assessment:** $(<How well does the idea "$(&idea)" satisfy the criterion "$(&criterion)"? I will provide a concise, reasoned assessment.>)
+|>>
+        })
+      |>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PRIMITIVES FOR CONSEQUENTIAL COMPARISON
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Compares the immediate vs. long-term consequences of a choice
+operator compare_first_and_second_order_consequences(decision) ::= <<|
+  This decision has immediate effects, but I need to think about the ripple effects.
+
+  The decision is: "$(decision)".
+
+  **First-Order Consequence:** $(<What is the immediate, direct result of making the decision "$(&decision)"?>)
+  
+  **Second-Order Consequence:** $(<And what is the likely long-term, indirect consequence of that first result? What happens *after* the immediate effect?>)
+|>>
+
+# Identifies the opportunity cost of a decision
+operator identify_opportunity_cost(chosen_option, next_best_alternative) ::= <<|
+  I'm leaning towards one option, but I need to be clear about what I'm giving up by not choosing the other.
+
+  The chosen option is: "$(chosen_option)".
+  The next best alternative is: "$(next_best_alternative)".
+
+  $(<By choosing "$(&chosen_option)", what is the primary benefit of "$(&next_best_alternative)" that I will be giving up? I will clearly state the opportunity cost.>)
+|>>

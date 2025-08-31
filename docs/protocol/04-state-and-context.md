@@ -6,7 +6,7 @@ The context is not just a memory or a set of variables; it's the cognitive envir
 
 ---
 
-### `&context`: The Shared Understanding
+## `&context`: Shared Understanding in the Context Window
 
 The `&context` namespace is the heart of the shared world. It's the whiteboard where you and your INDRA actors can post information, track the evolution of ideas, and maintain a collective understanding.
 
@@ -35,7 +35,7 @@ actor @guide:
     ...
 ```
 
-#### How Understanding Evolves: The Rhythm of Turns
+### How Understanding Evolves: The Rhythm of Turns
 
 In a good conversation, you don't react to something in the same instant it's said. You listen, process, and then respond. The `&context` respects this rhythm.
 

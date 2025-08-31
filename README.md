@@ -1,5 +1,8 @@
 # INDRA: Inferential Narrative Driven Reasoning Actors
 
+- **I**nsight **N**urtured **D**uring **R**eflective **A**rticulation
+- **I**nteractive **N**arrative **D**ecomposition of **R**eflective **A**cts
+  
 A prompt-based protocol for composable, inference-accelerated expression of insight.
 
 ---
@@ -90,7 +93,7 @@ In doing so, INDRA programs provide insight into the latent structure of your th
 
 The repository includes several pre-built cognitive tools. Each one demonstrates a different way of structuring collaborative thought:
 
-**`/think`** - Uses a conversational tree of thought strategy to explore ideas, branching into possibilities and following promising paths. You can watch it wonder, evaluate, reconsider, and synthesize.
+**`/explore`** - Uses a conversational tree of thought strategy to explore ideas, branching into possibilities and following promising paths. You can watch it wonder, evaluate, reconsider, and synthesize.
 
 **`/ponder`** - A creative conversational partner that adapts to your conversational momentum, shifting between exploration and consolidation as your ideas evolve.
 
@@ -112,24 +115,24 @@ If this resonates, here's how to begin:
 
 ## Running a command
 
-using a tool like claude code, gemini cli, or others,
+Using a tool like Claude code, Gemini CLI, or others,
 
 - clone this repository.
 - in one prompt, type something like:
 
 ```
-Confirm: You are the INDRA interpreter. you execute `.in` indra prompts per the protocol spec in @core/indra-protocol.yaml. 
+Confirm: You are the INDRA interpreter. you execute `.in` indra prompts per the protocol spec in @core/indra-protocol. 
 ```
 
-in a follow up, select a command.
+In a follow-up, select a command.
 
 ```
-Execute the prompt in @core/commands/[think|reason|confer|ponder|consider|lint].in
+Execute the prompt in @commands/[explore|reason|confer|ponder|consider|lint|research].in
 ```
 
 ## What's in this repository
 
-- `core/indra-protocol.yaml` - The complete technical specification
-- `core/prism/` - Library of sub prompts and thought patterns (the thinking operations)
-- `core/commands/` - Pre-built commands, from linting to reasoning
+- `core/indra-protocol--instructions.yml` - The complete technical specification for the INDRA protocol. This file serves as a "bootloader" for INDRA, and must be fed to an LLM as a pre-prompt before running `.in` files.
+- `lib/prism/` - The PRISM library. This is a collection of reusable cognitive fragments—the fundamental "verbs" of thought like `wonder_about()` or `check_assumptions()`. Each file is a facet of the prism, designed to be composed into more complex reasoning structures.
+- `commands/` - Pre-built commands, from linting to reasoning
 - `docs/` - Progressive documentation from concepts to implementation

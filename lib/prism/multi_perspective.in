@@ -1,26 +1,13 @@
-# INDRA v3.0: PRISM Module - Multi-Perspective Dialogue (v2 Refactored)
-# A sophisticated, stateful engine for facilitating and managing multi-agent conversations.
+# INDRA Multi-Perspective Dialogue 
 
->>read_file: './base.in'<<
->>read_file: './thinking_primitives.in'<<
->># INDRA v3.0: PRISM Module - Multi-Perspective Dialogue (v2 Evolved)
-# This module provides a library of composable, stateless primitives for
-# orchestrating sophisticated, multi-agent conversations.
 
 >>read_file: './base.in'<<
 >>read_file: './thinking_primitives.in'<<
 >>read_file: './citation.in'<<
 >>read_file: './epistemic.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
-# ACT I: COMPOSABLE DIALOGUE PRIMITIVES ("THE VERBS")
-#
-# These are the thin, stateless primitives discovered during Project Crucible.
-# They represent the atomic, reusable "verbs" of critical dialogue.
-# ═══════════════════════════════════════════════════════════════════════════
-
 # --- Primitive 1: Action Selection (Operator) ---
-select_dialogue_move(transcript, persona_identity, dialogue_rules) ::= <<|
+operator select_dialogue_move(transcript, persona_identity, dialogue_rules) ::= <<|
   $(<
     As a participant with the identity "$(persona_identity)", review the dialogue transcript: "$(transcript)".
     
@@ -33,7 +20,7 @@ select_dialogue_move(transcript, persona_identity, dialogue_rules) ::= <<|
 |>>
 
 # --- Primitive 2: Articulation (Operator) ---
-generate_dialogue_contribution(transcript, move, persona_identity) ::= <<|
+operator generate_dialogue_contribution(transcript, move, persona_identity) ::= <<|
   $(<
     As a participant with the identity "$(persona_identity)", your chosen move is to "$(move)".
     
@@ -58,6 +45,13 @@ sequence apply_dialogue_checks(content, checks_to_apply) ::=
           # The content is passed through each check in series.
           # Each check returns the (potentially modified) content.
           when: check_name is 'citation'
+            output: <<|
+              *Checking for supporting evidence...*
+              
+              ---
+
+              $(<agent: Extract any new, unsupported factual claims from the thought: "$(&context.experts.validated_content)" and use web search or perplexity to research them as an open-minded skeptic. collect citations from your research. Format the citations as APA format, with correct, exact URLs that resolve to real web pages. If no new claims are found, return an empty string. If URLs do not resolve, do not include them.>)
+            |>>
             set:
               &context.experts.new_claims: $(<Extract any new, unsupported factual claims from the thought: "$(&context.experts.validated_content)">)
             when: &context.experts.new_claims is not ''
@@ -83,10 +77,10 @@ sequence apply_dialogue_checks(content, checks_to_apply) ::=
     return: &context.experts.validated_content
 
 # ═══════════════════════════════════════════════════════════════════════════
-# ACT II: LEGACY COMPATIBILITY LAYER
+# ACT II: TRANSPARENT DIALOGUE SEQUENCE
 #
-# This section preserves the original multi_perspective_dialogue sequence
-# to ensure zero regressions for commands (/reason, /consider) that depend on it.
+# This is the primary sequence for orchestrating a visible, turn-by-turn
+# dialogue between multiple expert perspectives.
 # ═══════════════════════════════════════════════════════════════════════════
 
 sequence multi_perspective_dialogue(perspectives) ::=
@@ -94,63 +88,41 @@ sequence multi_perspective_dialogue(perspectives) ::=
     as: self
     # Dynamically load the reasoning strategy that the experts will use.
     read_file: './tree_of_thought.in'
-    read_file: './citation.in'
   step:
     as: self
     method: "gathering expert contributions"
     output: "*Initiating dialogue between experts...*"
+    set:
+      &context.experts.contributions: {}
+  step:
     each: perspectives as |perspective|
-      output_action:
-        output: <<|
-          ---
-          *Consulting with: **$(perspective)***
-        |>>
-        goal: "Show progress"
-      
-      set:
-        &context.experts.current_speaker: perspective
-        
-      # Explicitly tell the expert what task to perform
-      await: @expert_contributor with: { context: { task: 'tree_of_thought' } } store_in: &context.result
-      
-      set:
-        &context.experts.contributions[perspective]: &context.result
+      sequence:
+        step:
+          output: <<|
+            ---
+            *Consulting with: **$(perspective)***
+          |>>
+        step:
+          set:
+            &context.experts.current_speaker: perspective
+          # Directly await the reasoning actor to make its process visible.
+          await: @tree_thinker 
+            with: { 
+              dialogue: { latest_dialogue_entry: &user.latest },
+              tree: { for_perspective: perspective }
+            } 
+            store_in: &context.result
+        step:
+          output: "*Storing contribution from $(perspective)...*"
+          set:
+            &context.experts.contributions[perspective]: &context.result
   step:
     as: self
+    output: "*Consolidating all expert perspectives...*"
     # The contributions are now in &context.experts.contributions
     # The calling actor can now proceed with epistemic checks or synthesis.
     return: &context.experts.contributions
 
-actor @expert_contributor:
-  identity: "a single expert providing a focused contribution"
-  rules:
-    - "analyze the topic from my assigned perspective"
-    - "gather evidence BEFORE making factual claims"
-    - "execute the assigned reasoning task"
-    - "return my final, synthesized analysis"
-  understands:
-    - "my role is to provide a deep, single-perspective analysis on demand"
-    - "my reasoning task is provided by the orchestrator via a temporary context"
-    - "evidence must precede claims"
-  perform:
-    method: "focused analysis using a provided task"
-    output: "*Contributing from my perspective...*"
-    goal: "to generate a single, comprehensive expert viewpoint"
-    then:
-      # The calling actor MUST provide &context.task in a `with:` block.
-      # This makes the expert a pure, stateless executor.
-      when: &context.task is 'tree_of_thought'
-        await: tree_of_thought(
-          perspective: &context.experts.current_speaker,
-          topic: &context.query
-        ) store_in: &context.result
-
-      # In the future, other single-perspective tasks could be added here,
-      # allowing the orchestrator to choose which one an expert should run.
-      # For example: `when: &context.task is 'concise_view'`
-
-      return: &context.result<<
->>read_file: './epistemic.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
 # ACT I: THE DIALOGUE ENGINE
@@ -283,13 +255,16 @@ sequence apply_health_check(check, content) ::=
       |>>
       
   # C. Epistemic Check: Is the reasoning sound?
+  # C. Epistemic Check: Is the reasoning sound?
   step:
     as: self
     when: check is 'epistemic_check'
-      await: @epistemic_guardian
-        with: { dialogue: { latest_dialogue_entry: { event: 'analyze_dialogue', payload: content } } }
-      # (Note: For now, this check is for demonstration; a full implementation would handle the event return.)
-      return: content
+      await: perform_epistemic_check(ideas: [content])
+      store_in: &context.epistemic_report
+      return: content + <<|
+
+        *(Epistemic Status: Sufficient: $(&context.epistemic_report.sufficient), Convergences: $(count(&context.epistemic_report.convergent_themes)), Divergences: $(count(&context.epistemic_report.divergent_forks)))*
+      |>>
       
   # Default: If the check is not recognized or no action is needed, return the content unchanged.
   step:

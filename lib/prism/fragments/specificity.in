@@ -1,0 +1,87 @@
+# INDRA v4.0: PRISM Fragment - Specificity
+# This module provides primitives for fighting ambiguity and moving from
+# abstract concepts to concrete, actionable details.
+
+>>read_file: '../base.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ATOMIC OPERATORS FOR SPECIFICITY
+# ═══════════════════════════════════════════════════════════════════════════
+
+operator move_up_abstraction_ladder(concept) ::= <<|
+  This concept is concrete, but I need to understand its higher-level purpose.
+  The specific concept is: "$(concept)".
+  $(<By repeatedly asking "Why is this important?", what is the more abstract, fundamental principle or goal that "$(&concept)" serves? I will trace the 'why' upwards to a core value or objective.>)
+|>>
+
+operator move_down_abstraction_ladder(concept) ::= <<|
+  This concept is abstract, but I need to see what it looks like in reality.
+  The abstract concept is: "$(concept)".
+  $(<By repeatedly asking "How would this work in practice?", what is a concrete, specific example or implementation of "$(&concept)"? I will describe a tangible manifestation of this idea.>)
+|>>
+
+operator identify_failure_modes(goal) ::= <<|
+  Let's imagine the project to "$(&goal)" has failed completely. What are the most likely specific, concrete reasons for this failure?
+  
+  $(<I will list at least five distinct possibilities as a bulleted list.>)
+|>>
+
+operator generate_mitigations(failure_modes) ::= <<|
+  Thinking about those potential failures:
+  $(failure_modes)
+
+  Here are the specific actions we could take today to prevent them:
+  $(<For each of the failure modes I just reviewed, what is one specific and concrete action we could take *today* to prevent it from happening? I will format this as a list of mitigations corresponding to the failures.>)
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERFORMATIVE SEQUENCES
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence conduct_pre_mortem(project_goal) ::=
+  step:
+    output: <<|
+      To identify potential risks, I will conduct a pre-mortem. Let's imagine for a moment that the project has already failed completely. Now, let's work backward.
+    |>>
+  step:
+    method: "identifying all the ways this could go wrong"
+    await: identify_failure_modes(goal: project_goal)
+    store_in: &context.premortem.failure_reasons
+  step:
+    method: "generating concrete actions to prevent failure"
+    await: generate_mitigations(failure_modes: &context.premortem.failure_reasons)
+    store_in: &context.premortem.mitigations
+  step:
+    return: {
+      failures: &context.premortem.failure_reasons,
+      mitigations: &context.premortem.mitigations
+    }
+
+sequence apply_five_whys(problem) ::=
+  step:
+    set: &context.whys.problem: problem, &context.whys.answers: [], &context.whys.count: 0
+  step:
+    until: &context.whys.count is 5
+      sequence:
+        step:
+          set:
+            &context.whys.last_answer: get_at_index(collection: &context.whys.answers, index: &context.whys.count - 1)
+            &context.whys.prompt: &context.whys.count is 0 ? &context.whys.problem : &context.whys.last_answer
+        step:
+          output: <<|
+            Why? ($(&context.whys.count + 1)/5)
+            -- 
+            $(<Why is it the case that "$(&context.whys.prompt)"? I will provide the next-level causal reason.>)
+          |>>
+          set:
+            &context.whys.new_answer: $(<Why is it the case that "$(&context.whys.prompt)"? I will provide the next-level causal reason.>)
+            &context.whys.answers: &context.whys.answers + [&context.whys.new_answer]
+            &context.whys.count: &context.whys.count + 1
+  step:
+    output: <<|
+      The chain of causality appears to be:
+      $(each: &context.whys.answers as |answer, index| {
+        <<|$(index + 1). $(answer)|>>
+      })
+    |>>
+    return: &context.whys.answers

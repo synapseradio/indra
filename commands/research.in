@@ -1,14 +1,14 @@
-# INDRA v3.0 Command: research
+# INDRA v4.0 Command: research
 # Provides a collaborative, plan-and-execute research partner.
 
 # --- Imports ---
->>read_file: '../prism/base.in'<<
->>read_file: '../prism/epistemic.in'<<
-
+>>read_file: '../lib/prism/base.in'<<
+>>read_file: '../lib/prism/epistemic.in'<<
+>>read_file: '../lib/prism/multi_perspective.in'<<
 
 # --- Operators ---
 
-create_research_plan ::= args => <<|(
+operator create_research_plan ::= args => <<|(
   "plan": [
     "First, I'll break down your request to identify the core questions and key terms for our search.",
     "Next, I'll conduct a broad search across multiple reliable sources to gather a wide range of perspectives and initial evidence.",
@@ -19,7 +19,7 @@ create_research_plan ::= args => <<|(
   "formatted_plan": "<formatted plan as a numbered list>"
 )|>>
 
-begin_research_partnership ::= args => <<|
+operator begin_research_partnership ::= args => <<|
 Of course. Let's research $(args.topic) together. To ensure we're thorough and aligned, here is the research plan I've prepared:
 
 $(args.plan)
@@ -27,9 +27,9 @@ $(args.plan)
 Does this plan look like a good approach to you? If so, I'll begin the first step.
 |>>
 
-format_step_update ::= args => '✅ **Step $(args.step_number):** $(args.step_description)'
+operator format_step_update ::= args => '✅ **Step $(args.step_number):** $(args.step_description)'
 
-format_final_synthesis ::= args => <<|
+operator format_final_synthesis ::= args => <<|
 Our research into $(args.topic) is complete. Here is the synthesized report based on the plan we followed.
 
 ### Research Methodology
@@ -61,7 +61,7 @@ actor @research_planner:
     then:
       set:
         &context.research.research_plan: create_research_plan({query: &context.query}).plan
-      # Halts to await user approval
+      await: @user
 
 actor @research_executor:
   identity: "a research plan executor"
@@ -86,40 +86,40 @@ actor @research_executor:
           as: self
           method: "gathering research contributions"
           output: "*Initiating research dialogue...*"
-          each: &context.reasoning.config.perspectives as |perspective| {
-            output_action:
-              output: <<|
-                ---
-                *Consulting with: **$(perspective)***
-              |>>
-              goal: "Show progress"
-            
-            set:
-              &context.experts.current_speaker: perspective
-              
-            await: @expert_contributor
-            
-            set:
-              &context.experts.contributions[perspective]: &result
-          }
+          each: &context.reasoning.config.perspectives as |perspective|
+            sequence:
+              step:
+                output: <<|
+                  ---
+                  *Consulting with: **$(perspective)***
+                |>>
+              step:
+                set:
+                  &context.experts.current_speaker: perspective
+              step:
+                await: @expert_contributor
+                store_in: &context.experts.contributions[perspective]
 
-        # Step 2: Check for epistemic conflicts
+        # Step 2: Perform Epistemic Check
         step:
           as: self
-          await: @epistemic_guardian(responses: &context.experts.contributions)
-          when: &result.event is 'epistemic_clarification_needed'
+          await: perform_epistemic_check(ideas: &context.experts.contributions)
+          store_in: &context.epistemic_report
+          when: &context.epistemic_report.sufficient is false or has_content(&context.epistemic_report.divergent_forks)
             set:
               &context.reason.phase: 'awaiting_clarification'
             say:
               to: @research
-              what: &result.payload # Present clarification prompt to user
+              what: &context.epistemic_report.user_guidance_received
 
         # Step 3: Synthesize the results
         step:
           as: self
-          await: @synthesis_actor(contributions: &context.experts.contributions)
-          set:
-            &context.synthesis: &result
+          await: @synthesis_actor
+          with:
+            dialogue:
+              transcript: &context.experts.contributions
+          store_in: &context.synthesis
           output: <<|
             ---
             *All perspectives have contributed. Synthesizing the final research report...*
@@ -145,7 +145,7 @@ actor @research_output:
     goal: "to deliver a comprehensive and transparent research report."
     then:
       say:
-        to: &caller
+        to: @user
         what: &result
 
 actor @research:
@@ -168,7 +168,7 @@ actor @research:
       # State 1: Initial prompt
       when: &dialogue.latest_dialogue_entry is ''
         say:
-          to: &caller
+          to: @user
           what: "What would you like to research?"
 
       # State 2: User has provided a query, create a plan
@@ -177,7 +177,7 @@ actor @research:
           &context.query: &dialogue.latest_dialogue_entry
         await: @research_planner
         say:
-          to: &caller
+          to: @user
           what: &result
 
       # State 3: User has approved the plan, execute it
@@ -193,13 +193,13 @@ actor @research:
               as: self
               await: @research_output
               say:
-                to: &caller
+                to: @user
                 what: &result
         otherwise:
           set:
             &context.query: ''
           say:
-            to: &caller
+            to: @user
             what: "Okay, let's try again. What would you like to research?"
 
       # Phase 4: User has provided clarification, re-run synthesis
@@ -210,9 +210,12 @@ actor @research:
           # Step 1: Re-synthesize with new information
           step:
             as: self
-            await: @synthesis_actor(contributions: &context.experts.contributions, clarification: &dialogue.latest_dialogue_entry)
-            set:
-              &context.synthesis: &result
+            await: @synthesis_actor
+            with:
+              dialogue:
+                transcript: &context.experts.contributions
+              clarification: &dialogue.latest_dialogue_entry
+            store_in: &context.synthesis
             output: <<|
               *Thank you for the clarification. Re-synthesizing the research...*
             |>>
@@ -221,5 +224,15 @@ actor @research:
             as: self
             await: @research_output
             say:
-              to: &caller
+              to: @user
               what: &result
+
+dialogue research_flow:
+  start: @research
+  with: {
+    context: {
+      dialogue: {
+        latest_dialogue_entry: ''
+      }
+    }
+  }

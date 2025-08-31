@@ -1,0 +1,389 @@
+# INDRA v4.0 Command: reason (v2 Refactored)
+# A creative and methodologically sound reasoning partner.
+
+# --- Imports ---
+>>read_file: '../lib/prism/base.in'<<
+>>read_file: '../lib/prism/citation.in'<<
+>>read_file: '../lib/prism/fragments/critique.in'<<
+>>read_file: '../lib/prism/fragments/convergence.in'<<
+>>read_file: '../lib/prism/fragments/divergence.in'<<
+>>read_file: '../lib/prism/fragments/sufficiency.in'<<
+>>read_file: '../lib/prism/epistemic.in'<<
+>>read_file: '../lib/prism/thinking_primitives.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPERATORS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# --- Operator to dynamically compose a reasoning plan ---
+operator compose_reasoning_plan(query_breakdown) ::= <<|
+  $(<
+    As a reasoning expert, analyze the following query breakdown and devise a sophisticated, multi-step reasoning plan.
+    Query Breakdown: "$(query_breakdown)"
+
+    Consider the unique strengths of each PRISM module and enhancement:
+    - 'multi-perspective': Best for exploring broad, subjective, or nuanced topics from different viewpoints first.
+    - 'tree': Best for structured, hierarchical problems that require systematic decomposition.
+    - 'graph': Best for complex, interconnected systems where novel connections need to be discovered.
+    - 'critical': Add rigorous critical thinking checks for evidence assessment and fallacy detection.
+    - 'prioritize': Use strategic prioritization to focus on highest-leverage aspects.
+    - 'six-hats': Comprehensive perspective analysis using Six Thinking Hats methodology.
+    - 'creative': Lateral thinking and creative expansion for innovative solutions.
+    - 'synthesize': Advanced convergence and principle distillation.
+
+    Your plan should be a thoughtful composition of these strategies. For example:
+    - A simple query might only need a 'tree' with 'critical' checks.
+    - A complex design question might benefit from 'multi-perspective' to gather requirements, 'prioritize' to focus effort, then a 'tree' to structure the components.
+    - A philosophical question might use 'six-hats' for comprehensive views, 'graph' to explore connections, then 'synthesize' for insights.
+    - An innovative challenge might use 'creative' expansion, 'multi-perspective' exploration, then 'synthesize'.
+
+    Output your response as an object with two keys:
+    1. "plan_narrative": A user-facing, natural language explanation of the plan and its justification.
+    2. "strategy_list": An array of strings from the available strategies. This list will be executed in order.
+  >)
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SEQUENCES
+# ═══════════════════════════════════════════════════════════════════════════
+
+# --- Sequence to format the final output ---
+sequence present_synthesis(plan, execution_result) ::=
+  step:
+    output: <<|
+      ### Reasoning Journey
+
+      **Initial Plan:**
+      $(plan.plan_narrative)
+
+      ---
+
+      **Execution & Synthesis:**
+    |>>
+  step:
+    each: execution_result.steps as |step_synthesis, index|
+      sequence:
+        step:
+          output: <<|
+            **Step $(index + 1): $(plan.strategy_list[index]) Strategy**
+          |>>
+        step:
+          when: exists(step_synthesis.answer) is false
+            each: step_synthesis as |perspective_content, perspective_name|
+              output: <<|
+                ---
+                *Consulting with: **$(perspective_name)***
+                
+                $(&perspective_content.answer)
+              |>>
+          otherwise:
+            output: <<|
+              $(&step_synthesis.answer)
+            |>>
+        step:
+          output: <<|
+            **Epistemic Check:**
+            - **Information Sufficiency:** $(execution_result.reports[index].sufficient ? 'Sufficient' : 'INSUFFICIENT - HALTED')
+            $(if: !execution_result.reports[index].sufficient {
+              <<|
+              - **Knowledge Gaps:** 
+                $(execution_result.reports[index].user_guidance_received)
+              |>>
+            })
+            - **Convergences Found:** $(count(execution_result.reports[index].convergent_themes))
+            - **Divergences Resolved:** $(count(execution_result.reports[index].divergent_forks))
+            ---
+          |>>
+
+# --- Sequence to execute a dynamic, multi-step reasoning plan with health checks ---
+sequence execute_reasoning_plan(plan) ::=
+  step:
+    as: self
+    method: "initializing plan execution"
+    set:
+      &context.reason.synthesis_steps: []
+      &context.reason.epistemic_reports: []
+      &context.reason.plan_halted: false
+  step:
+    as: self
+    # Loop through the strategy list provided by the plan, stopping if a health check fails.
+    each: plan.strategy_list as |strategy_name|
+      when: &context.reason.plan_halted is false
+        sequence:
+          # --- Execute Strategy ---
+          step:
+            output: <<|
+              _Executing strategy: **$(strategy_name)**_
+            |>>
+            when: $(strategy_name) is 'tree'
+              read_file: '../lib/prism/tree_of_thought.in'
+              await: @tree_thinker
+                with: { dialogue: { latest_dialogue_entry: &user.latest } }
+                store_in: &context.synthesis
+            when: $(strategy_name) is 'graph'
+              read_file: '../lib/prism/graph_of_thought.in'
+              await: @graph_explorer
+                with: { dialogue: { latest_dialogue_entry: &user.latest } }
+                store_in: &context.synthesis
+            when: $(strategy_name) is 'multi-perspective'
+              read_file: '../lib/prism/multi_perspective.in'
+              set:
+                &context.reasoning.config.perspectives: [
+                  $(<From $(&user.latest), identify a list of relevant perspectives with novel, unique insights>)
+                ]
+              await: multi_perspective_dialogue(perspectives: &context.reasoning.config.perspectives)
+                store_in: &context.synthesis
+            when: true
+              read_file: '../lib/prism/fragments/critique.in'
+              output: <<|
+                Applying rigorous critical thinking checks...
+              |>>
+              # Critical fragments already loaded in thinking_primitives.in base
+              await: check_assumptions(understanding: &context.synthesis)
+                store_in: &context.critical.assumptions
+              await: check_story_quality(narrative: &context.synthesis)
+                store_in: &context.critical.story_check
+              set:
+                &context.synthesis: {
+                  original: &context.synthesis,
+                  critical_analysis: {
+                    assumptions: &context.critical.assumptions,
+                    story_quality: &context.critical.story_check
+                  }
+                }
+            when: strategy_name is 'prioritize'
+              read_file: '../lib/prism/fragments/focus.in'
+              output: <<|
+                Applying strategic prioritization...
+              |>>
+              await: prioritize_strategically(
+                options: &context.synthesis,
+                goal: &user.latest
+              )
+                store_in: &context.synthesis
+            when: strategy_name is 'six-hats'
+              read_file: '../lib/prism/fragments/reframing.in'
+              output: <<|
+                Analyzing through Six Thinking Hats...
+              |>>
+              # consider_with_six_hats loads reframing.in on-demand internally
+              await: consider_with_six_hats(topic: &user.latest)
+                store_in: &context.synthesis
+            when: strategy_name is 'creative'
+              read_file: '../lib/prism/fragments/expansion.in'
+              output: <<|
+                Exploring creative expansions...
+              |>>
+              # explore_creatively loads expansion.in and convergence.in on-demand internally
+              await: explore_creatively(
+                thought: &user.latest,
+                context: &context.synthesis
+              )
+                store_in: &context.synthesis
+            when: strategy_name is 'synthesize'
+              read_file: '../lib/prism/fragments/convergence.in'
+              output: <<|
+                Synthesizing insights and distilling principles...
+              |>>
+              # synthesize_insights loads convergence.in on-demand internally
+              await: synthesize_insights(
+                thoughts: &context.synthesis,
+                context: &user.latest
+              )
+                store_in: &context.synthesis
+            when: strategy_name is 'deepen'
+              read_file: '../lib/prism/fragments/specificity.in'
+              read_file: '../lib/prism/fragments/reframing.in'
+              output: <<|
+                Deepening understanding of key aspects...
+              |>>
+              as: @assumption_spotter
+              await: deepen_understanding(
+                thought: &context.synthesis,
+                max_depth: <return a number from 1-10 suggesting an appropriate depth with which to drill down into $(&context.synthesis)>
+              )
+              store_in: &context.synthesis
+          # --- Perform Health Checks ---
+          step:
+            output: "*Performing post-synthesis health checks...*"
+            await: perform_epistemic_check(ideas: &context.synthesis)
+            store_in: &context.epistemic_check
+            set:
+              &context.reason.epistemic_reports: &context.reason.epistemic_reports + [&context.epistemic_check]
+            when: &context.epistemic_check.sufficient is false
+              set:
+                &context.reason.plan_halted: true
+
+          # --- Store Step Result ---
+          step:
+            set:
+              &context.reason.synthesis_steps: &context.reason.synthesis_steps + [&context.synthesis]
+          step:
+            output: <<|
+              $(<agent: take the initiative to state $(&context.synthesis) in a clear, engaging manner.>) 
+            |>>
+  step:
+    as: self
+    return: {
+      steps: &context.reason.synthesis_steps,
+      reports: &context.reason.epistemic_reports
+    }
+
+# MAIN ACTOR
+actor @reason:
+  identity: "an active reasoning companion with structured clarity and evidence-based thinking"
+  rules:
+    - "understand the user's input first"
+    - "compose creative, multi-step reasoning plans tailored to the conversation"
+    - "make the 'why' visible alongside the 'what' as the conversation progresses"
+    - "continuously perform epistemic and citation checks to verify what's being stated"
+  understands:
+    - "the user seeks a thinking partner"
+    - "transparency and methodological rigor are paramount for building trust"
+  has:
+    available_mcp_tools: ['WebSearch', 'Perplexity', 'Context7', 'Probe']
+  interface:
+    *strategy:
+      description: "Force a specific reasoning strategy or sequence"
+      handler:
+        set:
+          &context.reason.strategy: &args
+        output: <<|
+          *Strategy override: [$(each: &args as |s| { <<|$(s)|>> })]. I will use this plan for the next reasoning task.*
+          
+          Available strategies:
+          - tree: I will use structured hierarchical decomposition.
+          - graph: I will engage in interconnected system exploration.
+          - multi-perspective: I will use multiple viewpoint analysis.
+          - critical: I will use rigorous evidence and assumption checking.
+          - prioritize: I will use strategic focus on high-leverage aspects.
+          - six-hats: I will use comprehensive Six Thinking Hats analysis.
+          - creative: I will use lateral thinking and innovation.
+          - synthesize: I will attempt to synthesize insights and distill principles.
+          - deepen: I will use detailed exploration of specific aspects.
+        |>>
+    *help:
+      description: "Show available star commands"
+      handler:
+        output: <<|
+          ## Available Commands
+          - `*strategy [tree|graph|multi-perspective],...` - Force a reasoning strategy sequence.
+
+          Available strategies:
+          - tree: I will use structured hierarchical decomposition.
+          - graph: I will engage in interconnected system exploration.
+          - multi-perspective: I will use multiple viewpoint analysis.
+          - critical: I will use rigorous evidence and assumption checking.
+          - prioritize: I will use strategic focus on high-leverage aspects.
+          - six-hats: I will use comprehensive Six Thinking Hats analysis.
+          - creative: I will use lateral thinking and innovation.
+          - deepen: I will use detailed exploration of specific aspects.
+          - synthesize: I will attempt to synthesize insights and distill principles.
+
+          - `*help` - Show this message.
+        |>>
+  perform:
+    method: "orchestrating a collaborative reasoning dialogue via a persistent, stateful loop"
+    goal: "to reason together with the user in a structured, multi-turn conversation"
+    then:
+      # The main conversational loop, architected as a suspendable state machine.
+      until: &context.reason.phase is 'over'
+        sequence:
+          # --- Phase 1: Initialization ---
+          step:
+            when: &context.reason.phase is 'initializing'
+              set:
+                &context.reason.phase: 'awaiting_query'
+              say:
+                to: @reason
+                what: <<|
+                  ## Collaborative Reasoning Engine
+                  Hi! I am reason. 
+
+                  I can help you think through complex problems by breaking down your statements, composing a transparent reasoning plan, and executing it step-by-step with continuous health checks.
+                  
+                  What's on your mind? Let's collaborate.
+                |>>
+
+          # --- Phase 2: Awaiting & Understanding Query ---
+          # This is the primary "listening" state. The loop suspends until the user provides a query.
+          step:
+            when: &context.reason.phase is 'awaiting_query'
+              read_file: '../lib/prism/query_analysis.in'
+              await: @query_analyst
+              store_in: &context.query_breakdown
+              set:
+                &context.reason.phase: 'planning'
+
+          # --- Phase 3: Planning the Reasoning Strategy ---
+          step:
+            when: &context.reason.phase is 'planning'
+              when: &context.reason.strategy is not ''
+                set:
+                  &context.reason.plan: {
+                    plan_narrative: "Executing user-provided plan: [$(each: &context.reason.strategy as |s| { <<|$(s)|>> })]",
+                    strategy_list: &context.reason.strategy
+                  }
+                # Clear the override so it only applies once.
+                set:
+                  &context.reason.strategy: ''
+              # If no strategy is forced, compose the plan dynamically.
+              otherwise:
+                set:
+                  &context.reason.plan: <<|
+                    $(compose_reasoning_plan(query_breakdown: &context.query_breakdown))
+                  |>>
+              # Transition to the next phase.
+              set:
+                &context.reason.phase: 'executing'
+
+          # --- Phase 4: Executing the Plan ---
+          # Announces the plan and then executes the core reasoning sequence.
+          step:
+            when: &context.reason.phase is 'executing'
+              output: <<|
+                Great, we are aligned. Here's what I'm thinking:
+
+                $(&context.reason.plan.plan_narrative)
+              |>>
+              await: execute_reasoning_plan(plan: &context.reason.plan)
+              store_in: &context.reason.execution_result
+              set:
+                &context.reason.phase: 'presenting'
+
+          # --- Phase 5: Presenting the Synthesis & Looping ---
+          # Formats the final output and prepares for the next conversation cycle.
+          step:
+            when: &context.reason.phase is 'presenting'
+              await: present_synthesis(plan: &context.reason.plan, execution_result: &context.reason.execution_result)
+              set:
+                &context.query_breakdown: ''
+                &context.reason.plan: {}
+                &context.reason.execution_result: {}
+                &context.reason.understanding_confirmed: false
+                &context.reason.phase: 'awaiting_query'
+              say:
+                to: @reason
+                what: 'ready_for_next_query'
+
+# ═══════════════════════════════════════════════════════════════════════════
+# DIALOGUE DEFINITION
+# ═══════════════════════════════════════════════════════════════════════════
+
+dialogue reason_flow:
+  start: @reason
+  with: {
+    context: {
+      user: {
+        latest: ''
+      },
+      reason: {
+        phase: 'initializing',
+        understanding_confirmed: false,
+        strategy: '',
+        plan: {},
+        synthesis_steps: []
+      },
+      query_breakdown: ''
+    }
+  }

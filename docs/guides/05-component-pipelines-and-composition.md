@@ -12,10 +12,10 @@ Imagine a factory assembly line. A raw material comes in one end, and each stati
 
 A component pipeline in INDRA works in the same way:
 
-*   **The Input:** An initial piece of data (like the user's query).
-*   **The Stations:** A series of Actors, each with a specialized `perform:` block.
-*   **The Workflow:** The data flows from one Actor to the next, getting refined at each step.
-*   **The Output:** The final, transformed data emerges at the end of the pipeline.
+* **The Input:** An initial piece of data (like the user's query).
+* **The Stations:** A series of Actors, each with a specialized `perform:` block.
+* **The Workflow:** The data flows from one Actor to the next, getting refined at each step.
+* **The Output:** The final, transformed data emerges at the end of the pipeline.
 
 ### The Syntax: `( @actor1 |> @actor2 |> @actor3 )`
 
@@ -42,19 +42,19 @@ actor @orchestrator:
 
 In this example:
 
-1.  The user's input is placed into a special, transient context variable: `&pipeline.io`.
-2.  `@text_cleaner` activates, takes `&pipeline.io` as its input, cleans it, and its `output` becomes the new `&pipeline.io`.
-3.  `@sentiment_analyzer` activates, takes the *cleaned text* as its input, analyzes it, and its `output` becomes the new `&pipeline.io`.
-4.  `@report_writer` activates, takes the *sentiment analysis* as its input, formats it into a report, and its `output` becomes the final result of the entire pipeline.
-5.  This final result is then stored in `&context.final_result`.
+1. The user's input is placed into a special, transient context variable: `&pipeline.io`.
+2. `@text_cleaner` activates, takes `&pipeline.io` as its input, cleans it, and its `output` becomes the new `&pipeline.io`.
+3. `@sentiment_analyzer` activates, takes the *cleaned text* as its input, analyzes it, and its `output` becomes the new `&pipeline.io`.
+4. `@report_writer` activates, takes the *sentiment analysis* as its input, formats it into a report, and its `output` becomes the final result of the entire pipeline.
+5. This final result is then stored in `&context.final_result`.
 
 ### How Pipelined Actors Work
 
 Actors in a pipeline are special. They are stateless, single-purpose transformers.
 
-*   **Input:** They implicitly receive their input from `&pipeline.io`.
-*   **Output:** The value of their `output:` block becomes the *new* `&pipeline.io` for the next Actor in the chain.
-*   **Constraint:** They **cannot** use `say:` or `return:`. Their only job is to transform the data and pass it on.
+* **Input:** They implicitly receive their input from `&pipeline.io`.
+* **Output:** The value of their `output:` block becomes the *new* `&pipeline.io` for the next Actor in the chain.
+* **Constraint:** They **cannot** use `say:` or `return:`. Their only job is to transform the data and pass it on.
 
 Here’s what `@sentiment_analyzer` might look like:
 
@@ -74,15 +74,15 @@ actor @sentiment_analyzer:
 
 The choice of pattern depends on the kind of cognitive process being designed.
 
-*   **Use `await`/`return` for Conversations:**
-    *   When a complex, multi-step analysis is needed from another Actor.
-    *   When the interaction is hierarchical (a manager delegating to a specialist).
-    *   When the called Actor needs to maintain its own internal state or have a multi-turn thought process.
+* **Use `await`/`return` for Conversations:**
+  * When a complex, multi-step analysis is needed from another Actor.
+  * When the interaction is hierarchical (a manager delegating to a specialist).
+  * When the called Actor needs to maintain its own internal state or have a multi-turn thought process.
 
-*   **Use a Pipeline (`|>`) for Workflows:**
-    *   When there is a linear, sequential transformation of data.
-    *   When each step is a single, stateless transformation.
-    *   When modeling a process like an assembly line or a data processing pipeline.
+* **Use a Pipeline (`|>`) for Workflows:**
+  * When there is a linear, sequential transformation of data.
+  * When each step is a single, stateless transformation.
+  * When modeling a process like an assembly line or a data processing pipeline.
 
 Component pipelines are an elegant way to express complex, linear transformations. They allow the specialized abilities of multiple Actors to be composed into a single, powerful, and readable workflow.
 

@@ -1,0 +1,51 @@
+# INDRA v4.0: PRISM Fragment - Expansion
+# This module provides a set of operators and personas for deliberately
+# expanding a problem space beyond its initial framing. These primitives
+# are designed to generate novel questions and break out of conventional
+# thinking patterns.
+
+>>read_file: '../base.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERSONAS FOR EXPANSION
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @lateral_thinker:
+  identity: "one who looks for solutions in unexpected places"
+  rules:
+    - "challenge the default category of a problem"
+    - "actively seek out analogies from unrelated domains"
+  understands:
+    - "the solution to a problem in one domain often already exists in another"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPERATORS FOR EXPANSION
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Applies the SCAMPER method to a topic to generate variations
+operator apply_scamper(topic) ::= <<|
+  I'm applying the SCAMPER framework to "$(topic)" to see what new ideas emerge. Let me think through each step...
+
+  **S (Substitute):** $(<As a creative thinker, what can I substitute in "$(&topic)" to change it?>)
+  
+  **C (Combine):** $(<As a creative thinker, what can I combine with "$(&topic)" to create something new?>)
+  
+  **A (Adapt):** $(<As a creative thinker, what can I adapt from elsewhere for "$(&topic)"?>)
+  
+  **M (Modify):** $(<As a creative thinker, what can I modify or magnify in "$(&topic)"?>)
+  
+  **P (Put to another use):** $(<As a creative thinker, what other use could "$(&topic)" have?>)
+  
+  **E (Eliminate):** $(<As a creative thinker, what can I eliminate or simplify in "$(&topic)"?>)
+  
+  **R (Reverse):** $(<As a creative thinker, what if I reversed or rearranged "$(&topic)"?>)
+|>>
+
+# Finds an analogous problem in a different domain to borrow insights
+operator find_analogous_domain(problem_statement) ::= <<|
+  This problem feels familiar, but maybe I'm thinking about it in the wrong context. Let me try to find an analogy.
+
+  The core of the problem is: "$(problem_statement)".
+
+  $(<What is a structurally similar problem to "$(&problem_statement)" but from a completely different and unexpected domain (e.g., biology, history, sports, art)? I will describe the analogy and the insight it provides.>)
+|>>

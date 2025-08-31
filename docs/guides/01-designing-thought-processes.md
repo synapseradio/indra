@@ -27,7 +27,7 @@ These are not commands. They are invitations to the inference engine to perform 
 
 The same thread can appear vibrant or muted depending on the light it is viewed in. In INDRA, **Personas** are the lenses that bring a specific quality of attention to the thinking process.
 
-A Persona is not a character to be played, but a way of seeing.
+A Persona is less a character to be played and more an archetypal lens for an actor to see through.
 
 ```indra
 persona @curious_explorer:
@@ -85,11 +85,11 @@ The Actor brings the entire process to life, transforming a static design into a
 
 Designing a thought process in INDRA is a craft of composition.
 
-1.  **Begin with Intention.** What quality of thought is called for? Is it the careful unfolding of a logical proof, or the associative wandering of creative discovery?
-2.  **Gather Your Threads.** Identify the atomic moves of mind, the Operators, that will be needed.
-3.  **Choose Your Lenses.** Define the qualities of attention, the Personas, that will bring the desired texture to the process.
-4.  **Weave Your Patterns.** Compose these elements into Sequences that create a meaningful journey of inquiry.
-5.  **Empower the Weaver.** Bring it all together in an Actor that can orchestrate the entire performance.
+1. **Begin with Intention.** What quality of thought is called for? Is it the careful unfolding of a logical proof, or the associative wandering of creative discovery?
+2. **Gather Your Threads.** Identify the atomic moves of mind, the Operators, that will be needed.
+3. **Choose Your Lenses.** Define the qualities of attention, the Personas, that will bring the desired texture to the process.
+4. **Weave Your Patterns.** Compose these elements into Sequences that create a meaningful journey of inquiry.
+5. **Empower the Weaver.** Bring it all together in an Actor that can orchestrate the entire performance.
 
 This is the practice of giving form to thought. It is a quiet, deliberate act of creation, and the resulting tapestry is a reflection of the care with which it was woven.
 

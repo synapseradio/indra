@@ -6,7 +6,7 @@ Think of it this way: you don't speak to a brainstorming partner in the same ton
 
 ---
 
-### 1. The Literal Channel: `'...'` — The Attention of Pointing
+## 1. The Literal Channel: `'...'` — The Attention of Pointing
 
 * **Syntax:** Single quotes (`'...'`)
 * **Quality of Attention:** "Look at this specific thing. It is what it is."
@@ -23,7 +23,7 @@ set: &context.consider.phase: 'ready'
 
 Using the literal channel removes ambiguity. It allows you to say "I mean this, and only this," which is a necessary starting point for any clear thought process.
 
-### 2. The Directive Channel: `"..."` — The Attention of Intention
+## 2. The Directive Channel: `"..."` — The Attention of Intention
 
 * **Syntax:** Double quotes (`"..."`)
 * **Quality of Attention:** "This is who I am, and this is how I intend to act."
@@ -42,7 +42,7 @@ actor @guardian:
 
 This channel allows a cognitive process to have a persistent character and direction, freeing you from having to restate your intention with every single request.
 
-### 3. The Generative Channel: `<...>` — The Attention of Possibility
+## 3. The Generative Channel: `<...>` — The Attention of Possibility
 
 * **Syntax:** Angle brackets (`<...>`)
 * **Quality of Attention:** "Let's create something new. What could this be?"
@@ -59,7 +59,7 @@ set: &context.sentiment: <analyze the sentiment of "&user.latest">
 
 This channel provides a safe and bounded space for creativity. It's where you turn to your partner and say, "I don't know the answer. Let's discover it together."
 
-### 4. The Template Channel: `<<|...|>>` — The Attention of Composition
+## 4. The Template Channel: `<<|...|>>` — The Attention of Composition
 
 * **Syntax:** Double angle brackets with pipes (`<<|...|>>`)
 * **Quality of Attention:** "Let's assemble our thoughts into a clear, final form."
@@ -78,7 +78,7 @@ perform:
 
 This channel separates the messy, iterative process of thinking from the clear, structured expression of its outcome.
 
-### 5. The Interrupt Channel: `>>...<<` — The Attention of Precedence
+## 5. The Interrupt Channel: `>>...<<` — The Attention of Precedence
 
 * **Syntax:** Double angle brackets (`>>...<<`)
 * **Quality of Attention:** "Stop. This must happen first."

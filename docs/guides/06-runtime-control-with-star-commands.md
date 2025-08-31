@@ -12,18 +12,18 @@ Think of a normal conversation with an INDRA Actor as a journey where the Actor 
 
 There are two main types of Star Commands:
 
-1.  **Global Commands:** Built-in commands like `*trace` and `*status` that control the entire INDRA session.
-2.  **Actor-Specific Commands:** Custom commands defined within an Actor's `interface` block, allowing for control over that specific Actor's behavior.
+1. **Global Commands:** Built-in commands like `*trace` and `*status` that control the entire INDRA session.
+2. **Actor-Specific Commands:** Custom commands defined within an Actor's `interface` block, allowing for control over that specific Actor's behavior.
 
 ### Global Commands: Controlling the Session
 
 These commands are always available and provide essential tools for debugging and observation.
 
-*   `*trace`: Toggles a debug mode that makes the inner workings of the INDRA interpreter visible. It shows which Actors are being activated, how conditions are being evaluated, and how state is changing. It is the single most useful tool for understanding why a process is behaving the way it is.
+* `*trace`: Toggles a debug mode that makes the inner workings of the INDRA interpreter visible. It shows which Actors are being activated, how conditions are being evaluated, and how state is changing. It is the single most useful tool for understanding why a process is behaving the way it is.
 
-*   `*status`: When trace mode is on, this command prints a snapshot of the current state of the `&context`, showing the exact "shared world" at that moment in the conversation.
+* `*status`: When trace mode is on, this command prints a snapshot of the current state of the `&context`, showing the exact "shared world" at that moment in the conversation.
 
-*   `*exit`: Immediately and cleanly terminates the INDRA session.
+* `*exit`: Immediately and cleanly terminates the INDRA session.
 
 ### Actor-Specific Commands: The `interface` Block
 
@@ -74,10 +74,10 @@ actor @reason:
 
 **How it works:**
 
-1.  **Definition:** The `interface` block defines the `*strategy` command, its description, and a `handler` that specifies what to do when it's called.
-2.  **Execution:** When the user types `*strategy tree`, the INDRA interpreter immediately executes the `handler`.
-3.  **State Change:** The handler sets the `&context.reason.force_strategy` variable to the arguments provided by the user (`&args`).
-4.  **Actor Awareness:** In its next turn, the `@reason` Actor's `perform:` block checks this context variable and adjusts its behavior accordingly.
+1. **Definition:** The `interface` block defines the `*strategy` command, its description, and a `handler` that specifies what to do when it's called.
+2. **Execution:** When the user types `*strategy tree`, the INDRA interpreter immediately executes the `handler`.
+3. **State Change:** The handler sets the `&context.reason.force_strategy` variable to the arguments provided by the user (`&args`).
+4. **Actor Awareness:** In its next turn, the `@reason` Actor's `perform:` block checks this context variable and adjusts its behavior accordingly.
 
 This pattern creates a powerful, interactive feedback loop. The user can directly influence the internal process of the Actor, making the exploration more dynamic and collaborative.
 

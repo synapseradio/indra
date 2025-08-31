@@ -8,7 +8,7 @@ The goal here is to provide a clear, conceptually-grounded path to understanding
 
 ---
 
-### Where to Start
+## Where to Start
 
 If you are new to INDRA, the best place to begin is with our Getting Started guide.
 

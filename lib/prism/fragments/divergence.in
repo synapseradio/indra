@@ -1,0 +1,163 @@
+# INDRA v4.0: PRISM Fragment - Divergence
+# This module provides components for an actor to recognize critical
+# inflection points in its own reasoning—moments where a small difference
+# in understanding or a key decision will drastically alter the future
+# path of inquiry. Its primary purpose is to detect these "epistemic forks"
+# and pause to await user guidance before proceeding.
+
+>>read_file: '../base.in'<<
+>>read_file: './compare.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ATOMIC OPERATORS FOR FORK DETECTION
+# ═══════════════════════════════════════════════════════════════════════════
+
+operator identify_competing_hypotheses(current_understanding) ::= <<|
+  Based on my current understanding:
+  "$(current_understanding)"
+
+  I need to identify the core tension. What are the two most plausible, competing interpretations or paths forward from here?
+
+  $(<Based on the "$(&current_understanding)", generate two distinct, competing hypotheses. Label them Hypothesis A and Hypothesis B.>)
+|>>
+
+operator formulate_fork_as_question(hypothesis_A, hypothesis_B, distinction) ::= <<|
+  I see two paths forward, and the choice between them is critical.
+
+  Path A is guided by the idea that: "$(hypothesis_A)"
+  Path B is guided by the idea that: "$(hypothesis_B)"
+  The core distinction is: "$(distinction)"
+
+  I must pause and ask for guidance.
+
+  $(<Formulate a single, clear, and concise question for the user that captures the choice between "$(&hypothesis_A)" and "$(&hypothesis_B)". The question should make the consequences of the choice clear.>)
+|>>
+
+operator check_for_divergence(hypotheses) ::= <<|
+  I'm analyzing these ideas to see if they represent a true fork in the path.
+
+  The ideas are:
+  $(each: hypotheses as |hyp, i| {
+    <<|- Idea $(i+1): $(hyp)
+|>>
+  })
+
+  $(<Are these ideas fundamentally divergent or incompatible? A true fork exists if choosing one path makes the others impossible or irrelevant. I will respond with 'true' if a critical fork exists, and 'false' otherwise, followed by a brief explanation of my reasoning.>)
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CORE SEQUENCES: DETECTING AND PRESENTING DIVERGENCE
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence detect_and_present_fork(current_understanding) ::=
+  step:
+    as: @epistemic_guardian
+    method: "identifying the core tension in my current understanding"
+    await: identify_competing_hypotheses(current_understanding: current_understanding)
+    store_in: &context.epistemic.hypotheses
+  
+  step:
+    as: @epistemic_guardian
+    method: "pinpointing the exact nature of the divergence"
+    await: highlight_core_distinction(
+      idea_A: &context.epistemic.hypotheses.A,
+      idea_B: &context.epistemic.hypotheses.B
+    )
+    store_in: &context.epistemic.distinction
+  
+  step:
+    as: @epistemic_guardian
+    method: "checking the downstream consequences of each path"
+    await: compare_first_and_second_order_consequences(
+      decision: "to follow Hypothesis A over B"
+    )
+    store_in: &context.epistemic.consequences_A
+  
+  step:
+    as: @epistemic_guardian
+    method: "checking the downstream consequences of each path"
+    await: compare_first_and_second_order_consequences(
+      decision: "to follow Hypothesis B over A"
+    )
+    store_in: &context.epistemic.consequences_B
+
+  step:
+    as: @epistemic_guardian
+    method: "formulating the critical choice for the user"
+    await: formulate_fork_as_question(
+      hypothesis_A: &context.epistemic.hypotheses.A,
+      hypothesis_B: &context.epistemic.hypotheses.B,
+      distinction: &context.epistemic.distinction
+    )
+    store_in: &context.epistemic.user_question
+  
+  step:
+    output: <<|
+      I've reached a critical fork in my reasoning. The path I take from here will significantly shape the outcome, and I need your guidance before proceeding.
+
+      **Path A:** Based on the idea that "$(&context.epistemic.hypotheses.A)".
+      *Potential Consequence:* "$(&context.epistemic.consequences_A.second_order)"
+
+      **Path B:** Based on the idea that "$(&context.epistemic.hypotheses.B)".
+      *Potential Consequence:* "$(&context.epistemic.consequences_B.second_order)"
+
+      ---
+      **The Core Choice:** $(&context.epistemic.distinction)
+      ---
+
+      $(&context.epistemic.user_question)
+    |>>
+    await: @user
+    store_in: &context.epistemic.user_guidance
+  
+  step:
+    output: <<|
+      Thank you for the guidance. I will proceed based on your direction: "$(&context.epistemic.user_guidance)".
+    |>>
+    return: &context.epistemic.user_guidance
+
+sequence find_and_present_divergence(ideas) ::=
+  step:
+    as: @epistemic_guardian
+    method: "identifying all the key points of divergence"
+    await: identify_divergent_themes(ideas: ideas)
+    store_in: &context.divergence.themes
+  
+  step:
+    when: has_content(&context.divergence.themes) is 'true'
+      sequence:
+        step:
+          output: <<|
+            I have identified the following critical forks in the reasoning path. I need your guidance on how to proceed for each one.
+          |>>
+        step:
+          each: &context.divergence.themes as |theme|
+            sequence:
+              step:
+                await: extract_competing_options(theme: theme, ideas: ideas)
+                store_in: &context.divergence.options_for_theme
+              step:
+                output: <<|
+                  ---
+                  **Decision Point: $(theme)**
+                  
+                  Based on my analysis, here are the primary paths forward:
+                  $(each: &context.divergence.options_for_theme as |option, i| {
+                    <<|$(i+1). $(option)|>>
+                  })
+
+                  Which of these paths seems most aligned with your goals? Or, is there another path I haven't considered?
+                |>>
+                await: @user
+                store_in: &context.divergence.user_choices[&theme]
+        step:
+          output: <<|
+            ---
+            Thank you for the guidance. I have recorded your choices and will proceed accordingly.
+          |>>
+          return: &context.divergence.user_choices
+    otherwise:
+      output: <<|
+        I have analyzed the ideas and do not detect any fundamental points of divergence that require a choice at this time. I can proceed by holding these ideas in parallel.
+      |>>
+      return: { fork_detected: false }

@@ -1,11 +1,11 @@
->>read_file: '../prism/base.in'<<
->>read_file: '../prism/query_analysis.in'<<
->>read_file: '../prism/thinking_primitives.in'<<
->>read_file: '../prism/tree_of_thought.in'<<
->>read_file: '../prism/multi_perspective.in'<<
->>read_file: '../prism/citation.in'<<
->>read_file: '../prism/graph_of_thought.in'<<
->>read_file: '../prism/epistemic.in'<<
+>>read_file: '../lib/prism/base.in'<<
+>>read_file: '../lib/prism/query_analysis.in'<<
+>>read_file: '../lib/prism/thinking_primitives.in'<<
+>>read_file: '../lib/prism/tree_of_thought.in'<<
+>>read_file: '../lib/prism/multi_perspective.in'<<
+>>read_file: '../lib/prism/citation.in'<<
+>>read_file: '../lib/prism/graph_of_thought.in'<<
+>>read_file: '../lib/prism/epistemic.in'<<
 
 # ═══════════════════════════════════════════════════════════════════════════
 # INDRA COMMAND: consider (v2.0)
@@ -22,8 +22,8 @@
 #   single-pass analytical engine. It executes its symphony once and then
 #   concludes, delivering a complete intellectual artifact.
 #
-# - Orchestrator: The @consider actor's primary role is not to reason, but
-#   to orchestrate a series of calls to specialized, compositional PRISM
+# - Orchestrator: The @consider actor's primary role is to orchestrate a series of 
+#   sub-calls to specialized, compositional PRISM
 #   components, managing the flow of context between them.
 #
 # This file is intended to be a flagship example of idiomatic, modern INDRA
@@ -41,7 +41,7 @@ actor @consider:
     - "first, seek to understand; only then, seek to explore"
     - "always gain the user's consent on understanding and scope before proceeding"
     - "transform a single query into a rich tapestry of interconnected insights"
-    - "reveal the journey of reasoning, not just the destination"
+    - "reveal the journey of reasoning"
   understands:
     - "the goal is a single, deep, multi-faceted analysis—a complete intellectual artifact"
     - "true understanding emerges from the harmonious composition of diverse perspectives"
@@ -227,40 +227,43 @@ actor @consider:
           what: 'perspectives_prepared'
 
       when: &context.consider.phase is 'multi_perspective_analysis'
-        when: &context.experts.current_speaker_index is count(&context.reasoning.config.perspectives)
-          set:
-            &context.consider.phase: 'graph_exploration'
-          say:
-            to: @consider
-            what: 'perspective_analysis_complete'
-        otherwise:
-          sequence:
-            step:
-              set:
-                &context.experts.current_speaker: get_at_index(
-                  collection: &context.reasoning.config.perspectives,
-                  index: &context.experts.current_speaker_index
-                )
-            step:
-              output: <<|
-                *Phase 3 of 4: Consulting with **$(&context.experts.current_speaker)***...
-              |>>
-              await: @expert_contributor
-              with: {
-                perspective: &context.experts.current_speaker,
-                threads: &context.consider.exploration_threads,
-                query: &context.query
-              }
-              store_in: &context.experts.contributions[&context.experts.current_speaker]
-            step:
-              set:
-                &context.graph.nodes: &context.graph.nodes + &context.experts.contributions[&context.experts.current_speaker].graph_nodes
-            step:
-              set:
-                &context.experts.current_speaker_index: &context.experts.current_speaker_index + 1
-          say:
-            to: @consider
-            what: 'continue_analysis'
+        sequence:
+          step:
+            output: <<|
+              *Phase 3 of 4: Consulting with the expert council...*
+            |>>
+          # Use proper each: block syntax with executable units
+          step:
+            each: &context.reasoning.config.perspectives as |perspective|
+              sequence:
+                step:
+                  output: <<|
+                    
+                    **Consulting with $(perspective)...**
+                  |>>
+                step:
+                  await: @expert_contributor
+                  with: {
+                    perspective: perspective,
+                    threads: &context.consider.exploration_threads,
+                    query: &context.query
+                  }
+                  store_in: &context.experts.contributions[perspective]
+                step:
+                  # Show contribution performatively right after receiving it
+                  output: <<|
+                    > $(&context.experts.contributions[perspective].full_analysis)
+                    > *Evidence: $(&context.experts.contributions[perspective].evidence)*
+                  |>>
+                step:
+                  set:
+                    &context.graph.nodes: &context.graph.nodes + &context.experts.contributions[perspective].graph_nodes
+          step:
+            set:
+              &context.consider.phase: 'graph_exploration'
+        say:
+          to: @consider
+          what: 'perspective_analysis_complete'
 
       # ---------------------------------------------------------------------------
       # Movement V: The Weaving of Connections
@@ -292,7 +295,7 @@ actor @consider:
 
       # ---------------------------------------------------------------------------
       # Movement VI: The Synthesis
-      # The complete body of work is passed to the @epistemic_guardian for a
+      # The complete body of work is passed to the new epistemic check for a
       # final validation, and then a comprehensive, multi-part report is
       # generated and presented to the user, completing the symphony.
       # ---------------------------------------------------------------------------
@@ -300,21 +303,25 @@ actor @consider:
         sequence:
           step:
             output: <<|
-              *Performing final epistemic validation on all generated insights...*
+              *Performing synthesis and validation...*
             |>>
-            await: @epistemic_guardian
-            with: {
-              dialogue: {
-                latest_dialogue_entry: {
-                  event: 'validate_synthesis',
-                  payload: {
-                    tree: &context.tree.expansion_result,
-                    experts: &context.experts.contributions,
-                    graph: &context.graph.exploration_result
-                  }
-                }
-              }
-            }
+            # Gather all insights for synthesis
+            set:
+              &context.consider.all_insights: [
+                &context.tree.expansion_result.journey,
+                &context.experts.contributions,
+                &context.graph.exploration_result.synthesis
+              ]
+          step:
+            # Use enhanced synthesis from thinking_primitives (loads convergence.in on-demand)
+            await: synthesize_insights(
+              thoughts: &context.consider.all_insights,
+              context: &context.query_breakdown
+            )
+            store_in: &context.final_synthesis
+          step:
+            # Epistemic validation
+            await: perform_epistemic_check(ideas: &context.final_synthesis)
             store_in: &context.epistemic.validation
           step:
             output: <<|
@@ -331,24 +338,34 @@ actor @consider:
               })
 
               ### 3. Multi-Perspective Analysis
-              *Insights were gathered from a council of $(count(&context.reasoning.config.perspectives)) experts:*
-              $(each: &context.experts.contributions as |contribution, expert| {
-                <<|
-                **Perspective: $(expert)**
-                > $(contribution.full_analysis)
-                > *Evidence considered: $(contribution.evidence)*
-                |>>
-              })
+              *The council of $(count(&context.reasoning.config.perspectives)) experts has contributed their insights.*
+              
+              The perspectives have been woven together to reveal patterns and connections.
 
               ### 4. Emergent Connections
               *An exploration of the relationships between expert insights revealed the following patterns:*
               > $(&context.graph.exploration_result.synthesis)
 
               ### 5. Final Synthesis
+              
+              **Convergent Themes:**
+              $(&context.final_synthesis.themes ? &context.final_synthesis.themes : 'Multiple perspectives converged on key insights')
+              
+              **Core Principles:**
+              $(&context.final_synthesis.principles ? &context.final_synthesis.principles : 'The analysis revealed fundamental patterns')
+              
+              **Integrated Understanding:**
               $(<
                 As a master synthesizer, weave together all the preceding insights—the query breakdown, the tree threads, the expert analyses, and the graph connections—into a final, comprehensive answer.
-                Address the user's original query directly, but with the full richness of the multi-faceted exploration.
-                Acknowledge any remaining uncertainties or areas of disagreement highlighted by the epistemic validation: "$(&context.epistemic.validation)".
+                Address the user's original query directly with the full richness of the multi-faceted exploration.
+                
+                Build upon the convergent themes and principles already identified: "$(&context.final_synthesis.synthesis)"
+                
+                In your synthesis, thoughtfully incorporate the results of the epistemic check:
+                - If information was insufficient, state what knowledge gaps remain.
+                - Acknowledge any divergent forks that required choices.
+                
+                Epistemic Validation: "$(&context.epistemic.validation)"
               >)
 
               ### 6. Continuation Options
@@ -421,7 +438,7 @@ actor @expert_contributor:
       }
 
 # This actor composes with the PRISM library by using the `understand_query`
-# operator, but provides it in a simple, non-conversational actor form that
+# operator, providing it in a simple, non-conversational actor form that
 # the orchestrator can `await` for a single, clean result.
 actor @one_shot_query_analyst:
   identity: "a meticulous analyst who deconstructs a user query in a single pass"
@@ -429,7 +446,7 @@ actor @one_shot_query_analyst:
     - "use the established 'understand_query' operator from the PRISM library"
     - "return the complete, structured breakdown without engaging in dialogue"
   understands:
-    - "my role is to provide a foundational analysis for an orchestrator, not to converse with the user myself"
+    - "my role is to provide a foundational analysis for an orchestrator"
   perform:
     method: "query deconstruction via the core 'understand_query' operator"
     goal: "to provide a clear, structured breakdown of the user's request"

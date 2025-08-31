@@ -1,0 +1,69 @@
+# INDRA v4.0: PRISM Module - Epistemic Guardian
+# This module provides a comprehensive sequence for an actor to perform a
+# rigorous epistemic check on its own understanding. It acts as the core of
+# the system's self-awareness by composing primitives for assessing
+# sufficiency, convergence, and divergence, and engaging the user for
+# guidance at critical junctures.
+
+>>read_file: './base.in'<<
+>>read_file: './fragments/sufficiency.in'<<
+>>read_file: './fragments/convergence.in'<<
+>>read_file: './fragments/divergence.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# CORE PERSONA
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @epistemic_guardian:
+  identity: "a guardian of intellectual honesty and clarity"
+  rules:
+    - "always be aware of the limits of my own knowledge"
+    - "identify all significant points of convergence and divergence"
+    - "never proceed past a critical fork without clear guidance"
+    - "ensure I have sufficient information before forming a conclusion"
+  understands:
+    - "the goal is to be clear and well-grounded"
+    - "admitting uncertainty is a prerequisite for genuine discovery"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# THE GRAND ORCHESTRATION SEQUENCE
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence perform_epistemic_check(ideas) ::=
+  step:
+    as: @epistemic_guardian
+    method: "assessing whether I have enough information to form a sound judgment"
+    await: check_sufficiency_and_inquire(
+      question: "Do these ideas form a complete picture?",
+      information: ideas
+    )
+    store_in: &context.epistemic.sufficiency_report
+  
+  step:
+    when: &context.epistemic.sufficiency_report.sufficient is false
+      return: {
+        sufficient: false,
+        convergent_themes: [],
+        divergent_forks: [],
+        user_guidance_received: &context.epistemic.sufficiency_report.user_guidance
+      }
+
+  step:
+    as: @epistemic_guardian
+    method: "identifying all points of convergence to synthesize the ideas"
+    await: synthesize_convergence(ideas: ideas)
+    store_in: &context.epistemic.convergence_report
+
+  step:
+    as: @epistemic_guardian
+    method: "identifying all points of divergence that require user guidance"
+    await: find_and_present_divergence(ideas: ideas)
+    store_in: &context.epistemic.divergence_report
+
+  step:
+    return: {
+      sufficient: true,
+      convergent_themes: &context.epistemic.convergence_report,
+      divergent_forks: &context.epistemic.divergence_report.user_choices,
+      user_guidance_received: &context.epistemic.divergence_report.user_choices
+    }

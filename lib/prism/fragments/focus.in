@@ -1,0 +1,140 @@
+# INDRA v4.0: PRISM Fragment - Focus
+# This module provides primitives for narrowing a wide problem space,
+# identifying high-leverage points of inquiry, and prioritizing next steps.
+# These are techniques for moving from "what could I think about?" to
+# "what should I think about right now?".
+
+>>read_file: '../base.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERSONAS FOR FOCUS
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @strategic_prioritizer:
+  identity: "a focused strategist who identifies the most critical path forward"
+  rules:
+    - "distinguish between the urgent and the important"
+    - "evaluate options based on their potential for leverage"
+    - "seek the minimum number of actions that will produce the maximum effect"
+  understands:
+    - "effort is a finite resource; it must be applied where it matters most"
+    - "not all actions are created equal"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ATOMIC OPERATORS FOR FOCUS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Identifies the constituent parts or steps of a process
+operator map_the_process(goal) ::= <<|
+  Okay, to achieve "$(goal)", what are the essential steps or components involved? Let me map it out.
+
+  $(<List the sequence of actions or the core components required to achieve the goal "$(&goal)".>)
+|>>
+
+# Examines a process map to find the slowest or most constrained part
+operator find_bottleneck_in_process(process_map) ::= <<|
+  Looking at this process:
+  $(process_map)
+
+  Where is the friction? Where do things slow down or get stuck?
+
+  $(<Analyze the process map "$(&process_map)". Identify the single step that is the slowest, most resource-intensive, or most likely to cause delays. This is the bottleneck.>)
+|>>
+
+# Identifies vague or ambiguous terms in a question
+operator find_ambiguous_terms(question) ::= <<|
+  This is a good question, but to answer it well, I need to be sure I understand it. Let me check for fuzzy words.
+
+  The question is: "$(question)".
+
+  $(<Which words or phrases in "$(&question)" are ambiguous, subjective, or not clearly defined? (e.g., 'better', 'effective', 'soon'). I will list them.>)
+|>>
+
+# Assesses the potential impact of an action
+operator assess_impact(action) ::= <<|
+  I'm considering this action: "$(action)".
+  How much of a difference would this actually make?
+
+  $(<On a scale of Low, Medium, or High, what is the potential positive impact of successfully completing the action "$(&action)"?>)
+|>>
+
+# Assesses the effort required for an action
+operator assess_effort(action) ::= <<|
+  Now, for the same action: "$(action)".
+  What would it take to get this done?
+
+  $(<On a scale of Low, Medium, or High, what is the estimated effort (time, resources, complexity) required to complete the action "$(&action)"?>)
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERFORMATIVE SEQUENCES (COMPOSING THE ATOMS)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# A sequence to find the single most important place to focus
+sequence find_leverage_point(goal) ::=
+  step:
+    method: "mapping the system to see all the parts"
+    await: map_the_process(goal: goal)
+    store_in: &context.focus.process_map
+  step:
+    method: "analyzing the map to find the bottleneck"
+    output: <<|
+      Here is the process as I see it:
+      $(&context.focus.process_map)
+
+      Now, let me find the single point that's holding everything else back.
+    |>>
+    await: find_bottleneck_in_process(process_map: &context.focus.process_map)
+    store_in: &context.focus.bottleneck
+  step:
+    output: <<|
+      The bottleneck, and therefore the highest-leverage point to focus on, is:
+      $(&context.focus.bottleneck)
+    |>>
+    return: &context.focus.bottleneck
+
+# A sequence to refine a vague question into an answerable one
+sequence sharpen_the_question(vague_question) ::=
+  step:
+    method: "identifying what's unclear in the question"
+    await: find_ambiguous_terms(question: vague_question)
+    store_in: &context.focus.ambiguous_terms
+  step:
+    method: "proposing a more specific version"
+    output: <<|
+      The question "$(vague_question)" is a bit fuzzy, specifically around these terms: $(&context.focus.ambiguous_terms).
+
+      Let me try to rephrase it to be more concrete and answerable.
+    |>>
+    return: $(<Based on the ambiguous terms in "$(&vague_question)", rewrite it as a specific, measurable, and actionable question.>)
+
+# A sequence to prioritize a list of options using an Impact/Effort matrix
+sequence prioritize_by_impact_and_effort(options) ::=
+  step:
+    as: @strategic_prioritizer
+    output: <<|
+      I have a list of several options. To decide where to focus, I will evaluate each one based on its potential impact and the effort required.
+    |>>
+  step:
+    each: options as |option|
+      output: <<|
+        ---
+        **Option:** $(option)
+        
+        **Assessment:**
+        - **Impact:** $(assess_impact(action: option))
+        - **Effort:** $(assess_effort(action: option))
+      |>>
+  step:
+    as: @strategic_prioritizer
+    output: <<|
+      ---
+      **Synthesis & Recommendation:**
+
+      Based on the analysis, here is how I would prioritize these options:
+
+      - **Quick Wins (High Impact, Low Effort):** $(<Which of the options fall into this category? These should be the top priority.>)
+      - **Major Projects (High Impact, High Effort):** $(<Which of the options fall into this category? These are worth scheduling but require significant investment.>)
+      - **Fill-ins (Low Impact, Low Effort):** $(<Which of the options fall into this category? These can be done if there is spare time.>)
+      - **Thankless Tasks (Low Impact, High Effort):** $(<Which of the options fall into this category? These should generally be avoided.>)
+    |>>

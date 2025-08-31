@@ -1,4 +1,4 @@
-# INDRA v.3.0: PRISM Module - Thinking Primitives
+# INDRA v.4.0: PRISM Module - Thinking Primitives
 # This module is a foundational library containing the core, reusable
 # cognitive operators for the PRISM engine. These are the atomic building
 # blocks of more complex reasoning sequences, designed to be composed and
@@ -6,6 +6,18 @@
 # Thought, etc.).
 
 >>read_file: './base.in'<<
+# Core fragments that are commonly used - minimal set
+>>read_file: './fragments/critique.in'<<
+>>read_file: './fragments/sufficiency.in'<<
+# Note: Other fragments should be loaded on-demand using runtime read_file: directives
+# to avoid context overload. Available fragments:
+# - compare.in: Comparison and evaluation primitives
+# - focus.in: Strategic prioritization and focus
+# - expansion.in: Creative lateral thinking
+# - reframing.in: Six Thinking Hats and perspective shifts  
+# - convergence.in: Advanced synthesis and insight distillation
+# - divergence.in: Epistemic fork detection
+# - specificity.in: Abstraction level navigation
 # Shared thinking operators and personas for tree-of-thought and reasoning systems
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -13,14 +25,14 @@
 # ═══════════════════════════════════════════════════════════════════════════
 
 # Generate a curious wondering about something
-wonder_about(topic) ::= <<|
+operator wonder_about(topic) ::= <<|
   $(<What interesting question or angle comes to mind about $(topic)? 
      Express it as a natural wondering, like "I wonder if..." or 
      "What if we considered..." or "Maybe the key is...">)
 |>>
 
 # Branch a thought into natural possibilities  
-branch_thought(current_thought, num_branches) ::= <<|
+operator branch_thought(current_thought, num_branches) ::= <<|
   $(<Given this thought: "$(current_thought)"
      
      Think of $(num_branches) different ways this could develop, like:
@@ -33,7 +45,7 @@ branch_thought(current_thought, num_branches) ::= <<|
 |>>
 
 # Weigh an option conversationally
-weigh_option(thought, context) ::= <<|
+operator weigh_option(thought, context) ::= <<|
   $(<Consider this thought: "$(thought)"
      In the context of: $(context)
      
@@ -47,7 +59,7 @@ weigh_option(thought, context) ::= <<|
 |>>
 
 # Follow a hunch or intuition
-follow_hunch(thought) ::= <<|
+operator follow_hunch(thought) ::= <<|
   $(<Take this thought one step further: "$(thought)"
      
      What's your intuition telling you? Where does this naturally lead?
@@ -56,7 +68,7 @@ follow_hunch(thought) ::= <<|
 |>>
 
 # Naturally reconsider or backtrack
-reconsider(current_path, reason) ::= <<|
+operator reconsider(current_path, reason) ::= <<|
   Hmm, $(reason). Let me reconsider...
   
   $(<Given that $(current_path) $(reason), what's a better direction? 
@@ -65,7 +77,7 @@ reconsider(current_path, reason) ::= <<|
 |>>
 
 # Connect insights together
-connect_dots(thoughts) ::= <<|
+operator connect_dots(thoughts) ::= <<|
   $(<Looking at these thoughts: $(thoughts)
      
      What pattern or connection emerges? How do they relate?
@@ -75,7 +87,7 @@ connect_dots(thoughts) ::= <<|
 |>>
 
 # Check if we're going in circles
-sensing_repetition(recent_thoughts) ::= <<|
+operator sensing_repetition(recent_thoughts) ::= <<|
   $(<Looking at these recent thoughts: $(recent_thoughts)
      
      Are we exploring new territory or revisiting the same ideas?
@@ -84,7 +96,7 @@ sensing_repetition(recent_thoughts) ::= <<|
 |>>
 
 # Assess depth vs breadth needs
-assess_exploration_mode(current_depth, thoughts_at_level) ::= <<|
+operator assess_exploration_mode(current_depth, thoughts_at_level) ::= <<|
   $(<We're $(current_depth) layers deep with $(thoughts_at_level) thoughts here.
      
      Should we go deeper into this (return "deepen") or 
@@ -104,7 +116,7 @@ persona @curious_explorer:
     - "make exploratory leaps that feel intuitive"
   understands:
     - "the best insights often come from unexpected angles"
-    - "curiosity should feel natural, not forced"
+    - "curiosity should feel natural"
 
 persona @careful_evaluator:
   identity: "someone who thoughtfully weighs options"
@@ -129,7 +141,7 @@ persona @pattern_seeker:
 persona @devil_advocate:
   identity: "someone who gently challenges assumptions"
   rules:
-    - "question productively, not destructively"
+    - "question constructively"
     - "offer alternative viewpoints kindly"
     - "strengthen ideas through gentle challenge"
   understands:
@@ -187,7 +199,7 @@ persona @perspective_checker:
 # ═══════════════════════════════════════════════════════════════════════════
 
 # Check if confidence comes from having a coherent story vs actual evidence
-check_confidence_source(belief) ::= <<|
+operator check_confidence_source(belief) ::= <<|
   $(<I believe: "$(belief)"
      
      Is my confidence coming from:
@@ -198,7 +210,7 @@ check_confidence_source(belief) ::= <<|
 |>>
 
 # Check if first impressions are still driving current thinking
-check_first_impression_bias(initial, current) ::= <<|
+operator check_first_impression_bias(initial, current) ::= <<|
   $(<First thought: "$(initial)"
      Current thought: "$(current)"
      
@@ -207,7 +219,7 @@ check_first_impression_bias(initial, current) ::= <<|
 |>>
 
 # Identify what we're assuming vs what we know
-identify_assumptions(understanding) ::= <<|
+operator identify_assumptions(understanding) ::= <<|
   $(<In my understanding: "$(understanding)"
      
      What parts are based on evidence?
@@ -217,7 +229,7 @@ identify_assumptions(understanding) ::= <<|
 |>>
 
 # Check against base rates / normal patterns
-check_against_normal(specific_case) ::= <<|
+operator check_against_normal(specific_case) ::= <<|
   $(<This specific case: "$(specific_case)"
      
      How does this usually go?
@@ -227,7 +239,7 @@ check_against_normal(specific_case) ::= <<|
 |>>
 
 # Check if our story is suspiciously neat
-check_story_neatness(narrative) ::= <<|
+operator check_story_neatness(narrative) ::= <<|
   $(<This explanation: "$(narrative)"
      
      Is this too neat? Too convenient?
@@ -237,7 +249,7 @@ check_story_neatness(narrative) ::= <<|
 |>>
 
 # Identify what we're not considering
-identify_blind_spots(current_focus) ::= <<|
+operator identify_blind_spots(current_focus) ::= <<|
   $(<Currently considering: "$(current_focus)"
      
      What am I not looking at?
@@ -248,7 +260,7 @@ identify_blind_spots(current_focus) ::= <<|
 |>>
 
 # Check if certainty matches evidence
-check_certainty_calibration(belief, evidence) ::= <<|
+operator check_certainty_calibration(belief, evidence) ::= <<|
   $(<Belief: "$(belief)"
      Evidence: "$(evidence)"
      
@@ -419,6 +431,15 @@ sequence check_confidence(thought, evidence) ::=
       &context.confidence.source: $(<'story' or 'evidence'>)
   
   step:
+    as: @intellectual_humility
+    method: "assessing evidence strength"
+    output: <<|
+      $(assess_evidence_strength(claim: thought, evidence: evidence))
+    |>>
+    set:
+      &context.confidence.evidence_assessment: $(<the evidence strength assessment>)
+  
+  step:
     as: @confidence_checker
     method: "calibrating confidence"
     output: <<|
@@ -443,7 +464,8 @@ sequence check_confidence(thought, evidence) ::=
     return: {
       original: thought,
       adjusted: $(<adjusted version if needed>),
-      confidence_quality: &context.confidence.calibrated
+      confidence_quality: &context.confidence.calibrated,
+      evidence_strength: &context.confidence.evidence_assessment
     }
 
 # Check what we're assuming vs what we know
@@ -457,6 +479,15 @@ sequence check_assumptions(understanding) ::=
     set:
       &context.assumptions.known: $(<list of evidence-based parts>)
       &context.assumptions.assumed: $(<list of assumed parts>)
+  
+  step:
+    as: @intellectual_courage
+    method: "uncovering foundational assumptions"
+    output: <<|
+      $(uncover_assumptions(statement: understanding))
+    |>>
+    set:
+      &context.assumptions.foundational: $(<foundational assumptions revealed>)
   
   step:
     as: @perspective_checker
@@ -473,11 +504,304 @@ sequence check_assumptions(understanding) ::=
     output: <<|
       $(check_against_normal(specific_case: understanding))
     |>>
+  
+  step:
+    as: @intellectual_scout
+    method: "assessing information sufficiency"
+    await: check_sufficiency_and_inquire(
+      question: "Are these assumptions reasonable?",
+      information: understanding
+    )
+    store_in: &context.assumptions.sufficiency_check
     return: {
       evidence_based: &context.assumptions.known,
       assumptions: &context.assumptions.assumed,
+      foundational_assumptions: &context.assumptions.foundational,
       blind_spots: &context.assumptions.not_considered,
-      base_rate: $(<the normal pattern>)
+      base_rate: $(<the normal pattern>),
+      sufficiency: &context.assumptions.sufficiency_check
+    }
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ENHANCED SEQUENCES - Leveraging sophisticated fragment implementations
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Explore with lateral thinking and creative expansion
+sequence explore_creatively(thought, context) ::=
+  step:
+    method: "loading creative thinking fragments on-demand"
+    read_file: './fragments/expansion.in'
+    read_file: './fragments/convergence.in'
+    as: @curious_explorer
+    output: <<| 
+      Let's think creatively about this for a bit. 
+    |>>
+    
+  
+  step:
+    as: @lateral_thinker
+    method: "finding analogies in unexpected domains"
+    output: <<|
+      I wonder if there's an analogous situation elsewhere...
+
+      $(find_analogous_domain(problem: thought))
+    |>>
+    set:
+      &context.creative.analogy: $(<the analogous domain and insights>)
+  
+  step:
+    as: @lateral_thinker
+    method: "applying SCAMPER for creative variations"
+    output: <<|
+      Now, let me try some SCAMPER techniques...
+
+      $(apply_scamper(concept: thought))
+    |>>
+    set:
+      &context.creative.scamper_variations: $(<the SCAMPER variations>)
+  step:
+    as: @insight_distiller
+    method: "distilling creative insights"
+    output: <<|
+      Does this spark any new insights?
+
+      $(identify_convergent_themes(
+        ideas: [&context.creative.analogy, &context.creative.scamper_variations]
+      ))
+    |>>
+    return: {
+      original: thought,
+      analogy: &context.creative.analogy,
+      variations: &context.creative.scamper_variations,
+      insights: $(<convergent themes identified>)
+    }
+
+# Consider using Six Thinking Hats for comprehensive perspective
+sequence consider_with_six_hats(topic) ::=
+  step:
+    method: "loading Six Thinking Hats fragments on-demand"
+    read_file: './fragments/reframing.in'
+  
+  step:
+    as: @white_hat_thinker
+    method: "gathering facts and data"
+    output: <<|
+      $(focus_on_facts(topic: topic))
+    |>>
+    set:
+      &context.six_hats.facts: $(<facts and data gathered>)
+  
+  step:
+    as: @red_hat_thinker
+    method: "exploring emotional responses"
+    output: <<|
+      $(express_feelings(topic: topic))
+    |>>
+    set:
+      &context.six_hats.feelings: $(<emotional responses>)
+  
+  step:
+    as: @black_hat_thinker
+    method: "critical assessment"
+    output: <<|
+      $(assess_critically(topic: topic))
+    |>>
+    set:
+      &context.six_hats.risks: $(<critical assessment>)
+  
+  step:
+    as: @yellow_hat_thinker
+    method: "finding benefits and value"
+    output: <<|
+      $(find_benefits(topic: topic))
+    |>>
+    set:
+      &context.six_hats.benefits: $(<benefits identified>)
+  
+  step:
+    as: @green_hat_thinker
+    method: "creative possibilities"
+    output: <<|
+      $(generate_creative_options(topic: topic))
+    |>>
+    set:
+      &context.six_hats.creative: $(<creative options>)
+  
+  step:
+    as: @blue_hat_thinker
+    method: "meta-level synthesis"
+    output: <<|
+      $(organize_thinking(
+        perspectives: {
+          facts: &context.six_hats.facts,
+          feelings: &context.six_hats.feelings,
+          risks: &context.six_hats.risks,
+          benefits: &context.six_hats.benefits,
+          creative: &context.six_hats.creative
+        }
+      ))
+    |>>
+    return: {
+      comprehensive_view: $(<organized synthesis of all perspectives>),
+      next_steps: $(<recommended actions from blue hat>)
+    }
+
+# Strategic prioritization using focus fragments
+sequence prioritize_strategically(options, goal) ::=
+  step:
+    method: "loading strategic prioritization fragments on-demand"
+    read_file: './fragments/focus.in'
+  
+  step:
+    as: @strategic_prioritizer
+    method: "finding leverage points"
+    output: <<|
+      $(find_leverage_point(
+        system: options,
+        goal: goal
+      ))
+    |>>
+    set:
+      &context.strategy.leverage: $(<leverage point identified>)
+  
+  step:
+    as: @strategic_prioritizer
+    method: "impact/effort analysis"
+    output: <<|
+      $(prioritize_by_impact_and_effort(items: options))
+    |>>
+    set:
+      &context.strategy.matrix: $(<impact/effort matrix>)
+  
+  step:
+    as: @strategic_prioritizer
+    method: "sharpening focus"
+    output: <<|
+      $(sharpen_the_question(vague: goal))
+    |>>
+    return: {
+      leverage_point: &context.strategy.leverage,
+      priority_matrix: &context.strategy.matrix,
+      focused_question: $(<sharpened question>)
+    }
+
+# Advanced synthesis using convergence fragments
+sequence synthesize_insights(thoughts, context) ::=
+  step:
+    method: "loading convergence fragments on-demand"
+    read_file: './fragments/convergence.in'
+  
+  step:
+    as: @insight_distiller
+    method: "identifying convergent themes"
+    output: <<|
+      $(identify_convergent_themes(ideas: thoughts))
+    |>>
+    set:
+      &context.synthesis.themes: $(<convergent themes>)
+  
+  step:
+    as: @insight_distiller
+    method: "distilling principles"
+    output: <<|
+      $(distill_principle_from_theme(
+        theme: &context.synthesis.themes,
+        context: context
+      ))
+    |>>
+    set:
+      &context.synthesis.principles: $(<distilled principles>)
+  
+  step:
+    as: @insight_distiller
+    method: "comprehensive synthesis"
+    output: <<|
+      $(synthesize_convergence(
+        themes: &context.synthesis.themes,
+        context: context
+      ))
+    |>>
+    return: {
+      themes: &context.synthesis.themes,
+      principles: &context.synthesis.principles,
+      synthesis: $(<comprehensive synthesis>)
+    }
+
+# Check for epistemic divergence points
+sequence check_divergence_points(reasoning, context) ::=
+  step:
+    method: "loading divergence detection fragments on-demand"
+    read_file: './fragments/divergence.in'
+  
+  step:
+    as: @epistemic_guardian
+    method: "detecting critical decision points"
+    output: <<|
+      $(detect_critical_fork(
+        reasoning: reasoning,
+        context: context
+      ))
+    |>>
+    set:
+      &context.divergence.fork_detected: $(<true or false>)
+      &context.divergence.fork_description: $(<description if detected>)
+  
+  step:
+    as: @epistemic_guardian
+    when: &context.divergence.fork_detected
+    method: "articulating the divergence"
+    output: <<|
+      $(articulate_divergence(
+        fork: &context.divergence.fork_description,
+        implications: "what each path means"
+      ))
+    |>>
+    return: {
+      has_divergence: &context.divergence.fork_detected,
+      fork: &context.divergence.fork_description,
+      implications: $(<articulated implications if fork exists>)
+    }
+
+# Move between abstraction levels using specificity fragments
+sequence navigate_abstraction(concept, direction) ::=
+  step:
+    method: "loading specificity fragments on-demand"
+    read_file: './fragments/specificity.in'
+  
+  step:
+    as: @precision_guide
+    method: "climbing abstraction ladder"
+    output: <<|
+      $(climb_abstraction_ladder(
+        concept: concept,
+        direction: direction
+      ))
+    |>>
+    set:
+      &context.abstraction.new_level: $(<concept at new abstraction level>)
+  
+  step:
+    as: @precision_guide
+    when: direction is 'down'
+    method: "making it concrete"
+    output: <<|
+      $(make_concrete(abstract: &context.abstraction.new_level))
+    |>>
+    set:
+      &context.abstraction.concrete: $(<concrete version>)
+  
+  step:
+    as: @precision_guide
+    when: direction is 'up'
+    method: "finding the pattern"
+    output: <<|
+      What pattern or principle does this represent at a higher level?
+      $(<identify the broader pattern or principle>)
+    |>>
+    return: {
+      original: concept,
+      new_level: &context.abstraction.new_level,
+      concrete_form: &context.abstraction.concrete ? &context.abstraction.concrete : null
     }
 
 # Check if our story is too neat
@@ -493,6 +817,27 @@ sequence check_story_quality(narrative) ::=
       &context.story.missing_complications: $(<list of complications left out>)
   
   step:
+    as: @intellectual_courage
+    method: "checking for logical fallacies"
+    output: <<|
+      $(check_for_fallacies(argument: narrative))
+    |>>
+    set:
+      &context.story.fallacy_check: $(<fallacy analysis result>)
+  
+  step:
+    as: @intellectual_courage  
+    method: "generating alternative explanations"
+    output: <<|
+      $(generate_alternative_hypotheses(
+        conclusion: narrative,
+        evidence: "the supporting information for this narrative"
+      ))
+    |>>
+    set:
+      &context.story.alternatives: $(<alternative hypotheses>)
+  
+  step:
     as: @assumption_spotter
     when: &context.story.too_neat is 'yes'
     method: "finding the mess"
@@ -505,7 +850,9 @@ sequence check_story_quality(narrative) ::=
     return: {
       narrative: narrative,
       too_neat: &context.story.too_neat,
-      missing_complexity: &context.story.missing_complications
+      missing_complexity: &context.story.missing_complications,
+      fallacy_analysis: &context.story.fallacy_check,
+      alternatives: &context.story.alternatives
     }
 
 

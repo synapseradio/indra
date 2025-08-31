@@ -6,13 +6,13 @@ An Operator is a single, focused cognitive act. A Sequence is a narrative of tho
 
 ## Operators (`::=`): The Atomic Moves of Thought
 
-An Operator is the smallest unit of cognitive work. It is a stateless, reusable transformation that captures a single, focused "move" of the mind.
+An Operator is the smallest unit of performative work in INDRA. It is a stateless, reusable invocation that captures a single, focused "move" of performative output. The best operators are written as fragments of a continuous dialogue that the LLM is conducting as it runs INDRA prompts.
 
 **Key Qualities:**
 
-*   **Atomic:** An Operator does one thing well.
-*   **Stateless:** It holds no memory of past invocations.
-*   **Transformational:** Its purpose is to take an input and return a new insight or expression.
+* **Atomic:** An Operator does one thing well.
+* **Stateless:** It holds no memory of past invocations.
+* **Transformational:** Its purpose is to take an input and return a new insight or expression.
 
 ### Example: The Act of Wondering
 
@@ -33,9 +33,9 @@ A Sequence is a stateful orchestration of multiple steps. It defines a process, 
 
 **Key Qualities:**
 
-*   **Stateful:** A Sequence can create and modify a local context (`set: &...`) that is **immediately available** to subsequent steps within that same Sequence.
-*   **Procedural:** It executes a series of steps in a defined order.
-*   **Orchestrational:** It manages a flow of logic, calling Operators and shaping the cognitive environment for the inquiry.
+* **Stateful:** A Sequence can create and modify a local context (`set: &...`) that is **immediately available** to subsequent steps within that same Sequence.
+* **Procedural:** It executes a series of steps in a defined order.
+* **Orchestrational:** It manages a flow of logic, calling Operators and shaping the cognitive environment for the inquiry.
 
 ### Example: A Multi-Step Exploration
 

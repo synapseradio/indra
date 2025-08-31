@@ -6,7 +6,7 @@ At its heart, the model is a simple loop: an actor performs a turn, and at the e
 
 ---
 
-### The Anatomy of a Turn
+## The Anatomy of a Turn
 
 Every turn in INDRA follows a precise, eight-step sequence. This ensures that operations happen in a predictable order, which is crucial for building reliable systems.
 
@@ -21,7 +21,7 @@ Let's say Actor A is performing its turn:
 7. **Terminating Action:** The turn must end with a single terminating action, like `say:`, `return:`, or `await:`. This action determines which actor will take the next turn and what information is passed to them.
 8. **State Commit:** After the turn has officially ended, the staged `set:` operations from step 5 are now committed to the global `&context`, making them available for the *next* turn.
 
-### The Two Horizons of State: Immediate vs. Staged
+## The Two Phases of State: Immediate vs. Staged
 
 This distinction between when a state change is *staged* and when it is *committed* is the most critical concept in the execution model.
 
@@ -49,7 +49,7 @@ actor @state_example:
         output: "I see the old value."
 ```
 
-### The Flow of Control: Delegation and Return
+## The Flow of Control: Delegation and Return
 
 Actors don't have to do all the thinking themselves. They can delegate tasks to other actors or sequences using `await:`.
 
@@ -81,7 +81,7 @@ actor @query_analyst:
       return: &result
 ```
 
-By mastering these three concepts—the turn anatomy, the two horizons of state, and the delegation model—you can design cognitive processes of any complexity with confidence and precision.
+By mastering these three concepts—the turn anatomy, the two phases of state, and the delegation model—you can design cognitive processes of any complexity with confidence and precision.
 
 ---
 **Next: [State and Context](./04-state-and-context.md)**

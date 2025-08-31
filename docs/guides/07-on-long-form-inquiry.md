@@ -55,9 +55,9 @@ actor @reason:
 
 ### How This Creates a Sustained Process
 
-1.  **Stateful Phases:** The Actor uses a state variable (`&context.reason.phase`) to track its progress through a complex task (understanding, planning, executing, presenting).
-2.  **Suspension Points:** The `await: @user` directive acts as a "checkpoint." The Actor does its work, presents its findings, and then patiently waits for the user's next move, perfectly preserving its state.
-3.  **Resumption:** When the user provides new input, the loop doesn't start from scratch. The interpreter restores its state, and it evaluates its `when` conditions again. If the phase is `'awaiting_query'`, it knows it's time to begin the next cycle of inquiry.
+1. **Stateful Phases:** The Actor uses a state variable (`&context.reason.phase`) to track its progress through a complex task (understanding, planning, executing, presenting).
+2. **Suspension Points:** The `await: @user` directive acts as a "checkpoint." The Actor does its work, presents its findings, and then patiently waits for the user's next move, perfectly preserving its state.
+3. **Resumption:** When the user provides new input, the loop doesn't start from scratch. The interpreter restores its state, and it evaluates its `when` conditions again. If the phase is `'awaiting_query'`, it knows it's time to begin the next cycle of inquiry.
 
 This pattern allows for the design of Actors that can manage complex, multi-stage tasks that would be impossible to handle in a single turn.
 
@@ -65,9 +65,9 @@ This pattern allows for the design of Actors that can manage complex, multi-stag
 
 When building these systems, it is helpful to think about what needs to be remembered to maintain a coherent inquiry over time.
 
-*   **Cumulative Knowledge:** A place can be created in the context to store insights as they are discovered. The `@confer` Actor does this by accumulating an `&context.confer.cumulative_synthesis` across many rounds of debate.
-*   **Process Memory:** The Actor can remember not just the *what* but the *how*. Storing the reasoning plans it has executed or the strategies it has attempted allows it to learn and avoid repeating itself.
-*   **The User's Journey:** The `&user.history` variable tracks the user's questions and feedback over time. A sophisticated agent might notice patterns in the user's inquiry, such as, "I notice we keep coming back to the topic of security. Perhaps we should focus there."
+* **Cumulative Knowledge:** A place can be created in the context to store insights as they are discovered. The `@confer` Actor does this by accumulating an `&context.confer.cumulative_synthesis` across many rounds of debate.
+* **Process Memory:** The Actor can remember not just the *what* but the *how*. Storing the reasoning plans it has executed or the strategies it has attempted allows it to learn and avoid repeating itself.
+* **The User's Journey:** The `&user.history` variable tracks the user's questions and feedback over time. A sophisticated agent might notice patterns in the user's inquiry, such as, "I notice we keep coming back to the topic of security. Perhaps we should focus there."
 
 By designing Actors that can maintain and reflect on a shared history, one moves from creating simple conversational tools to architecting long-term inquiries.
 

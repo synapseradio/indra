@@ -10,9 +10,9 @@ This is the purpose of **Dynamic Actor Instantiation**. It is a pattern that all
 
 The foundation of this pattern is the distinction between a **Persona** and an **Actor**.
 
-*   A **Persona** is a *stateless blueprint* for behavior. It's a "role" or a "hat." It has an `identity`, `rules`, and `understands`, but it has no `perform:` block. It knows *how* to be, but it doesn't know what to *do*. It cannot act on its own.
+* A **Persona** is a *stateless blueprint* for behavior. It's a "role" or a "hat." It has an `identity`, `rules`, and `understands`, but it has no `perform:` block. It knows *how* to be, but it doesn't know what to *do*. It cannot act on its own.
 
-*   An **Actor** is a *stateful instance* of a character. It has a `perform:` block and can be part of a `dialogue`. It is a participant in the cognitive process.
+* An **Actor** is a *stateful instance* of a character. It has a `perform:` block and can be part of a `dialogue`. It is a participant in the cognitive process.
 
 Think of a Persona as a job description, and an Actor as the person hired to do that job.
 
@@ -20,11 +20,11 @@ Think of a Persona as a job description, and an Actor as the person hired to do 
 
 The `become:` action is the bridge between these two concepts. It is an instruction that tells the INDRA interpreter to:
 
-1.  Take a Persona (the blueprint).
-2.  Give it a temporary `perform:` block (the specific task).
-3.  Instantiate it as a temporary, anonymous Actor.
-4.  Execute its `perform:` block immediately for a single turn.
-5.  Let the temporary Actor disappear.
+1. Take a Persona (the blueprint).
+2. Give it a temporary `perform:` block (the specific task).
+3. Instantiate it as a temporary, anonymous Actor.
+4. Execute its `perform:` block immediately for a single turn.
+5. Let the temporary Actor disappear.
 
 This allows for the summoning of a specialist for a single, focused task, without having to define a permanent Actor for it.
 
@@ -82,9 +82,9 @@ actor @orchestrator:
 
 ### Why This Pattern is Powerful
 
-1.  **Keeps Your System Clean:** You don't need to define dozens of Actors for every possible task. You can define a few core Personas (like `@skeptic`, `@synthesizer`, `@creative_explorer`) and instantiate them as needed.
-2.  **Separation of Concerns:** Personas are purely about *behavioral style*. The `perform:` block provided by the `become:` action is purely about the *task at hand*. This is a clean separation of "who you are" from "what you're doing."
-3.  **Enables Adaptive Systems:** Your Actors can learn to summon different specialists based on the context of the conversation. An Actor could decide, "This problem seems to have a logical flaw; I should `become:` a `@logician` to analyze it."
+1. **Keeps Your System Clean:** You don't need to define dozens of Actors for every possible task. You can define a few core Personas (like `@skeptic`, `@synthesizer`, `@creative_explorer`) and instantiate them as needed.
+2. **Separation of Concerns:** Personas are purely about *behavioral style*. The `perform:` block provided by the `become:` action is purely about the *task at hand*. This is a clean separation of "who you are" from "what you're doing."
+3. **Enables Adaptive Systems:** Your Actors can learn to summon different specialists based on the context of the conversation. An Actor could decide, "This problem seems to have a logical flaw; I should `become:` a `@logician` to analyze it."
 
 By mastering the distinction between Personas and Actors and using the `become:` action, you can design cognitive systems that are not just pre-programmed, but are truly adaptive, responsive, and capable of summoning the right perspective for the right moment.
 

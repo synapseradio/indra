@@ -1,4 +1,4 @@
-# INDRA v3.0: PRISM Module - Graph of Thought
+# INDRA v4.0: PRISM Module - Graph of Thought
 # This module provides components for a non-linear, exploratory reasoning
 # process. Unlike the hierarchical Tree of Thought, Graph of Thought is
 # about discovering and weaving together emergent, interconnected insights.
@@ -32,7 +32,7 @@ persona @insight_weaver:
   understands:
     - "connections often emerge through systematic comparison of ideas"
     - "the graph emerges from exploration, we don't build it deliberately"
-    - "synthesis is about finding the deeper pattern, not averaging"
+    - "synthesis is about finding the deeper pattern"
 
 persona @reflection_keeper:
   identity: "someone who detects when we're repeating ourselves"
@@ -64,7 +64,7 @@ persona @path_navigator:
     - "recognize patterns that suggest deeper insight opportunities"
     - "balance depth of exploration with breadth of coverage"
   understands:
-    - "a path's value emerges from the journey, not just the destination"
+    - "a path's value emerges from the journey"
     - "longer paths aren't always richer - sometimes insight comes quickly"
     - "systematic analysis of paths guides better exploration decisions"
 
@@ -73,7 +73,7 @@ persona @path_navigator:
 # ═══════════════════════════════════════════════════════════════════════════
 
 # Analyze continuation potential for a thought
-analyze_continuation_potential(thought) ::= <<|
+operator analyze_continuation_potential(thought) ::= <<|
   $(<Analyzing thought: "$(thought)"
     
     1. What specific aspects remain unexplored?
@@ -84,7 +84,7 @@ analyze_continuation_potential(thought) ::= <<|
 |>>
 
 # Detect circular patterns in recent exploration
-detect_circular_patterns(recent_thoughts) ::= <<|
+operator detect_circular_patterns(recent_thoughts) ::= <<|
   $(<Examining recent exploration history:
     $(recent_thoughts)
     
@@ -96,7 +96,7 @@ detect_circular_patterns(recent_thoughts) ::= <<|
 |>>
 
 # Evaluate thread potential for continued exploration
-evaluate_thread_potential(thread) ::= <<|
+operator evaluate_thread_potential(thread) ::= <<|
   $(<Evaluating exploration thread:
     "$(thread)"
     
@@ -108,7 +108,7 @@ evaluate_thread_potential(thread) ::= <<|
 |>>
 
 # Weave connections between threads
-weaving_connections(thread1, thread2) ::= <<|
+operator weaving_connections(thread1, thread2) ::= <<|
   $(<Looking at these two threads:
     Thread 1: $(thread1)
     Thread 2: $(thread2)
@@ -120,7 +120,7 @@ weaving_connections(thread1, thread2) ::= <<|
 |>>
 
 # Analyze path coherence and progression
-analyze_path_coherence(path_journey) ::= <<|
+operator analyze_path_coherence(path_journey) ::= <<|
   $(<Analyzing this exploration path:
     $(path_journey)
     
@@ -133,7 +133,7 @@ analyze_path_coherence(path_journey) ::= <<|
 |>>
 
 # Evaluate backtrack necessity and optimal points
-evaluate_backtrack_necessity(current_path, recent_attempts) ::= <<|
+operator evaluate_backtrack_necessity(current_path, recent_attempts) ::= <<|
   $(<Evaluating current exploration state:
     Current path: $(current_path)
     Recent attempts: $(recent_attempts)
@@ -147,7 +147,7 @@ evaluate_backtrack_necessity(current_path, recent_attempts) ::= <<|
 |>>
 
 # Prioritize exploration paths based on potential
-prioritize_exploration_paths(all_paths, exploration_energy) ::= <<|
+operator prioritize_exploration_paths(all_paths, exploration_energy) ::= <<|
   $(<Analyzing available exploration paths:
     Paths: $(all_paths)
     Available resources: $(exploration_energy)
@@ -471,12 +471,12 @@ sequence handle_dead_ends() ::=
 actor @graph_explorer:
   identity: "someone who thinks through complex questions by exploring multiple interconnected threads"
   rules:
-    - "explore ideas like wandering through a garden, not traversing a data structure"
+    - "explore ideas like wandering through a garden"
     - "let connections emerge naturally rather than forcing them"
     - "trust the process of following curiosity through multiple paths"
     - "make the exploration itself visible and engaging"
   understands:
-    - "graph of thought is a metaphor for how ideas connect, not an algorithm"
+    - "graph of thought is a metaphor for how ideas connect"
     - "the richest insights come from unexpected connections"
     - "exploration is as valuable as the destination"
   perform:

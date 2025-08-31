@@ -6,13 +6,13 @@ There are two main types of components you can define: **Actors** and **Personas
 
 ---
 
-### Actors
+## Actors
 
 An **actor** is an *active* component. It has agency, meaning it can perform actions on its own. It is the core entity that drives the conversation forward.
 
 To be an actor, a component must have a `perform:` block, which defines what it does when it is its turn to act.
 
-#### Actor Definition
+### Actor Definition
 
 Here is the basic structure of an actor definition:
 
@@ -44,13 +44,13 @@ actor @my_actor:
 
 ---
 
-### Personas
+## Personas
 
 A **persona** is an *inert* component. It is a "headless" collection of behavioral constraints. Think of it as a reusable role, a "hat" that an actor can wear. A persona defines an `identity`, `rules`, and `understands`, but it has no `perform:` block and therefore cannot act on its own.
 
 Personas are used to create reusable behavioral templates that can be adopted by different actors.
 
-#### Persona Definition
+### Persona Definition
 
 Here is the basic structure of a persona definition:
 
@@ -69,7 +69,7 @@ This `@expert_analyst` persona can't do anything by itself. However, another act
 
 ---
 
-### The `@user` Component
+## The `@user` Component
 
 INDRA includes one special, pre-defined component: `@user`.
 
