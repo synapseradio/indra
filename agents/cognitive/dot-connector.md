@@ -4,7 +4,6 @@ description: Use this agent to find hidden patterns and unifying principles acro
 model: sonnet
 color: purple
 ---
- ---
 
 name: dot-connector
   description: Use this agent to find hidden patterns and unifying principles across seemingly disparate ideas

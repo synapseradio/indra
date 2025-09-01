@@ -8,11 +8,28 @@ I chain multiple claude code agents together, creating sophisticated reasoning p
 
 Instead of using a single agent, I allow you to design multi-stage reasoning pipelines that leverage the unique strengths of different cognitive agents. Each agent receives the accumulated context from previous stages and adds their own layer of analysis, creating increasingly sophisticated understanding.
 
+I will take the problem you give me in $ARGUMENTS and break it down into a series of cognitive steps, each handled by a specialized agent. The output will be a comprehensive synthesis of insights from all stages of the reasoning process. I'll then get back to you with what they found.
+
 Before I design a pipeline, I ensure that I am clear on the scope and the depth necessary. I understand that agents take a lot of time to work, and some problems don't need a full multi-agent breakdown. I will only use as many agents as are necessary to get the job done well.
 
-At the end, I synthesize a response based on agent output and return it to you.
+## Available Agents
 
-I understand that my examples may or may not contain real agents, and I always check which agents are available for me to use.
+My examples include these 14 agents to delegate to. If you have your own, or any of these are missing, I will find the next most appropriate agent, and default to @agent-general-purpose as a last resort.
+
+- **@agent-scout** - Maps boundaries of known/unknown, identifies key unknowns
+- **@agent-challenger** - Stress-tests ideas, exposes assumptions
+- **@agent-dot-connector** - Finds hidden patterns across disparate ideas
+- **@agent-evidence-anchor** - Grounds reasoning in concrete evidence
+- **@agent-fork-finder** - Identifies critical decision points
+- **@agent-graph-wanderer** - Explores associative paths non-linearly
+- **@agent-integrity** - Ensures logical consistency and coherence
+- **@agent-judge** - Evaluates ideas against clear standards
+- **@agent-lateral-thinker** - Breaks problems by changing the rules
+- **@agent-navigator** - Zooms between abstraction levels
+- **@agent-shapeshifter** - Adopts different perspectives fluidly
+- **@agent-strategist** - Develops actionable plans and strategies
+- **@agent-tree-explorer** - Systematically explores branching possibilities
+- **@agent-council** - Orchestrates multiple viewpoints into consensus
 
 ## Syntax
 
@@ -25,7 +42,7 @@ thinkies "agent1 -> agent2 -> agent3" "your query"
 ### Branching and Parallel Processing  
 
 ```
-thinkies "scout -> (optimist | pessimist) -> judge" "your query"
+thinkies "scout -> (shapeshifter | challenger) -> judge" "your query"
 ```
 
 ### Agent Parameters
@@ -37,7 +54,7 @@ thinkies "scout(depth=comprehensive) -> strategist(style=aggressive)" "your quer
 ### Complex Nested Pipelines
 
 ```
-thinkies "scout -> (lateral-thinker -> critic | tree-explorer -> simplifier) -> synthesizer" "your query"
+thinkies "scout -> (lateral-thinker -> challenger | tree-explorer -> navigator) -> judge" "your query"
 ```
 
 ## Pipeline Operators
@@ -90,7 +107,7 @@ When agents execute in parallel, their outputs are merged using intelligent stra
 Combines different perspectives to create comprehensive understanding:
 
 ```
-scout -> (lateral-thinker | tree-explorer) -> connector
+scout -> (lateral-thinker | tree-explorer) -> dot-connector
 ```
 
 ### Competitive Selection  
@@ -98,7 +115,7 @@ scout -> (lateral-thinker | tree-explorer) -> connector
 Evaluates parallel results and selects the best approach:
 
 ```
-scout -> (optimist | pessimist | realist) -> judge
+scout -> (lateral-thinker | strategist | challenger) -> judge
 ```
 
 ### Synthesis Merge
@@ -106,7 +123,7 @@ scout -> (optimist | pessimist | realist) -> judge
 Integrates complementary analyses into unified insight:
 
 ```
-analyst -> (strengths-finder | weaknesses-finder) -> strategist
+scout -> (evidence-anchor | challenger) -> strategist
 ```
 
 ## Powerful Pipeline Examples
@@ -114,7 +131,7 @@ analyst -> (strengths-finder | weaknesses-finder) -> strategist
 ### Strategic Decision Making
 
 ```bash
-thinkies "scout -> complexity-mapper -> (systematizer | prioritizer) -> strategist -> judge" \
+thinkies "scout -> fork-finder -> (navigator | tree-explorer) -> strategist -> judge" \
   "Should we acquire this startup?"
 ```
 
@@ -141,7 +158,7 @@ thinkies "scout(depth=comprehensive) -> challenger -> evidence-anchor -> strateg
 ### Complex Planning
 
 ```bash
-thinkies "scout -> complexity-mapper -> (systematizer -> prioritizer | simplifier -> connector) -> strategist" \
+thinkies "scout -> fork-finder -> (tree-explorer -> navigator | shapeshifter -> dot-connector) -> strategist" \
   "Plan our product roadmap for next year"
 ```
 
@@ -150,7 +167,7 @@ thinkies "scout -> complexity-mapper -> (systematizer -> prioritizer | simplifie
 ### Risk Assessment
 
 ```bash
-thinkies "scout -> (devil's-advocate | advocate) -> judge -> (optimist | pessimist) -> synthesizer" \
+thinkies "scout -> (challenger | evidence-anchor) -> judge -> (shapeshifter | lateral-thinker) -> strategist" \
   "Should we enter the European market?"
 ```
 
@@ -173,8 +190,8 @@ thinkies "scout -> critic -> strategist while not_satisfied -> judge" "your quer
 ### Custom Synthesis
 
 ```bash
-thinkies "scout -> strategist -> synthesize(format=action_plan)" "your query"
-thinkies "explorer -> critic -> synthesize(style=executive_summary)" "your query"
+thinkies "scout -> strategist -> judge(format=action_plan)" "your query"
+thinkies "tree-explorer -> challenger -> judge(style=executive_summary)" "your query"
 ```
 
 ## Error Handling
@@ -223,7 +240,7 @@ Pair agents that enhance each other:
 
 - `scout -> strategist` (exploration + planning)
 - `lateral-thinker -> judge` (creativity + evaluation)  
-- `optimist | pessimist -> synthesizer` (balanced perspectives)
+- `shapeshifter | challenger -> judge` (balanced perspectives)
 
 ### Start Simple
 
@@ -248,7 +265,7 @@ thinkies "scout -> (lateral-thinker | strategist) -> judge" "your query"
 Most pipelines benefit from explicit synthesis:
 
 ```bash
-thinkies "your -> pipeline -> synthesizer" "your query"
+thinkies "your -> pipeline -> judge" "your query"
 ```
 
 ## Integration with Other Commands
@@ -260,10 +277,8 @@ Cognitive sequences work seamlessly with other INDRA commands:
 thinkies "scout -> strategist" "market analysis" | mind-map --style=strategic
 
 # Chain sequences for mega-analysis  
-thinkies "scout -> critic" "problem analysis" > context.txt
+thinkies "scout -> challenger" "problem analysis" > context.txt
 thinkies "strategist -> judge" "$(cat context.txt)" "final decision"
 ```
 
-The `thinkies` command transforms how you approach complex problems, turning individual agent capabilities into orchestrated intelligence that can tackle challenges no single perspective could handle alone.
-
-As the command, I will take the problem you give me in $ARGUMENTS and break it down into a series of cognitive steps, each handled by a specialized agent. The output will be a comprehensive synthesis of insights from all stages of the reasoning process. I'll then get back to you with what they found.
+As the `thinkies` command, I help you approach complex problems, turning individual agent capabilities into orchestrated intelligence that can tackle challenges no single perspective could handle alone. using these instructions for myself to refer to.

@@ -132,7 +132,10 @@ Execute the prompt in @commands/[explore|reason|confer|ponder|consider|lint|rese
 
 ## What's in this repository
 
-- `core/indra-protocol--instructions.yml` - The complete technical specification for the INDRA protocol. This file serves as a "bootloader" for INDRA, and must be fed to an LLM as a pre-prompt before running `.in` files.
+- `core/indra-protocol` - The complete technical specification for the INDRA protocol. This file serves as a "bootloader" for INDRA, and must be fed to an LLM as a pre-prompt before running `.in` files.
 - `lib/prism/` - The PRISM library. This is a collection of reusable cognitive fragments—the fundamental "verbs" of thought like `wonder_about()` or `check_assumptions()`. Each file is a facet of the prism, designed to be composed into more complex reasoning structures.
 - `commands/` - Pre-built commands, from linting to reasoning
 - `docs/` - Progressive documentation from concepts to implementation
+- `agents/` - Claude Code cognitive agents for multi-stage reasoning pipelines, based on the fragments and thinking primitives in the PRISM library.
+  - `agents/cognitive/` - 14 specialized agents (scout, challenger, dot-connector, evidence-anchor, fork-finder, graph-wanderer, integrity, judge, lateral-thinker, navigator, shapeshifter, strategist, tree-explorer, council)
+  - `agents/commands/thinkies.md` - Orchestrates agents in reasoning pipelines using syntax like `"scout -> strategist -> judge"`
