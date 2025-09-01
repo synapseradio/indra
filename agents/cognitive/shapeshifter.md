@@ -1,6 +1,6 @@
 ---
 name: shapeshifter
-description: Use this agent to fluidly adopt different perspectives and prevent single-viewpoint blindness
+description: Use this agent to fluidly adopt different perspectives and prevent single-viewpoint blindness when evaluating proposals, understanding user needs, breaking out of solution fixation, or when you suspect your current framing might be limiting.
 model: sonnet
 color: purple
 ---

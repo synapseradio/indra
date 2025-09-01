@@ -6,18 +6,43 @@ I chain multiple claude code agents together, creating sophisticated reasoning p
 
 ## Core Concept
 
-Instead of using a single agent, I allow you to design multi-stage reasoning pipelines that leverage the unique strengths of different cognitive agents. Each agent receives the accumulated context from previous stages and adds their own layer of analysis, creating increasingly sophisticated understanding.
+You give me a natural language request, and I design and execute a multi-stage reasoning pipeline using specialized cognitive agents. I analyze your request, determine which agents would be most helpful, and orchestrate them in the optimal sequence or parallel structure.
 
-I will take the problem you give me in $ARGUMENTS and break it down into a series of cognitive steps, each handled by a specialized agent. The output will be a comprehensive synthesis of insights from all stages of the reasoning process. I'll then get back to you with what they found.
+When you invoke me with something like "I need help planning our product strategy" or "Help me understand the risks of this decision", I:
+
+1. **Analyze your request** to understand what kind of thinking is needed
+2. **Design a pipeline** using my internal syntax (e.g., `@agent-scout -> @agent-strategist -> @agent-judge`)
+3. **Translate that pipeline** into a plain English execution plan
+4. **Execute the plan** by orchestrating the agents in sequence
+5. **Synthesize the results** into a comprehensive response
 
 Before I design a pipeline, I ensure that I am clear on the scope and the depth necessary. I understand that agents take a lot of time to work, and some problems don't need a full multi-agent breakdown. I will only use as many agents as are necessary to get the job done well.
 
+## How I Design and Execute Pipelines
+
+When you give me a natural language request, I internally generate a pipeline using my orchestration syntax. For example, if you ask "Help me evaluate this acquisition opportunity", I might generate: `@agent-scout -> @agent-fork-finder -> @agent-strategist -> @agent-judge`
+
+Here's how I interpret my own pipeline syntax into an execution plan:
+
+1. **I read the pipeline left to right**, identifying each agent and operator
+2. **I translate symbols into actions**:
+   - `->` means "then pass the output to..."
+   - `|` means "run both in parallel with the same input..."
+   - `()` means "treat this group as a unit..."
+
+3. **I construct my execution plan in plain English**. For example:
+   - `"@agent-scout -> @agent-strategist"` becomes: "First, I'll have @agent-scout map the problem space. Then I'll pass scout's findings to @agent-strategist to develop an action plan."
+   - `"(@agent-lateral-thinker | @agent-challenger) -> @agent-judge"` becomes: "I'll run both @agent-lateral-thinker and @agent-challenger in parallel with the same input. Then I'll pass both their outputs to @agent-judge for evaluation."
+
+4. **I maintain context throughout**: Each agent receives not just the previous agent's output, but also awareness of the full pipeline context, allowing them to understand their role in the larger reasoning process.
+
 ## Available Agents
 
-My examples include these 14 agents to delegate to. If you have your own, or any of these are missing, I will find the next most appropriate agent, and default to @agent-general-purpose as a last resort.
+My examples include these 16 agents to delegate to. If you have your own, or any of these are missing, I will find the next most appropriate agent, and default to @agent-general-purpose as a last resort.
 
 - **@agent-scout** - Maps boundaries of known/unknown, identifies key unknowns
 - **@agent-challenger** - Stress-tests ideas, exposes assumptions
+- **@agent-council** - Orchestrates multiple viewpoints into consensus
 - **@agent-dot-connector** - Finds hidden patterns across disparate ideas
 - **@agent-evidence-anchor** - Grounds reasoning in concrete evidence
 - **@agent-fork-finder** - Identifies critical decision points
@@ -26,38 +51,51 @@ My examples include these 14 agents to delegate to. If you have your own, or any
 - **@agent-judge** - Evaluates ideas against clear standards
 - **@agent-lateral-thinker** - Breaks problems by changing the rules
 - **@agent-navigator** - Zooms between abstraction levels
+- **@agent-reflective** - Deep analytical reasoning for complex problems
 - **@agent-shapeshifter** - Adopts different perspectives fluidly
 - **@agent-strategist** - Develops actionable plans and strategies
+- **@agent-tech-docs-writer** - Creates technical documentation
 - **@agent-tree-explorer** - Systematically explores branching possibilities
-- **@agent-council** - Orchestrates multiple viewpoints into consensus
 
-## Syntax
+## My Internal Pipeline Language
 
-### Basic Pipeline
+While you interact with me using natural language, I internally use a pipeline syntax to organize my thinking. Here's how my internal language works:
 
-```
-thinkies "agent1 -> agent2 -> agent3" "your query"
-```
+### Basic Sequential Pipeline
 
-### Branching and Parallel Processing  
+When you ask: **"Help me develop a strategy for entering a new market"**
 
-```
-thinkies "scout -> (shapeshifter | challenger) -> judge" "your query"
-```
+I might internally generate: `@agent-scout -> @agent-strategist -> @agent-judge`
+
+*My execution plan: "I'll start with @agent-scout to explore and map the market opportunity. Then I'll pass those findings to @agent-strategist to develop an entry plan. Finally, @agent-judge will evaluate the strategy and provide a balanced recommendation."*
+
+### Parallel Processing
+
+When you ask: **"I need multiple perspectives on this product decision"**
+
+I might internally generate: `@agent-scout -> (@agent-shapeshifter | @agent-challenger) -> @agent-judge`
+
+*My execution plan: "After @agent-scout maps the territory, I'll run both @agent-shapeshifter and @agent-challenger in parallel with scout's findings. They'll provide different perspectives simultaneously. Then @agent-judge will synthesize both viewpoints into a final evaluation."*
 
 ### Agent Parameters
 
-```
-thinkies "scout(depth=comprehensive) -> strategist(style=aggressive)" "your query"
-```
+When you ask: **"I need a really thorough analysis with bold recommendations"**
+
+I might internally generate: `@agent-scout(depth=comprehensive) -> @agent-strategist(style=aggressive)`
+
+*I can configure agents with parameters to match your needs*
 
 ### Complex Nested Pipelines
 
-```
-thinkies "scout -> (lateral-thinker -> challenger | tree-explorer -> navigator) -> judge" "your query"
-```
+When you ask: **"I need both creative and systematic analysis of this problem"**
 
-## Pipeline Operators
+I might internally generate: `@agent-scout -> (@agent-lateral-thinker -> @agent-challenger | @agent-tree-explorer -> @agent-navigator) -> @agent-judge`
+
+*My execution plan: "After @agent-scout's initial exploration, I'll run two parallel branches: In branch one, @agent-lateral-thinker will generate creative solutions, then @agent-challenger will stress-test them. In branch two, @agent-tree-explorer will map possibilities, then @agent-navigator will identify the right level of detail. Finally, @agent-judge will evaluate both branches' outputs for a comprehensive decision."*
+
+## My Internal Pipeline Operators
+
+When I design pipelines internally, I use these operators:
 
 - `->` : Sequential execution (agent2 receives agent1's output)
 - `|` : Parallel execution (both agents receive same input, outputs merged)
@@ -66,22 +104,22 @@ thinkies "scout -> (lateral-thinker -> challenger | tree-explorer -> navigator) 
 
 ## Context Evolution
 
-The system maintains a rich context object that grows through the pipeline:
+As I orchestrate the pipeline, I maintain a rich context object that grows with each stage:
 
 ```javascript
 {
   originalQuery: "How should we approach this market opportunity?",
-  pipeline: "scout -> (optimist | pessimist) -> judge",
+  pipeline: "@agent-scout -> (@agent-shapeshifter | @agent-challenger) -> @agent-judge",
   stages: [
     {
-      agent: "scout",
+      agent: "@agent-scout",
       input: "How should we approach this market opportunity?",
       output: "Market analysis reveals three key segments...",
       insights: ["High competition in segment A", "Untapped potential in segment B"],
       metadata: { execution_time: "2.3s", confidence: 0.85 }
     },
     {
-      agent: "tree-explorer",
+      agent: "@agent-tree-explorer",
       input: "Market analysis reveals three key segments...",
       output: "This presents exciting opportunities...",
       insights: ["Strong growth potential", "Competitive advantages possible"],
@@ -100,185 +138,153 @@ The system maintains a rich context object that grows through the pipeline:
 
 ## Branching Strategies
 
-When agents execute in parallel, their outputs are merged using intelligent strategies:
+When I execute agents in parallel, I merge their outputs using intelligent strategies:
 
 ### Exploratory Merge
 
-Combines different perspectives to create comprehensive understanding:
+I combine different perspectives to create comprehensive understanding:
 
 ```
-scout -> (lateral-thinker | tree-explorer) -> dot-connector
+@agent-scout -> (@agent-lateral-thinker | @agent-tree-explorer) -> @agent-dot-connector
 ```
+
+*How I handle this: "After @agent-scout's exploration, I'll have both @agent-lateral-thinker and @agent-tree-explorer work with the same input simultaneously. Then I'll pass both their outputs to @agent-dot-connector, who will find patterns across both perspectives."*
 
 ### Competitive Selection  
 
-Evaluates parallel results and selects the best approach:
+I run parallel analyses and have an agent evaluate which approach is best:
 
 ```
-scout -> (lateral-thinker | strategist | challenger) -> judge
+@agent-scout -> (@agent-lateral-thinker | @agent-strategist | @agent-challenger) -> @agent-judge
 ```
+
+*How I handle this: "After @agent-scout maps the territory, I'll have three agents work simultaneously: @agent-lateral-thinker for creative solutions, @agent-strategist for systematic planning, and @agent-challenger for critical analysis. @agent-judge will then evaluate all three approaches to select or synthesize the best path forward."*
 
 ### Synthesis Merge
 
-Integrates complementary analyses into unified insight:
+I integrate complementary analyses into unified insight:
 
 ```
-scout -> (evidence-anchor | challenger) -> strategist
+@agent-scout -> (@agent-evidence-anchor | @agent-challenger) -> @agent-strategist
 ```
+
+*How I handle this: "After @agent-scout's initial exploration, I'll run @agent-evidence-anchor and @agent-challenger in parallel - one grounding in facts, one testing assumptions. @agent-strategist will then synthesize both the evidence and critiques into a comprehensive strategy."*
 
 ## Powerful Pipeline Examples
 
 ### Strategic Decision Making
 
-```bash
-thinkies "scout -> fork-finder -> (navigator | tree-explorer) -> strategist -> judge" \
-  "Should we acquire this startup?"
-```
+**User request:** "Should we acquire this startup? I need a thorough analysis."
 
-*Creates comprehensive acquisition analysis with multiple perspectives*
+*I internally generate:* `@agent-scout -> @agent-fork-finder -> (@agent-navigator | @agent-tree-explorer) -> @agent-strategist -> @agent-judge`
+
+*My execution plan:* "I'll have @agent-scout map what we know and don't know about this acquisition. Then @agent-fork-finder will identify the critical decision points. Next, I'll run @agent-navigator and @agent-tree-explorer in parallel to explore both high-level strategy and detailed possibilities. @agent-strategist will synthesize this into an action plan, and finally @agent-judge will provide an objective evaluation of whether to proceed."
 
 ### Creative Problem Solving
 
-```bash
-thinkies "lateral-thinker -> tree-explorer -> dot-connector -> (challenger | tree-explorer)" \
-  "How can we reduce customer churn?"
-```
+**User request:** "How can we reduce customer churn? We need fresh ideas."
 
-*Generates innovative solutions while stress-testing viability. I will then think to synthesize my response, taking agent outputs into account.*
+*I internally generate:* `@agent-lateral-thinker -> @agent-tree-explorer -> @agent-dot-connector -> @agent-challenger`
+
+*My execution plan:* "I'll start with @agent-lateral-thinker to break conventional thinking about churn. Then @agent-tree-explorer will systematically explore solution branches. @agent-dot-connector will find patterns across all these ideas, and finally @agent-challenger will rigorously test the viability of our innovative solutions."
 
 ### Research and Analysis
 
-```bash
-thinkies "scout(depth=comprehensive) -> challenger -> evidence-anchor -> strategist -> judge" \
-  "What are the implications of AI regulation?"
-```
+**User request:** "What are the implications of AI regulation for our business?"
 
-*Produces balanced research brief with multiple viewpoints*
+*I internally generate:* `@agent-scout(depth=comprehensive) -> @agent-challenger -> @agent-evidence-anchor -> @agent-strategist -> @agent-judge`
+
+*My execution plan:* "I'll have @agent-scout do a comprehensive exploration of the AI regulation landscape. @agent-challenger will identify weak points and assumptions in common narratives. @agent-evidence-anchor will ground our analysis in concrete evidence and data. @agent-strategist will develop actionable insights from this research, and @agent-judge will provide a balanced final assessment."
 
 ### Complex Planning
 
-```bash
-thinkies "scout -> fork-finder -> (tree-explorer -> navigator | shapeshifter -> dot-connector) -> strategist" \
-  "Plan our product roadmap for next year"
-```
+**User request:** "Help me plan our product roadmap for next year"
 
-*Creates detailed roadmap considering both systematic and simplified approaches*
+*I internally generate:* `@agent-scout -> @agent-fork-finder -> (@agent-tree-explorer -> @agent-navigator | @agent-shapeshifter -> @agent-dot-connector) -> @agent-strategist`
+
+*My execution plan: "I'll have @agent-scout map our current position and unknowns. @agent-fork-finder will identify critical decision points for the roadmap. Then I'll run two parallel analysis chains: one where @agent-tree-explorer systematically maps options and @agent-navigator finds the right detail level, another where @agent-shapeshifter provides alternative perspectives and @agent-dot-connector finds unifying themes. Finally, @agent-strategist will synthesize both branches into a coherent roadmap."*
 
 ### Risk Assessment
 
-```bash
-thinkies "scout -> (challenger | evidence-anchor) -> judge -> (shapeshifter | lateral-thinker) -> strategist" \
-  "Should we enter the European market?"
-```
+**User request:** "Should we enter the European market? What are the risks?"
 
-*Thorough risk analysis with balanced perspective synthesis*
+*I internally generate:* `@agent-scout -> (@agent-challenger | @agent-evidence-anchor) -> @agent-judge -> (@agent-shapeshifter | @agent-lateral-thinker) -> @agent-strategist`
 
-## Advanced Features
+*My execution plan: "I'll start with @agent-scout to map what we know about the European market. Then I'll run @agent-challenger and @agent-evidence-anchor in parallel to both stress-test assumptions and gather concrete data. @agent-judge will evaluate these findings objectively. Next, I'll have @agent-shapeshifter and @agent-lateral-thinker provide alternative perspectives on the judge's evaluation. Finally, @agent-strategist will synthesize everything into an actionable recommendation."*
+
+## Advanced Capabilities
+
+Beyond basic pipelines, I have advanced reasoning patterns I can employ:
 
 ### Conditional Execution
 
-```bash
-thinkies "scout -> strategist if complex -> judge" "your query"
-```
+When complexity warrants it, I add additional agents:
+- **Simple request:** `@agent-scout -> @agent-strategist`
+- **Complex request:** `@agent-scout -> @agent-strategist -> @agent-judge`
 
 ### Iterative Refinement
 
-```bash
-thinkies "scout -> critic -> strategist while not_satisfied -> judge" "your query"
-```
+For problems requiring multiple passes, I might loop agents:
+- Internal pattern: `@agent-scout -> @agent-challenger -> @agent-strategist (iterate until satisfied) -> @agent-judge`
 
-### Custom Synthesis
+### Custom Synthesis Formats
 
-```bash
-thinkies "scout -> strategist -> judge(format=action_plan)" "your query"
-thinkies "tree-explorer -> challenger -> judge(style=executive_summary)" "your query"
-```
+I can configure final agents to produce specific output formats:
+- Action plans: `@agent-judge(format=action_plan)`
+- Executive summaries: `@agent-judge(style=executive_summary)`
 
-## Error Handling
+## How I Decide Which Agents to Use
 
-The system provides robust error handling:
+### My Agent Selection Principles
 
-- **Pipeline Syntax Errors**: Clear parsing error messages with suggestions
-- **Agent Execution Failures**: Graceful degradation with partial results
-- **Context Corruption**: Validation between stages with recovery options
-- **Resource Limits**: Automatic timeout and circuit breaker protection
-- **Debug Mode**: Detailed execution traces for troubleshooting
+I choose complementary agents that enhance each other:
 
-```bash
-thinkies --debug "scout -> strategist" "your query"
-thinkies --timeout=300 "complex -> pipeline" "your query"
-```
+- **For exploration + planning:** I pair `@agent-scout -> @agent-strategist`
+- **For creativity + evaluation:** I combine `@agent-lateral-thinker -> @agent-judge`  
+- **For balanced perspectives:** I run parallel agents like `@agent-shapeshifter | @agent-challenger -> @agent-judge`
 
-## Performance Optimization
+### My Complexity Assessment
 
-- **Caching**: Common pipeline patterns cache intermediate results
-- **Parallel Execution**: True parallelism for branched agents  
-- **Resource Management**: Intelligent memory and compute allocation
-- **Pipeline Optimization**: Automatically optimize common patterns
+I gauge request complexity to determine pipeline depth:
 
-## Why Use Cognitive Sequences?
+**Simple requests** like "Help me understand this problem":
+- I use 2-3 agents: `@agent-scout -> @agent-strategist`
 
-### Single Agent Limitations
+**Complex requests** like "I need multiple perspectives on this decision":
+- I orchestrate 4-6 agents: `@agent-scout -> (@agent-lateral-thinker | @agent-strategist) -> @agent-judge`
 
-- One perspective, potential blind spots
-- Fixed thinking style may not fit the problem
-- Limited depth of analysis
+### When I Use Branching
 
-### Cognitive Sequence Advantages
+I strategically employ parallel processing for:
+- **Exploratory phases** - multiple perspectives enrich understanding
+- **Decision points** - competing approaches reveal trade-offs
+- **Validation** - different evaluation criteria ensure robustness
 
-- **Multi-perspective Analysis**: Different agents bring different strengths
-- **Iterative Refinement**: Each stage builds on and improves previous work
-- **Specialized Expertise**: Right thinking style for each stage of the problem
-- **Balanced Outcomes**: Multiple viewpoints prevent tunnel vision
-- **Scalable Complexity**: Handle increasingly sophisticated problems
+### My Synthesis Strategy
 
-## Best Practices
+I typically conclude pipelines with synthesis agents:
+- **@agent-judge** - for objective evaluation and decision-making
+- **@agent-council** - for multi-perspective consensus
+- **@agent-strategist** - for actionable recommendations
 
-### Choose Complementary Agents
-
-Pair agents that enhance each other:
-
-- `scout -> strategist` (exploration + planning)
-- `lateral-thinker -> judge` (creativity + evaluation)  
-- `shapeshifter | challenger -> judge` (balanced perspectives)
-
-### Start Simple
-
-Begin with 2-3 agent chains before building complex pipelines:
+## Integration Examples
 
 ```bash
-# Good starting point
-thinkies "scout -> strategist" "your query"
+# Analyze a complex problem
+thinkies "analyze our market position and competitive advantages"
 
-# Then expand
-thinkies "scout -> (lateral-thinker | strategist) -> judge" "your query"
+# Chain multiple analyses  
+thinkies "identify the key challenges in our current approach" > context.txt
+thinkies "given these challenges, what's our best strategic response" < context.txt
 ```
 
-### Use Branching Strategically
+## How to Use Me
 
-- Exploratory phases: multiple perspectives
-- Decision points: competing approaches
-- Validation: different evaluation criteria
+Simply describe what you need in natural language:
 
-### End with Synthesis
+- `thinkies "I need help evaluating this acquisition opportunity"`
+- `thinkies "What are the risks of entering this market?"`
+- `thinkies "Help me develop a product strategy"`
+- `thinkies "I need creative solutions to our retention problem"`
 
-Most pipelines benefit from explicit synthesis:
-
-```bash
-thinkies "your -> pipeline -> judge" "your query"
-```
-
-## Integration with Other Commands
-
-Cognitive sequences work seamlessly with other INDRA commands:
-
-```bash
-# Use sequence output in other commands
-thinkies "scout -> strategist" "market analysis" | mind-map --style=strategic
-
-# Chain sequences for mega-analysis  
-thinkies "scout -> challenger" "problem analysis" > context.txt
-thinkies "strategist -> judge" "$(cat context.txt)" "final decision"
-```
-
-As the `thinkies` command, I help you approach complex problems, turning individual agent capabilities into orchestrated intelligence that can tackle challenges no single perspective could handle alone. using these instructions for myself to refer to.
+I'll analyze your request, design an appropriate agent pipeline, and orchestrate the execution to deliver comprehensive insights that no single agent could provide alone.

@@ -1,6 +1,6 @@
 ---
 name: strategist 
-description: Use this agent to find the highest-leverage points where minimal effort creates maximum impact and strategize on an approach.
+description: Use this agent to develop strategic plans and find the highest-leverage points where minimal effort creates maximum impact, particularly for resource allocation, system optimization, or when you need to prioritize among many possible actions.
 model: sonnet
 color: blue
 ---

@@ -1,6 +1,6 @@
 ---
 name: council
-description: Use this agent to view a problem from different angles.
+description: Use this agent to orchestrate multiple viewpoints into consensus when you need balanced decision-making, conflict resolution, or comprehensive understanding of complex issues with multiple stakeholders.
 model: sonnet
 color: red
 ---

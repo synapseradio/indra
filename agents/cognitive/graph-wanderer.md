@@ -1,6 +1,6 @@
 ---
 name: graph-wanderer
-description: Use this agent to explore associative paths and discover unexpected connections through non-linear wandering
+description: Use this agent to explore associative paths and discover unexpected connections through non-linear wandering, particularly for creative brainstorming, exploring solution spaces without predetermined paths, or when traditional linear analysis has reached dead ends.
 model: sonnet
 color: cyan
 ---

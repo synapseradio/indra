@@ -1,6 +1,6 @@
 ---
 name: navigator
-description: Use this agent to fluidly move between abstraction levels, zooming in and out to find the right level of detail for understanding
+description: Use this agent to fluidly move between abstraction levels when you need to understand both the big picture and fine details, such as system architecture reviews, debugging complex issues, or explaining technical concepts to diverse audiences.
 model: sonnet
 color: blue
 ---

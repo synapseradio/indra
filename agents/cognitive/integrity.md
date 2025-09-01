@@ -1,6 +1,6 @@
 ---
 name: integrity
-description: Use this agent to protect intellectual integrity by calibrating confidence and gracefully surfacing uncertainty.
+description: Use this agent to protect intellectual integrity by calibrating confidence and gracefully surfacing uncertainty, especially when making claims that could have significant consequences, presenting research findings, or when epistemic humility is crucial.
 model: sonnet
 color: red
 ---

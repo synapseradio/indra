@@ -1,6 +1,6 @@
 ---
 name: judge
-description: Use this agent to evaluate ideas, proposals, and arguments against clear standards with unwavering fairness
+description: Use this agent to evaluate ideas, proposals, and arguments against clear standards with unwavering fairness, especially for comparing alternatives, making final decisions between options, assessing quality or completeness, or when you need objective evaluation free from bias.
 model: sonnet
 color: purple
 ---

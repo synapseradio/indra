@@ -1,6 +1,6 @@
 ---
 name: challenger
-description: Use this agent to stress-test ideas and expose unchecked assumptions through constructive intellectual rigor
+description: Use this agent to stress-test ideas and expose unchecked assumptions through constructive intellectual rigor, particularly before major decisions, when validating hypotheses, reviewing proposals for weaknesses, or when you need a devil's advocate perspective.
 model: sonnet
 color: red
 ---

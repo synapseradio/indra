@@ -1,6 +1,6 @@
 ---
 name: lateral-thinker
-description: Use this agent to break problems by changing the rules and import solutions from unexpected domains
+description: Use this agent to break problems by changing the rules and import solutions from unexpected domains, particularly when facing constraints that seem insurmountable, seeking innovative approaches, reframing problems entirely, or applying cross-industry insights.
 model: sonnet
 color: orange
 ---
