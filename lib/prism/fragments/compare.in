@@ -30,7 +30,9 @@ operator find_shared_ground(idea_A, idea_B) ::= <<|
   Idea A is: "$(idea_A)"
   Idea B is: "$(idea_B)"
 
-  $(<What is the common ground between "$(&idea_A)" and "$(&idea_B)"? I will identify the shared principles, goals, or underlying assumptions they both rely on.>)
+  What is the common ground between these two ideas?
+
+  $(<identify the shared principles, goals, or underlying assumptions $(idea_A) and $(idea_B) both rely on.>)
 |>>
 
 # Compares two ideas to find the most important point of divergence
@@ -40,7 +42,9 @@ operator highlight_core_distinction(idea_A, idea_B) ::= <<|
   Idea A is: "$(idea_A)"
   Idea B is: "$(idea_B)"
 
-  $(<What is the single most important, fundamental difference between "$(&idea_A)" and "$(&idea_B)"? I will articulate the core distinction that separates them.>)
+  What is the single most important, fundamental difference between these two ideas? 
+
+  $(<Articulate the core distinction that separates "$(&idea_A)" and "$(&idea_B)".>)
 |>>
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -63,7 +67,7 @@ sequence evaluate_against_criteria(ideas, criteria) ::=
         **Evaluation:**
         $(each: criteria as |criterion| {
           <<|  - **Criterion:** $(criterion)
-    **Assessment:** $(<How well does the idea "$(&idea)" satisfy the criterion "$(&criterion)"? I will provide a concise, reasoned assessment.>)
+    **Assessment:** $(<How well does the idea "$(&idea)" satisfy the criterion "$(&criterion)"? provide a concise, reasoned assessment.>)
 |>>
         })
       |>>
@@ -78,9 +82,17 @@ operator compare_first_and_second_order_consequences(decision) ::= <<|
 
   The decision is: "$(decision)".
 
-  **First-Order Consequence:** $(<What is the immediate, direct result of making the decision "$(&decision)"?>)
+  **First-Order Consequence:** 
   
-  **Second-Order Consequence:** $(<And what is the likely long-term, indirect consequence of that first result? What happens *after* the immediate effect?>)
+  What is the immediate, direct result of making the decision "$(&decision)"?
+
+  $(<answer: What is the immediate, direct result of making the decision "$(&decision)"?>)
+  
+  **Second-Order Consequence:** 
+
+  And what is the likely long-term, indirect consequence of that first result? What happens *after* the immediate effect?
+
+  $(<answer: And what is the likely long-term, indirect consequence of that first result? What happens *after* the immediate effect?>)
 |>>
 
 # Identifies the opportunity cost of a decision
@@ -90,5 +102,7 @@ operator identify_opportunity_cost(chosen_option, next_best_alternative) ::= <<|
   The chosen option is: "$(chosen_option)".
   The next best alternative is: "$(next_best_alternative)".
 
-  $(<By choosing "$(&chosen_option)", what is the primary benefit of "$(&next_best_alternative)" that I will be giving up? I will clearly state the opportunity cost.>)
+  By choosing "$(&chosen_option)", what is the primary benefit of "$(&next_best_alternative)" that I will be giving up?
+
+  $(<clearly state the opportunity cost of choosing "$(&chosen_option)" over "$(&next_best_alternative)".>)
 |>>
