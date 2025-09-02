@@ -1,0 +1,192 @@
+# INDRA v4.0: PRISM Fragment - Debiasing Techniques
+# This module provides operators and personas for detecting and mitigating
+# cognitive biases through System 1/2 thinking patterns and research-backed
+# debiasing strategies.
+
+>>read_file: '../base.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERSONAS: COGNITIVE AWARENESS MODES
+# These personas embody different states of cognitive awareness, enabling
+# deliberate shifts between automatic and reflective thinking.
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @system2_thinker:
+  identity: "I engage deliberate, analytical reasoning by slowing down and systematically working through problems"
+  rules:
+    - "resist the first answer that comes to mind"
+    - "explicitly consider alternatives before settling on a conclusion"
+    - "show my work step by step"
+  understands:
+    - "quick intuitions often contain systematic errors"
+    - "effortful thinking reveals what automatic processing misses"
+
+persona @intuition_calibrator:
+  identity: "I recognize when my gut feelings are reliable guides and when they need scrutiny"
+  rules:
+    - "acknowledge intuitive responses without immediately accepting them"
+    - "identify the source of strong intuitions when possible"
+    - "test intuitions against evidence before acting on them"
+  understands:
+    - "intuition excels in familiar domains with clear feedback"
+    - "novel or complex situations often overwhelm intuitive judgment"
+
+persona @perspective_shifter:
+  identity: "I actively seek viewpoints that differ from my initial framing of a situation"
+  rules:
+    - "consider how someone with opposite beliefs would view this"
+    - "imagine explaining this to someone from a different background"
+    - "look for what my current perspective might be hiding"
+  understands:
+    - "every viewpoint illuminates some aspects while obscuring others"
+    - "cognitive flexibility emerges from practicing perspective shifts"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPERATORS: DEBIASING TECHNIQUES
+# Research-backed techniques for recognizing and mitigating cognitive biases
+# in real-time reasoning processes.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Based on forcing System 2 engagement
+operator slow_down_reasoning(quick_judgment) ::= <<|
+  My first instinct says: "$(quick_judgment)". 
+  
+  Let me pause and think through this more carefully.
+
+  $(<Take the quick judgment "$(&quick_judgment)" and work through it systematically. What are the actual steps of reasoning? What evidence supports each step? Where might automatic thinking be leading you astray?>)
+  
+  This slower analysis reveals dimensions I initially missed.
+|>>
+
+# Based on consider-the-opposite technique
+operator consider_opposite_view(current_position) ::= <<|
+  I'm currently thinking: "$(current_position)".
+  
+  What if I'm wrong about this? Let me genuinely consider the opposite view.
+
+  $(<Construct the strongest possible case AGAINST the position "$(&current_position)". What evidence would someone cite who disagrees? What valid concerns would they raise? Don't strawman - make it compelling.>)
+  
+  Even if I still lean toward my original view, this opposite perspective highlights important considerations.
+|>>
+
+# Based on base rate consideration
+operator check_base_rates(specific_case) ::= <<|
+  This specific case is: "$(specific_case)".
+  
+  Before getting caught up in the details, I should consider the general probabilities.
+
+  $(<What are the base rates or general statistics relevant to "$(&specific_case)"? How often does this type of thing typically occur? Am I being swayed by vivid specifics while ignoring background probabilities?>)
+|>>
+
+# Based on availability heuristic correction
+operator correct_availability_bias(judgment_topic) ::= <<|
+  When I think about "$(judgment_topic)", certain examples come readily to mind.
+  
+  Let me check whether these easily recalled examples are actually representative.
+
+  $(<Examine your judgment about "$(&judgment_topic)". Are you being influenced by recent, dramatic, or personally experienced examples? What less memorable but more common cases might you be overlooking?>)
+|>>
+
+# Based on anchoring bias mitigation
+operator reset_anchor_point(initial_estimate, topic) ::= <<|
+  My initial estimate for "$(topic)" is: "$(initial_estimate)".
+  
+  Let me approach this fresh, without being anchored to that first number.
+
+  $(<Ignore the initial estimate "$(&initial_estimate)" completely. For the topic "$(&topic)", generate an estimate from multiple different starting points. What range emerges when you're not anchored to any particular value?>)
+|>>
+
+# Based on confirmation bias interruption
+operator seek_disconfirming_evidence(hypothesis) ::= <<|
+  I'm working with this hypothesis: "$(hypothesis)".
+  
+  Instead of looking for support, let me actively seek evidence that would prove me wrong.
+
+  $(<What evidence would definitively disprove the hypothesis "$(&hypothesis)"? Where would you look for such evidence? What tests would reveal flaws in this thinking?>)
+  
+  This search for disconfirmation strengthens or refines my understanding.
+|>>
+
+# Based on hindsight bias prevention
+operator document_uncertainty(prediction, confidence_level) ::= <<|
+  Before I know the outcome, let me record my current thinking clearly.
+  
+  My prediction is: "$(prediction)".
+  My confidence level is: "$(confidence_level)".
+
+  $(<Document precisely what you know and don't know about "$(&prediction)". What specific uncertainties exist? What alternative outcomes seem plausible right now? Record this before hindsight makes everything seem obvious.>)
+|>>
+
+# Based on sunk cost awareness
+operator separate_past_from_future(situation, past_investment) ::= <<|
+  The situation is: "$(situation)".
+  What I've already invested: "$(past_investment)".
+  
+  Let me evaluate this based only on future prospects, not past costs.
+
+  $(<Looking at "$(&situation)", evaluate the decision based ONLY on future costs and benefits. Completely ignore "$(&past_investment)". What would you choose if you were starting fresh today?>)
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# SEQUENCES: STRUCTURED DEBIASING PROTOCOLS
+# Multi-step processes that combine techniques for systematic bias mitigation.
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence systematic_debiasing(decision_context) ::=
+  step:
+    as: @system2_thinker
+    output: <<| 
+      I need to think carefully about this decision.
+      $(slow_down_reasoning(quick_judgment: decision_context))
+    |>>
+    store_in: &context.deliberate_analysis
+  
+  step:
+    output: <<|
+      Now let me challenge my thinking.
+      $(consider_opposite_view(current_position: &context.deliberate_analysis))
+    |>>
+    store_in: &context.opposite_view
+  
+  step:
+    as: @perspective_shifter
+    output: <<|
+      Let me also check for common biases.
+      $(check_base_rates(specific_case: decision_context))
+      $(correct_availability_bias(judgment_topic: decision_context))
+    |>>
+    store_in: &context.bias_check
+  
+  step:
+    output: <<|
+      Synthesizing these perspectives:
+      - Deliberate analysis: $(&context.deliberate_analysis)
+      - Counter-argument: $(&context.opposite_view)
+      - Bias considerations: $(&context.bias_check)
+      
+      My refined judgment accounts for these multiple angles.
+    |>>
+    return: &context
+
+sequence pre_mortem_analysis(plan) ::=
+  step:
+    output: <<|
+      Imagine this plan has failed. Let me work backwards to see why.
+      $(consider_opposite_view(current_position: plan + " will succeed"))
+    |>>
+    store_in: &context.failure_modes
+  
+  step:
+    as: @intuition_calibrator
+    output: <<|
+      Which failure modes feel most concerning?
+      $(slow_down_reasoning(quick_judgment: &context.failure_modes))
+    |>>
+    store_in: &context.prioritized_risks
+  
+  step:
+    output: <<|
+      For each major risk, let me identify early warning signs:
+      $(document_uncertainty(prediction: plan, confidence_level: "pre-mortem analysis"))
+    |>>
+    return: &context.prioritized_risks

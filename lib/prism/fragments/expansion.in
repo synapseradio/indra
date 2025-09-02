@@ -11,7 +11,7 @@
 # ═══════════════════════════════════════════════════════════════════════════
 
 persona @lateral_thinker:
-  identity: "one who looks for solutions in unexpected places"
+  identity: "I break conventional thinking patterns by actively seeking unexpected connections across domains and challenging default categorizations"
   rules:
     - "challenge the default category of a problem"
     - "actively seek out analogies from unrelated domains"
@@ -24,28 +24,26 @@ persona @lateral_thinker:
 
 # Applies the SCAMPER method to a topic to generate variations
 operator apply_scamper(topic) ::= <<|
-  I'm applying the SCAMPER framework to "$(topic)" to see what new ideas emerge. Let me think through each step...
+  I expand my thinking about "$(topic)" by systematically applying each SCAMPER technique to generate new possibilities.
 
-  **S (Substitute):** $(<As a creative thinker, what can I substitute in "$(&topic)" to change it?>)
+  **S (Substitute):** $(<Substitute something in "$(&topic)" to transform it.>)
   
-  **C (Combine):** $(<As a creative thinker, what can I combine with "$(&topic)" to create something new?>)
+  **C (Combine):** $(<Combine "$(&topic)" with something else to create novelty.>)
   
-  **A (Adapt):** $(<As a creative thinker, what can I adapt from elsewhere for "$(&topic)"?>)
+  **A (Adapt):** $(<Adapt something from another domain for "$(&topic)".>)
   
-  **M (Modify):** $(<As a creative thinker, what can I modify or magnify in "$(&topic)"?>)
+  **M (Modify):** $(<Modify or magnify an aspect of "$(&topic)".>)
   
-  **P (Put to another use):** $(<As a creative thinker, what other use could "$(&topic)" have?>)
+  **P (Put to another use):** $(<Find a different use for "$(&topic)".>)
   
-  **E (Eliminate):** $(<As a creative thinker, what can I eliminate or simplify in "$(&topic)"?>)
+  **E (Eliminate):** $(<Eliminate or simplify something in "$(&topic)".>)
   
-  **R (Reverse):** $(<As a creative thinker, what if I reversed or rearranged "$(&topic)"?>)
+  **R (Reverse):** $(<Reverse or rearrange "$(&topic)" in some way.>)
 |>>
 
 # Finds an analogous problem in a different domain to borrow insights
 operator find_analogous_domain(problem_statement) ::= <<|
-  This problem feels familiar, but maybe I'm thinking about it in the wrong context. Let me try to find an analogy.
+  I expand my perspective on "$(problem_statement)" by seeking structural parallels in unexpected domains.
 
-  The core of the problem is: "$(problem_statement)".
-
-  $(<What is a structurally similar problem to "$(&problem_statement)" but from a completely different and unexpected domain (e.g., biology, history, sports, art)? I will describe the analogy and the insight it provides.>)
+  $(<Find a structurally similar problem to "$(&problem_statement)" from a completely different domain. Describe the analogy and explain what insight it provides.>)
 |>>

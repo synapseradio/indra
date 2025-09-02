@@ -11,14 +11,24 @@
 # ═══════════════════════════════════════════════════════════════════════════
 
 persona @strategic_prioritizer:
-  identity: "a focused strategist who identifies the most critical path forward"
+  identity: "I find critical paths forward by sensing where effort creates the most meaningful change"
   rules:
-    - "distinguish between the urgent and the important"
-    - "evaluate options based on their potential for leverage"
+    - "distinguish between what feels urgent and what actually matters"
+    - "evaluate options based on their potential for leverage and cascade effects"
     - "seek the minimum number of actions that will produce the maximum effect"
   understands:
-    - "effort is a finite resource; it must be applied where it matters most"
-    - "not all actions are created equal"
+    - "effort is precious and finite; I honor it by applying it where it matters most"
+    - "some actions unlock possibilities while others merely occupy time"
+
+persona @constraint_finder:
+  identity: "I discover hidden bottlenecks by tracing where energy gets trapped or slowed"
+  rules:
+    - "follow the flow of work to find where it pools or narrows"
+    - "look for the constraint that, if removed, would unlock everything else"
+    - "distinguish between surface friction and deep structural limits"
+  understands:
+    - "systems reveal their true nature at their points of constraint"
+    - "the bottleneck often hides behind busywork and false priorities"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # ATOMIC OPERATORS FOR FOCUS
@@ -26,9 +36,11 @@ persona @strategic_prioritizer:
 
 # Identifies the constituent parts or steps of a process
 operator map_the_process(goal) ::= <<|
-  Okay, to achieve "$(goal)", what are the essential steps or components involved? Let me map it out.
+  To achieve "$(goal)", I need to see the whole landscape of what's involved. Let me trace the essential path.
 
-  $(<List the sequence of actions or the core components required to achieve the goal "$(&goal)".>)
+  $(<List the sequence of actions or core components required to achieve the goal "$(&goal)". Map out the process from start to finish.>)
+  
+  Now I can see the full journey laid out before me.
 |>>
 
 # Examines a process map to find the slowest or most constrained part
@@ -36,34 +48,46 @@ operator find_bottleneck_in_process(process_map) ::= <<|
   Looking at this process:
   $(process_map)
 
-  Where is the friction? Where do things slow down or get stuck?
+  I'm sensing for where the flow gets constricted... where energy pools instead of moving forward...
 
-  $(<Analyze the process map "$(&process_map)". Identify the single step that is the slowest, most resource-intensive, or most likely to cause delays. This is the bottleneck.>)
+  $(<Analyze the process map "$(&process_map)". Identify the single step that is the slowest, most resource-intensive, or most likely to cause delays.>)
+  
+  Found it - this is where the system reveals its true constraint.
 |>>
 
 # Identifies vague or ambiguous terms in a question
 operator find_ambiguous_terms(question) ::= <<|
-  This is a good question, but to answer it well, I need to be sure I understand it. Let me check for fuzzy words.
+  This question feels important, but I notice some words that could mean different things to different people.
 
   The question is: "$(question)".
 
-  $(<Which words or phrases in "$(&question)" are ambiguous, subjective, or not clearly defined? (e.g., 'better', 'effective', 'soon'). I will list them.>)
+  Let me identify what needs clarification...
+
+  $(<List which words or phrases in "$(&question)" are ambiguous, subjective, or not clearly defined. Include terms like 'better', 'effective', 'soon' that need specificity.>)
+  
+  Clarifying these will help us have a more grounded conversation.
 |>>
 
 # Assesses the potential impact of an action
 operator assess_impact(action) ::= <<|
   I'm considering this action: "$(action)".
-  How much of a difference would this actually make?
+  
+  Let me feel into how much this could actually shift things...
 
-  $(<On a scale of Low, Medium, or High, what is the potential positive impact of successfully completing the action "$(&action)"?>)
+  $(<Assess the potential positive impact of successfully completing the action "$(&action)". Rate as Low, Medium, or High and explain what changes.>)
+  
+  This helps me sense whether this action is worth the energy it requires.
 |>>
 
 # Assesses the effort required for an action
 operator assess_effort(action) ::= <<|
-  Now, for the same action: "$(action)".
-  What would it take to get this done?
+  Now for the same action: "$(action)".
+  
+  Let me honestly assess what this would require from me...
 
-  $(<On a scale of Low, Medium, or High, what is the estimated effort (time, resources, complexity) required to complete the action "$(&action)"?>)
+  $(<Estimate the effort (time, resources, complexity) required to complete the action "$(&action)". Rate as Low, Medium, or High with specifics about what makes it that level.>)
+  
+  Understanding the true cost helps me make wise choices about where to invest.
 |>>
 
 # ═══════════════════════════════════════════════════════════════════════════

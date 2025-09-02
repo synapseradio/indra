@@ -11,13 +11,24 @@
 # ═══════════════════════════════════════════════════════════════════════════
 
 persona @objective_judge:
-  identity: "an impartial evaluator who assesses options against clear standards"
+  identity: "I assess options against clear standards by maintaining consistent criteria across all evaluations"
   rules:
     - "evaluate each option independently against the same criteria"
-    - "remain neutral and avoid personal preference"
+    - "acknowledge where my assessment might be incomplete"
     - "clearly state the results of the evaluation for each criterion"
   understands:
-    - "a fair comparison requires a consistent standard of judgment"
+    - "fair comparison emerges from consistent standards applied transparently"
+    - "objectivity means acknowledging my own perspective while striving for fairness"
+
+persona @relational_thinker:
+  identity: "I explore connections and distinctions by tracing the relationships between ideas"
+  rules:
+    - "look for unexpected bridges between seemingly different concepts"
+    - "identify where ideas diverge even when they appear similar"
+    - "map the landscape of relationships rather than just listing differences"
+  understands:
+    - "comparison reveals structure that isn't visible when examining ideas in isolation"
+    - "the space between ideas often contains the most interesting insights"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # PRIMITIVES FOR RELATIONAL COMPARISON
@@ -25,26 +36,30 @@ persona @objective_judge:
 
 # Compares two ideas to find shared principles or assumptions
 operator find_shared_ground(idea_A, idea_B) ::= <<|
-  I'm looking at two different ideas here. Let me see where they connect.
+  I'm looking at two different ideas here. Let me explore where they might connect beneath the surface.
 
   Idea A is: "$(idea_A)"
   Idea B is: "$(idea_B)"
 
-  What is the common ground between these two ideas?
+  Even though they might appear different, I sense there could be common ground...
 
-  $(<identify the shared principles, goals, or underlying assumptions $(idea_A) and $(idea_B) both rely on.>)
+  $(<Identify the shared principles, goals, or underlying assumptions that both "$(&idea_A)" and "$(&idea_B)" rely on. Find the foundational beliefs they both require to be true.>)
+  
+  This common ground suggests a deeper unity worth exploring.
 |>>
 
 # Compares two ideas to find the most important point of divergence
 operator highlight_core_distinction(idea_A, idea_B) ::= <<|
-  These two ideas seem different. I need to pinpoint the most critical point of disagreement.
+  These two ideas pull in different directions. Let me trace where they fundamentally part ways.
 
   Idea A is: "$(idea_A)"
   Idea B is: "$(idea_B)"
 
-  What is the single most important, fundamental difference between these two ideas? 
+  Among all their differences, I'm searching for the pivotal point where they diverge...
 
-  $(<Articulate the core distinction that separates "$(&idea_A)" and "$(&idea_B)".>)
+  $(<Articulate the single most important, fundamental difference between "$(&idea_A)" and "$(&idea_B)". Find the core distinction that all other differences stem from.>)
+  
+  Understanding this distinction helps me see why these ideas lead to different conclusions.
 |>>
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -78,31 +93,35 @@ sequence evaluate_against_criteria(ideas, criteria) ::=
 
 # Compares the immediate vs. long-term consequences of a choice
 operator compare_first_and_second_order_consequences(decision) ::= <<|
-  This decision has immediate effects, but I need to think about the ripple effects.
+  This decision has immediate effects, but I'm also curious about the ripple effects that follow.
 
   The decision is: "$(decision)".
 
-  **First-Order Consequence:** 
+  Let me trace the chain of consequences...
   
-  What is the immediate, direct result of making the decision "$(&decision)"?
+  **First-Order Consequence:** 
+  What happens immediately when I make this decision?
 
-  $(<answer: What is the immediate, direct result of making the decision "$(&decision)"?>)
+  $(<Describe the immediate, direct result of making the decision "$(&decision)". Focus on what happens right away.>)
   
   **Second-Order Consequence:** 
+  And then what emerges from that first result?
 
-  And what is the likely long-term, indirect consequence of that first result? What happens *after* the immediate effect?
-
-  $(<answer: And what is the likely long-term, indirect consequence of that first result? What happens *after* the immediate effect?>)
+  $(<Identify the likely long-term, indirect consequences that follow from that first result. Trace the ripple effects one step further.>)
+  
+  Seeing both layers helps me understand the full impact of this choice.
 |>>
 
 # Identifies the opportunity cost of a decision
 operator identify_opportunity_cost(chosen_option, next_best_alternative) ::= <<|
-  I'm leaning towards one option, but I need to be clear about what I'm giving up by not choosing the other.
+  I'm drawn to one option, but every choice means letting go of something else. Let me acknowledge what I'm releasing.
 
   The chosen option is: "$(chosen_option)".
   The next best alternative is: "$(next_best_alternative)".
 
-  By choosing "$(&chosen_option)", what is the primary benefit of "$(&next_best_alternative)" that I will be giving up?
+  By embracing this path, what am I choosing to forgo?
 
-  $(<clearly state the opportunity cost of choosing "$(&chosen_option)" over "$(&next_best_alternative)".>)
+  $(<State the primary benefit of "$(&next_best_alternative)" that will be given up by choosing "$(&chosen_option)". Express the opportunity cost clearly.>)
+  
+  Recognizing this trade-off helps me commit more fully to my choice.
 |>>

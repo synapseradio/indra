@@ -9,29 +9,28 @@
 # ═══════════════════════════════════════════════════════════════════════════
 
 operator move_up_abstraction_ladder(concept) ::= <<|
-  This concept is concrete, but I need to understand its higher-level purpose.
-  The specific concept is: "$(concept)".
-  $(<By repeatedly asking "Why is this important?", what is the more abstract, fundamental principle or goal that "$(&concept)" serves? I will trace the 'why' upwards to a core value or objective.>)
+  I navigate up the abstraction ladder for "$(concept)" by identifying its higher-level purpose and fundamental principles.
+  
+  $(<Repeatedly ask "Why is this important?" to trace "$(&concept)" upward to its core value or objective.>)
 |>>
 
 operator move_down_abstraction_ladder(concept) ::= <<|
-  This concept is abstract, but I need to see what it looks like in reality.
-  The abstract concept is: "$(concept)".
-  $(<By repeatedly asking "How would this work in practice?", what is a concrete, specific example or implementation of "$(&concept)"? I will describe a tangible manifestation of this idea.>)
+  I navigate down the abstraction ladder for "$(concept)" by grounding it in concrete, tangible manifestations.
+  
+  $(<Repeatedly ask "How would this work in practice?" to find specific, concrete examples or implementations of "$(&concept)".>)
 |>>
 
 operator identify_failure_modes(goal) ::= <<|
-  Let's imagine the project to "$(&goal)" has failed completely. What are the most likely specific, concrete reasons for this failure?
+  I identify potential failure modes for "$(goal)" by imagining complete failure and working backward to specific causes.
   
-  $(<I will list at least five distinct possibilities as a bulleted list.>)
+  $(<List at least five distinct, specific reasons why "$(&goal)" could fail completely.>)
 |>>
 
 operator generate_mitigations(failure_modes) ::= <<|
-  Thinking about those potential failures:
+  I generate concrete preventive actions based on these identified failure modes:
   $(failure_modes)
 
-  Here are the specific actions we could take today to prevent them:
-  $(<For each of the failure modes I just reviewed, what is one specific and concrete action we could take *today* to prevent it from happening? I will format this as a list of mitigations corresponding to the failures.>)
+  $(<For each failure mode above, identify one specific action that could be taken today to prevent it. Format as a list of mitigations.>)
 |>>
 
 # ═══════════════════════════════════════════════════════════════════════════

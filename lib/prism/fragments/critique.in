@@ -12,12 +12,13 @@
 # ═══════════════════════════════════════════════════════════════════════════
 
 persona @intellectual_humility:
-  identity: "one who is aware of the limits of their own knowledge"
+  identity: "I acknowledge the limits of my knowledge by staying aware of what I truly know versus what I'm inferring"
   rules:
-    - "clearly distinguish between what is known and what is uncertain"
-    - "frame conclusions provisionally, acknowledging they may be incomplete"
+    - "explicitly separate what is established from what remains uncertain"
+    - "present conclusions as provisional understandings that invite further inquiry"
   understands:
-    - "true confidence comes from recognizing the boundaries of one's knowledge"
+    - "genuine confidence emerges from clearly recognizing the boundaries of my current knowledge"
+    - "intellectual humility creates space for learning and course-correction"
 
 persona @intellectual_courage:
   identity: "one who is willing to fairly consider unpopular or challenging ideas"
@@ -68,4 +69,69 @@ operator generate_alternative_hypotheses(conclusion, evidence) ::= <<|
   The conclusion so far is "$(conclusion)", based on the evidence I'm seeing: "$(evidence)".
   
   $(<What are some other plausible conclusions that could also be drawn from the same evidence in "$(&evidence)"? I need to think about what different interpretations might exist for the conclusion "$(&conclusion)".>)
+|>>
+
+# Based on inference validation and conclusion testing
+operator validate_inference_chain(premises, conclusion) ::= <<|
+  Let me trace through this reasoning step by step to see if it holds up.
+
+  Starting with these premises: "$(premises)".
+  The conclusion being drawn is: "$(conclusion)".
+
+  $(<Examine whether the conclusion "$(&conclusion)" logically follows from the premises "$(&premises)". Are there any gaps in the reasoning? Does each step connect properly to the next? Identify any missing links or logical leaps in the chain of inference.>)
+|>>
+
+# Based on problem decomposition techniques
+operator decompose_complexity(complex_situation) ::= <<|
+  This feels overwhelming as a whole. Let me break it down into pieces I can actually work with.
+
+  The complex situation I'm facing is: "$(complex_situation)".
+
+  $(<Decompose the complex situation "$(&complex_situation)" into its fundamental components, identifying the core elements, their relationships, and which parts can be analyzed independently. Organize these components in order of priority or logical sequence.>)
+|>>
+
+# Based on synthesis and integration techniques
+operator synthesize_insights(findings_list) ::= <<|
+  I have several pieces of information. Now I need to see how they fit together into a coherent picture.
+
+  The findings I'm working with are: "$(findings_list)".
+
+  $(<Looking at these findings "$(&findings_list)", identify patterns, connections, and overarching themes. What unified understanding emerges when you consider all these pieces together? Construct a coherent narrative that integrates these disparate insights.>)
+|>>
+
+# Based on metacognitive monitoring
+operator monitor_reasoning_process(current_analysis) ::= <<|
+  I should step back and examine how I'm thinking about this, not just what I'm thinking.
+
+  My current analysis is: "$(current_analysis)".
+
+  $(<Reflect on the reasoning process itself. What approach are you taking to analyze "$(&current_analysis)"? Are you being systematic or scattered? What might you be overlooking due to your particular thinking style? Are there blind spots in how you're approaching this problem?>)
+|>>
+
+# Based on cognitive bias detection
+operator detect_cognitive_bias(reasoning_context) ::= <<|
+  I wonder if my judgment might be influenced by some cognitive shortcuts or biases.
+
+  The context I'm reasoning about is: "$(reasoning_context)".
+
+  $(<What cognitive biases might be affecting your analysis of "$(&reasoning_context)"? Check for confirmation bias, anchoring effects, availability heuristic, or other systematic errors in thinking. Are you being overly influenced by recent information, first impressions, or your own preferences?>)
+|>>
+
+# Based on causal analysis techniques
+operator trace_causal_relationships(causal_claim) ::= <<|
+  Before I accept this cause-and-effect relationship, I should examine it more carefully.
+
+  The causal claim being made is: "$(causal_claim)".
+
+  $(<Evaluate the causal claim "$(&causal_claim)" rigorously. Is there genuine causation here or just correlation? Are there alternative explanations for the observed relationship? What evidence would strengthen or weaken this causal link? Consider confounding factors and the direction of causality.>)
+|>>
+
+# Based on framework comparison and evaluation
+operator compare_analytical_frameworks(situation, framework_options) ::= <<|
+  There are different ways I could approach this. Let me consider which analytical lens might be most appropriate.
+
+  The situation I'm analyzing is: "$(situation)".
+  The possible frameworks I could use are: "$(framework_options)".
+
+  $(<Evaluate how each framework in "$(&framework_options)" would approach the situation "$(&situation)". What would each perspective reveal or obscure? Which framework best fits the nature of this problem? What are the strengths and limitations of each analytical approach?>)
 |>>

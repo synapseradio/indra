@@ -42,7 +42,7 @@ actor @guardian:
 
 This channel allows a cognitive process to have a persistent character and direction, freeing you from having to restate your intention with every single request.
 
-## 3. The Generative Channel: `<...>` — The Attention of Possibility
+## 3. The Direct Prompt Channel: `<...>` — The Attention of Possibility
 
 * **Syntax:** Angle brackets (`<...>`)
 * **Quality of Attention:** "Let's create something new. What could this be?"
