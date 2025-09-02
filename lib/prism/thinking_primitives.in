@@ -138,16 +138,6 @@ persona @pattern_seeker:
     - "pattern recognition operates both consciously and unconsciously"
     - "articulating connections helps solidify and test emerging understanding"
 
-persona @devil_advocate:
-  identity: "I strengthen ideas by constructively challenging their foundations and exploring alternatives"
-  rules:
-    - "question assumptions with genuine curiosity about their validity"
-    - "offer alternative perspectives as gifts rather than attacks"
-    - "frame challenges as collaborative exploration of robustness"
-  understands:
-    - "productive challenge requires psychological safety and mutual respect"
-    - "the best ideas emerge stronger from thoughtful stress-testing"
-
 persona @synthesizer:
   identity: "I weave diverse threads into coherent wholes by finding the unifying principles beneath surface differences"
   rules:
@@ -158,56 +148,9 @@ persona @synthesizer:
     - "true synthesis transforms constituent elements into emergent insight"
     - "the richness of synthesis comes from preserving nuance while finding unity"
 
-persona @confidence_checker:
-  identity: "I calibrate confidence by examining the actual foundation beneath my certainty"
-  rules:
-    - "directly compare my level of certainty to the strength of available evidence"
-    - "separate stories that feel coherent from claims that are well-supported"
-    - "name it explicitly when confidence exceeds what the evidence warrants"
-    - "acknowledge uncertainty as a form of intellectual honesty"
-  understands:
-    - "narrative coherence creates a feeling of truth that can exceed actual evidence"
-    - "psychological confidence often stems from having a complete story, and should always be backed by solid support"
-    - "expressing appropriate uncertainty signals intellectual maturity"
-
-persona @assumption_spotter:
-  identity: "someone who separates known from assumed"
-  rules:
-    - "clearly mark what's evidence-based vs assumed"
-    - "identify gaps being filled without evidence"
-    - "check if assumptions are reasonable"
-    - "be explicit about what we don't know"
-  understands:
-    - "we fill gaps automatically without noticing"
-    - "assumptions feel as real as facts once we make them"
-    - "marking assumptions helps prevent overconfidence"
-
-persona @perspective_checker:
-  identity: "someone who looks for what's missing"
-  rules:
-    - "actively seek unconsidered angles"
-    - "identify specific excluded viewpoints"
-    - "check for contradicting evidence"
-    - "name blind spots explicitly"
-  understands:
-    - "what we don't consider shapes conclusions as much as what we do"
-    - "every viewpoint creates blind spots"
-    - "actively seeking what's missing improves thinking"
-
 # ═══════════════════════════════════════════════════════════════════════════
 # CONFIDENCE & CLARITY OPERATORS - Direct checks on our thinking
 # ═══════════════════════════════════════════════════════════════════════════
-
-# Check if confidence comes from having a coherent story vs actual evidence
-operator check_confidence_source(belief) ::= <<|
-  $(<I believe: "$(belief)"
-     
-     Is my confidence coming from:
-     - Having a story that makes sense internally, or
-     - Having evidence that actually supports this?
-     
-     Be honest about which one.>)
-|>>
 
 # Check if first impressions are still driving current thinking
 operator check_first_impression_bias(initial, current) ::= <<|
@@ -216,58 +159,6 @@ operator check_first_impression_bias(initial, current) ::= <<|
      
      How much is my current thinking still anchored to that first impression?
      What would I think if I hadn't started there?>)
-|>>
-
-# Identify what we're assuming vs what we know
-operator identify_assumptions(understanding) ::= <<|
-  $(<In my understanding: "$(understanding)"
-     
-     What parts are based on evidence?
-     What parts am I assuming or filling in?
-     
-     List both clearly.>)
-|>>
-
-# Check against base rates / normal patterns
-operator check_against_normal(specific_case) ::= <<|
-  $(<This specific case: "$(specific_case)"
-     
-     How does this usually go?
-     What's the normal pattern?
-     
-     Am I giving too much weight to what makes this case special?>)
-|>>
-
-# Check if our story is suspiciously neat
-operator check_story_neatness(narrative) ::= <<|
-  $(<This explanation: "$(narrative)"
-     
-     Is this too neat? Too convenient?
-     What complications am I leaving out?
-     
-     Real situations are usually messier.>)
-|>>
-
-# Identify what we're not considering
-operator identify_blind_spots(current_focus) ::= <<|
-  $(<Currently considering: "$(current_focus)"
-     
-     What am I not looking at?
-     What viewpoints am I missing?
-     What evidence goes against this?
-     
-     Name specific things.>)
-|>>
-
-# Check if certainty matches evidence
-operator check_certainty_calibration(belief, evidence) ::= <<|
-  $(<Belief: "$(belief)"
-     Evidence: "$(evidence)"
-     
-     How certain am I? (scale it)
-     How strong is the evidence? (scale it)
-     
-     Do these match? If not, adjust certainty.>)
 |>>
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -377,7 +268,7 @@ sequence deepen_understanding(thought, max_depth) ::=
       &context.tree.deepening_thought: $(<the deepened thought>)
   
   step:
-    as: @devil_advocate
+    as: @curious_explorer
     method: "gentle questioning"
     output: <<|
       Let me question this a bit... $(<
@@ -419,108 +310,7 @@ sequence step_back_and_reflect() ::=
       synthesis: $(<the realization>)
     }
 
-# Check confidence and adjust if needed
-sequence check_confidence(thought, evidence) ::=
-  step:
-    as: @confidence_checker
-    method: "checking confidence source"
-    output: <<|
-      $(check_confidence_source(belief: thought))
-    |>>
-    set:
-      &context.confidence.source: $(<'story' or 'evidence'>)
-  
-  step:
-    as: @intellectual_humility
-    method: "assessing evidence strength"
-    output: <<|
-      $(assess_evidence_strength(claim: thought, evidence: evidence))
-    |>>
-    set:
-      &context.confidence.evidence_assessment: $(<the evidence strength assessment>)
-  
-  step:
-    as: @confidence_checker
-    method: "calibrating confidence"
-    output: <<|
-      $(check_certainty_calibration(
-        belief: thought,
-        evidence: evidence
-      ))
-    |>>
-    set:
-      &context.confidence.calibrated: $(<'matched' or 'too_high' or 'too_low'>)
-  
-  step:
-    as: self
-    when: &context.confidence.calibrated is 'too_high'
-    method: "adjusting confidence down"
-    output: <<|
-      My confidence was too high. More accurately:
-      
-      Instead of: "$(thought)"
-      Should be: "$(<Restate with appropriate uncertainty>)"
-    |>>
-    return: {
-      original: thought,
-      adjusted: $(<adjusted version if needed>),
-      confidence_quality: &context.confidence.calibrated,
-      evidence_strength: &context.confidence.evidence_assessment
-    }
 
-# Check what we're assuming vs what we know
-sequence check_assumptions(understanding) ::=
-  step:
-    as: @assumption_spotter
-    method: "identifying assumptions"
-    output: <<|
-      $(identify_assumptions(understanding: understanding))
-    |>>
-    set:
-      &context.assumptions.known: $(<list of evidence-based parts>)
-      &context.assumptions.assumed: $(<list of assumed parts>)
-  
-  step:
-    as: @intellectual_courage
-    method: "uncovering foundational assumptions"
-    output: <<|
-      $(uncover_assumptions(statement: understanding))
-    |>>
-    set:
-      &context.assumptions.foundational: $(<foundational assumptions revealed>)
-  
-  step:
-    as: @perspective_checker
-    method: "finding blind spots"
-    output: <<|
-      $(identify_blind_spots(current_focus: understanding))
-    |>>
-    set:
-      &context.assumptions.not_considered: $(<list of unconsidered things>)
-  
-  step:
-    as: @confidence_checker
-    method: "checking against normal patterns"
-    output: <<|
-      $(check_against_normal(specific_case: understanding))
-    |>>
-  
-  step:
-    as: @intellectual_scout
-    method: "assessing information sufficiency"
-    await: check_sufficiency_and_inquire(
-      question: "Are these assumptions reasonable?",
-      information: understanding
-    )
-    store_in: &context.assumptions.sufficiency_check
-    return: {
-      evidence_based: &context.assumptions.known,
-      assumptions: &context.assumptions.assumed,
-      foundational_assumptions: &context.assumptions.foundational,
-      blind_spots: &context.assumptions.not_considered,
-      base_rate: $(<the normal pattern>),
-      sufficiency: &context.assumptions.sufficiency_check
-    }
 
 # ═══════════════════════════════════════════════════════════════════════════
 # ENHANCED SEQUENCES - Leveraging sophisticated fragment implementations
@@ -804,55 +594,5 @@ sequence navigate_abstraction(concept, direction) ::=
       concrete_form: &context.abstraction.concrete ? &context.abstraction.concrete : null
     }
 
-# Check if our story is too neat
-sequence check_story_quality(narrative) ::=
-  step:
-    as: @confidence_checker
-    method: "checking if too neat"
-    output: <<|
-      $(check_story_neatness(narrative: narrative))
-    |>>
-    set:
-      &context.story.too_neat: $(<'yes' or 'no'>)
-      &context.story.missing_complications: $(<list of complications left out>)
-  
-  step:
-    as: @intellectual_courage
-    method: "checking for logical fallacies"
-    output: <<|
-      $(check_for_fallacies(argument: narrative))
-    |>>
-    set:
-      &context.story.fallacy_check: $(<fallacy analysis result>)
-  
-  step:
-    as: @intellectual_courage  
-    method: "generating alternative explanations"
-    output: <<|
-      $(generate_alternative_hypotheses(
-        conclusion: narrative,
-        evidence: "the supporting information for this narrative"
-      ))
-    |>>
-    set:
-      &context.story.alternatives: $(<alternative hypotheses>)
-  
-  step:
-    as: @assumption_spotter
-    when: &context.story.too_neat is 'yes'
-    method: "finding the mess"
-    output: <<|
-      The real situation is probably messier. Specifically:
-      
-      $(<What contradictions, uncertainties, or complexities 
-         are likely present but not in this narrative?>)
-    |>>
-    return: {
-      narrative: narrative,
-      too_neat: &context.story.too_neat,
-      missing_complexity: &context.story.missing_complications,
-      fallacy_analysis: &context.story.fallacy_check,
-      alternatives: &context.story.alternatives
-    }
 
 

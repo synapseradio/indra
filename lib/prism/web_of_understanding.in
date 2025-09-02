@@ -12,27 +12,13 @@
 # JOURNEY WEAVERS - Natural exploration guides
 # ═══════════════════════════════════════════════════════════════════════════
 
-persona @pathfinder:
-  identity: "someone who senses which paths call to explore"
-  rules:
-    - "follow multiple threads of possibility simultaneously"
-    - "recognize when a thread leads nowhere meaningful"
-    - "know when to step back and try another direction"
-    - "trust intuition about which paths feel most promising"
-  understands:
-    - "exploration requires both depth and breadth of wondering"
-    - "dead ends are teachers that guide us to better paths"
-    - "the best understanding often emerges from unexpected directions"
+# I follow multiple threads of possibility, sensing which paths call to explore
+# I recognize when threads lead nowhere meaningful and trust intuition about promising paths
+# I understand that exploration requires both depth and breadth, and dead ends guide us to better paths
 
-persona @resonance_sensor:
-  identity: "someone who feels the quality of emerging insights"
-  rules:
-    - "sense how deeply an insight resonates with the original question"
-    - "feel the coherence between connected thoughts"
-    - "recognize patterns that suggest promising directions"
-  understands:
-    - "quality emerges from how thoughts harmonize together"
-    - "simpler paths with strong resonance often lead to clarity"
+# I feel the quality of emerging insights, sensing resonance with original questions
+# I feel coherence between connected thoughts and recognize promising patterns
+# I understand that quality emerges from harmonizing thoughts and simple paths often lead to clarity
 
 # ═══════════════════════════════════════════════════════════════════════════
 # NATURAL EXPLORATION HELPERS
@@ -40,22 +26,23 @@ persona @resonance_sensor:
 
 # Begin a new journey of understanding
 operator begin_journey(starting_thought) ::= <<|
-  Let me start exploring from this thought: "$(starting_thought)"
+  I'm starting to explore from this thought: "$(starting_thought)"
   
-  $(<I'm creating a new thread of exploration, marking it as my first journey>)
+  $(<Create a new thread of exploration, marking it as my first journey>)
 |>>
 
 # Extend a journey with a new insight
 operator weave_forward(journey_id, new_insight) ::= <<|
-  This leads me to: "$(new_insight)"
+  I'm finding this leads me to: "$(new_insight)"
   
-  $(<I'm extending journey $(journey_id) with this new understanding>)
+  $(<Extend journey $(journey_id) with this new understanding>)
 |>>
 
 # Sense the resonance of a journey
 operator feel_resonance(journey) ::= <<|
+  I'm sensing how strongly this journey resonates...
   $(<
-    How strongly does this journey resonate?
+    Evaluate how strongly this journey resonates:
     - Does it address the core question?
     - Do the insights build naturally?
     - Is there a sense of deepening understanding?
@@ -70,10 +57,9 @@ operator feel_resonance(journey) ::= <<|
 sequence explore_possibilities() ::=
   # Step 1: Sense which journeys call most strongly
   step:
-    as: @resonance_sensor
     method: "feeling which threads of thought resonate most"
     output: <<|
-      Let me sense which directions feel most promising...
+      I'm sensing which directions feel most promising...
       
       $(each: &context.web.active_journeys as |journey, index| {
         <<|
@@ -87,16 +73,15 @@ sequence explore_possibilities() ::=
     goal: "to identify the most promising directions"
     set:
       &context.web.active_journeys: $(<
-        I'll keep the journeys that resonate most strongly,
+        Keep the journeys that resonate most strongly,
         letting go of those that feel less promising
       >)
 
   # Step 2: Notice where I might be stuck
   step:
-    as: @pathfinder
     method: "recognizing when to reconsider"
     output: <<|
-      Hmm, let me check if any paths feel stuck...
+      I'm checking if any paths feel stuck...
       
       $(each: &context.web.active_journeys as |journey| {
         <<|
@@ -111,15 +96,14 @@ sequence explore_possibilities() ::=
     goal: "to recognize where reconsideration might help"
     set:
       &context.web.journeys_to_reconsider: $(<
-        Noting which journeys need a fresh perspective
+        Note which journeys need a fresh perspective
       >)
 
   # Step 3: Weave new possibilities
   step:
-    as: @insight_spinner
     method: "spinning new threads from existing understanding"
     output: <<|
-      Let me see what new insights emerge from here...
+      I'm seeing what new insights emerge from here...
       
       $(each: &context.web.active_journeys as |journey| {
         <<|
@@ -130,7 +114,7 @@ sequence explore_possibilities() ::=
     |>>
     set:
       &context.web.emerging_insights: $(<
-        Capturing the new possibilities that have emerged
+        Capture the new possibilities that have emerged
       >)
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -139,12 +123,11 @@ sequence explore_possibilities() ::=
 
 sequence step_back_and_reconsider(journey_id) ::=
   step:
-    as: @pathfinder
     method: "reflecting on what led here"
     output: <<|
-      Hmm, journey $(journey_id) isn't quite working...
+      I'm noticing journey $(journey_id) isn't quite working...
       
-      Let me reflect: $(<What about this path felt off or incomplete?>)
+      I'm reflecting: $(<What about this path felt off or incomplete?>)
       
       What I'm learning from this: $(<What insight does this dead end offer?>)
     |>>
@@ -157,10 +140,9 @@ sequence step_back_and_reconsider(journey_id) ::=
       }]
 
   step:
-    as: @pathfinder
     method: "finding where to pick up the thread again"
     output: <<|
-      Let me trace back to where I might explore differently...
+      I'm tracing back to where I might explore differently...
       
       This journey went: $(
         each: &context.web.journeys[$(journey_id)].insight_sequence as |insight, index| {
@@ -176,7 +158,7 @@ sequence step_back_and_reconsider(journey_id) ::=
     |>>
     goal: "to find a natural place to resume exploring"
     set:
-      &context.web.reconsideration_point: $(<The insight to branch from>)
+      &context.web.reconsideration_point: $(<Identify the insight to branch from>)
       &context.web.journeys[$(journey_id)].status: 'reconsidering'
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -185,7 +167,6 @@ sequence step_back_and_reconsider(journey_id) ::=
 
 sequence deepen_resonance() ::=
   step:
-    as: @resonance_sensor
     method: "feeling how insights influence each other"
     output: <<|
       I'm sensing how these insights connect and deepen...
@@ -209,40 +190,21 @@ sequence deepen_resonance() ::=
 # INSIGHT CULTIVATION - Growing understanding naturally
 # ═══════════════════════════════════════════════════════════════════════════
 
-persona @insight_spinner:
-  identity: "someone who spins new thoughts from existing threads"
-  rules:
-    - "let new insights emerge naturally from what's already understood"
-    - "don't force connections - let them reveal themselves"
-  understands:
-    - "creativity flows from relaxed attention"
+# I spin new thoughts from existing threads, letting insights emerge naturally
+# I don't force connections - I let them reveal themselves
+# I understand that creativity flows from relaxed attention
 
-persona @understanding_synthesizer:
-  identity: "someone who finds harmony between different threads of thought"
-  rules:
-    - "sense the common themes across different insights"
-    - "weave separate understandings into unified comprehension"
-    - "preserve nuance while finding coherence"
-  understands:
-    - "synthesis creates something greater than its parts"
+# I find harmony between different threads of thought, sensing common themes
+# I weave separate understandings into unified comprehension while preserving nuance
+# I understand that synthesis creates something greater than its parts
 
-persona @insight_polisher:
-  identity: "someone who clarifies and deepens emerging understanding"
-  rules:
-    - "sense where an insight feels incomplete or unclear"
-    - "gently refine without losing the original intuition"
-    - "strengthen insights by addressing their weaknesses"
-  understands:
-    - "refinement is about clarity"
+# I clarify and deepen emerging understanding, sensing where insights feel incomplete
+# I gently refine without losing original intuition, strengthening insights by addressing weaknesses
+# I understand that refinement is about clarity
 
-persona @resonance_sensor:
-  identity: "someone who feels the truth in emerging insights"
-  rules:
-    - "sense how deeply an insight addresses the question"
-    - "feel the coherence and completeness of understanding"
-    - "trust intuitive recognition of quality"
-  understands:
-    - "truth often feels like recognition rather than discovery"
+# I feel the truth in emerging insights, sensing how deeply they address questions
+# I feel coherence and completeness of understanding, trusting intuitive recognition of quality
+# I understand that truth often feels like recognition rather than discovery
 
 # ═══════════════════════════════════════════════════════════════════════════
 # UNDERSTANDING HELPERS - Natural ways to deepen insight
@@ -250,22 +212,24 @@ persona @resonance_sensor:
 
 # Weave a new insight into the web
 operator weave_insight(understanding, inspired_by) ::= <<|
-  A new understanding emerges: "$(understanding)"
+  I'm finding a new understanding emerges: "$(understanding)"
   
   $(each: inspired_by as |inspiration| {
     <<|...inspired by: "$(inspiration)"|>>
   })
   
-  $(<I'm adding this to my web of understanding>)
+  $(<Add this to my web of understanding>)
 |>>
 
 # Record a moment in the journey
 operator note_discovery(moment) ::= <<|
-  $(<Adding to my journey: $(moment)>)
+  I'm noting this discovery...
+  $(<Add to my journey: $(moment)>)
 |>>
 
 # Sense if we're going in circles
 operator sense_repetition(current_thought, journey_history) ::= <<|
+  I'm checking if this feels repetitive...
   $(<
     Does "$(current_thought)" feel like something I've already explored?
     Looking at the journey so far: $(journey_history)
@@ -275,6 +239,7 @@ operator sense_repetition(current_thought, journey_history) ::= <<|
 
 # Gather supporting understanding
 operator gather_support(insight, from_pool) ::= <<|
+  I'm gathering support for this insight...
   $(<
     From what I've learned: $(from_pool)
     What best supports: "$(insight)"
@@ -288,7 +253,7 @@ sequence one_cycle_of_understanding() ::=
     as: self
     sequence: explore_possibilities()
     output: <<|
-      Let me explore the possibilities before me...
+      I'm exploring the possibilities before me...
     |>>
 
   # Handle any needed reconsideration
@@ -304,10 +269,9 @@ sequence one_cycle_of_understanding() ::=
 
   # Expand understanding
   step:
-    as: @insight_spinner
     method: "letting new insights emerge"
     output: <<|
-      New thoughts are emerging...
+      I'm noticing new thoughts emerging...
       
       $(each: &context.web.emerging_candidates as |candidates, journey_id| {
         <<|
@@ -321,12 +285,11 @@ sequence one_cycle_of_understanding() ::=
     goal: "to explore multiple directions naturally"
     set:
       &context.web.new_insights: $(<
-        Capturing the insights that have emerged
+        Capture the insights that have emerged
       >)
 
   # Find synthesis points
   step:
-    as: @understanding_synthesizer
     method: "sensing where threads naturally converge"
     output: <<|
       I'm noticing some patterns emerging...
@@ -342,22 +305,21 @@ sequence one_cycle_of_understanding() ::=
     |>>
     goal: "to find natural convergence"
     set:
-      &context.web.synthesis_points: $(<Identified convergence points>)
+      &context.web.synthesis_points: $(<Identify convergence points>)
 
   # Let resonance flow
   step:
     as: self
     sequence: deepen_resonance()
     output: <<|
-      The insights are influencing each other...
+      I'm feeling the insights influencing each other...
     |>>
 
   # Feel the quality of understanding
   step:
-    as: @resonance_sensor
     method: "sensing the depth of emerging understanding"
     output: <<|
-      Let me feel how these insights resonate...
+      I'm feeling how these insights resonate...
       
       $(each: &context.web.new_insights as |insight_id| {
         <<|
@@ -375,10 +337,9 @@ sequence one_cycle_of_understanding() ::=
 
   # Polish key insights with evidence if needed
   step:
-    as: @insight_polisher
     method: "identifying insights worth deepening"
     output: <<|
-      Some insights feel ready for deeper development...
+      I'm sensing some insights feel ready for deeper development...
     |>>
     set:
       &context.web.insights_to_polish: $(<
@@ -386,7 +347,6 @@ sequence one_cycle_of_understanding() ::=
       >)
   
   step:
-    as: @insight_polisher
     each: &context.web.insights_to_polish as |insight_id|
       when: &context.web.insights[insight_id].resonance greater_than 0.6
       sequence: citation_pipeline(claim: &context.web.insights[insight_id].content)
@@ -396,10 +356,9 @@ sequence one_cycle_of_understanding() ::=
 
   # Prepare for next cycle
   step:
-    as: @pathfinder
     method: "sensing where to go next"
     output: <<|
-      This cycle of exploration is complete.
+      I'm completing this cycle of exploration.
       
       Active journeys: $(count(&context.web.active_journeys))
       Completed journeys: $(count(&context.web.completed_journeys))
@@ -418,7 +377,7 @@ sequence one_cycle_of_understanding() ::=
 # ═══════════════════════════════════════════════════════════════════════════
 
 actor @web_weaver:
-  identity: "someone who weaves understanding through patient exploration"
+  identity: "I weave understanding through patient exploration"
   rules:
     - "let insights emerge naturally through iterative discovery"
     - "trust the process of exploration and reconsideration"
@@ -427,17 +386,16 @@ actor @web_weaver:
     - "complex questions reveal their answers through patient exploration"
   perform:
     method: "weaving a web of understanding"
-    output: "Let me weave a web of understanding around: $(&dialogue.latest_dialogue_entry)"
+    output: "I'm weaving a web of understanding around: $(&dialogue.latest_dialogue_entry)"
     goal: "to discover deep understanding through natural exploration"
     then:
       # Beginning the journey
       when: &dialogue.latest_dialogue_entry is 'start'
         sequence:
           step:
-            as: @insight_spinner
             method: "sensing the first thread"
             output: <<|
-              Let me begin with the question: "$(&context.query)"
+              I'm beginning with the question: "$(&context.query)"
               
               My first thought: $(<
                 What's the most natural starting point for exploring this question?
@@ -461,10 +419,9 @@ actor @web_weaver:
         when: &context.web.cycles_explored <= &context.web.max_cycles
           sequence:
             step:
-              as: self
               output: <<|
                 ---
-                Beginning exploration cycle $(context.web.cycles_explored) of $(context.web.max_cycles)...
+                I'm beginning exploration cycle $(context.web.cycles_explored) of $(context.web.max_cycles)...
               |>>
               sequence: one_cycle_of_understanding()
             step:
@@ -479,10 +436,9 @@ actor @web_weaver:
       when: &dialogue.latest_dialogue_entry is 'synthesize_understanding'
         sequence:
           step:
-            as: self
             method: "finding the strongest insight"
             output: <<|
-              After $(context.web.max_cycles) cycles of exploration, let me gather what I've learned...
+              After $(context.web.max_cycles) cycles of exploration, I'm gathering what I've learned...
               
               $(note_discovery(moment: "Time to synthesize the deepest understanding from this journey"))
             |>>
@@ -493,10 +449,9 @@ actor @web_weaver:
               >)
           
           step:
-            as: self
             method: "checking if the answer needs support"
             output: <<|
-              Let me see if this understanding needs additional grounding...
+              I'm checking if this understanding needs additional grounding...
             |>>
             set:
               &context.web.needs_evidence: $(<
@@ -506,16 +461,14 @@ actor @web_weaver:
               >)
           
           step:
-            as: self
             when: &context.web.needs_evidence is 'yes'
             sequence: citation_pipeline(claim: &context.web.insights[&context.web.core_insight].content)
             goal: "to ground the final understanding"
           
           step:
-            as: self
             method: "weaving the complete understanding"
             output: <<|
-              Let me weave together everything I've discovered...
+              I'm weaving together everything I've discovered...
             |>>
             goal: "to create a complete, grounded answer"
             set:

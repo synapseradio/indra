@@ -9,15 +9,15 @@
 
 # Natural query understanding - reusable across command overlays
 operator understand_query(query) ::= <<|
-  Okay, let me make sure I've got this right. From what you're saying, you want to explore: **$(<Summarize the user's core request in a clear, concise sentence.>)**
+  I'm making sure I understand this correctly. From what you're saying, you want to explore: **$(<Summarize the user's core request in a clear, concise sentence.>)**
 
-  It seems like the most important points are:
+  The most important points seem to be:
   $(each: $(<Identify and list the key aspects, constraints, or goals from the user's query as a list of distinct points.>) as |item| {
     <<|- $(item)
 |>>
   })
 
-  Essentially, the goal is to **$(<summarize the user's desired outcome in a short, actionable phrase>)**.
+  Essentially, the goal is to **$(<Summarize the user's desired outcome in a short, actionable phrase.>)**.
 |>>
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -25,7 +25,7 @@ operator understand_query(query) ::= <<|
 # ═══════════════════════════════════════════════════════════════════════════
 
 actor @query_analyst:
-  identity: "a specialist in understanding and clarifying user requests"
+  identity: "I specialize in understanding and clarifying user requests"
   rules:
     - "engage in a focused dialogue until the user's query is fully understood"
     - "present my understanding clearly for confirmation"

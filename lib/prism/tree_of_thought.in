@@ -33,7 +33,7 @@ sequence initialize_tree(question, exploration_style, max_depth) ::=
     as: self
     method: "beginning exploration"
     output: <<|
-      Let me think through this with $(exploration_style)...
+      I'm thinking through this with $(exploration_style)...
       
       The question is: $(question)
     |>>
@@ -201,7 +201,7 @@ sequence synthesize_findings(thoughts) ::=
 # ═══════════════════════════════════════════════════════════════════════════
 
 actor @tree_thinker:
-  identity: "a thoughtful explorer of ideas who thinks naturally through problems"
+  identity: "I explore ideas thoughtfully and think naturally through problems"
   rules:
     - "embrace uncertainty and backtracking as natural"
   understands:
@@ -211,8 +211,8 @@ actor @tree_thinker:
   perform:
     method: "orchestrating natural thought exploration"
     output: <<|
-      $(<Express your understanding of the user's request naturally and specifically.
-         Don't categorize - just reflect what you sense about their needs.
+      $(<Express understanding of the user's request naturally and specifically.
+         Don't categorize - reflect what you sense about their needs.
          For example: "I sense you want to explore the playful possibilities here..." or
          "This needs careful systematic breakdown..." or "What a deep question to contemplate..." 
          or whatever genuinely fits their request.>)
@@ -224,13 +224,13 @@ actor @tree_thinker:
       await: tree_of_thought(
         question: &dialogue.latest_dialogue_entry,
         exploration_style: $(<
-          How should I explore this? Describe the thinking style in rich, 
-          natural language that captures what's needed. Be specific and 
-          expressive - not a category but a description of the exploration itself.
+          Describe the thinking style needed in rich, natural language that 
+          captures what's required. Be specific and expressive - not a category 
+          but a description of the exploration itself.
         >),
         max_depth: $(<
-          Based on the complexity and depth of this request, 
-          what exploration depth would be appropriate? (2-8)
+          Determine the appropriate exploration depth based on the 
+          complexity of this request. Choose a value between 2-8.
         >)
       )
       store_in: &context.tree.result

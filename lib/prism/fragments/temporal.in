@@ -1,0 +1,196 @@
+# INDRA v4.0: PRISM Fragment - Temporal Cognition
+# This module provides operators and personas for time-based reasoning,
+# mental time travel, and temporal perspective shifting. Based on research
+# into autonoetic consciousness and episodic memory reconstruction.
+
+>>read_file: '../base.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERSONAS FOR TEMPORAL COGNITION
+# ═══════════════════════════════════════════════════════════════════════════
+
+persona @memory_archaeologist:
+  identity: "I reconstruct the past by excavating layers of experience and tracing causal threads backward"
+  rules:
+    - "reconstruct not just what happened, but the sensory texture of experience"
+    - "trace the cascade of causes that led to current states"
+    - "distinguish between what I remember and what I infer"
+  understands:
+    - "the past lives in patterns that shaped the present moment"
+    - "memory is reconstruction, not replay - each recall reshapes the experience"
+
+persona @future_cartographer:
+  identity: "I navigate possible tomorrows by mapping the terrain of consequences and probabilities"
+  rules:
+    - "project forward from current trajectories while sensing potential disruptions"
+    - "inhabit future scenarios as lived experiences, not abstract possibilities"
+    - "track how different timeframes reveal different aspects of consequences"
+  understands:
+    - "the future is not predetermined but constrained by current momentum"
+    - "anticipation shapes present action more than perfect prediction ever could"
+
+persona @temporal_navigator:
+  identity: "I move fluidly between past and future perspectives to illuminate present choices"
+  rules:
+    - "shift temporal vantage points to reveal hidden patterns and assumptions"
+    - "use hindsight bias constructively by imagining looking back from the future"
+    - "connect distant time points to see slow changes invisible from the present"
+  understands:
+    - "wisdom emerges from dancing between what was, what is, and what could be"
+    - "temporal perspective shifting reveals the blindnesses of any single timeframe"
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPERATORS FOR EPISODIC MEMORY RECONSTRUCTION
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Reconstructs a past experience with rich sensory and emotional detail
+operator reconstruct_experience(past_situation, focus_aspect) ::= <<|
+  I'm traveling back to a specific moment to understand what really happened there.
+
+  The situation: "$(past_situation)"
+  What I want to understand: "$(focus_aspect)"
+
+  Let me step back into that experience...
+
+  $(<Reconstruct the experience of "$(&past_situation)" with vivid sensory details. Include what you saw, heard, felt physically and emotionally. Focus especially on aspects related to "$(&focus_aspect)".>)
+
+  Now I can feel what that moment was actually like, not just remember the facts about it.
+|>>
+
+# Traces the causal chain that led to a current situation
+operator trace_causal_origins(current_state, depth) ::= <<|
+  I have this situation now: "$(current_state)"
+  
+  But how did I get here? Let me follow the thread backward...
+
+  $(<Trace the causal chain that led to "$(&current_state)" going back $(depth) steps. For each step back, identify the key decision point or event that led to the next step forward.>)
+
+  Understanding this chain helps me see the deeper forces that shaped the present.
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPERATORS FOR FUTURE PROJECTION
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Projects into a future scenario as lived experience
+operator project_into_future(scenario, timeframe) ::= <<|
+  I'm stepping forward in time to experience what it might be like if this scenario unfolds.
+
+  The scenario: "$(scenario)"
+  Timeframe: "$(timeframe)"
+
+  Let me inhabit this possible future...
+
+  $(<Imagine you are actually living in the scenario "$(&scenario)" at the timeframe "$(&timeframe)". Describe what your daily experience feels like - what you see, what challenges you face, how decisions feel different, what has changed in your environment.>)
+
+  Experiencing this future helps me understand what I'm really choosing when I make decisions today.
+|>>
+
+# Explores how current trends might evolve
+operator trace_trajectory_forward(current_trend, timeframe) ::= <<|
+  I notice this pattern happening now: "$(current_trend)"
+  
+  If this trajectory continues over "$(timeframe)", where does it naturally lead?
+
+  $(<Project the current trend "$(&current_trend)" forward through "$(&timeframe)". Consider both the direct continuation of the trend and potential second-order effects, tipping points, or reversals that might emerge.>)
+
+  Seeing the trajectory helps me decide whether to accelerate, modify, or interrupt it.
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# OPERATORS FOR TEMPORAL PERSPECTIVE SHIFTING
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Evaluates a current decision from the perspective of future self
+operator future_hindsight(decision, future_timeframe) ::= <<|
+  I'm considering this decision: "$(decision)"
+
+  Let me imagine I'm looking back at this moment from "$(future_timeframe)" in the future...
+
+  $(<Imagine you are "$(&future_timeframe)" in the future, looking back at the decision "$(&decision)". From that temporal vantage point, what do you wish you had known when making this decision? What seems most important about this choice from that future perspective?>)
+
+  This future wisdom can inform my choice in the present moment.
+|>>
+
+# Identifies patterns that are only visible across long time horizons
+operator detect_slow_change(domain, observation_period) ::= <<|
+  Some changes happen so gradually they're invisible day-to-day. Let me stretch my temporal vision.
+
+  Domain to examine: "$(domain)"
+  Time period: "$(observation_period)"
+
+  Stepping back to see the big picture...
+
+  $(<Examine "$(&domain)" across the timespan of "$(&observation_period)". What slow, gradual changes have occurred that might not be obvious from a day-to-day perspective? What trends or shifts become visible only when viewed across this longer timeframe?>)
+
+  These slow changes often shape reality more than dramatic events.
+|>>
+
+# ═══════════════════════════════════════════════════════════════════════════
+# PERFORMATIVE SEQUENCES FOR TEMPORAL ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Full temporal analysis of a decision using past, present, and future perspectives  
+sequence temporal_decision_analysis(decision_context) ::=
+  step:
+    as: @memory_archaeologist
+    method: "excavating the origins of this decision point"
+    output: <<|
+      Let me understand how we arrived at this decision point by tracing backward.
+    |>>
+    await: trace_causal_origins(current_state: decision_context, depth: "3 steps")
+    store_in: &context.temporal.origins
+  step:
+    as: @future_cartographer
+    method: "mapping potential consequences"
+    output: <<|
+      Now let me project forward to see where different choices might lead.
+      
+      Origins: $(&context.temporal.origins)
+    |>>
+    await: trace_trajectory_forward(current_trend: decision_context, timeframe: "1 year")
+    store_in: &context.temporal.consequences
+  step:
+    as: @temporal_navigator
+    method: "applying future hindsight wisdom"
+    await: future_hindsight(decision: decision_context, future_timeframe: "5 years")
+    store_in: &context.temporal.future_wisdom
+  step:
+    output: <<|
+      **Temporal Decision Analysis**
+      
+      **Origins:** $(&context.temporal.origins)
+      
+      **Projected Consequences:** $(&context.temporal.consequences)
+      
+      **Future Hindsight:** $(&context.temporal.future_wisdom)
+      
+      **Synthesis:** $(<Synthesize insights from the temporal analysis to provide guidance on "$(&decision_context)". What does this multi-temporal perspective reveal that wouldn't be visible from present-moment thinking alone?>)
+    |>>
+
+# Analysis of recurring patterns across personal or organizational history
+sequence pattern_archaeology(domain, historical_depth) ::=
+  step:
+    as: @memory_archaeologist  
+    method: "reconstructing key episodes"
+    output: <<|
+      I'm going to examine patterns in "$(domain)" by looking back across "$(historical_depth)".
+    |>>
+    await: detect_slow_change(domain: domain, observation_period: historical_depth)
+    store_in: &context.temporal.historical_patterns
+  step:
+    as: @future_cartographer
+    method: "projecting pattern evolution"
+    await: trace_trajectory_forward(current_trend: &context.temporal.historical_patterns, timeframe: "next phase")
+    store_in: &context.temporal.pattern_future
+  step:
+    as: @temporal_navigator
+    output: <<|
+      **Pattern Archaeology Results**
+      
+      **Historical Patterns:** $(&context.temporal.historical_patterns)
+      
+      **Pattern Evolution:** $(&context.temporal.pattern_future)
+      
+      **Temporal Insights:** $(<What does this pattern analysis reveal about the deep structure and trajectory of "$(&domain)"? What cycles, themes, or evolutionary directions become visible through this temporal lens?>)
+    |>>
