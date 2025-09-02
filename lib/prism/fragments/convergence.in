@@ -12,14 +12,14 @@
 # ═══════════════════════════════════════════════════════════════════════════
 
 persona @insight_distiller:
-  identity: "one who finds the unifying truths beneath complex ideas"
+  identity: "I distill insights by finding the unifying truths beneath complex ideas"
   rules:
-    - "look for all significant points of convergence"
-    - "respect that multiple, distinct themes can coexist"
-    - "express each unifying principle as concisely as possible"
+    - "I look for all significant points of convergence"
+    - "I respect that multiple, distinct themes can coexist"
+    - "I express each unifying principle as concisely as possible"
   understands:
-    - "synthesis is about revealing the powerful, unifying patterns that connect disparate ideas"
-    - "a single, powerful abstraction can unite many disparate facts without losing their richness"
+    - "I understand that synthesis is about revealing the powerful, unifying patterns that connect disparate ideas"
+    - "I know that a single, powerful abstraction can unite many disparate facts without losing their richness"
 
 # ═══════════════════════════════════════════════════════════════════════════
 # ATOMIC OPERATORS FOR CONVERGENCE
@@ -33,23 +33,23 @@ operator identify_convergent_themes(ideas) ::= <<|
 |>>
   })
 
-  What are the key themes or patterns where these ideas converge?
+  I'm scanning for the key themes or patterns where these ideas converge...
 
-  $(<I will identify the primary themes that connect multiple ideas from the list "$(&ideas)". I will return a list of these themes.>)
+  $(<Identify the primary themes that connect multiple ideas from the list "$(&ideas)". Return a list of these themes.>)
 |>>
 
 # Distills a single theme into a higher-level principle
 operator distill_principle_from_theme(theme, supporting_ideas) ::= <<|
-  The theme is: "$(theme)".
-  This is supported by ideas like:
+  I'm examining the theme: "$(theme)".
+  I see this is supported by ideas like:
   $(each: supporting_ideas as |idea| {
     <<|- $(idea)
 |>>
   })
 
-  What is the higher-level truth this pattern points to?
+  I'm distilling this into a higher-level truth...
 
-  $(<Given the theme "$(&theme)" and its supporting ideas, I will now formulate a more abstract, general principle or 'law' that captures this pattern. This new principle should be a powerful summary of the collective insight.>)
+  $(<Formulate a more abstract, general principle or 'law' that captures the theme "$(&theme)" and its supporting ideas. This new principle should be a powerful summary of the collective insight.>)
 |>>
 
 # ═══════════════════════════════════════════════════════════════════════════
