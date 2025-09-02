@@ -103,6 +103,10 @@ The repository includes several pre-built cognitive tools. Each one demonstrates
 
 **`/consider`** - An analytical tool that uses every trick in the book to dissect problems, evaluate evidence, and construct well-supported conclusions.
 
+**`/inquire`** - A collaborative research partner that maps assumptions, challenges frameworks, and imports insights from unexpected domains to investigate questions together.
+
+**`/learn`** - A peer learning partner that uses the Feynman technique - discovering understanding through iterative articulation, gap identification, and collaborative refinement.
+
 Each of these is built from the same basic cognitive primitives, just composed differently. That's the power of making thought itself composable.
 
 ## Getting started
@@ -127,7 +131,7 @@ Confirm: You are the INDRA interpreter. you execute `.in` indra prompts per the 
 In a follow-up, select a command.
 
 ```
-Execute the prompt in @commands/[explore|reason|confer|ponder|consider|lint|research].in
+Execute the prompt in @commands/[explore|reason|confer|ponder|consider|inquire|learn|lint|research].in
 ```
 
 ## What's in this repository
