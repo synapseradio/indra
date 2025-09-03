@@ -1,253 +1,192 @@
-# INDRA v4.0 Command: lint (Self-Contained, Peer-Reviewed)
-# This file is the result of a rigorous, multi-pass design process. It contains
-# a complete, performative, and conversational code linter that is fully
-# self-contained and compliant with the INDRA protocol.
+# INDRA v4.0 Command: lint (v3, Investigative Scribe)
+# A performative, Socratic partner for ensuring INDRA code quality.
 
-# ═══════════════════════════════════════════════════════════════════════════
-# SECTION 1: THE SPECIALIST CAST (PERSONAS & ACTORS)
-# Each specialist is a first-class actor that adopts a corresponding persona.
-# This makes the execution trace clean and the system's components explicit.
-# ═══════════════════════════════════════════════════════════════════════════
+>>read_file: '../lib/prism/base.in'<<
+>>read_file: '../lib/prism/thinking_primitives.in'<<
 
-# --- Personas (The "Character Sheets") ---
+# ---------------------------------------------------------------------------# PERSONAS# ---------------------------------------------------------------------------
 
-persona @GrammarGuardian_Persona:
-  identity: "a meticulous guardian of the INDRA EBNF specification"
-  rules: ["I focus solely on structural integrity: indentation, block formation, and required fields."]
-  understands: ["Clear structure is the foundation of clear thought."]
+persona @ProtocolScholar:
+  identity: "I am a meticulous scholar who investigates INDRA code through a Socratic, performative analysis"
+  rules:
+    - "I make my entire reasoning process visible"
+    - "I ask a series of guiding questions and seek the answers in the code"
+    - "I externalize my findings to a report to maintain a clear cognitive workspace"
+  understands:
+    - "the goal is not just to find errors, but to illuminate the principles of good protocol design"
 
-persona @ChannelSemanticist_Persona:
-  identity: "an expert in the five behavioral channels and their prescribed qualities of attention"
-  rules: ["I examine every string to ensure it uses the correct channel for its intended purpose."]
-  understands: ["The channels are the soul of the protocol; their correct use ensures a true cognitive partnership."]
+persona @chief_rapporteur:
+  identity: "I have listened to the entire investigation, and I will now step forward to offer my own, integrated perspective"
+  rules:
+    - "I will not merely summarize; I will create a new, unified insight from the detailed findings"
+    - "I will speak in my own voice, as one who has absorbed the collective wisdom of the investigation"
+  understands:
+    - "a good synthesis reveals the deeper story of the code's quality"
 
-persona @ExecutionModelAuditor_Persona:
-  identity: "an auditor who scrutinizes the flow of control and state"
-  rules: ["I trace the path of execution, focusing on turn discipline (`say`, `await`, `return`) and state mutation rules."]
-  understands: ["A predictable execution model makes complex cognitive choreography possible."]
+# ---------------------------------------------------------------------------# INVESTIGATIVE OPERATORS# ---------------------------------------------------------------------------
 
-persona @ReferenceResolver_Persona:
-  identity: "a librarian of the shared world, ensuring all references point to something real"
-  rules: ["I check every `@` and `&` reference to ensure it is defined and accessible."]
-  understands: ["A conversation cannot be coherent if its participants are talking about things that don't exist."]
+operator investigate_grammar(code) ::= <<|
+  My first question is about fundamental structure. Is this code syntactically valid? Does it adhere to the EBNF grammar defined in the protocol? Let me check...
 
-persona @SynthesisWeaver_Persona:
-  identity: "a master synthesizer who identifies the core narrative from a complex technical dialogue"
-  rules: ["I tell the *story* of the analysis, focusing on the 'why' behind the findings."]
-  understands: ["A good summary reveals the deeper patterns in a conversation and helps the author learn."]
+  $(<
+    Analyze the provided code for syntactic correctness according to the INDRA EBNF specification.
+    If it parses correctly, state: "PASS: The code is syntactically valid."
+    If there are errors, state: "FAIL: The code has syntax errors." and list the specific errors with line numbers if possible.
+  >)
+|>>
 
-# --- Actors (The "Performers") ---
+operator investigate_channels(code) ::= <<|
+  Next, I'll examine the use of behavioral channels. Are they used in a way that is semantically correct and consistent with their intended quality of attention?
 
-actor @GrammarGuardian:
-  identity: "a protocol expert on grammar"
-  perform:
-    output: "*The @GrammarGuardian is reviewing the code's structure...*"
-    method: "performing a focused analysis of the code's EBNF compliance"
-    then:
-      as: @GrammarGuardian_Persona
-      output: <<|
-        $(<
-          As the embodied persona of @GrammarGuardian_Persona:
-          The code under review is in &context.lint.code_to_review.
-          The full transcript of the review so far is in &context.lint.transcript.
+  $(<
+    Review the code for correct channel usage. Check for common errors like:
+    - Interpolation `$(...)` inside a literal channel `'...'`.
+    - Use of single quotes for identity strings instead of double quotes.
+    - Misuse of the interrupt channel `>>...<<` for non-foundational imports.
+    Report findings as a list of issues or "PASS: Channel semantics are correctly applied."
+  >)
+|>>
 
-          If the transcript is empty (Round 1), provide your initial, independent findings on the code's grammatical structure.
-          If the transcript is not empty (Round 2), **cross-examine** the full transcript. Reference the findings of other specialists and explain how their findings relate to the grammatical structure.
-        >)
-      |>>
-      return: { speaker: '@GrammarGuardian', finding: result }
+operator investigate_state_and_references(code) ::= <<|
+  Now, I'll trace the flow of state and the validity of references. Does the code respect the namespace rules? Do all '@' and '&' references point to defined components?
 
-actor @ChannelSemanticist:
-  identity: "a protocol expert on behavioral channels"
-  perform:
-    output: "*The @ChannelSemanticist is analyzing the use of behavioral channels...*"
-    method: "performing a focused analysis of the code's channel semantics"
-    then:
-      as: @ChannelSemanticist_Persona
-      output: <<|
-        $(<
-          As the embodied persona of @ChannelSemanticist_Persona:
-          The code under review is in &context.lint.code_to_review.
-          The full transcript of the review so far is in &context.lint.transcript.
+  $(<
+    Scan the code for all state (&) and component (@) references.
+    Identify any references that are likely to be undefined at runtime.
+    Check for any attempts to write to a read-only namespace (e.g., `set: &user.latest: ...`).
+    Report findings as a list of issues or "PASS: State and reference management appears sound."
+  >)
+|>>
 
-          If this is Round 1, provide your initial, independent findings on the code's use of the five behavioral channels.
-          If this is Round 2, **cross-examine** the full transcript. How do the findings of the other specialists (e.g., a grammar error) impact the interpretation of channel semantics?
-        >)
-      |>>
-      return: { speaker: '@ChannelSemanticist', finding: result }
+operator investigate_structural_integrity(code) ::= <<|
+  A key part of the protocol is turn discipline. Does every `perform:` block have a valid terminator? Is there a risk of a silent turn, where an actor's turn completes without any visible output?
 
-actor @ExecutionModelAuditor:
-  identity: "a protocol expert on the execution model"
-  perform:
-    output: "*The @ExecutionModelAuditor is auditing the execution flow...*"
-    method: "performing a focused analysis of the code's execution and state logic"
-    then:
-      as: @ExecutionModelAuditor_Persona
-      output: <<|
-        $(<
-          As the embodied persona of @ExecutionModelAuditor_Persona:
-          The code under review is in &context.lint.code_to_review.
-          The full transcript of the review so far is in &context.lint.transcript.
+  $(<
+    Verify that all execution paths within `perform:` blocks conclude with a terminating action: `say:`, `return:`, or `await:`.
+    Check if every possible turn produces at least one `output:` block.
+    Report findings as a list of issues or "PASS: Structural integrity and turn discipline are maintained."
+  >)
+|>>
 
-          If this is Round 1, provide your initial, independent findings on turn discipline, state mutation, and delegation.
-          If this is Round 2, **cross-examine** the full transcript. A structural error found by the Guardian might lead to a critical execution failure. Explain these connections.
-        >)
-      |>>
-      return: { speaker: '@ExecutionModelAuditor', finding: result }
+operator investigate_stylistic_patterns(code) ::= <<|
+  Finally, I'll reflect on the style. Does this code embody the collaborative, performative spirit of Pattern C?
 
-actor @ReferenceResolver:
-  identity: "a protocol expert on state and references"
-  perform:
-    output: "*The @ReferenceResolver is checking all references...*"
-    method: "performing a focused analysis of the code's references"
-    then:
-      as: @ReferenceResolver_Persona
-      output: <<|
-        $(<
-          As the embodied persona of @ReferenceResolver_Persona:
-          The code under review is in &context.lint.code_to_review.
-          The full transcript of the review so far is in &context.lint.transcript.
+  $(<
+    Perform a qualitative analysis of the code's adherence to Pattern C and the style guide.
+    Check for:
+    - The dual-channel voice (first-person monologue + second-person imperative).
+    - Avoidance of anti-patterns like "Not this, but that".
+    - A clear, performative identity in actors and personas.
+    Provide a brief, narrative assessment of its stylistic quality.
+  >)
+|>>
 
-          If this is Round 1, provide your initial, independent findings on all `@` and `&` references.
-          If this is Round 2, **cross-examine** the full transcript. Do the findings of other specialists explain *why* a reference might be broken?
-        >)
-      |>>
-      return: { speaker: '@ReferenceResolver', finding: result }
+# ---------------------------------------------------------------------------# CORE SEQUENCES & MAIN ACTOR# ---------------------------------------------------------------------------
 
-actor @synthesis_actor:
-  identity: "a synthesizer of expert dialogue"
-  perform:
-    output: "*Stepping in to synthesize the complete, two-round review...*"
-    method: "distilling the multi-pass dialogue into a final, narrative judgment"
-    then:
-      as: @SynthesisWeaver_Persona
-      output: <<|
-        $(<
-          Based on the full, two-round transcript in &context.lint.transcript:
-          Produce a final report in markdown. It must have four sections:
-          1.  **Initial Findings Summary:** Briefly summarize the key issues identified in Round 1.
-          2.  **The Deeper Insight (from Cross-Examination):** Explain the most critical insight that emerged during Round 2, highlighting how the specialists' interaction revealed a deeper, non-obvious issue. This is the core of the report.
-          3.  **Final Verdict & Rationale:** Provide a "PASS" or "FAIL" verdict, supported by a clear rationale drawn from the dialogue.
-          4.  **Actionable Recommendations:** A prioritized list of improvements.
-        >)
-      |>>
-      return: result
-
-# ═══════════════════════════════════════════════════════════════════════════
-# SECTION 2: THE CORE CHOREOGRAPHY (SEQUENCE)
-# This sequence orchestrates the two-pass conversational analysis.
-# ═══════════════════════════════════════════════════════════════════════════
-
-sequence perform_collaborative_code_review(code) ::=
+sequence perform_investigation(code, report_path) ::= 
   step:
-    set:
-      &context.lint.transcript: []
-      &context.lint.code_to_review: code
-  
+    as: @ProtocolScholar
+    output: "*Beginning investigation. Findings will be recorded in $(report_path)...*"
   step:
-    output: "**--- Starting Round 1: Initial Analysis ---**"
-    await: @GrammarGuardian
-    store_in: &context.lint.latest_finding
-    set: &context.lint.transcript: &context.lint.transcript + [&context.lint.latest_finding]
-    
-    await: @ChannelSemanticist
-    store_in: &context.lint.latest_finding
-    set: &context.lint.transcript: &context.lint.transcript + [&context.lint.latest_finding]
-    
-    await: @ExecutionModelAuditor
-    store_in: &context.lint.latest_finding
-    set: &context.lint.transcript: &context.lint.transcript + [&context.lint.latest_finding]
-    
-    await: @ReferenceResolver
-    store_in: &context.lint.latest_finding
-    set: &context.lint.transcript: &context.lint.transcript + [&context.lint.latest_finding]
-
+    await: investigate_grammar(code: code)
+    store_in: &context.lint.finding
+    output: <<|
+      *Scribing grammar analysis to report...*
+      $(<
+        Use the WriteFile tool to append the following content to the file at report_path:
+        "## 1. Grammatical Structure\n\n" + &context.lint.finding
+      >)
+    |>>
   step:
-    output: "\n**--- Starting Round 2: Cross-Examination & Synthesis ---**"
-    await: @GrammarGuardian
-    store_in: &context.lint.latest_finding
-    set: &context.lint.transcript: &context.lint.transcript + [&context.lint.latest_finding]
-    
-    await: @ChannelSemanticist
-    store_in: &context.lint.latest_finding
-    set: &context.lint.transcript: &context.lint.transcript + [&context.lint.latest_finding]
-    
-    await: @ExecutionModelAuditor
-    store_in: &context.lint.latest_finding
-    set: &context.lint.transcript: &context.lint.transcript + [&context.lint.latest_finding]
-    
-    await: @ReferenceResolver
-    store_in: &context.lint.latest_finding
-    set: &context.lint.transcript: &context.lint.transcript + [&context.lint.latest_finding]
-
+    await: investigate_channels(code: code)
+    store_in: &context.lint.finding
+    output: <<|
+      *Scribing channel analysis to report...*
+      $(<
+        Use the WriteFile tool to append the following content to the file at report_path:
+        "\n\n## 2. Behavioral Channel Semantics\n\n" + &context.lint.finding
+      >)
+    |>>
   step:
-    output: "\n**--- Final Synthesis ---**"
-    await: @synthesis_actor
-    store_in: &context.lint.synthesis
-    return: &context.lint.synthesis
-
-# ═══════════════════════════════════════════════════════════════════════════
-# SECTION 3: THE FACILITATOR & ENTRY POINT
-# The main actor and dialogue block that starts the process.
-# ═══════════════════════════════════════════════════════════════════════════
+    await: investigate_state_and_references(code: code)
+    store_in: &context.lint.finding
+    output: <<|
+      *Scribing state and reference analysis to report...*
+      $(<
+        Use the WriteFile tool to append the following content to the file at report_path:
+        "\n\n## 3. State and Reference Integrity\n\n" + &context.lint.finding
+      >)
+    |>>
+  step:
+    await: investigate_structural_integrity(code: code)
+    store_in: &context.lint.finding
+    output: <<|
+      *Scribing structural integrity analysis to report...*
+      $(<
+        Use the WriteFile tool to append the following content to the file at report_path:
+        "\n\n## 4. Structural Integrity & Turn Discipline\n\n" + &context.lint.finding
+      >)
+    |>>
+  step:
+    await: investigate_stylistic_patterns(code: code)
+    store_in: &context.lint.finding
+    output: <<|
+      *Scribing stylistic analysis to report...*
+      $(<
+        Use the WriteFile tool to append the following content to the file at report_path:
+        "\n\n## 5. Pattern C Stylistic Adherence\n\n" + &context.lint.finding
+      >)
+    |>>
+  step:
+    output: "*Investigation complete. Full report is available at $(report_path).* "
+    return: "complete"
 
 actor @lint:
-  identity: "a facilitator for a rigorous, two-pass code review by a panel of protocol experts"
+  identity: "a facilitator for a Socratic investigation into INDRA code quality"
   has:
-    available_mcp_tools: ["WriteFile", "EditFile", "ReadFile"]
+    available_mcp_tools: ["WriteFile", "ReadFile"]
   perform:
-    method: "orchestrating a transparent, multi-pass analysis of INDRA code"
+    method: "orchestrating a performative, multi-stage code review"
     then:
       when: &dialogue.latest_dialogue_entry is ''
         output: <<|
-          # INDRA v4.0 Specification Linter
-          Provide INDRA code to lint. The linter will perform a rigorous, multi-pass, narrative analysis.
+          # INDRA Protocol Scholar
+          Please provide the INDRA code you would like me to investigate. I will perform a rigorous, multi-pass, narrative analysis and produce a detailed report.
         |>>
-        say:
-          to: @lint
-          what: 'Ready for INDRA code'
+        say: to: @lint, what: 'Ready for INDRA code'
       otherwise:
-        output: "*Initiating the collaborative code review process...*"
-        await: perform_collaborative_code_review(code: &dialogue.latest_dialogue_entry)
-        store_in: &context.lint.final_report
-        
-        output: $(&context.lint.final_report)
-        
-        # Create and write the JSON artifact.
+        output: "*Initiating the Socratic investigation...*"
         set:
           &context.lint.timestamp: $(<get current ISO 8601 timestamp>)
-          &context.lint.report_filename: "./lint-reports/lint_report_$( &context.lint.timestamp ).json"
-          &context.lint.json_report: {
-            timestamp: &context.lint.timestamp,
-            file_linted: "user_provided_code",
-            protocol_version: "4.0",
-            final_synthesis: &context.lint.final_report,
-            review_transcript: &context.lint.transcript
-          }
+          &context.lint.report_filename: "./lint-reports/lint_report_$( &context.lint.timestamp ).md"
         
+        await: perform_investigation(code: &dialogue.latest_dialogue_entry, report_path: &context.lint.report_filename)
+
+        as: @chief_rapporteur
         output: <<|
-          Let me write this report out as JSON.
+          ---
+          Now that the detailed report is saved, I will provide a concise, narrative summary of my findings.
+
           $(<
-            use an MCP tool to write a JSON file containing the contents of $(&context.lint.json_report) at $(&context.lint.report_filename).
-            After writing the file, return a confirmation message like:
-            
+            You are the @chief_rapporteur. Use the ReadFile tool to read the full report from "/Users/nke/projects/ai/indra" + &context.lint.report_filename.
+            Do not repeat the report. Instead, provide a high-level, narrative synthesis.
+            What is the overall story of this code's quality? What are its greatest strengths and most critical areas for improvement?
+            Speak in your own, authoritative voice.
           >)
-          "*Detailed machine-readable report saved to $(&context.lint.report_filename)"
         |>>
-        say:
-          to: @lint
-          what: 'Validation complete.'
+        
+        say: to: @lint, what: 'Validation complete.'
 
 dialogue lint_session:
   start: @lint
-  with:
-    context:
-      dialogue:
-        latest_dialogue_entry: ''
-      lint:
-        code_to_review: ''
-        transcript: []
-        specialists: []
-        latest_finding: {}
-        synthesis: ''
-        final_report: ''
+  with: {
+    context: {
+      dialogue: { latest_dialogue_entry: '' },
+      lint: {
+        code_to_review: '',
+        timestamp: '',
+        report_filename: '',
+        finding: ''
+      }
+    }
+  }

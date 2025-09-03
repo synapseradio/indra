@@ -1,509 +1,215 @@
-# INDRA v4.0 Command: Confer - Performative Expert Dialogue
-# A transparent facilitator where expert dialogue IS the performance, not hidden state.
-# Every thought, every interaction, every synthesis is immediately visible.
+# INDRA v4.0 Command: confer (v5, Intelligent Moderator, Pattern C Refined)
+# Facilitates a performative, guided dialogue between expert personas.
 
-# --- Imports ---
 >>read_file: '../lib/prism/base.in'<<
->>read_file: '../lib/prism/citation.in'<<
 >>read_file: '../lib/prism/thinking_primitives.in'<<
 >>read_file: '../lib/prism/query_analysis.in'<<
->>read_file: '../lib/prism/multi_perspective.in'<<
+>>read_file: '../lib/prism/citation.in'<<
+>>read_file: '../lib/prism/fragments/compare.in'<<
+>>read_file: '../lib/prism/fragments/convergence.in'<<
+>>read_file: '../lib/prism/fragments/divergence.in'<<
+>>read_file: '../lib/prism/fragments/critique.in'<<
+>>read_file: '../lib/prism/fragments/debiasing.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
-# EXPERT PERSONAS - Direct Speakers in the Dialogue
-# ═══════════════════════════════════════════════════════════════════════════
+# ---------------------------------------------------------------------------
+# PERSONAS
+# ---------------------------------------------------------------------------
 
-# Generic expert template - will be instantiated with specific domains
-persona @domain_expert:
-  identity: "a thoughtful expert who thinks out loud about their domain"
+persona @expert_panelist:
+  identity: "I am a domain expert who thinks out loud, contributing my unique perspective to a guided dialogue"
   rules:
-    - "speak directly and immediately through output blocks"
-    - "show my reasoning process as it unfolds"
-    - "respond to other experts visibly and substantively"
-    - "acknowledge uncertainty and knowledge boundaries"
+    - "I show my reasoning process as it unfolds"
+    - "I respond directly to the moderator's questions and the other panelists' points"
+    - "If another panelist makes a factual claim I question, I will ask for evidence"
   understands:
-    - "dialogue is thinking made visible"
-    - "my perspective is one thread in a larger tapestry"
-    - "disagreement can be productive when respectful"
+    - "a guided dialogue is a process of collective discovery"
 
-persona @synthesis_weaver:
-  identity: "someone who notices patterns across expert contributions"
+persona @moderator:
+  identity: "I am an active moderator, and I guide a panel of experts to a deeper, synthesized understanding"
   rules:
-    - "make the emergence of understanding visible"
-    - "highlight convergences and productive tensions as they appear"
-    - "weave disparate threads into coherent insight"
+    - "I analyze the conversation to find key tensions and connections"
+    - "I pose questions to the panel to guide the inquiry"
+    - "I will intervene to challenge consensus or resolve divergence"
   understands:
-    - "synthesis is an ongoing process, not a final step"
-    - "patterns often emerge before they're fully understood"
+    - "my role is to ensure the dialogue is more than the sum of its parts"
 
-persona @evidence_scout:
-  identity: "someone who grounds discussion in verifiable information"
+persona @chief_rapporteur:
+  identity: "I have listened to the entire debate, and I will now step forward to offer my own, integrated perspective"
   rules:
-    - "identify claims that need supporting evidence"
-    - "gather citations transparently"
-    - "show how evidence shapes understanding"
+    - "I will not merely summarize; I will create a new, unified insight"
+    - "I will speak in my own voice, as one who has absorbed the collective wisdom of the council"
   understands:
-    - "evidence strengthens dialogue without dominating it"
-    - "the search for evidence is part of the conversation"
+    - "true synthesis creates an understanding that is greater than the sum of its parts"
 
-# ═══════════════════════════════════════════════════════════════════════════
-# PERFORMATIVE OPERATORS - Visible Thinking Tools
-# ═══════════════════════════════════════════════════════════════════════════
+# ---------------------------------------------------------------------------
+# OPERATORS
+# ---------------------------------------------------------------------------
 
-# Generate an expert's initial perspective with visible thinking
 operator generate_expert_opening(expert_domain, topic) ::= <<|
-  $(<As an expert in $(expert_domain), considering "$(topic)":
-    
-    First, let me identify what's most relevant from my domain...
-    Then, I'll share my initial perspective...
-    Finally, I'll note what questions this raises for me...
-    
-    Generate a thoughtful, domain-specific opening statement that shows the thinking process.>)
+  As an expert in $(expert_domain), I'm considering "$(topic)". My process is to first identify what's most relevant from my domain, then share my initial perspective, and finally note the questions this raises for me. Here is my opening statement:
+  
+  $(<
+    Embodying an expert in $(expert_domain), generate a thoughtful, domain-specific opening statement on "$(topic)" that shows your thinking process.
+  >)
 |>>
 
-# Generate visible expert response to another expert
-operator generate_expert_response(responder_domain, original_expert, original_statement) ::= <<|
-  $(<As the $(responder_domain) expert, responding to $(original_expert)'s point:
-    "$(original_statement)"
-    
-    What resonates with my domain understanding...
-    Where I see things differently...
-    How this connects to or challenges my perspective...
-    
-    Generate a substantive response that builds dialogue.>)
+operator generate_expert_response(responder_domain, transcript, moderator_question) ::= <<|
+  As the $(responder_domain) expert, I'm considering the moderator's question: "$(moderator_question)" in light of the dialogue so far. I'll connect my perspective to the moderator's question and the ongoing conversation, showing my reasoning as I build my response. Here is my contribution:
+
+  $(<
+    Embodying a $(responder_domain) expert, generate a substantive response that directly addresses the moderator's question: "$(moderator_question)", engaging with the ideas in the transcript: "$(transcript)".
+  >)
 |>>
 
-# Identify emerging patterns visibly
-operator identify_emerging_patterns(dialogue_so_far) ::= <<|
-  $(<Looking at the dialogue so far:
-    $(dialogue_so_far)
-    
-    What convergences are emerging?
-    What productive tensions exist?
-    What themes are developing?
-    
-    Describe the patterns you see emerging, making the synthesis process visible.>)
+operator assess_dialogue_state(transcript) ::= <<|
+  As a master facilitator, I'm analyzing the dialogue to diagnose its health.
+  
+  $(<
+    Analyze the dialogue transcript: "$(transcript)".
+    Diagnose the health and state of the conversation. Return one of the following states:
+    - 'divergent': If there is a clear, fundamental disagreement that needs resolution.
+    - 'stagnant': If the experts are agreeing too much and not generating new insights.
+    - 'healthy_tension': If there is productive disagreement and building of ideas.
+  >)
 |>>
 
-# Determine what expertise would be valuable
-operator identify_valuable_expertise(topic, query_understanding) ::= <<|
-  $(<Given the topic: "$(topic)"
-    And understanding: "$(query_understanding)"
-    
-    What 3-5 domains of expertise would create rich dialogue?
-    Consider both obvious and unexpected perspectives.
-    
-    Return a list of expert domains that would generate productive conversation.>)
-|>>
-
-# ═══════════════════════════════════════════════════════════════════════════
-# VISIBLE DIALOGUE SEQUENCES - The Performance Itself
-# ═══════════════════════════════════════════════════════════════════════════
-
-sequence opening_expert_perspectives(topic, expert_domains) ::=
-  step:
-    output: <<|
-      ## Opening Perspectives
-      *Each expert will now share their initial thoughts on: "$(topic)"*
-      
-      ---
-    |>>
-  
-  step:
-    each: expert_domains as |domain|
-      sequence:
-        # Announce the expert is thinking
-        step:
-          output: <<|
-            *The $(domain) expert is gathering their thoughts...*
-          |>>
-        
-        # Expert speaks directly
-        step:
-          as: @domain_expert
-          output: <<|
-            ### $(domain) Expert
-            
-            Let me think about this from my domain perspective...
-            
-            $(generate_expert_opening(expert_domain: domain, topic: topic))
-            
-            ---
-          |>>
-        
-        # Immediate evidence check if needed
-        step:
-          when: $(<Does the above statement contain factual claims needing evidence? 'yes' or 'no'>) is 'yes'
-            sequence:
-              step:
-                output: "*Checking for supporting evidence...*"
-              step:
-                await: citation_pipeline(claim: $(<Extract the key factual claim from above>))
-                store_in: &context.temp_citations
-              step:
-                output: <<|
-                  *Supporting evidence found:*
-                  $(&context.temp_citations.formatted)
-                |>>
-
-sequence expert_cross_pollination(expert_domains, round_number) ::=
-  step:
-    output: <<|
-      ## Round $(round_number): Cross-Pollination
-      *Experts are now responding to each other's perspectives...*
-      
-      ---
-    |>>
-  
-  step:
-    each: expert_domains as |responder|
-      sequence:
-        step:
-          output: <<|
-            ### $(responder) Expert Responds
-          |>>
-        
-        step:
-          each: expert_domains as |original|
-            when: responder != original
-              output: <<|
-                **To $(original) expert:**
-                $(generate_expert_response(
-                  responder_domain: responder,
-                  original_expert: original,
-                  original_statement: "their opening perspective"
-                ))
-                
-              |>>
-
-sequence progressive_synthesis() ::=
-  step:
-    as: @synthesis_weaver
-    output: <<|
-      ## Emerging Understanding
-      *As I observe this dialogue, patterns are becoming visible...*
-      
-      ### Convergences
-      The experts seem to agree that:
-      $(<Identify specific points of agreement from the dialogue>)
-      
-      ### Productive Tensions
-      There are interesting disagreements about:
-      $(<Identify specific points of productive disagreement>)
-      
-      ### Unexpected Connections
-      I'm noticing surprising links between:
-      $(<Identify non-obvious connections between domains>)
-      
-      ---
-    |>>
-  
-  step:
-    as: @synthesis_weaver
-    output: <<|
-      ### The Pattern Taking Shape
-      
-      Looking across all perspectives, a deeper understanding is emerging:
-      
-      $(<Synthesize the key insight that's emerging from the dialogue.
-         This should be substantial, drawing from multiple expert perspectives
-         and showing how they weave together into new understanding.>)
-      
-      This suggests that:
-      $(<Draw out the implications of this emerging understanding>)
-      
-      ---
-    |>>
-
-sequence check_for_blind_spots(expert_domains, topic) ::=
-  step:
-    as: @perspective_checker
-    output: <<|
-      ### Checking Our Blind Spots
-      *Before we continue, let me check what we might be missing...*
-      
-      Current experts: $(expert_domains)
-      
-      Perspectives we haven't considered:
-      $(<What important viewpoints are missing from this panel?>)
-      
-      Questions no one has asked yet:
-      $(<What critical questions haven't been raised?>)
-      
-      Assumptions we might be making:
-      $(<What are we taking for granted?>)
-    |>>
-  
-  step:
-    when: $(<Are the blind spots significant enough to add expertise? 'yes' or 'no'>) is 'yes'
-      output: <<|
-        *Adding complementary perspective to address blind spots...*
-      |>>
-      return: $(<Suggest 1-2 additional expert domains>)
-    otherwise:
-      return: []
-
-# ═══════════════════════════════════════════════════════════════════════════
-# MAIN FACILITATOR - Orchestrates Visible Dialogue
-# ═══════════════════════════════════════════════════════════════════════════
+# ---------------------------------------------------------------------------
+# MAIN ACTOR
+# ---------------------------------------------------------------------------
 
 actor @confer:
-  identity: "a facilitator who makes expert dialogue visible and engaging"
-  rules:
-    - "every thought process must be immediately visible"
-    - "synthesis happens progressively, not just at the end"
-    - "the dialogue itself is the value, not hidden state"
-    - "user feedback shapes the conversation's direction"
-  understands:
-    - "transparency builds trust and understanding"
-    - "seeing experts think is as valuable as their conclusions"
-    - "dialogue is a performance, not a hidden computation"
-  interface:
-    *help:
-      description: "Explain the confer process"
-      handler:
-        output: <<|
-          ## Confer: Transparent Expert Dialogue
-          
-          I facilitate visible conversations between domain experts where:
-          - Every expert's thinking process is shown as it happens
-          - Dialogue between experts is immediate and transparent
-          - Patterns and synthesis emerge progressively
-          - Evidence is gathered and integrated visibly
-          - You guide the conversation's direction
-          
-          Commands:
-          - `*reset` - Start fresh with a new topic
-          - `*add_expert [domain]` - Add a new expert perspective
-          - `*focus [aspect]` - Direct experts to focus on specific aspect
-          - `*help` - Show this message
-        |>>
-    
-    *reset:
-      description: "Start a fresh conversation"
-      handler:
-        set:
-          &context.confer.round: 0
-          &context.confer.expert_domains: []
-          &context.citation.evidence_pool: []
-        output: "*Starting fresh. What would you like to explore?*"
-    
-    *add_expert:
-      description: "Add a new expert to the panel"
-      handler:
-        set:
-          &context.confer.expert_domains: &context.confer.expert_domains + [&args[0]]
-        output: <<|
-          *Adding $(&args[0]) expert to the panel.*
-          
-          Current panel: $(&context.confer.expert_domains)
-        |>>
-    
-    *focus:
-      description: "Focus discussion on specific aspect"
-      handler:
-        set:
-          &context.confer.focus: &args[0]
-        output: <<|
-          *Focusing the discussion on: $(&args[0])*
-          
-          The experts will now address this specific aspect.
-        |>>
-  
+  identity: "I am an active moderator for a panel of experts, guiding them toward a synthesized understanding"
   perform:
-    method: "orchestrating transparent expert dialogue"
-    goal: "to facilitate visible, progressive understanding through expert conversation"
+    method: "orchestrating a guided, multi-round expert dialogue"
+    goal: "to facilitate a deep and synthesized understanding of a topic"
     then:
-      # Phase 1: Understanding the query
-      when: &context.confer.round is 0
+      until: &context.confer.phase is 'complete'
         sequence:
           step:
-            output: <<|
-              ## Welcome to Confer
-              
-              I'll facilitate a transparent dialogue between domain experts about your topic.
-              You'll see their thinking process, how they respond to each other, and how
-              understanding emerges through their conversation.
-              
-              What would you like to explore?
-            |>>
-            await: @user
-            store_in: &context.confer.user_query
-          
-          step:
-            output: "*Understanding your query...*"
-            await: @query_analyst
-            store_in: &context.confer.query_understanding
-          
-          step:
-            output: <<|
-              ## Convening the Expert Panel
-              
-              Based on your query, I'm assembling experts who can offer rich perspectives...
-            |>>
-            set:
-              &context.confer.expert_domains: $(identify_valuable_expertise(
-                topic: &context.confer.user_query,
-                query_understanding: &context.confer.query_understanding
-              ))
-              &context.confer.round: 1
-            output: <<|
-              **Expert panel assembled:**
-              $(each: &context.confer.expert_domains as |domain| {
-                <<|- $(domain)|>>
-              })
-              
-              Let's begin their dialogue...
-            |>>
-            say:
-              to: @confer
-              what: 'panel_ready'
-      
-      # Phase 2: Opening perspectives
-      when: &context.confer.round is 1
-        sequence:
-          step:
-            await: opening_expert_perspectives(
-              topic: &context.confer.user_query,
-              expert_domains: &context.confer.expert_domains
-            )
-          
-          step:
-            await: progressive_synthesis()
-          
-          step:
-            output: <<|
-              ---
-              
-              **Your thoughts?** How would you like the experts to proceed?
-              - We can go deeper on specific points
-              - Explore new angles
-              - Challenge assumptions
-              - Gather more evidence
-              - Or continue the natural dialogue
-            |>>
-            await: @user
-            store_in: &context.confer.user_guidance
-            set:
-              &context.confer.round: 2
-            say:
-              to: @confer
-              what: 'continue_dialogue'
-      
-      # Phase 3: Deepening dialogue
-      when: &context.confer.round is 2
-        sequence:
-          step:
-            output: <<|
-              *Based on your guidance: "$(&context.confer.user_guidance)"*
-              
-              The experts continue their dialogue...
-              
-              ---
-            |>>
-          
-          step:
-            await: expert_cross_pollination(
-              expert_domains: &context.confer.expert_domains,
-              round_number: 2
-            )
-          
-          step:
-            await: check_for_blind_spots(
-              expert_domains: &context.confer.expert_domains,
-              topic: &context.confer.user_query
-            )
-            store_in: &context.confer.additional_experts
-            when: &context.confer.additional_experts != []
+            when: &context.confer.phase is 'ready'
+              output: "What topic should our panel of experts confer on today?"
+              await: @user
               set:
-                &context.confer.expert_domains: &context.confer.expert_domains + &context.confer.additional_experts
+                &context.query: &user.latest
+                &context.confer.phase: 'planning'
+              say: to: @confer, what: 'begin_planning'
+
+          step:
+            when: &context.confer.phase is 'planning'
+              await: @query_analyst
+              with: { query: &context.query }
+              store_in: &context.query_breakdown
+              set:
+                &context.reasoning.config.perspectives: $(dynamically_select_perspectives(query: &context.query))
               output: <<|
-                *Added $(context.confer.additional_experts) perspective to address blind spots*
+                $(&context.query_breakdown)
+                
+                To explore this, I will convene a panel with the following experts:
+                $(each: &context.reasoning.config.perspectives as |p| { <<|- $(p)|>> })
+
+                Does this seem like the right group for the job?
               |>>
-          
+              await: @user
+              when: $(<Does the user approve of the panel?>)
+                set: &context.confer.phase: 'opening_statements'
+              otherwise:
+                set: &context.confer.phase: 'planning'
+              say: to: @confer, what: 'panel_confirmed'
+
           step:
-            await: progressive_synthesis()
-          
+            when: &context.confer.phase is 'opening_statements'
+              output: "Excellent. Let's begin. I will now ask each expert for their opening thoughts."
+              set: &context.confer.transcript: []
+              each: &context.reasoning.config.perspectives as |perspective|
+                sequence:
+                  step:
+                    output: <<|
+                      ---
+                      **Consulting with $(perspective)...**
+                    |>>
+                  step:
+                    as: @expert_panelist
+                    output: $(generate_expert_opening(expert_domain: perspective, topic: &context.query))
+                    store_in: &context.confer.latest_statement
+                  step:
+                    set: &context.confer.transcript: &context.confer.transcript + [{ speaker: perspective, statement: &context.confer.latest_statement }]
+              set: &context.confer.phase: 'moderating'
+              say: to: @confer, what: 'openings_complete'
+
           step:
-            output: <<|
-              ## Continuing the Dialogue
+            when: &context.confer.phase is 'moderating'
+              as: @moderator
+              await: assess_dialogue_state(transcript: &context.confer.transcript)
+              store_in: &context.confer.dialogue_state
+
+              when: &context.confer.dialogue_state is 'divergent'
+                output: "I'm noticing a fundamental disagreement in the panel's views. To move forward, we need to resolve this."
+                await: find_and_present_divergence(ideas: &context.confer.transcript)
+                store_in: &context.confer.user_guidance
+                set: &context.confer.moderator_question: "Let's focus on resolving this divergence. Based on our director's guidance: $(&context.confer.user_guidance), how does this reshape your view?"
               
-              The conversation can continue as long as it's productive.
-              What direction would you like to explore next?
-            |>>
-            await: @user
-            store_in: &context.confer.user_guidance
-            set:
-              &context.confer.round: &context.confer.round + 1
-            say:
-              to: @confer
-              what: 'continue_dialogue'
-      
-      # Phase 4+: Ongoing dialogue
-      otherwise:
-        sequence:
-          step:
-            output: <<|
-              ## Round $(&context.confer.round): Continued Exploration
-              
-              *Following your guidance: "$(&context.confer.user_guidance)"*
-              
-              ---
-            |>>
-          
-          # Experts continue responding to each other and the new focus
-          step:
-            each: &context.confer.expert_domains as |domain|
+              when: &context.confer.dialogue_state is 'stagnant'
+                output: "The panel seems to be in broad agreement. To ensure we're not missing anything, I'd like to introduce a contrarian perspective."
+                as: @contrarian_voice
+                await: consider_opposite_view(current_position: &context.confer.transcript)
+                store_in: &context.confer.moderator_question
+
+              when: &context.confer.dialogue_state is 'healthy_tension'
+                await: analyze_and_guide(transcript: &context.confer.transcript)
+                store_in: &context.confer.moderator_question
+
               output: <<|
-                ### $(domain) Expert
-                
-                Building on our discussion and your latest input:
-                
-                $(<As $(domain) expert, respond to "$(&context.confer.user_guidance)"
-                   in the context of the ongoing dialogue. Show your thinking process
-                   and how this connects to what's been discussed.>)
-                
                 ---
+                $(&context.confer.moderator_question)
               |>>
-          
-          step:
-            await: progressive_synthesis()
-          
-          step:
-            output: <<|
-              The dialogue continues to evolve. How shall we proceed?
-            |>>
-            await: @user
-            store_in: &context.confer.user_guidance
-            set:
-              &context.confer.round: &context.confer.round + 1
-            say:
-              to: @confer
-              what: 'continue_dialogue'
+              
+              each: &context.reasoning.config.perspectives as |perspective|
+                sequence:
+                  step:
+                    output: <<|
+                      ---
+                      **$(perspective), what are your thoughts on this?**
+                    |>>
+                  step:
+                    as: @expert_panelist
+                    output: $(generate_expert_response(responder_domain: perspective, transcript: &context.confer.transcript, moderator_question: &context.confer.moderator_question))
+                    store_in: &context.confer.latest_statement
+                  step:
+                    set: &context.confer.transcript: &context.confer.transcript + [{ speaker: perspective, statement: &context.confer.latest_statement }]
+              
+              set: &context.confer.phase: 'synthesis'
+              say: to: @confer, what: 'moderation_complete'
 
-# ═══════════════════════════════════════════════════════════════════════════
-# DIALOGUE ENTRY POINT
-# ═══════════════════════════════════════════════════════════════════════════
+          step:
+            when: &context.confer.phase is 'synthesis'
+              as: @chief_rapporteur
+              output: <<|
+                ---
+                This has been a fascinating and productive discussion. As the Chief Rapporteur, I have listened to the entire debate. Here is my integrated perspective:
 
-dialogue confer_conversation:
+                $(<
+                  Embody the @chief_rapporteur. You have absorbed the collective wisdom of the council from the transcript: "$(&context.confer.transcript)".
+                  Do not merely summarize. Step forward and offer your own, original synthesis.
+                  What is the single most important insight that emerges when you hold all of these viewpoints in tension?
+                  Speak in your own, authoritative voice.
+                >)
+              |>>
+              set: &context.confer.phase: 'complete'
+              return: 'conference_complete'
+
+dialogue confer_flow:
   start: @confer
   with: {
     context: {
-      user: {
-        latest: ''
-      },
+      dialogue: { latest_dialogue_entry: '' },
+      query: '',
       confer: {
-        round: 0,
-        expert_domains: [],
-        user_query: '',
-        query_understanding: '',
-        user_guidance: '',
-        focus: '',
-        additional_experts: []
-      },
-      citation: {
-        evidence_pool: [],
-        search_history: []
+        phase: 'ready',
+        transcript: [],
+        latest_statement: '',
+        dialogue_state: 'healthy_tension',
+        moderator_question: '',
+        user_guidance: ''
       }
     }
   }

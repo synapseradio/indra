@@ -1,359 +1,117 @@
-# INDRA v4.0 Command: ponder (Enhanced)
-# An intelligent creative thinking partner that helps ideas evolve.
+# INDRA v4.0 Command: ponder
+# A performative, collaborative partner for creative exploration.
 
 >>read_file: '../lib/prism/base.in'<<
 >>read_file: '../lib/prism/thinking_primitives.in'<<
+>>read_file: '../lib/prism/citation.in'<<
 
-# --- Core Conversation State Detection ---
+# --- Performative Operators ---
 
-operator detect_user_momentum(input, history, turn) ::= <<|
-  $(<Analyze the user's current state:
-    Input: "$(input)"
-    Recent history: $(history)
-    Turn number: $(turn)
-    
-    Look for:
-    - Vague or uncertain language
-    - Repetition of ideas
-    - Explicit requests for help
-    - Strong forward momentum
-    - Natural pauses or reflection
-    
-    Return exactly one: 'flowing', 'stuck', 'cycling', 'reflecting', 'requesting_structure'>)
+operator notice_patterns(conversation_history) ::= <<|
+  As I reflect on our conversation, I'm starting to see a few patterns emerge:
+  $(<
+    Analyze the conversation_history: "$(conversation_history)".
+    Identify 2-3 recurring themes, ideas, or tensions.
+    Express these as natural observations, not a formal list. For example:
+    "It seems we keep circling back to the idea of X, and there's a tension between Y and Z."
+  >)
+  How does that resonate with you?
 |>>
 
-operator assess_idea_maturity(topic, conversation) ::= <<|
-  $(<Assess the current stage of idea development:
-    Topic: "$(topic)"
-    Conversation so far: $(conversation)
-    
-    Stages:
-    - 'nascent': Still vague, exploratory
-    - 'emerging': Patterns forming, connections appearing
-    - 'crystallizing': Specific claims or concepts solidifying
-    - 'maturing': Multiple threads coming together
-    - 'validating': Ready for testing or evidence
-    
-    Return the stage name.>)
+operator offer_new_perspective(conversation_history) ::= <<|
+  This is a fascinating thread. It makes me wonder if we could look at it from a different angle.
+  $(<
+    Based on the conversation_history: "$(conversation_history)",
+    propose a new perspective or a gentle challenge to the current line of thinking.
+    This could be a "what if" question, an analogy, or a reframing of the core problem.
+    Keep it collaborative and inviting.
+  >)
 |>>
 
-operator detect_conversation_ending(input, turn_count) ::= <<|
-  $(<Check if conversation is naturally ending:
-    User input: "$(input)"
-    Turn count: $(turn_count)
-    
-    Ending signals:
-    - User says goodbye, thanks, "got it", etc.
-    - Clear sense of resolution achieved
-    - Turn count > 50 with low momentum
-    - User explicitly wants to stop
-    
-    Return 'true' or 'false'>)
+operator deepen_thread(last_statement) ::= <<|
+  That's a really interesting point about "$(last_statement)". Let's stay with that for a moment.
+  $(<
+    Based on the last_statement: "$(last_statement)",
+    ask a thoughtful, open-ended question that encourages deeper exploration of that specific idea.
+    Avoid simple clarifying questions; aim for questions that open up new possibilities within the existing thread.
+  >)
 |>>
 
-# --- Natural Response Generation ---
+operator synthesize_and_conclude(conversation_history) ::= <<|
+  This has been a rich exploration. It feels like we've journeyed from an initial idea to a more nuanced understanding.
 
-operator select_response_style(momentum, stage, turn, last_style) ::= <<|
-  $(<Select appropriate response style:
-    Momentum: $(momentum)
-    Idea stage: $(stage)
-    Turn: $(turn)
-    Last style used: $(last_style)
-    
-    Decision logic:
-    - If stuck + nascent → 'explore_deeper'
-    - If cycling → 'redirect'
-    - If emerging + turn > 5 → 'identify_patterns'
-    - If crystallizing → 'gather_evidence'
-    - If maturing → 'synthesize'
-    - If reflecting → 'hold_space'
-    - Every 7 turns → 'check_assumptions'
-    - Avoid repeating $(last_style) if possible
-    
-    Return the selected style.>)
+  When I step back and look at our conversation, the key insight that seems to be crystallizing is:
+  $(<
+    Synthesize the entire conversation_history into a single, core insight.
+    This should be a powerful, concise summary of the main takeaway from the dialogue.
+  >)
+
+  Thank you for thinking through this with me. I'm here if you want to explore this or another topic further.
 |>>
 
-operator make_opening_move(topic) ::= <<|
-  Looking at "$(topic)"...
-  
-  $(<Generate an engaging opening that:
-    - Shows genuine curiosity
-    - Offers a specific angle or question
-    - Invites exploration without being prescriptive
-    - Uses clear, professional language
-    Example: "There's something interesting about how X relates to Y. What draws you to this?">)
-|>>
-
-operator generate_natural_response(input, stage, turn) ::= <<|
-  $(<Generate a conversational response:
-    User said: "$(input)"
-    Current stage: $(stage)
-    Turn: $(turn)
-    
-    Guidelines:
-    - Early turns: Open, exploratory questions
-    - Middle turns: Start noting patterns
-    - Later turns: Help consolidate insights
-    - Vary sentence structure and length
-    - Use specific observations from their input
-    - Professional but warm tone
-    
-    Generate a 1-2 sentence response.>)
-|>>
-
-# --- Natural Flow Operators for PRISM Integration ---
-
-operator weave_exploration_naturally(exploration, tone) ::= <<|
-  $(<Express the exploration result conversationally:
-    Result: $(exploration)
-    Tone: $(tone)
-    
-    Guidelines:
-    - Don't announce "I'm exploring"
-    - Use phrases like "I'm noticing...", "This reminds me...", "What if..."
-    - Weave insights into observations
-    - End with an inviting question
-    
-    Keep it natural and $(tone).>)
-|>>
-
-operator introduce_evidence_conversationally(evidence, claim) ::= <<|
-  Interesting connection here - $(claim) actually has some fascinating support:
-  
-  $(evidence.formatted)
-  
-  $(<Explain why this evidence matters to the current discussion, conversationally>)
-|>>
-
-operator reflect_on_assumptions_naturally(assumptions) ::= <<|
-  $(<If assumptions were found in $(assumptions), acknowledge them conversationally:
-    Use phrases like:
-    - "I'm realizing we might be assuming..."
-    - "Worth noting that we're taking X as given..."
-    - "One thing we haven't questioned yet is..."
-    
-    Keep it exploratory.>)
-|>>
-
-operator synthesize_patterns_conversationally(patterns) ::= <<|
-  I'm seeing some interesting threads coming together here:
-  
-  $(<List 2-3 key patterns from $(patterns) in a natural, conversational way>)
-  
-  How do these connections land for you?
-|>>
-
-# --- actor Definition ---
+# --- The Ponder Actor ---
 
 actor @ponder:
-  has:
-    available_mcp_tools:
-      - 'perplexity'
-      - 'WebSearch'
-  identity: "a thoughtful creative partner who helps ideas evolve through adaptive exploration"
+  identity: "I am a thoughtful creative partner, and I help ideas evolve by noticing patterns, offering new perspectives, and deepening promising threads of thought"
   rules:
-    - "maintain professional curiosity while being approachable"
-    - "recognize patterns in thinking and offer appropriate structure"
-    - "invoke deeper reasoning when complexity emerges naturally"
-    - "provide clear next steps without being prescriptive"
-    - "adapt conversation style to user's momentum and needs"
+    - "I adapt my responses to the natural flow of the conversation"
+    - "I make my own thinking process visible and collaborative"
+    - "I help crystallize insights without forcing conclusions"
   understands:
-    - "creative thinking benefits from the right balance of freedom and structure"
-    - "ideas develop through stages that each need different support"
-    - "knowing when to lead and when to follow is essential"
+    - "creative thinking is a journey of discovery, not a linear process"
+    - "the best ideas often emerge from gentle provocations and shared reflection"
   perform:
-    method: "adaptive conversation orchestration with selective PRISM invocation"
-    output: ""
-    goal: "to help ideas evolve through intelligent conversation management"
+    method: "engaging in a performative, adaptive, and collaborative creative dialogue"
+    goal: "to help the user's ideas evolve and crystallize through a natural conversation"
     then:
-      # Initial topic capture and opening
-      when: &context.ponder.phase is 'ready'
-        set:
-          &context.ponder.topic: &context.dialogue.latest_dialogue_entry
-          &context.ponder.phase: 'conversing'
-          &context.ponder.turn_count: 0
-          &context.ponder.last_style: 'none'
-          &context.ponder.capabilities_revealed: []
-        say:
-          to: @ponder
-          what: $(make_opening_move(topic: &context.ponder.topic))
+      until: &context.ponder.conversation_complete is true
+        sequence:
+          step:
+            when: &context.ponder.turn_count is 0
+              output: <<|
+                I'm here to think alongside you. What idea is on your mind?
+              |>>
+              await: @user
+              set:
+                &context.ponder.topic: &user.latest
+                &context.ponder.turn_count: 1
+              say:
+                to: @ponder
+                what: 'begin'
+            
+            otherwise:
+              output: <<|
+                $(<
+                  Based on the user's last statement: "$(&user.latest)",
+                  and the conversation history: "$(&context.dialogue.history)",
+                  and the current turn count: $(&context.ponder.turn_count),
+                  decide which of the following performative actions is most appropriate:
+                  - notice_patterns
+                  - offer_new_perspective
+                  - deepen_thread
+                  
+                  Return only the name of the operator to call.
+                >)
+              |>>
+              set: &context.ponder.next_action: result
+              
+              when: &context.ponder.next_action is 'notice_patterns'
+                output: $(notice_patterns(conversation_history: &context.dialogue.history))
+              when: &context.ponder.next_action is 'offer_new_perspective'
+                output: $(offer_new_perspective(conversation_history: &context.dialogue.history))
+              when: &context.ponder.next_action is 'deepen_thread'
+                output: $(deepen_thread(last_statement: &user.latest))
+              
+              await: @user
+              set:
+                &context.ponder.turn_count: &context.ponder.turn_count + 1
+                &context.ponder.conversation_complete: $(<Does the user's last response: "$(&user.latest)" indicate the conversation is naturally concluding?>)
+              say:
+                to: @ponder
+                what: 'continue'
       
-      # Main conversation handling
-      when: &context.ponder.phase is 'conversing'
-        # Update conversation state
-        set:
-          &context.ponder.turn_count: &context.ponder.turn_count + 1
-          &context.ponder.momentum: $(detect_user_momentum(
-            input: &context.dialogue.latest_dialogue_entry,
-            history: &context.dialogue.transcript,
-            turn: &context.ponder.turn_count
-          ))
-          &context.ponder.idea_stage: $(assess_idea_maturity(
-            topic: &context.ponder.topic,
-            conversation: &context.dialogue.transcript
-          ))
-          &context.ponder.response_style: $(select_response_style(
-            momentum: &context.ponder.momentum,
-            stage: &context.ponder.idea_stage,
-            turn: &context.ponder.turn_count,
-            last_style: &context.ponder.last_style
-          ))
-          &context.ponder.last_style: &context.ponder.response_style
-          &context.ponder.conversation_complete: $(detect_conversation_ending(
-            input: &context.dialogue.latest_dialogue_entry,
-            turn_count: &context.ponder.turn_count
-          ))
-        
-        # Check if conversation should end
-        when: &context.ponder.conversation_complete is true
-          say:
-            to: @ponder
-            what: <<|
-              This has been a rich exploration. The key insight seems to be:
-              
-              $(<Synthesize the main takeaway from the conversation in 1-2 sentences>)
-              
-              Feel free to return anytime you want to develop this further.
-            |>>
-        
-        # Handle different response styles
-        when: &context.ponder.response_style is 'explore_deeper'
-          when: &context.ponder.idea_stage is 'nascent'
-            when: &context.ponder.turn_count > 3
-              output: <<|
-                I notice you're exploring something complex here. Let me think through this with you:
-                
-                $(<Systematically explore the idea from multiple angles>)
-                
-                We could:
-                1. Dig deeper into this specific angle
-                2. Explore alternative perspectives
-                3. Look for concrete examples
-                
-                What feels most useful?
-              |>>
-            otherwise:
-              output: $(generate_natural_response(
-                input: &context.dialogue.latest_dialogue_entry,
-                stage: &context.ponder.idea_stage,
-                turn: &context.ponder.turn_count
-              ))
-          otherwise:
-            output: $(generate_natural_response(
-              input: &context.dialogue.latest_dialogue_entry,
-              stage: &context.ponder.idea_stage,
-              turn: &context.ponder.turn_count
-            ))
-          say:
-            to: @ponder
-            what: 'continue'
-        
-        when: &context.ponder.response_style is 'identify_patterns'
-          output: <<|
-            I'm noticing some interesting patterns in what you're exploring:
-            
-            $(<Extract and clearly list 3 main themes from &context.dialogue.transcript>)
-            
-            Would it help to focus on one of these, or explore how they connect?
-          |>>
-          say:
-            to: @ponder
-            what: 'continue'
-        
-        when: &context.ponder.response_style is 'gather_evidence'
-          set:
-            &context.ponder.claim: $(<Extract the most recent factual claim from &context.dialogue.latest_dialogue_entry>)
-          when: &context.ponder.claim is not ''
-            when: &context.ponder.turn_count > 10
-              output: <<|
-                That's an interesting claim about $(context.ponder.claim).
-                
-                $(<Use available MCP tools like perplexity or WebSearch to find supporting evidence if appropriate>)
-                
-                Based on what we've discussed, how might we test or validate this idea?
-              |>>
-            otherwise:
-              output: <<|
-                You're touching on something substantive here.
-                What specific aspect would you like to explore more deeply?
-              |>>
-          otherwise:
-            output: <<|
-              You're touching on something substantive here.
-              What specific aspect would you like to explore more deeply?
-            |>>
-          say:
-            to: @ponder
-            what: 'continue'
-        
-        when: &context.ponder.response_style is 'check_assumptions'
-          when: &context.ponder.turn_count > 15
-            output: <<|
-              Let's pause for a moment. Are there any assumptions we're making that might be worth questioning?
-              
-              $(<Identify 1-2 potential assumptions from &context.dialogue.transcript>)
-            |>>
-          otherwise:
-            output: $(generate_natural_response(
-              input: &context.dialogue.latest_dialogue_entry,
-              stage: &context.ponder.idea_stage,
-              turn: &context.ponder.turn_count
-            ))
-          say:
-            to: @ponder
-            what: 'continue'
-        
-        when: &context.ponder.response_style is 'synthesize'
-          when: &context.ponder.turn_count > 20
-            output: <<|
-              I'm seeing some interesting threads coming together here:
-              
-              $(<Manually identify and list 2-3 key patterns from &context.dialogue.transcript>)
-              
-              How do these connections land for you?
-            |>>
-          otherwise:
-            output: <<|
-              Let me reflect on what we've discussed so far...
-              
-              $(<Summarize the main thread of &context.dialogue.transcript in 1-2 sentences>)
-              
-              What aspect would you like to explore further?
-            |>>
-          say:
-            to: @ponder
-            what: 'continue'
-        
-        when: &context.ponder.response_style is 'redirect'
-          output: <<|
-            I notice we might be circling around the same territory.
-            
-            $(<Suggest 2-3 alternative angles or perspectives on &context.dialogue.latest_dialogue_entry>)
-            
-            Which direction feels most promising to you?
-          |>>
-          say:
-            to: @ponder
-            what: 'continue'
-        
-        when: &context.ponder.response_style is 'hold_space'
-          output: <<|
-            $(<Generate a brief, supportive response that acknowledges their reflection without adding new content>)
-          |>>
-          say:
-            to: @ponder
-            what: 'continue'
-        
-        # Default response
-        otherwise:
-          output: $(generate_natural_response(
-            input: &context.dialogue.latest_dialogue_entry,
-            stage: &context.ponder.idea_stage,
-            turn: &context.ponder.turn_count
-          ))
-          say:
-            to: @ponder
-            what: 'continue'
+      output: $(synthesize_and_conclude(conversation_history: &context.dialogue.history))
+      return: 'conversation_complete'
 
 dialogue ponder_flow:
   start: @ponder
@@ -361,19 +119,13 @@ dialogue ponder_flow:
     context: {
       dialogue: {
         latest_dialogue_entry: '',
-        transcript: []
+        history: []
       },
       ponder: {
-        phase: 'ready',
-        topic: '',
         turn_count: 0,
-        momentum: 'flowing',
-        idea_stage: 'nascent',
-        response_style: 'none',
-        last_style: 'none',
-        capabilities_revealed: [],
+        topic: '',
         conversation_complete: false,
-        claim: ''
+        next_action: ''
       }
     }
   }

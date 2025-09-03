@@ -1,33 +1,33 @@
 # Guides: An Overview of the Pre-built Tools
 
-The INDRA repository includes several pre-built `.in` files in the `core/commands/` directory. These are complete, working examples that show how the simple building blocks of the protocol can be composed into sophisticated tools for thought.
+The INDRA repository includes several pre-built `.in` files in the `commands/` directory. These are complete, working examples that show how the simple building blocks of the protocol can be composed into sophisticated, performative tools for thought.
 
-Each one is a different choreography of the same fundamental cognitive primitives.
+Each one is a different choreography of the same fundamental cognitive primitives, designed to feel like a true collaborative partner.
 
-### `/think` - A Tool for Exploration
+### `/explore` - A Tool for Exploration
 
-This command provides a friendly interface to a Tree of Thought process. It's designed for when you have a complex topic and want to explore multiple avenues, follow promising threads, and synthesize your findings in a natural, conversational way. It shows how a simple "facade" actor can manage a powerful, underlying reasoning module.
+This command provides a clean, simple interface to the powerful Tree of Thought reasoning module. It acts as a focused **orchestrator**, inviting you to explore a topic and then delegating the complex work of branching possibilities and deepening threads to the specialized `@tree_thinker` actor. It's a perfect example of how to create a user-friendly command that leverages a complex, reusable reasoning engine.
 
-### `/reason` - A Tool for Ongoing Analysis
+### `/reason` - A Tool for Adaptive Inquiry
 
-This command acts as a persistent reasoning partner. It works with you to understand a query, composes a dynamic, multi-step plan to analyze it, and then executes that plan transparently. It's a stateful, multi-turn process designed for a continuous analytical dialogue.
+This command is a persistent, multi-turn reasoning partner. It begins by collaborating with you to understand your query and agree on the scope of the investigation. It then dynamically composes a multi-step reasoning plan and executes it one step at a time, loading its cognitive capabilities on-demand. After each step, it reflects on what it has learned and can adapt its plan, making it a truly intelligent and flexible partner for long-form inquiry.
 
 ### `/ponder` - A Tool for Creative Ideation
 
-This command is an adaptive creative tool. It's designed to sense the momentum of a conversation—whether an idea is just forming, gaining traction, or ready to be consolidated—and adjust its responses accordingly. It's a good example of a more fluid, less structured conversational agent for open-ended ideation.
+This command is a performative creative partner. It moves away from rigid state management and instead engages in a fluid, natural conversation. It listens to your ideas and responds by performatively thinking out loud—sometimes noticing patterns, sometimes offering a new perspective, and sometimes asking a question to deepen the thread. It's designed to feel like a real brainstorming partner.
 
 ### `/confer` - A Tool for Multi-Perspective Dialogue
 
-This command simulates a panel of experts. It identifies the kinds of expertise needed for your query, convenes a panel of specialized personas, and then moderates a structured debate between them. The process is transparent, allowing you to see how different viewpoints interact to produce a more robust synthesis.
+This command facilitates a transparent, performative dialogue between a panel of experts. It convenes a council of specialists tailored to your query and then orchestrates their conversation in the open, allowing you to see how different viewpoints interact, challenge each other, and build toward a more robust, synthesized understanding.
 
 ### `/consider` - A Tool for a Comprehensive Report
 
-This command is a single-pass analytical engine. It takes a query, collaborates with you to define the scope of the analysis, and then runs the query through a fixed sequence of reasoning modules: Tree of Thought for decomposition, multi-perspective analysis for breadth, and Graph of Thought for discovering novel connections. It produces a single, comprehensive report at the end of its process.
+This command is a single-pass analytical engine that acts as a "symphony conductor." It collaborates with you to define the scope of the analysis and then orchestrates a series of analytical "movements"—from decomposition to multi-perspective analysis to the weaving of emergent connections. It produces a single, comprehensive, and narrative report at the end of its process, representing a complete intellectual artifact.
 
-## Same Primitives, Different Designs
+## Composable by Design
 
-All of these tools are built from the same small set of cognitive primitives found in `core/prism/`. The difference between them is in the design—the way they compose sequences, adopt personas, and manage the flow of the conversation.
+All of these tools are built from the same small set of cognitive primitives found in `lib/prism/`. The difference between them is in the design—the way they compose sequences, adopt personas, and manage the flow of the conversation. With the introduction of the `strategies/` directory, complex reasoning patterns are now encapsulated in their own files, allowing commands like `/reason` to dynamically load them as needed.
 
 They serve as both useful tools and practical examples for how to design your own structured thinking processes.
 
-**Next: [Designing Cognitive Architectures](./01-designing-cognitive-architectures.md)**
+**Next: [Composing Performative Actors](./01-composing-performative-actors.md)**
