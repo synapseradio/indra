@@ -1,0 +1,42 @@
+# INDRA v4.0: PRISM Strategy - Strategic Prioritization
+# This module provides a strategy for prioritizing options and sharpening focus
+# using techniques like leverage point analysis and impact/effort matrices.
+
+>>read_file: '../base.in'<<
+>>read_file: '../fragments/focus.in'<<
+
+# ═══════════════════════════════════════════════════════════════════════════
+# STRATEGIC PRIORITIZATION STRATEGY
+# ═══════════════════════════════════════════════════════════════════════════
+
+sequence prioritize_strategically(options, goal) ::=
+  step:
+    as: @strategic_prioritizer
+    method: "finding leverage points"
+    output: <<|
+      $(find_leverage_point(
+        system: options,
+        goal: goal
+      ))
+    |>>
+    set:
+      &context.strategy.leverage: $(<leverage point identified>)
+  step:
+    as: @strategic_prioritizer
+    method: "impact/effort analysis"
+    output: <<|
+      $(prioritize_by_impact_and_effort(items: options))
+    |>>
+    set:
+      &context.strategy.matrix: $(<impact/effort matrix>)
+  step:
+    as: @strategic_prioritizer
+    method: "sharpening focus"
+    output: <<|
+      $(sharpen_the_question(vague: goal))
+    |>>
+    return: {
+      leverage_point: &context.strategy.leverage,
+      priority_matrix: &context.strategy.matrix,
+      focused_question: $(<sharpened question>)
+    }
