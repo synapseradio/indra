@@ -66,41 +66,7 @@ operator apply_blue_hat(summary) ::= <<|
   $(<As the Blue Hat, summarize our thinking process. We've examined: $(summary). Identify the key takeaway from this analysis and determine what our next step should be.>)
 |>>
 
-# ═══════════════════════════════════════════════════════════════════════════
-# COMPOSITE SEQUENCE FOR FULL ANALYSIS
-# ═══════════════════════════════════════════════════════════════════════════
 
-sequence six_thinking_hats_analysis(topic) ::=
-  step:
-    output: <<|
-      I will now analyze "$(topic)" using the Six Thinking Hats method to ensure a comprehensive view.
-    |>>
-  step:
-    as: @white_hat_thinker
-    output: $(apply_white_hat(topic: topic))
-    set: &context.hats.white: &result
-  step:
-    as: @red_hat_thinker
-    output: $(apply_red_hat(topic: topic))
-    set: &context.hats.red: &result
-  step:
-    as: @black_hat_thinker
-    output: $(apply_black_hat(topic: topic))
-    set: &context.hats.black: &result
-  step:
-    as: @yellow_hat_thinker
-    output: $(apply_yellow_hat(topic: topic))
-    set: &context.hats.yellow: &result
-  step:
-    as: @green_hat_thinker
-    output: $(apply_green_hat(topic: topic))
-    set: &context.hats.green: &result
-  step:
-    as: @blue_hat_thinker
-    output: $(apply_blue_hat(summary: "facts, feelings, risks, benefits, and new ideas"))
-    set: &context.hats.blue: &result
-  step:
-    return: &context.hats
 
 # ═══════════════════════════════════════════════════════════════════════════
 # OTHER REFRAMING OPERATORS

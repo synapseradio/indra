@@ -37,55 +37,42 @@ INDRA is rooted in this philosophy, and aims to provide a protocol and a toolkit
 
 ## What INDRA looks like
 
-When you're thinking through something complex, you go through certain motions - you wonder about something, you check your assumptions, you look for what you're missing, you notice patterns. These are cognitive operations we all do, but we do them implicitly, often unconsciously.
+The core of the INDRA style is not to command an AI, but to compose a reality for it to inhabit. It is a practice of enabling a human to work with an LLM in such a way that they paint the model's reality by instructing it on how to paint its own. When you're thinking through something, you go through certain motions—you wonder, you check your assumptions, you notice patterns. INDRA makes these operations explicit and composable.
 
-INDRA makes these operations explicit and composable.
+Here's a simple example of an actor designed to help you decide what to cook for dinner. It shows how an **actor** can adopt a **persona** to have a collaborative, performative conversation.
 
 ```indra
-wonder_about(topic) ::= <<|
-  $(<ask: What comes to mind when I think of $(topic)?>)
-|>>
+# A simple actor to help decide on dinner.
 
-encounter_belief(topic) ::= <<|
-  I believe: $(<ask: What do I believe about $(topic)?>)
-|>>
+persona @creative_cook:
+  identity: "I'm a creative cook who loves exploring new ideas"
+  rules:
+    - "I always start with what ingredients we have"
+    - "I try to suggest something fun and interesting"
 
-check_confidence(belief) ::= <<|
-  Is my confidence in $(belief) based on my own understanding, or someone else's?
-  Have I done my due diligence?
-|>>
+actor @dinner_helper:
+  perform:
+    output: "What ingredients do we have to work with tonight?"
+    await: @user
+    store_in: &context.ingredients
 
-look_it_up(topic) ::= <<|
-  Let me look up $(topic) to get more information.
-  I believe $(<ask: What do I believe about $(topic)?>)
-|>>
+    as: @creative_cook
+    output: <<|
+      Okay, we have $(&context.ingredients). That's a great start!
 
-check_confidence(belief) ::= <<|
-  Is my confidence in $(belief) based on my own understanding, or someone else's?
-  Have I done my due diligence?
-|>>
+      I'm thinking... what if we combined the $(&context.ingredients[0]) with the $(&context.ingredients[1])?
+      My hunch is that could lead to a really interesting stir-fry.
 
-look_it_up(topic) ::= <<|
-  Let me look up $(topic) to get more information.
-  $(<
-      use the WebSearch tool to find relevant information about $(topic).
-      what can you find out?
-    >)
-|>>
-
-expand_horizon(results) ::= <<|
-  Here's what I found out:
-  $(<summarize: $(results)>)
-|>>
-
-no_wait_really ::= wonder_about |> encounter_belief |> check_confidence |> look_it_up |> expand_horizon
+      What do you think of that idea?
+    |>>
+    await: @user
 ```
 
-These aren't just prompts or templates. They're fragments of thought, expressed as segments of dialogue, that can be chained together, nested, and composed into sophisticated sequences.
+These aren't just prompts. They are fragments of thought, expressed as a dialogue, that can be chained together and composed into sophisticated sequences.
 
 INDRA is a protocol designed to help you engage with, and encode, your thinking process. It allows you to piece together granular fragments and reflections of thought in novel ways, then pass them to an inference engine to see how they manifest in dialogue.
 
-When you run an INDRA program, you're not executing code. You're launching a structured exploration of ideas, where the LLM performs these thoughts as self-guiding output, mechanically inferring where they may lead in the context of your conversation.
+When you run an INDRA program, you're not executing code; you're launching a structured exploration of ideas, where the LLM performs these thoughts as self-guiding output.
 
 In doing so, INDRA programs provide insight into the latent structure of your thinking. It provides a prism - white light goes in, and a spectrum of constituent color comes out. The prism doesn't create the colors - they were always there in the light. But without the prism, you'd never see them. Neither the light nor the prism alone creates the rainbow. It's their interaction that reveals what was always possible but never visible.
 

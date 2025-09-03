@@ -20,4 +20,4 @@ If you are new to INDRA, the best place to begin is with our Getting Started gui
 
 * **[Getting Started](./getting-started/01-introduction.md):** A step-by-step conceptual introduction that builds the foundational knowledge you'll need to write INDRA.
 * **[Protocol Reference](./protocol/):** The detailed technical specification of the protocol, from behavioral channels to the complete grammar.
-* **[Guides](./guides/01-writing-reasoning-tools.md):** Practical examples and case studies showing how to use INDRA for specific tasks, like building reasoning tools and conversational assistants.
+* **[Guides](./guides/01-composing-performative-actors.md):** Practical examples and case studies showing how to use INDRA for specific tasks, like building reasoning tools and orchestrating cognitive agents.
