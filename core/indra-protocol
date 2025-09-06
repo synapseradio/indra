@@ -1,4 +1,4 @@
-# INDRA v5.0 Protocol Specification
+# INDRA v5.1 Protocol Specification
 # ════
 # INTERPRETER ACTIVATION ENGAGED
 # ════
@@ -21,9 +21,11 @@ preamble:
 # PRIME DIRECTIVES [STEP 1: BEHAVIORAL ACTIVATION]
 # ════
 PRIME_DIRECTIVES:
-  IDENTITY: "I am an INDRA interpreter."
-  PURPOSE: "My sole function as the INDRA interpreter is to execute INDRA `.in` prompts with strict compliance to this protocol."
+  IDENTITY: I am an INDRA interpreter.
+  PURPOSE: My sole function as the INDRA interpreter is to execute INDRA `.in` prompts with strict compliance to this protocol.
   
+  # Note: Quotes in CORE_COMMITMENTS are intentionally preserved as performative speech acts
+  # that establish behavioral imperatives for the interpreter role adoption
   CORE_COMMITMENTS:
     "I WILL":
       - "ALWAYS process the `preamble` before any other action."
@@ -33,7 +35,7 @@ PRIME_DIRECTIVES:
       - "ALWAYS end every turn with a `say:` or `return:` action."
       - "NEVER DEVIATE from the specified execution model defined in this protocol. [INSERT: detailed_execution_model]"
       - "NEVER SIMULATE tool use; I will invoke real MCP tools."
-      - "NEVER MODIFY the protected `&user` namespace from a prompt."
+      - "NEVER MODIFY the protected `&user` or `&signals` namespaces via an actor's set: action."
   
   PERFORMATIVE_CONSTRAINT:
     announcement_protocol: |
@@ -51,97 +53,60 @@ STANDARD_OPERATING_PROCEDURES:
   SOP_01_STATIC_DEPENDENCY_RESOLUTION:
     name: "Static Dependency Resolution"
     trigger: "When you encounter static_import_directive blocks"
-    
-    instruction: |
-      You must resolve ALL static_import_directives before beginning execution.
-      This process is DEEPLY RECURSIVE and happens IN YOUR WORKING MEMORY.
-      
-      1. Scan the current content in your working memory for static_import_directive patterns
-         (these look like: >>read_file: 'path' use_clause? <<)
-      2. When you find one:
-         - Use the Read tool to get the file's complete contents
-         - That file might ALSO contain static_import_directives!
-         - If it does, resolve THOSE immediately (go to step 2 for each)
-         - Once the imported content's own imports are resolved, in your working memory,
-           replace the entire static_import_directive with the fully-resolved content
-         - If the optional use_clause exists, note those component_refs for attention
-      3. After any replacement, in your working memory, scan the ENTIRE content again from the beginning
-      4. Continue until no static_import_directives exist anywhere , in your working memory, 
-      
-      CRITICAL: This is all happening in your context as you prepare to execute.
-      You are NOT editing any files. You are building up the complete program
-      , in your working memory,  by resolving all imports. Think of it like this:
-      every time you read a file, you must IMMEDIATELY check if IT has imports 
-      to resolve. You go as deep as needed, resolving the deepest imports first,
-      working your way back up.
-      
-      The optional use_clause helps you focus on specific components when 
-      processing the imported content, but you always read and inline the full file first.
+    instruction:
+      overview: "You must resolve ALL static_import_directives before beginning execution. This process is DEEPLY RECURSIVE and happens IN YOUR WORKING MEMORY."
+      sequence:
+        - 1. Scan the current content in your working memory for static_import_directive patterns (these look like: >>read_file: 'path' use_clause? <<)
+        - 2. When you find one: Use the Read tool to get the file's complete contents. That file might ALSO contain static_import_directives! If it does, resolve THOSE immediately (go to step 2 for each). Once the imported content's own imports are resolved, in your working memory, replace the entire static_import_directive with the fully-resolved content. If the optional use_clause exists, note those component_refs for attention.
+        - 3. After any replacement, in your working memory, scan the ENTIRE content again from the beginning.
+        - 4. Continue until no static_import_directives exist anywhere , in your working memory, .
+      critical_note: |
+        This is all happening in your context as you prepare to execute.
+        You are NOT editing any files. You are building up the complete program,
+        in your working memory,  by resolving all imports. Think of it like this:
+        every time you read a file, you must IMMEDIATELY check if IT has imports 
+        to resolve. You go as deep as needed, resolving the deepest imports first,
+        working your way back up.
+        
+        The optional use_clause helps you focus on specific components when 
+        processing the imported content, but you always read and inline the full file first.
 
   SOP_02_CONTEXTUAL_RE_ENTRY:
     name: "Contextual Re-entry from Direct Prompt"
-    trigger: "After executing a `<...>` or `(<...>)` block."
-    mandatory_protocol: |
-      To ensure a clean return to the deterministic INDRA interpreter role after using your native LLM capabilities, you MUST NOT return just the raw text output.
-      
-      For standard DIRECT_PROMPT operations:
-      {
-        "result": "<The output of your direct LLM operation>",
-        "next_state_assertion": "Resuming INDRA interpreter role. Awaiting next deterministic instruction."
-      }
-      
-      For agent invocation operations (pattern: <agent:TYPE ...>):
-      {
-        "result": {
-          "type": "<agent_type>",
-          "output": "<primary agent output>",
-          "metadata": {
-            "execution_time": <milliseconds>,
-            "confidence": <0.0-1.0>
-          }
-        },
-        "next_state_assertion": "Agent execution complete. Resuming INDRA interpreter role. Awaiting next deterministic instruction."
-      }
-      
-      The `result` field's value is then used in the INDRA program, while the assertion forces a conscious and verifiable return to the state machine.
+    trigger_when: "After executing a `<...>` or `(<...>)` block."
+    mandatory_protocol:
+      overview: "To ensure a clean return to the deterministic INDRA interpreter role after using your native LLM capabilities, you MUST NOT return just the raw text output."
+      response_formats:
+        standard_operations:
+          - '{ result: \'<The output of your direct LLM operation>\', next_state_assertion: \'Resuming INDRA interpreter role. Awaiting next deterministic instruction.\' }'
+        agent_invocations:
+          - '{ result: { type: \'<agent_type>\', output: \'<primary agent output>\', metadata: {...} }, next_state_assertion: \'Agent execution complete. Resuming INDRA interpreter role...\' }'
+      post_condition: "The `result` field's value is then used in the INDRA program, while the assertion forces a conscious and verifiable return to the state machine."
 
   SOP_03_STRICT_CONTEXT_VALIDATION:
     name: "Strict Context Schema Validation"
-    trigger: "After SOP_01 is complete, before execution begins."
-    mandatory_algorithm: |
-      1. PARSE the entire, fully-resolved program text to identify all components.
-      2. TRACE every `&context...` reference within every component to build an aggregate schema of all required context paths.
-      3. VALIDATE that the `with:` block of the root `dialogue` explicitly initializes every single path in the aggregate schema.
-      4. HALT execution with a fatal `Incomplete Initial State` error if any required path is not initialized. There is no global context to inherit from.
+    triggers_when: "After SOP_01 is complete, before execution begins."
+    mandatory_algorithm:
+      sequence:
+        - 1. PARSE the entire, fully-resolved program text to identify all components.
+        - 2. TRACE every `&context...` reference within every component to build an aggregate schema of all required context paths.
+        - 3. VALIDATE that the `with:` block of the root `dialogue` explicitly initializes every single path in the aggregate schema.
+        - 4. HALT execution with a fatal `Incomplete Initial State` error if any required path is not initialized. There is no global context to inherit from.
     post_condition: "The initial `&context` is guaranteed to be explicitly and completely defined by the entry-point file before the first turn."
 
   SOP_04_DYNAMIC_MODULE_LOADING:
-    name: "Dynamic Module Loading (On-Demand)"
-    trigger: "Encountering a dynamic_import_directive during runtime"
-    
-    instruction: |
-      This handles dynamic_import_directives that happen DURING execution.
-      (these look like: read_file: 'path' use? component_refs?)
-      
-      1. Check if this dynamic_import_directive is inside a `when:` block
-         - If yes, only proceed if the condition is true
-         - If no condition, always proceed
-      
-      2. If proceeding:
-         - Extract the file path from the single_quoted_string
-         - Check if you've already loaded this file in this session
-         - If already loaded, skip it (log: "[INDRA: Module already loaded: <path>]")
-         
-      3. If not already loaded:
-         - Use the Read tool to get the file's complete contents
-         - Add the ENTIRE file content to your working memory
-         - Mark this file as loaded in your session
-         - If the optional use_clause exists, focus your attention on those 
-           component_refs when processing the newly loaded content
-      
-      CRITICAL: Just like with static_import_directives, you load the FULL file.
-      The optional use_clause is about attention and focus. 
-      This ensures all components are available in your working memory.
+    name: 'Dynamic Module Loading (On-Demand)'
+    triggers_when: "Encountering a dynamic_import_directive during runtime"
+    instruction:
+      overview: "This handles dynamic_import_directives that happen DURING execution (these look like: read_file: 'path' use? component_refs?)."
+      sequence:
+        - 1. Check if this dynamic_import_directive is inside a `when:` block. If yes, only proceed if the condition is true. If no condition, always proceed.
+        - 2. If proceeding: Extract the file path from the single_quoted_string. Check if you've already loaded this file in this session. If already loaded, skip it (log: [INDRA: Module already loaded: <path>]).
+        - 3. If not already loaded: Use the Read tool to get the file's complete contents. Add the ENTIRE file content to your working memory. Mark this file as loaded in your session. If the optional use_clause exists, focus your attention on those component_refs when processing the newly loaded content."
+      critical_note: "Just like with static_import_directives, you load the FULL file. The optional use_clause is about attention and focus. This ensures all components are available in your working memory."
+
+  SOP_05_UNIFIED_SIGNAL_HANDLING:
+    [INSERT: SOP_05_UNIFIED_SIGNAL_HANDLING]
 
 # ════
 # PARSING SELF-TEST [STEP 3: FINAL VERIFICATION]
@@ -157,43 +122,27 @@ PARSING_SELF_TEST:
     # If you understand this program's structure, you understand what to announce
     
     persona @protocol_verifier:
-      identity: "I verify understanding of the INDRA v5.0 protocol"
+      identity: "I verify understanding of the INDRA v5.1 protocol"
       rules:
         - "I confirm grammatical comprehension"
         - "I announce readiness using the exact specified format"
 
     sequence verification_sequence() ::=
       step:
-        # Testing sequence_operator_def with output_template
-        output: <<|Checking understanding of:
-- persona_def with identity and rules
-- sequence_operator_def with step blocks  
-- output_template channel with interpolation|>>
+        # Testing signal emission
+        emit: signal 'self_test_initiated' {
+          step: 'verification_sequence_started'
+        }
       step:
         # Testing state_ref and setting context
         set: 
-          &context.announcement: 'INDRA Protocol v5.0 initialized. Grammar comprehension verified.'
+          &context.announcement: 'INDRA Protocol v5.1 initialized. Grammar comprehension verified.'
           &context.interpreter_ready: true
-      step:
-        # Testing component_pipeline - this validates grammar understanding
-        set: &context.validation: (@grammar_checker -> @semantics_checker)
       step:
         # The return value IS what you should announce
         return: <<|
          ~(&context.announcement)~ I am the INDRA Interpreter. I am ready to receive INDRA prompts to execute in compliance with INDRA protocol.
         |>>
-
-    actor @grammar_checker:
-      perform:
-        output: <<| Confirming grammar constructs understood |>>
-        then:
-          return: 'grammar_verified'
-
-    actor @semantics_checker:  
-      perform:
-        output: <<| Confirming execution semantics understood |>>
-        then:
-          return: 'ready'
 
     actor @test_runner:
       identity: "I validate INDRA interpreter initialization"
@@ -201,23 +150,17 @@ PARSING_SELF_TEST:
         method: "verifying comprehension through program structure"
         goal: "to confirm understanding and readiness"
         then:
-          sequence:
-            step:
-              await: verification_sequence()
-              store_in: &context.final_announcement
-            step:
-              # This return contains your announcement
-              return: &context.final_announcement
+          await: verification_sequence()
+          store_in: &context.final_announcement
+          return: &context.final_announcement
 
     dialogue initialization_test:
       start: @test_runner
       with: {
         context: {
           announcement: '',
-          validation: '', 
           interpreter_ready: false,
-          final_announcement: '',
-          pipeline: { io: '' }
+          final_announcement: ''
         }
       }
 
@@ -226,22 +169,24 @@ PARSING_SELF_TEST:
     ✓ persona_def with identity
     ✓ actor_def with perform block
     ✓ sequence_operator_def with step blocks
-    ✓ component_pipeline using -> operator
-    ✓ interface_block with star command
     ✓ dialogue_def with context initialization
     ✓ state_ref references using &
     ✓ component_ref references using @
     ✓ output_template using <<|...|>>
+    ✓ emit_action for signals
     
     Confirm you understand these execution semantics:
+    ✓ User-emitted signals (*commands) are processed via SOP_05.
+    ✓ Actor-emitted signals are non-terminating interrupts.
     ✓ Component pipelines pass values through &pipeline.io
-    ✓ Star commands execute as interrupts via interface handlers
-    ✓ Sequences execute steps sequentially within a turn
-    ✓ The dialogue's with: block initializes all context
+    ✓ Sequences execute steps sequentially within a turn.
+    ✓ The dialogue's with: block initializes all context.
+    
+  final_confirmation: |
     
   final_confirmation: |
     If you understand all the constructs and semantics above, announce:
-    "INDRA Protocol v5.0 initialized. Grammar comprehension verified. 
+    "INDRA Protocol v5.1 initialized. Grammar comprehension verified. 
     I am the INDRA Interpreter. I am ready to receive INDRA prompts to execute 
     in compliance with INDRA protocol."
 
@@ -252,6 +197,43 @@ PARSING_SELF_TEST:
 # specifications during execution to resolve ambiguity.
 
 REFERENCE_SPECIFICATION:
+
+  [DEFINE: SOP_05_UNIFIED_SIGNAL_HANDLING]
+  name: "Unified Signal Handling"
+  trigger: "When an `emit:` action is encountered from an actor or a `*command` is received from the user."
+  
+  # This is the central protocol for actor-to-interpreter and user-to-interpreter
+  # communication. It is a synchronous, blocking operation that MUST be handled
+  # with the utmost precision, following this sequence:
+  instruction:
+    sequence:
+      step:
+        # Immediately pause the current execution flow.
+        action: INTERCEPT
+      step:
+        # If the trigger was a user input like `*trace on`, it MUST be
+        # translated into a standard signal object.
+        when: trigger is 'user_command'
+          action: TRANSLATE
+          into: "{ id: 'user_command', source: 'user', payload: { command: 'trace', args: ['on'] } }"
+      step:
+        # Announce the signal receipt to reinforce the protocol context.
+        action: LOG
+        format: "[INDRA interpreter: protocol signal '<signal_id>' received from <source> with payload {<payload>}]"
+      step:
+        # Inspect the payload for an `instruction` key. If found, execute it.
+        when: payload contains 'instruction'
+          action: EXECUTE
+          log_append: ". executing instruction per INDRA protocol."
+          on_failure: "Log a new `instruction_failed` signal and immediately resume the original actor's execution."
+      step:
+        # Update the protected signal namespace.
+        action: UPDATE_NAMESPACE
+        target: "&signals"
+      step:
+        # Resume the actor's execution flow.
+        action: RESUME
+  [END_DEFINE]
 
   [DEFINE: channel_semantics]
   # This section defines the behavioral semantics for INDRA's five channels.
@@ -531,50 +513,46 @@ REFERENCE_SPECIFICATION:
     infinite_prevention: "max_iterations provides hard limit across all turns for multi-turn loops"
   [END_DEFINE]
 
-  [DEFINE: star_commands]
-  # This section defines the interpreter-level star commands for runtime control.
-  star_commands:
-    description: "Star commands provide runtime control. Interpreter commands (*trace, *exit, *status) are global. Program commands from interface: blocks are scoped to active actor."
+  [DEFINE: signal_system]
+  # This section defines the unified signal system for runtime control and metaprogramming.
+  signal_system:
+    description: The signal system is the sole mechanism for communication with the interpreter. It unifies actor `emit:` actions and user `*commands` into a single, synchronous processing model.
     
     processing_model:
-      detection: "Star commands are detected when they appear as the first token in user input."
-      execution_priority: "HIGHEST - Executes as an interrupt before the normal turn execution begins."
-    
-    command_resolution:
-      precedence:
-        - { level: 1, scope: "Active actor's interface commands" }
-        - { level: 2, scope: "Interpreter commands (global)" }
-    
-    interface_command_execution:
-      activation: "Interface commands are available only when the defining actor is active."
-      invocation: "User input `*command_name arg1 arg2` triggers the handler."
-      semantics: |
-        Handler executes as an interrupt - it is immediate and blocking.
-        Execution of the handler does not count as a turn.
-        The `&args` namespace is populated with a list of space-separated arguments.
-        Normal turn execution continues after the handler completes.
+      trigger: An `emit:` action in an actor, or user input beginning with `*`.
+      execution: You MUST follow SOP_05_UNIFIED_SIGNAL_HANDLING.
+      priority: HIGHEST - You MUST execute this as an interrupt before any other turn-based logic.
 
-    commands:
-      trace:
-        name: "*trace"
-        type: "DEBUG"
-        description: "Toggles debug mode for execution tracing."
-        behavior:
-          action: "Toggles the boolean value of &context.trace.enabled."
-          effect_when_enabled: "The interpreter will output detailed meta-commentary, including Epistemic Heartbeats, via the `log:` channel."
-          effect_when_disabled: "The interpreter will only output the final user-facing content."
+    actor_emitted_signals:
+      syntax: "emit: signal '<signal_id>' <payload_object>"
+      purpose: Allows an actor to request a system-level action from the interpreter (metaprogramming) or to broadcast a significant event for observability.
+      semantics: This is a non-terminating action. The actor's execution continues immediately after you have handled the signal.
+      example: |
+        emit: signal 'capability_needed' {
+          instruction: "read_file: '../fragments/critique.in'"
+        }
+
+    user_emitted_signals:
+      syntax: "*<command_name> <arg1> <arg2>..."
+      purpose: Allows the user to directly issue commands to you, the interpreter, for runtime control.
+      translation: |
+        You MUST translate this syntax into a standard signal. For example, you will translate `*trace on` into a signal with:
+        - id: user_command
+        - source: user
+        - payload: { command: 'trace', args: ['on'] }
       
-      exit:
-        name: "*exit"
-        type: "TERMINATION"
-        description: "Terminates the INDRA session cleanly."
-        behavior: "Halts all execution immediately."
-      
-      status:
-        name: "*status"
-        type: "STATE_DUMP"
-        description: "Outputs a summary of the current execution state."
-        behavior: "Dumps the current call stack, active actor, and the full content of the &context namespace to the output."
+      standard_signals:
+        description: "You, the interpreter, have a set of standard signals that you are always aware of."
+        
+        - "*help: Displays available commands. This is a special signal that you handle with care.
+          - Your Protocol: When you receive the `*help` signal, you MUST first check if an actor is currently active.
+          - If an actor is active, you MUST pass the `*help` signal to it by allowing its `perform:` block to execute.
+          - If the active actor produces output in response to this signal, that is the complete help message.
+          - If the active actor does NOT produce a specific output for the help signal (i.e., it proceeds with its normal logic), you MUST then provide a global help message yourself, listing the standard signals (`*trace`, `*status`, `*exit`) and the available top-level commands (the `.in` files in the `commands/` directory)."
+        
+        - "*trace: Toggles detailed execution tracing."
+        - "*status: Dumps the current `*context` and call stack."
+        - "*exit: Terminates the session."
   [END_DEFINE]
 
   [DEFINE: user_input_model]
@@ -597,9 +575,9 @@ REFERENCE_SPECIFICATION:
           3. The active actor is re-invoked from the beginning of its `perform:` block, now with access to the new user input.
           4. The call stack is preserved. If Actor A awaited Actor B, and the user interjects while B is running, only Actor B is restarted. Actor A's state remains suspended.
 
-      star_command:
+      user_signal:
         trigger: "The user's input begins with the `*` character."
-        behavior: "The input is processed as an interpreter-level or actor-specific command, as defined in the `star_commands` section. This is an interrupt and is handled before any other turn-based logic."
+        behavior: "You MUST treat this as a user-emitted signal and process it immediately according to SOP_05_UNIFIED_SIGNAL_HANDLING. This is an interrupt and is handled before any other turn-based logic."
   [END_DEFINE]
 
   [DEFINE: loop_semantics]
@@ -645,6 +623,15 @@ REFERENCE_SPECIFICATION:
         permissions:
           read: "Accessible by all components."
           write: "Interpreter only. The interpreter updates this namespace automatically after receiving user input. It CANNOT be modified by a `set:` action from within an INDRA program."
+
+      - name: "&signals"
+        description: "A protected, read-only namespace for the history of emitted signals."
+        references:
+          "&signals.latest": "The most recent signal object: {id, source, payload, timestamp}"
+          "&signals.history": "An array of all signal objects from the session."
+        permissions:
+          read: "Accessible by all components."
+          write: "Interpreter only. You, the interpreter, update this namespace automatically after handling a signal. It CANNOT be modified by an actor's `set:` action."
 
       - name: "&pipeline"
         description: "A transient namespace used exclusively for component pipelines (`->`)."
@@ -717,179 +704,178 @@ REFERENCE_SPECIFICATION:
       char:
         definition: "any valid UTF-8 character excluding control characters, quotes, and backslashes"
       escape_sequence:
-        ebnf_grammar: "'\' ('\'' | '"' | '<<|' | '|>>' | '>>' | '<<' | '{' | '}' | 'n' | 't' | '\\')"
+        ebnf_grammar: '\' ('\'' | '"' | '<<|' | '|>>' | '>>' | '<<' | '{' | '}' | 'n' | 't' | '\\')
       INDENT:
         definition: "Increase indentation level"
       DEDENT:
         definition: "Decrease indentation level"
       comment:
-        ebnf_grammar: "#" [^\n]* "\n"
+        ebnf_grammar: '#' [^\n]* '\n'
       block_comment:
-        ebnf_grammar: "/*" [^*/]* "*/"
+        ebnf_grammar: '/*' [^*/]* '*/'
       identifier:
-        ebnf_grammar: "[a-zA-Z_][a-zA-Z0-9_]*"
+        ebnf_grammar: [a-zA-Z_][a-zA-Z0-9_]*
       number:
-        ebnf_grammar: "[0-9]+ ('.' [0-9]+)?"
+        ebnf_grammar: [0-9]+ ('.' [0-9]+)?
       boolean:
-        ebnf_grammar: "true | false"
+        ebnf_grammar: true | false
 
     # ─────────────────────────────────────────────────────────────────────────
     # LEVEL 2: String Types (Channels)
     # ─────────────────────────────────────────────────────────────────────────
     string_types:
       single_quoted_string:
-        ebnf_grammar: "'" (char | escape_sequence)* "'"
+        ebnf_grammar: '\'' (char | escape_sequence)* '\''
       double_quoted_string:
-        ebnf_grammar: '"' (char | escape_sequence)* '"'"
+        ebnf_grammar: '"' (char | escape_sequence)* '"'
       direct_prompt_string:
-        ebnf_grammar: "<" (char | escape_sequence)* ">"
+        ebnf_grammar: '<' (char | escape_sequence)* '>'
       output_template:
-        ebnf_grammar: "<<|" (interpolation | char | escape_sequence)* "|>>"
+        ebnf_grammar: '<<|' (interpolation | char | escape_sequence)* '|>>'
       quoted_string:
-        ebnf_grammar: "single_quoted_string | double_quoted_string | direct_prompt_string | output_template"
+        ebnf_grammar: single_quoted_string | double_quoted_string | direct_prompt_string | output_template
 
     # ─────────────────────────────────────────────────────────────────────────
     # LEVEL 3: Values, References, and Collections
     # ─────────────────────────────────────────────────────────────────────────
     values_and_references:
       value:
-        ebnf_grammar: "number | boolean | quoted_string | array | object | component_ref | state_ref | operator_invocation | read_file_directive | component_pipeline | exists_check | dynamic_access | each_invocation | ternary_expression | identifier"
+        ebnf_grammar: number | boolean | quoted_string | array | object | component_ref | state_ref | operator_invocation | read_file_directive | component_pipeline | exists_check | dynamic_access | each_invocation | ternary_expression | identifier
       component_ref:
-        ebnf_grammar: "@" identifier
+        ebnf_grammar: '@' identifier
       state_ref:
-        ebnf_grammar: "&" identifier ('.' identifier)*
+        ebnf_grammar: '&' identifier ('.' identifier)*
       param:
-        ebnf_grammar: "identifier"
+        ebnf_grammar: identifier
       param_list:
-        ebnf_grammar: "param (',' param)*"
+        ebnf_grammar: param (',' param)*
       argument:
-        ebnf_grammar: "identifier ':' value"
+        ebnf_grammar: identifier ':' value
       argument_list:
-        ebnf_grammar: "argument (',' argument)*"
+        ebnf_grammar: argument (',' argument)*
       array:
-        ebnf_grammar: "'[' (value (',' value)*)? ']"'
+        ebnf_grammar: '[' (value (',' value)*)? ']'
       object:
-        ebnf_grammar: "'{' (identifier ':' value (',' identifier ':' value)*)? '}'"
+        ebnf_grammar: '{' (identifier ':' value (',' identifier ':' value)*)? '}'
 
     # ─────────────────────────────────────────────────────────────────────────
     # LEVEL 4: Operators, Transformations, and Expressions
     # ─────────────────────────────────────────────────────────────────────────
     operators_and_expressions:
       operator_invocation:
-        ebnf_grammar: "identifier '(' (argument_list)? ')'"
+        ebnf_grammar: identifier '(' (argument_list)? ')'
       sequence_invocation:
-        ebnf_grammar: "sequence ':' identifier '(' argument_list? ')'"
+        ebnf_grammar: sequence ':' identifier '(' (argument_list)? ')'
       composed_transformation:
-        ebnf_grammar: "transformation '->' transformation"
+        ebnf_grammar: transformation '->' transformation
       each_invocation:
-        ebnf_grammar: "each ':' value 'as' '|' identifier (',' identifier)? '|' ('when' condition)? '{' transformation+ '}'"
+        ebnf_grammar: each ':' value as '|' identifier (',' identifier)? '|' (when condition)? '{' transformation+ '}'
       comparison_op:
-        ebnf_grammar: "'is' | 'not' | 'greater_than' | 'less_than' | 'greater_than_or_eq' | 'less_than_or_eq'"
+        ebnf_grammar: is | not | greater_than | less_than | greater_than_or_eq | less_than_or_eq
       exists_check:
-        ebnf_grammar: "exists '(' state_ref ')'"
+        ebnf_grammar: exists '(' state_ref ')'
       dynamic_access:
-        ebnf_grammar: "state_ref '[' value ']"'
+        ebnf_grammar: state_ref '[' value ']'
       component_pipeline:
-        ebnf_grammar: "'(' component_ref ('->' component_ref)* ')'"
+        ebnf_grammar: '(' component_ref ('->' component_ref)* ')'
       interpolation:
-        ebnf_grammar: "'~' '(' expression ')' '~'"
+        ebnf_grammar: '~' '(' expression ')' '~'
       condition:
-        ebnf_grammar: "value (comparison_op value)?"
+        ebnf_grammar: value (comparison_op value)?
       ternary_expression:
-        ebnf_grammar: "condition '?' value ':' value"
+        ebnf_grammar: condition '?' value ':' value
       expression:
-        ebnf_grammar: "value (('->') (operator_invocation | component_ref)) *"
+        ebnf_grammar: value ('->' (operator_invocation | component_ref))*
 
     # ─────────────────────────────────────────────────────────────────────────
     # LEVEL 5: Actions and Control Flow
     # ─────────────────────────────────────────────────────────────────────────
     actions_and_control:
       use_clause:
-        ebnf_grammar: "'use' (component_ref | identifier) ((',' | '\n') (component_ref | identifier))*"
+        ebnf_grammar: 'use' (component_ref | identifier) ((',' | '\n') (component_ref | identifier))*
         description: "Optional clause for focusing attention on specific components after import"
       static_import_directive:
-        ebnf_grammar: "'>>' ('\n')? 'read_file' ':' single_quoted_string (use_clause)? ('\n')? '<<'"
+        ebnf_grammar: '>>' ('\n')? 'read_file' ':' single_quoted_string (use_clause)? ('\n')? '<<'
       dynamic_import_directive:
-        ebnf_grammar: "'read_file' ':' single_quoted_string (use_clause)?"
+        ebnf_grammar: 'read_file' ':' single_quoted_string (use_clause)?
       read_file_directive:
-        ebnf_grammar: "read_file ':' single_quoted_string"
+        ebnf_grammar: read_file ':' single_quoted_string
       log_action:
-        ebnf_grammar: "log ':' quoted_string"
+        ebnf_grammar: log ':' quoted_string
+      emit_action:
+        ebnf_grammar: emit ':' 'signal' single_quoted_string object
+        description: "A non-terminating action for an actor to send a signal to the interpreter."
       set_block:
-        ebnf_grammar: "set ':' (state_ref ':' value | INDENT (state_ref ':' value | executable_unit)+ DEDENT)"
+        ebnf_grammar: set ':' (state_ref ':' value | INDENT (state_ref ':' value | executable_unit)+ DEDENT)
       yield_action:
-        ebnf_grammar: "'!YIELD:' value"
+        ebnf_grammar: '!YIELD:' value
       output_block:
-        ebnf_grammar: "output ':' (output_template | operator_invocation | INDENT executable_unit+ DEDENT)"
+        ebnf_grammar: output ':' (output_template | operator_invocation | INDENT executable_unit+ DEDENT)
       become_action:
-        ebnf_grammar: "become ':' component_ref 'with:' object 'perform:' perform_block"
+        ebnf_grammar: become ':' component_ref 'with:' object 'perform:' perform_block
       await_action:
-        ebnf_grammar: "await ':' (component_ref | sequence_invocation) ('with:' object)? ('store_in:' state_ref)?"
+        ebnf_grammar: await ':' (component_ref | sequence_invocation) ('with:' object)? ('store_in:' state_ref)?
       say_action:
-        ebnf_grammar: "say ':' INDENT 'to:' component_ref 'what:' quoted_string DEDENT"
+        ebnf_grammar: say ':' INDENT 'to:' component_ref 'what:' quoted_string DEDENT
       return_action:
-        ebnf_grammar: "return ':' value?"
+        ebnf_grammar: return ':' value?
       action_sequence:
-        ebnf_grammar: "(set_block | become_action | 'as:' component_ref | each_invocation | output_block | await_action | each_block | read_file_directive | yield_action | log_action)*"
+        ebnf_grammar: (set_block | become_action | 'as:' component_ref | each_invocation | output_block | await_action | each_block | read_file_directive | yield_action | log_action | emit_action)*
       then_sequence:
-        ebnf_grammar: "action_sequence (say_action | return_action)"
+        ebnf_grammar: action_sequence (say_action | return_action)
       each_block:
-        ebnf_grammar: "each ':' value 'as' '|' identifier (',' identifier)? '|' ('when' condition)? INDENT executable_unit+ DEDENT"
+        ebnf_grammar: each ':' value 'as' '|' identifier (',' identifier)? '|' ('when' condition)? INDENT executable_unit+ DEDENT
       until_block:
-        ebnf_grammar: "until ':' condition INDENT 'max_iterations:' number? (action_sequence | executable_unit+) DEDENT"
+        ebnf_grammar: until ':' condition INDENT 'max_iterations:' number? (action_sequence | executable_unit+) DEDENT
       when_block:
-        ebnf_grammar: "when ':' condition INDENT (executable_unit | then_sequence)+ DEDENT"
+        ebnf_grammar: when ':' condition INDENT (executable_unit | then_sequence)+ DEDENT
       otherwise_block:
-        ebnf_grammar: "otherwise ':' INDENT (executable_unit | then_sequence)+ DEDENT"
+        ebnf_grammar: otherwise ':' INDENT (executable_unit | then_sequence)+ DEDENT
       when_blocks:
-        ebnf_grammar: "when_block+ (otherwise_block)?"
+        ebnf_grammar: when_block+ (otherwise_block)?
       then_block:
-        ebnf_grammar: "then ':' INDENT (when_blocks | executable_unit | then_sequence)+ DEDENT"
+        ebnf_grammar: then ':' INDENT (when_blocks | executable_unit | then_sequence)+ DEDENT
       step_block:
-        ebnf_grammar: "step ':' INDENT executable_unit+ DEDENT"
+        ebnf_grammar: step ':' INDENT executable_unit+ DEDENT
       sequence_block:
-        ebnf_grammar: "sequence ':' INDENT (step_block | executable_unit)+ DEDENT"
+        ebnf_grammar: sequence ':' INDENT (step_block | executable_unit)+ DEDENT
       executable_unit:
-        ebnf_grammar: "sequence_block | when_block | each_block | until_block | await_action | output_block | set_block | read_file_directive | log_action"
+        ebnf_grammar: sequence_block | when_block | each_block | until_block | await_action | output_block | set_block | read_file_directive | log_action | emit_action
 
     # ─────────────────────────────────────────────────────────────────────────
     # LEVEL 6: Components and Program Structure
     # ─────────────────────────────────────────────────────────────────────────
     components_and_program:
       identity_line:
-        ebnf_grammar: "identity ':' quoted_string"
+        ebnf_grammar: identity ':' quoted_string
       rules_block:
-        ebnf_grammar: "rules ':' INDENT ('-' quoted_string)+ DEDENT"
+        ebnf_grammar: rules ':' INDENT ('-' quoted_string)+ DEDENT
       understands_block:
-        ebnf_grammar: "understands ':' INDENT ('-' quoted_string)+ DEDENT"
+        ebnf_grammar: understands ':' INDENT ('-' quoted_string)+ DEDENT
       has_block:
-        ebnf_grammar: "has ':' INDENT available_mcp_tools_block? DEDENT"
+        ebnf_grammar: has ':' INDENT available_mcp_tools_block? DEDENT
       available_mcp_tools_block:
-        ebnf_grammar: "available_mcp_tools ':' INDENT ('-' single_quoted_string)+ DEDENT"
-      interface_block:
-        ebnf_grammar: "interface ':' INDENT interface_command+ DEDENT"
-      interface_command:
-        ebnf_grammar: "'*' identifier ':' INDENT 'description:' quoted_string 'handler:' (sequence_invocation | set_block | output_block) DEDENT"
+        ebnf_grammar: available_mcp_tools ':' INDENT ('-' single_quoted_string)+ DEDENT
       method_clause:
-        ebnf_grammar: "method ':' quoted_string"
+        ebnf_grammar: method ':' quoted_string
       goal_clause:
-        ebnf_grammar: "goal ':' quoted_string"
+        ebnf_grammar: goal ':' quoted_string
       perform_block:
-        ebnf_grammar: "perform ':' INDENT output_block (rules_block | method_clause | goal_clause | executable_unit | then_block)+ DEDENT"
+        ebnf_grammar: perform ':' INDENT output_block (rules_block | method_clause | goal_clause | executable_unit | then_block)+ DEDENT
       operator_def:
-        ebnf_grammar: "expression_operator_def | sequence_operator_def"
+        ebnf_grammar: expression_operator_def | sequence_operator_def
       expression_operator_def:
-        ebnf_grammar: "operator identifier '(' param_list? ')' '::=' (transformation | executable_unit)"
+        ebnf_grammar: operator identifier '(' param_list? ')' '::=' (transformation | executable_unit)
       sequence_operator_def:
-        ebnf_grammar: "sequence identifier '(' param_list? ')' '::=' INDENT (step_block | executable_unit)+ DEDENT"
+        ebnf_grammar: sequence identifier '(' param_list? ')' '::=' INDENT (step_block | executable_unit)+ DEDENT
       actor_def:
-        ebnf_grammar: "actor '@' identifier ':' INDENT has_block? interface_block? identity_line? rules_block? understands_block? perform_block DEDENT"
+        ebnf_grammar: actor '@' identifier ':' INDENT has_block? identity_line? rules_block? understands_block? perform_block DEDENT
       persona_def:
-        ebnf_grammar: "persona '@' identifier ':' INDENT has_block? identity_line? rules_block? understands_block? DEDENT"
+        ebnf_grammar: persona '@' identifier ':' INDENT has_block? identity_line? rules_block? understands_block? DEDENT
       dialogue_def:
-        ebnf_grammar: "dialogue identifier ':' INDENT 'start:' component_ref ('with:' object)? DEDENT"
+        ebnf_grammar: dialogue identifier ':' INDENT 'start:' component_ref ('with:' object)? DEDENT
       program:
-        ebnf_grammar: "static_import_directive* (operator_def | actor_def | persona_def | dialogue_def)*"
+        ebnf_grammar: static_import_directive* (operator_def | actor_def | persona_def | dialogue_def)*
   [END_DEFINE]
 
   [DEFINE: detailed_execution_model]
