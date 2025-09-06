@@ -43,7 +43,7 @@ actor @reason:
           # --- Phase 4: Presenting & Looping ---
           step:
             when: &context.reason.phase is 'presenting'
-              output: $(format_synthesis(...))
+              output: ~(format_synthesis(...))~
               
               # Reset for the next inquiry and wait for the user.
               set:

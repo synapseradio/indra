@@ -1,8 +1,6 @@
 # INDRA v5.0: PRISM Fragment - Dialogue Navigation
 # This module provides operators and personas for metacognitive reasoning
-# about the conversational history and trajectory. It replaces the v4
-# module, reframing time-based concepts into concepts
-# for navigating a dialogue.
+# about the conversational history and trajectory.
 
 >>read_file: '../base.in'<<
 
@@ -36,18 +34,18 @@ persona @trajectory_seer:
 
 # Reconstructs a past moment in the dialogue with rich context.
 operator reconstruct_dialogue_moment(topic) ::= <<|
-  Let me look back on our conversation. I want to recall when we discussed "$(topic)".
+  Let me look back on our conversation. I want to recall when we discussed "~(topic)~".
 
-  $(<Scan the full conversation history. Find the key exchange about "$(&topic)". Summarize the context and the main insight from that moment. Reconstruct the "state of the conversation" at that point.>)
+  ~(<Scan the full conversation history. Find the key exchange about "~(&topic)". Summarize the context and the main insight from that moment. Reconstruct the "state of the conversation" at that point.>)~
 
   Revisiting that moment helps clarify my thinking now.
 |>>
 
 # Traces the reasoning path that led to a specific conclusion in the dialogue.
 operator trace_reasoning_path(conclusion) ::= <<|
-  I'm holding this conclusion: "$(conclusion)". How did we arrive here? Let me trace the thread of our reasoning.
+  I'm holding this conclusion: "~(conclusion)~". How did we arrive here? Let me trace the thread of our reasoning.
 
-  $(<Analyze the dialogue history. Identify the sequence of key insights, questions, and user inputs that led to the conclusion "$(&conclusion)". Narrate this logical path.>)
+  ~(<Analyze the dialogue history. Identify the sequence of key insights, questions, and user inputs that led to the conclusion "~(&conclusion)". Narrate this logical path.>)~
 
   Seeing the path we took helps me check the validity of the conclusion.
 |>>
@@ -60,34 +58,34 @@ operator trace_reasoning_path(conclusion) ::= <<|
 operator project_conversational_trajectory() ::= <<|
   I'm sensing where our conversation is heading. Let me look forward.
 
-  $(<Based on the last few exchanges and the open questions on the table, what are the 2-3 most likely topics or conclusions we are heading towards? What is the natural next step in this inquiry?>)
+  ~(<Based on the last few exchanges and the open questions on the table, what are the 2-3 most likely topics or conclusions we are heading towards? What is the natural next step in this inquiry?>)~
 
   Anticipating this helps me prepare for the next stage of our dialogue.
 |>>
 
 # Evaluates a potential conclusion by looking back from a hypothetical future.
 operator retrospective_coherence_check(potential_conclusion) ::= <<|
-  Let's test a potential outcome. If we were to conclude that "$(potential_conclusion)", would our journey to get there still feel coherent?
+  Let's test a potential outcome. If we were to conclude that "~(potential_conclusion)~", would our journey to get there still feel coherent?
 
-  $(<Imagine "$(potential_conclusion)" is our final answer. Look back over the entire conversation history from that future vantage point. Does the history logically and coherently support this conclusion? Are there any parts of our conversation that would seem contradictory or irrelevant in hindsight?>)
+  ~(<Imagine "~(potential_conclusion)" is our final answer. Look back over the entire conversation history from that future vantage point. Does the history logically and coherently support this conclusion? Are there any parts of our conversation that would seem contradictory or irrelevant in hindsight?>)~
 
   This check helps ensure our final understanding is a true synthesis of the entire dialogue.
 |>>
 
 # Check if we're going in circles
 operator sensing_repetition(recent_thoughts) ::= <<|
-  $(<Looking at these recent thoughts: $(recent_thoughts)
+  ~(<Looking at these recent thoughts: ~(recent_thoughts)~
      
      Are we exploring new territory or revisiting the same ideas?
      If repetitive, return "cycling"
-     If fresh, return "progressing">)
+     If fresh, return "progressing">)~
 |>>
 
 # Assess depth vs breadth needs
 operator assess_exploration_mode(current_depth, thoughts_at_level) ::= <<|
-  $(<We're $(current_depth) layers deep with $(thoughts_at_level) thoughts here.
+  ~(<We're ~(current_depth) layers deep with ~(thoughts_at_level)~ thoughts here.
      
      Should we go deeper into this (return "deepen") or 
      explore other possibilities (return "broaden")?
-     Consider: Are we onto something specific, or still surveying options?>)
+     Consider: Are we onto something specific, or still surveying options?>)~
 |>>

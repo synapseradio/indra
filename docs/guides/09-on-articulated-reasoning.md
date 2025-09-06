@@ -42,14 +42,14 @@ The magic happens when these two channels are combined through interpolation.
 ```indra
 # The inner voice is combined with an outer instruction.
 operator frame_situation_as(expertise) ::= <<|
-  Hold on a sec. Let me reframe this as though I were $(expertise).
+  Hold on a sec. Let me reframe this as though I were ~(expertise)~.
   What things do I see?
-  $(<As $(expertise), take the current situation into account. Observe details that you would uniquely be able to identify. Answer: what are they?>)
+  ~(<As ~(expertise), take the current situation into account. Observe details that you would uniquely be able to identify. Answer: what are they?>)~
 |>>
 ```
 
 In this operator:
 1.  The text within the `<<|...|>>` paints the reality: the actor is pausing, adopting a new perspective, and asking a question. This is its performative "inner voice."
-2.  The text within the `$(<...>`) is the direct instruction to the LLM, telling it *how* to generate the next part of that reality.
+2.  The text within the `~(<...>`)~ is the direct instruction to the LLM, telling it *how* to generate the next part of that reality.
 
 This is the essence of the INDRA style. The human composes fragments of reflective thought—the inner monologue—and seamlessly combines them with inferential action. The result is a process that feels natural, transparent, and deeply collaborative, turning the powerful but non-cognitive engine of an LLM into a true instrument for thought.

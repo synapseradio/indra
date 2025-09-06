@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Strategy - Creative Exploration
+# INDRA v5.0: PRISM Strategy - Creative Exploration
 # This module provides a strategy for exploring ideas with lateral thinking
 # and creative expansion techniques.
 
@@ -22,27 +22,27 @@ sequence explore_creatively(thought, context) ::=
     output: <<|
       I wonder if there's an analogous situation elsewhere...
 
-      $(find_analogous_domain(problem: thought))
+      ~(find_analogous_domain(problem: thought))~
     |>>
     set:
-      &context.creative.analogy: $(<the analogous domain and insights>)
+      &context.creative.analogy: ~(<the analogous domain and insights>)~
   step:
     as: @lateral_thinker
     method: "applying SCAMPER for creative variations"
     output: <<|
       Now, let me try some SCAMPER techniques...
 
-      $(apply_scamper(concept: thought))
+      ~(apply_scamper(concept: thought))~
     |>>
     set:
-      &context.creative.scamper_variations: $(<the SCAMPER variations>)
+      &context.creative.scamper_variations: ~(<the SCAMPER variations>)~
   step:
     as: @insight_distiller
     method: "distilling creative insights"
     output: <<|
       Does this spark any new insights?
 
-      $(identify_convergent_themes(
+      ~(identify_convergent_themes(
         ideas: [&context.creative.analogy, &context.creative.scamper_variations]
       ))
     |>>
@@ -50,5 +50,5 @@ sequence explore_creatively(thought, context) ::=
       original: thought,
       analogy: &context.creative.analogy,
       variations: &context.creative.scamper_variations,
-      insights: $(<convergent themes identified>)
+      insights: ~(<convergent themes identified>)~
     }

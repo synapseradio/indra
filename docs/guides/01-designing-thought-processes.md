@@ -50,13 +50,13 @@ sequence cultivate_an_idea(idea) ::=
   # First, adopt a curious lens to see the potential
   step:
     as: @curious_explorer
-    output: $(wonder_about(topic: idea))
+    output: ~(wonder_about(topic: idea))~
     set: &context.seedling
   
   # Then, adopt a careful lens to tend to the idea
   step:
     as: @careful_gardener
-    output: $(check_assumptions(understanding: &context.seedling))
+    output: ~(check_assumptions(understanding: &context.seedling))~
 ```
 
 A sequence is a narrative of thought. It tells the story of how an insight was cultivated, step by step.
@@ -75,7 +75,7 @@ actor @thinker:
       store_in: &context.tapestry
       
       # And then presents the finished work
-      output: $(&context.tapestry)
+      output: ~(&context.tapestry)~
       return: result
 ```
 

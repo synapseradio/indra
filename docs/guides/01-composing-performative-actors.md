@@ -38,10 +38,10 @@ actor @explore:
         what: &context.tree_result
 ```
 
-1.  **Performative Interface:** `@explore` has a performative `identity` ("I explore ideas by...") and provides a direct, inviting welcome.
-2.  **Delegation:** All the hard work is immediately handed off to the specialist, `@tree_thinker`, using `await:`. This keeps the orchestrator clean and focused on user interaction and high-level flow.
-3.  **Passing Context:** It passes the user's query to the specialist.
-4.  **Presenting the Result:** After `@tree_thinker` returns a result, `@explore` simply presents it to the user.
+1. **Performative Interface:** `@explore` has a performative `identity` ("I explore ideas by...") and provides a direct, inviting welcome.
+2. **Delegation:** All the hard work is immediately handed off to the specialist, `@tree_thinker`, using `await:`. This keeps the orchestrator clean and focused on user interaction and high-level flow.
+3. **Passing Context:** It passes the user's query to the specialist.
+4. **Presenting the Result:** After `@tree_thinker` returns a result, `@explore` simply presents it to the user.
 
 This separation of concerns—a simple orchestrator and a powerful, reusable specialist—is a core pattern for building complex tools in INDRA.
 
@@ -63,7 +63,7 @@ The `@reason` actor is a conversational partner that co-creates a reasoning plan
 step:
   output: <<|
     ---
-    *Executing strategy: **$(strategy_name)***
+    *Executing strategy: **~(strategy_name)~***
   |>>
   when: strategy_name is 'foundational_analysis'
     # This is a dynamic, runtime import.
@@ -85,9 +85,9 @@ A key feature of `@reason` is its ability to use different reasoning strategies 
 
 The `read_file` directive, when used without the interrupt channel (`>>...<<`), executes at runtime as a dynamic import. This allows `@reason` to:
 
-1.  **Stay Lightweight:** The core `@reason` actor doesn't need to know the implementation details of every possible strategy.
-2.  **Load on Demand:** It analyzes the user's query, composes a plan (e.g., `['foundational_analysis', 'creative_exploration']`), and then loads *only* the `.in` files for those specific strategies.
-3.  **Be Extensible:** New strategies can be added to the `lib/prism/strategies//` directory, and the `compose_reasoning_plan` operator can be updated to include them in its planning, without ever having to modify the core `@reason` actor itself.
+1. **Stay Lightweight:** The core `@reason` actor doesn't need to know the implementation details of every possible strategy.
+2. **Load on Demand:** It analyzes the user's query, composes a plan (e.g., `['foundational_analysis', 'creative_exploration']`), and then loads *only* the `.in` files for those specific strategies.
+3. **Be Extensible:** New strategies can be added to the `lib/prism/strategies//` directory, and the `compose_reasoning_plan` operator can be updated to include them in its planning, without ever having to modify the core `@reason` actor itself.
 
 By studying these patterns, you can see how INDRA's simple primitives—actors, delegation, and on-demand loading—can be composed to create highly intelligent, adaptive, and maintainable conversational applications.
 

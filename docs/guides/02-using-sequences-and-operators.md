@@ -21,7 +21,7 @@ Here is the foundational Operator `wonder_about`. It captures the simple, creati
 ```indra
 # Takes a topic, returns a generative question or angle.
 wonder_about(topic) ::= <<|
-  $(<What interesting question or angle comes to mind about $(topic)?>)
+  ~(<What interesting question or angle comes to mind about ~(topic)?>)~
 |>>
 ```
 
@@ -46,22 +46,22 @@ sequence explore_thoroughly(thought) ::=
   # Step 1: Use an operator to have an initial thought.
   step:
     set:
-      &context.exploration.initial_wonder: $(wonder_about(topic: thought))
+      &context.exploration.initial_wonder: ~(wonder_about(topic: thought))~
   
   # Step 2: Use another operator on the result of the first step.
   # The '&context.exploration.initial_wonder' variable is immediately available.
   step:
     set:
-      &context.exploration.assumptions: $(identify_assumptions(understanding: &context.exploration.initial_wonder))
+      &context.exploration.assumptions: ~(identify_assumptions(understanding: &context.exploration.initial_wonder))~
   
   # Step 3: Synthesize the results into a final output.
   step:
     output: <<|
-      When wondering about "$(thought)", I found myself thinking:
-      > "$(&context.exploration.initial_wonder)"
+      When wondering about "~(thought)~", I found myself thinking:
+      > "~(&context.exploration.initial_wonder)~"
       
       The key assumption I'm making here is:
-      > "$(&context.exploration.assumptions)"
+      > "~(&context.exploration.assumptions)~"
     |>>
 ```
 
@@ -78,7 +78,7 @@ A series of transformations could be written with nested Operator calls:
 ```indra
 # Nested and harder to read
 set:
-  &context.analysis: $(summarize_insights(insights: identify_key_points(text: &user.latest)))
+  &context.analysis: ~(summarize_insights(insights: identify_key_points(text: &user.latest)))~
 ```
 
 The pipe operator reframes this as a clear, linear journey:
@@ -86,7 +86,7 @@ The pipe operator reframes this as a clear, linear journey:
 ```indra
 # A clean, readable pipeline
 set:
-  &context.analysis: $(&user.latest -> identify_key_points -> summarize_insights)
+  &context.analysis: ~(&user.latest -> identify_key_points -> summarize_insights)~
 ```
 
 This reads like a story: "Take the user's latest input, identify the key points, and then summarize the insights." It makes the cognitive process self-documenting.
@@ -108,12 +108,12 @@ vary_rhythm(melody) ::= <...>
 sequence develop_motif(motif) ::=
   step:
     set:
-      &rhythm_idea: $(vary_rhythm(melody: motif))
+      &rhythm_idea: ~(vary_rhythm(melody: motif))~
   step:
     set:
-      &harmony_idea: $(find_harmony(chord: motif.root_note))
+      &harmony_idea: ~(find_harmony(chord: motif.root_note))~
   step:
-    output: "A possible development: $(&rhythm_idea) over $(&harmony_idea)"
+    output: "A possible development: ~(&rhythm_idea) over ~(&harmony_idea)~"
 ```
 
 You have now codified a piece of domain-specific intuition into a reusable, expressive thought process.

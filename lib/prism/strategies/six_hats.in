@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Strategy - Six Thinking Hats
+# INDRA v5.0: PRISM Strategy - Six Thinking Hats
 # This module provides a complete, performative sequence for analyzing a topic
 # using Edward de Bono's Six Thinking Hats method.
 
@@ -12,31 +12,31 @@
 sequence six_thinking_hats_analysis(topic) ::=
   step:
     output: <<|
-      I will now analyze "$(topic)" using the Six Thinking Hats method to ensure a comprehensive view.
+      I will now analyze "~(topic)~" using the Six Thinking Hats method to ensure a comprehensive view.
     |>>
   step:
     as: @white_hat_thinker
-    output: $(apply_white_hat(topic: topic))
+    output: ~(apply_white_hat(topic: topic))~
     set: &context.hats.white: &result
   step:
     as: @red_hat_thinker
-    output: $(apply_red_hat(topic: topic))
+    output: ~(apply_red_hat(topic: topic))~
     set: &context.hats.red: &result
   step:
     as: @black_hat_thinker
-    output: $(apply_black_hat(topic: topic))
+    output: ~(apply_black_hat(topic: topic))~
     set: &context.hats.black: &result
   step:
     as: @yellow_hat_thinker
-    output: $(apply_yellow_hat(topic: topic))
+    output: ~(apply_yellow_hat(topic: topic))~
     set: &context.hats.yellow: &result
   step:
     as: @green_hat_thinker
-    output: $(apply_green_hat(topic: topic))
+    output: ~(apply_green_hat(topic: topic))~
     set: &context.hats.green: &result
   step:
     as: @blue_hat_thinker
-    output: $(apply_blue_hat(summary: "facts, feelings, risks, benefits, and new ideas"))
+    output: ~(apply_blue_hat(summary: "facts, feelings, risks, benefits, and new ideas"))~
     set: &context.hats.blue: &result
   step:
     return: &context.hats

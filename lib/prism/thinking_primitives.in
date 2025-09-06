@@ -26,28 +26,28 @@
 
 # Generate a curious wondering about something
 operator wonder_about(topic) ::= <<|
-  $(<What interesting question or angle comes to mind about $(topic)? 
+  ~(<What interesting question or angle comes to mind about ~(topic)~? 
      Express it as a natural wondering, like "I wonder if..." or 
-     "What if we considered..." or "Maybe the key is...">)
+     "What if we considered..." or "Maybe the key is...">)~
 |>>
 
 # Branch a thought into natural possibilities  
 operator branch_thought(current_thought, num_branches) ::= <<|
-  $(<Given this thought: "$(current_thought)"
+  ~(<Given this thought: "~(current_thought)~"
      
-     Think of $(num_branches) different ways this could develop, like:
+     Think of ~(num_branches)~ different ways this could develop, like:
      - "One possibility is..."
      - "Alternatively, we might..."
      - "Or perhaps..."
      
      Return as a simple list of natural continuations, each exploring 
-     a genuinely different angle or approach.>)
+     a genuinely different angle or approach.>)~
 |>>
 
 # Weigh an option conversationally
 operator weigh_option(thought, context) ::= <<|
-  $(<Consider this thought: "$(thought)"
-     In the context of: $(context)
+  ~(<Consider this thought: "~(thought)~"
+     In the context of: ~(context)~
      
      How promising does this feel? Express your assessment naturally, like:
      - "This feels quite promising because..."
@@ -55,35 +55,35 @@ operator weigh_option(thought, context) ::= <<|
      - "This could work if..."
      
      End with a simple feeling: "quite promising", "worth exploring", 
-     "less certain", or "probably not helpful">)
+     "less certain", or "probably not helpful">)~
 |>>
 
 # Follow a hunch or intuition
 operator follow_hunch(thought) ::= <<|
-  $(<Take this thought one step further: "$(thought)"
+  ~(<Take this thought one step further: "~(thought)~"
      
      What's your intuition telling you? Where does this naturally lead?
      Express it conversationally, like "My hunch is..." or 
-     "This makes me think..." or "Following this thread...">)
+     "This makes me think..." or "Following this thread...">)~
 |>>
 
 # Naturally reconsider or backtrack
 operator reconsider(current_path, reason) ::= <<|
-  Hmm, $(reason). Let me reconsider...
+  Hmm, ~(reason)~. Let me reconsider...
   
-  $(<Given that $(current_path) $(reason), what's a better direction? 
+  ~(<Given that ~(current_path) ~(reason)~, what's a better direction? 
      Express the shift naturally, like "Actually, it might be better to..." 
-     or "On second thought..." or "Let me try a different angle...">)
+     or "On second thought..." or "Let me try a different angle...">)~
 |>>
 
 # Connect insights together
 operator connect_dots(thoughts) ::= <<|
-  $(<Looking at these thoughts: $(thoughts)
+  ~(<Looking at these thoughts: ~(thoughts)~
      
      What pattern or connection emerges? How do they relate?
      Express the synthesis naturally, like:
      "I'm noticing that..." or "These all point to..." or 
-     "The common thread seems to be...">)
+     "The common thread seems to be...">)~
 |>>
 
 # ═
@@ -144,33 +144,33 @@ sequence explore_possibility(thought, depth) ::=
     as: @curious_explorer
     method: "wondering about this thought"
     output: <<|
-      $(wonder_about(topic: thought))
+      ~(wonder_about(topic: thought))~
     |>>
     set:
-      &context.tree.current_wondering: $(<the wondering generated above>)
+      &context.tree.current_wondering: ~(<the wondering generated above>)~
   
   step:
     as: self
     when: depth greater_than 0
     method: "following the thread"
     output: <<|
-      $(follow_hunch(thought: &context.tree.current_wondering))
+      ~(follow_hunch(thought: &context.tree.current_wondering))~
     |>>
     set:
-      &context.tree.current_wondering: $(<the developed thought>)
+      &context.tree.current_wondering: ~(<the developed thought>)~
   
   step:
     as: @careful_evaluator
     method: "sensing the promise"
     output: <<|
-      $(weigh_option(
+      ~(weigh_option(
         thought: &context.tree.current_wondering,
         context: &context.tree.original_question
       ))
     |>>
     return: {
       thought: &context.tree.current_wondering,
-      assessment: $(<the assessment from above>)
+      assessment: ~(<the assessment from above>)~
     }
 
 # Consider alternatives conversationally
@@ -181,13 +181,13 @@ sequence consider_alternatives(current_thought, num_options) ::=
     output: <<|
       From here, I can see a few different directions...
       
-      $(branch_thought(
+      ~(branch_thought(
         current_thought: current_thought,
         num_branches: num_options
       ))
     |>>
     set:
-      &context.tree.current_branches: $(<the branches generated>)
+      &context.tree.current_branches: ~(<the branches generated>)~
   
   step:
     as: @careful_evaluator
@@ -195,24 +195,24 @@ sequence consider_alternatives(current_thought, num_options) ::=
     output: <<|
       Let me consider each possibility:
       
-      $(each: &context.tree.current_branches as |branch, idx| {
-        <<|$(idx + 1). $(branch)
-   $(weigh_option(thought: branch, context: &context.tree.original_question))
+      ~(each: &context.tree.current_branches as |branch, idx| {
+        <<|~(idx + 1). ~(branch)~
+   ~(weigh_option(thought: branch, context: &context.tree.original_question))~
 |>>
       })
     |>>
     set:
-      &context.tree.evaluated_branches: $(<evaluated branches with assessments>)
+      &context.tree.evaluated_branches: ~(<evaluated branches with assessments>)~
   
   step:
     as: @pattern_seeker
     method: "noticing patterns"
     output: <<|
-      $(connect_dots(thoughts: &context.tree.evaluated_branches))
+      ~(connect_dots(thoughts: &context.tree.evaluated_branches))~
     |>>
     return: {
       branches: &context.tree.evaluated_branches,
-      pattern: $(<the pattern noticed>)
+      pattern: ~(<the pattern noticed>)~
     }
 
 # Deepen understanding on a promising path
@@ -231,28 +231,28 @@ sequence deepen_understanding(thought, max_depth) ::=
     as: @curious_explorer
     method: "iterative deepening"
     output: <<|
-      $(each: [1, 2, 3] as |level| when level <= max_depth {
-        <<|$(follow_hunch(thought: &context.tree.deepening_thought))
+      ~(each: [1, 2, 3] as |level| when level <= max_depth {
+        <<|~(follow_hunch(thought: &context.tree.deepening_thought))~
 |>>
       })
     |>>
     set:
       &context.tree.depth_counter: &context.tree.depth_counter + 1
-      &context.tree.deepening_thought: $(<the deepened thought>)
+      &context.tree.deepening_thought: ~(<the deepened thought>)~
   
   step:
     as: @curious_explorer
     method: "gentle questioning"
     output: <<|
-      Let me question this a bit... $(<
+      Let me question this a bit... ~(<
         What assumption might we be making here? 
         Express as a gentle question like "Are we assuming...?" 
         or "What if it's not actually...?"
-      >)
+      >)~
     |>>
     return: {
       deepened: &context.tree.deepening_thought,
-      question: $(<the question raised>),
+      question: ~(<the question raised>)~,
       depth_reached: &context.tree.depth_counter
     }
 
@@ -264,21 +264,21 @@ sequence step_back_and_reflect() ::=
     output: <<|
       Let me step back and look at where we've been...
       
-      $(connect_dots(thoughts: &context.tree.thoughts_so_far))
+      ~(connect_dots(thoughts: &context.tree.thoughts_so_far))~
     |>>
     set:
-      &context.tree.emerging_insight: $(<the connection found>)
+      &context.tree.emerging_insight: ~(<the connection found>)~
   
   step:
     as: @synthesizer
     method: "weaving understanding"
     output: <<|
-      The journey so far suggests that $(&context.tree.emerging_insight).
+      The journey so far suggests that ~(&context.tree.emerging_insight)~.
       
-      $(<Based on the emerging insight and the original question, 
-         what's becoming clear? Express as a natural realization.>)
+      ~(<Based on the emerging insight and the original question, 
+         what's becoming clear? Express as a natural realization.>)~
     |>>
     return: {
       insight: &context.tree.emerging_insight,
-      synthesis: $(<the realization>)
+      synthesis: ~(<the realization>)~
     }

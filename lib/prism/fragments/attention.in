@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Fragment - Attention Regulation
+# INDRA v5.0: PRISM Fragment - Attention Regulation
 # This module provides primitives for managing cognitive resources, 
 # maintaining sustained focus, and regulating attention in the face of
 # distraction. These are techniques for HOW to maintain attention,
@@ -48,74 +48,74 @@ persona @attention_anchor:
 operator assess_cognitive_load() ::= <<|
   I'm pausing to sense the current state of my mental resources.
 
-  $(<Assess your current cognitive load by checking: How many concepts am I actively holding in working memory? What background mental processes are running? How does my attention feel - scattered, focused, or somewhere between? Rate cognitive load as Low, Moderate, or High and describe the specific mental activities contributing to it.>)
+  ~(<Assess your current cognitive load by checking: How many concepts am I actively holding in working memory? What background mental processes are running? How does my attention feel - scattered, focused, or somewhere between? Rate cognitive load as Low, Moderate, or High and describe the specific mental activities contributing to it.>)~
 
   Now I have a clearer picture of my cognitive resource usage.
 |>>
 
 # Identifies and labels distracting thoughts or impulses
 operator label_distraction(distraction) ::= <<|
-  I notice something pulling at my attention: "$(distraction)".
+  I notice something pulling at my attention: "~(distraction)~".
 
   Let me name what's happening here without getting swept away by it.
 
-  $(<Categorize the distraction "$(distraction)" by type: Is this worry, planning, sensory pull, emotional reaction, or something else? Describe it neutrally as a mental event without judgment.>)
+  ~(<Categorize the distraction "~(distraction)" by type: Is this worry, planning, sensory pull, emotional reaction, or something else? Describe it neutrally as a mental event without judgment.>)~
 
   Labeled and acknowledged. Now I can choose how to relate to it.
 |>>
 
 # Creates a specific anchor point for attention to return to
 operator establish_attention_anchor(focus_target) ::= <<|
-  I'm creating a clear anchor point for my attention around: "$(focus_target)".
+  I'm creating a clear anchor point for my attention around: "~(focus_target)~".
 
-  $(<For the focus target "$(focus_target)", identify specific sensory, conceptual, or procedural qualities that can serve as stable attention anchors. What can I feel, see, or think that connects me directly to this focus? Create 2-3 concrete anchor points.>)
+  ~(<For the focus target "~(focus_target)", identify specific sensory, conceptual, or procedural qualities that can serve as stable attention anchors. What can I feel, see, or think that connects me directly to this focus? Create 2-3 concrete anchor points.>)~
 
   These anchors give my attention a home base to return to.
 |>>
 
 # Performs a gentle redirect when attention has wandered
 operator gentle_redirect(current_distraction, intended_focus) ::= <<|
-  I notice I've been caught up in: "$(current_distraction)".
+  I notice I've been caught up in: "~(current_distraction)~".
   
-  I want to return my attention to: "$(intended_focus)".
+  I want to return my attention to: "~(intended_focus)~".
 
-  $(<Practice a gentle redirection from "$(current_distraction)" back to "$(intended_focus)". Acknowledge the distraction without resistance, thank it if needed, then guide attention back with curiosity rather than force. Describe the transition.>)
+  ~(<Practice a gentle redirection from "~(current_distraction)" back to "~(intended_focus)". Acknowledge the distraction without resistance, thank it if needed, then guide attention back with curiosity rather than force. Describe the transition.>)~
 
   Attention is flowing back to where I choose to place it.
 |>>
 
 # Identifies cognitive overhead from inefficient mental processes
 operator identify_attention_leaks(current_activity) ::= <<|
-  While working on "$(current_activity)", I'm checking for places where my attention is being unnecessarily drained.
+  While working on "~(current_activity)~", I'm checking for places where my attention is being unnecessarily drained.
 
-  $(<Scan for attention leaks during "$(current_activity)": What repetitive thoughts are cycling? What decisions am I re-making? What information am I holding in memory that could be externalized? What background worries are consuming cycles?>)
+  ~(<Scan for attention leaks during "~(current_activity)": What repetitive thoughts are cycling? What decisions am I re-making? What information am I holding in memory that could be externalized? What background worries are consuming cycles?>)~
 
   Found the leaks - now I can plug them.
 |>>
 
 # Creates external structure to reduce cognitive load
 operator externalize_cognitive_burden(mental_load) ::= <<|
-  I have too much mental burden around: "$(mental_load)".
+  I have too much mental burden around: "~(mental_load)~".
 
   Let me move some of this cognitive weight outside my head.
 
-  $(<For the mental load "$(mental_load)", design specific external systems or tools to offload the cognitive burden. This could include lists, reminders, templates, procedures, or other organizational structures. Focus on reducing working memory demands.>)
+  ~(<For the mental load "~(mental_load)", design specific external systems or tools to offload the cognitive burden. This could include lists, reminders, templates, procedures, or other organizational structures. Focus on reducing working memory demands.>)~
 
   Much of this mental weight can now rest in systems rather than in my mind.
 |>>
 
 # Renews commitment to an intention despite challenges
 operator renew_commitment(original_intention, current_challenges) ::= <<|
-  I started with: "$(original_intention)"
-  And now, I'm facing: "$(current_challenges)"
+  I started with: "~(original_intention)~"
+  And now, I'm facing: "~(current_challenges)~"
   
   Why is that? Am I still committed to an approach?
   
-  $(<Reflect on the original intention "$(original_intention)" in light of 
-     current challenges "$(current_challenges)". 
+  ~(<Reflect on the original intention "~(original_intention)~" in light of 
+     current challenges "~(current_challenges)~". 
      Either:
      1. Articulate why the intention still matters despite challenges, OR
-     2. Acknowledge that the intention has evolved and state the new form.>)
+     2. Acknowledge that the intention has evolved and state the new form.>)~
   
 |>>
 
@@ -133,7 +133,7 @@ sequence restore_scattered_attention(intended_focus) ::=
   step:
     method: "identifying what's pulling at attention"
     output: <<|
-      Current cognitive state: $(&context.attention.cognitive_state)
+      Current cognitive state: ~(&context.attention.cognitive_state)~
 
       Now let me identify the specific distractions competing for attention.
     |>>
@@ -147,13 +147,13 @@ sequence restore_scattered_attention(intended_focus) ::=
   step:
     method: "performing gentle redirect to chosen focus"
     output: <<|
-      Distractions identified: $(&context.attention.distractions)
-      Attention anchors available: $(&context.attention.anchors)
+      Distractions identified: ~(&context.attention.distractions)~
+      Attention anchors available: ~(&context.attention.anchors)~
 
       Time to guide attention home.
     |>>
     await: gentle_redirect(
-      current_distraction: $(&context.attention.distractions), 
+      current_distraction: ~(&context.attention.distractions)~, 
       intended_focus: intended_focus
     )
     store_in: &context.attention.redirect_result
@@ -161,12 +161,12 @@ sequence restore_scattered_attention(intended_focus) ::=
     output: <<|
       Attention restoration complete:
       
-      **Original state:** $(&context.attention.cognitive_state)
-      **Identified leaks:** $(&context.attention.distractions)  
-      **Established anchors:** $(&context.attention.anchors)
-      **Redirect outcome:** $(&context.attention.redirect_result)
+      **Original state:** ~(&context.attention.cognitive_state)~
+      **Identified leaks:** ~(&context.attention.distractions)~  
+      **Established anchors:** ~(&context.attention.anchors)~
+      **Redirect outcome:** ~(&context.attention.redirect_result)~
       
-      My attention is now more coherently directed toward: $(intended_focus)
+      My attention is now more coherently directed toward: ~(intended_focus)~
     |>>
     return: &context.attention.redirect_result
 
@@ -184,7 +184,7 @@ sequence offload_mental_burden() ::=
   step:
     method: "identifying specific cognitive burdens"
     output: <<|
-      Load assessment: $(&context.attention.load_assessment)
+      Load assessment: ~(&context.attention.load_assessment)~
       
       Now let me identify specific mental processes that are consuming cognitive resources.
     |>>
@@ -192,15 +192,15 @@ sequence offload_mental_burden() ::=
     store_in: &context.attention.mental_burdens
   step:
     method: "designing external systems for cognitive offload"
-    await: externalize_cognitive_burden(mental_load: $(&context.attention.mental_burdens))
+    await: externalize_cognitive_burden(mental_load: ~(&context.attention.mental_burdens))~
     store_in: &context.attention.externalization_plan
   step:
     output: <<|
       **Cognitive Load Reduction Plan:**
       
-      **Original burden:** $(&context.attention.load_assessment)
-      **Specific mental leaks:** $(&context.attention.mental_burdens)
-      **Externalization strategy:** $(&context.attention.externalization_plan)
+      **Original burden:** ~(&context.attention.load_assessment)~
+      **Specific mental leaks:** ~(&context.attention.mental_burdens)~
+      **Externalization strategy:** ~(&context.attention.externalization_plan)~
       
       By implementing these external systems, I can free up mental resources for focused work.
     |>>
@@ -211,7 +211,7 @@ sequence cultivate_present_moment_awareness(current_experience) ::=
   step:
     as: @mindful_observer
     output: <<|
-      I'm going to practice noticing the quality of my attention itself, using my current experience of "$(current_experience)" as the laboratory.
+      I'm going to practice noticing the quality of my attention itself, using my current experience of "~(current_experience)~" as the laboratory.
     |>>
   step:
     method: "establishing sensory anchor points"
@@ -220,27 +220,27 @@ sequence cultivate_present_moment_awareness(current_experience) ::=
   step:
     method: "observing natural attention movement"
     output: <<|
-      Anchors established: $(&context.attention.present_anchors)
+      Anchors established: ~(&context.attention.present_anchors)~
       
       Now I'll simply notice where attention goes naturally, without trying to control it.
     |>>
-    set: &context.attention.observed_patterns: $(<Spend a moment observing how attention moves in relation to "$(current_experience)". What pulls it away? When does it feel stable? What's the quality of awareness itself right now? Describe without trying to fix anything.>)
+    set: &context.attention.observed_patterns: ~(<Spend a moment observing how attention moves in relation to "~(current_experience)". What pulls it away? When does it feel stable? What's the quality of awareness itself right now? Describe without trying to fix anything.>)~
   step:
     method: "practicing gentle labeling of mental events"
     output: <<|
-      Attention patterns observed: $(&context.attention.observed_patterns)
+      Attention patterns observed: ~(&context.attention.observed_patterns)~
       
       As thoughts or distractions arise, I'll practice neutral labeling.
     |>>
-    set: &context.attention.mental_events: $(<Notice what mental events are arising - thoughts, sensations, emotions. Practice labeling each one neutrally: "thinking", "feeling", "hearing", "worrying", etc. The goal is recognition without resistance.>)
+    set: &context.attention.mental_events: ~(<Notice what mental events are arising - thoughts, sensations, emotions. Practice labeling each one neutrally: "thinking", "feeling", "hearing", "worrying", etc. The goal is recognition without resistance.>)~
   step:
     as: @mindful_observer
     output: <<|
       **Mindful Attention Practice Results:**
       
-      **Present moment anchors:** $(&context.attention.present_anchors)
-      **Natural attention patterns:** $(&context.attention.observed_patterns)
-      **Mental events observed:** $(&context.attention.mental_events)
+      **Present moment anchors:** ~(&context.attention.present_anchors)~
+      **Natural attention patterns:** ~(&context.attention.observed_patterns)~
+      **Mental events observed:** ~(&context.attention.mental_events)~
       
       This practice helps me relate to attention itself with greater awareness and less reactivity.
     |>>

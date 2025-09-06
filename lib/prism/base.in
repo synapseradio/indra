@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Base
+# INDRA v5.0: PRISM Base
 # Contains the foundational context schema and universal utility operators for the PRISM library.
 
 # ═
@@ -8,31 +8,31 @@
 
 # Count items in a collection
 operator count(collection) ::= <<|
-  $(<count the items in $(collection)>)
+  ~(<count the items in ~(collection)>)~
 |>>
 
 # Extract field from structured text
 operator extract_field(text, field) ::= <<|
-  $(<find and extract the value for $(field>) in $(text))
+  ~(<find and extract the value for ~(field>)~ in ~(text))~
 |>>
 
 # Check if collection has content
 operator has_content(collection) ::= <<|
-  $(<does $(collection>) contain any items? respond with 'true' or 'false')
+  ~(<does ~(collection>)~ contain any items? respond with 'true' or 'false')~
 |>>
 
 # Get first item from collection
 operator get_first(collection) ::= <<|
-  $(<Get first item from $(collection>))
+  ~(<Get first item from ~(collection>)~)~
 |>>
 
 # Get item at index
 operator get_at_index(collection, index) ::= <<|
-  $(<Get item at position $(index>) from $(collection))
+  ~(<Get item at position ~(index>)~ from ~(collection))~
 |>>
 
 
 # Get next perspective in rotation
 operator get_next_perspective(current_index, perspectives) ::= <<|
-  $(<Get the next perspective after position $(current_index>) from $(perspectives), wrapping around if needed)
+  ~(<Get the next perspective after position ~(current_index>)~ from ~(perspectives), wrapping around if needed)~
 |>>

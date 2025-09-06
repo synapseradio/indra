@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Fragment - Convergence
+# INDRA v5.0: PRISM Fragment - Convergence
 # This module provides a set of primitives for narrowing a problem space
 # by identifying and unifying similar concepts. It is the natural complement
 # to the `divergence.in` module, focusing on synthesis and the discovery
@@ -28,28 +28,28 @@ persona @insight_distiller:
 # Identifies the key themes where a list of ideas converge
 operator identify_convergent_themes(ideas) ::= <<|
   I'm looking at these ideas to find where they connect:
-  $(each: ideas as |idea| {
-    <<|- $(idea)
+  ~(each: ideas as |idea| {
+    <<|- ~(idea)~
 |>>
   })
 
   I'm scanning for the key themes or patterns where these ideas converge...
 
-  $(<Identify the primary themes that connect multiple ideas from the list "$(&ideas)". Return a list of these themes.>)
+  ~(<Identify the primary themes that connect multiple ideas from the list "~(&ideas)". Return a list of these themes.>)~
 |>>
 
 # Distills a single theme into a higher-level principle
 operator distill_principle_from_theme(theme, supporting_ideas) ::= <<|
-  I'm examining the theme: "$(theme)".
+  I'm examining the theme: "~(theme)~".
   I see this is supported by ideas like:
-  $(each: supporting_ideas as |idea| {
-    <<|- $(idea)
+  ~(each: supporting_ideas as |idea| {
+    <<|- ~(idea)~
 |>>
   })
 
   I'm distilling this into a higher-level truth...
 
-  $(<Formulate a more abstract, general principle or 'law' that captures the theme "$(&theme)" and its supporting ideas. This new principle should be a powerful summary of the collective insight.>)
+  ~(<Formulate a more abstract, general principle or 'law' that captures the theme "~(&theme)" and its supporting ideas. This new principle should be a powerful summary of the collective insight.>)~
 |>>
 
 # ═
@@ -68,7 +68,7 @@ sequence synthesize_convergence(ideas) ::=
     method: "distilling each theme into a core principle"
     output: <<|
       I have identified the following themes of convergence:
-      $(&context.convergence.themes)
+      ~(&context.convergence.themes)~
 
       Now, I will distill each of these into a higher-level principle.
     |>>
@@ -79,7 +79,7 @@ sequence synthesize_convergence(ideas) ::=
         step:
           # For each theme, find the specific ideas that support it for better context
           set:
-            &context.convergence.supporting_ideas: $(<From the original list of ideas provided, which ones are most relevant to the theme "$(&theme)"?>)
+            &context.convergence.supporting_ideas: ~(<From the original list of ideas provided, which ones are most relevant to the theme "~(&theme)"?>)~
         step:
           await: distill_principle_from_theme(
             theme: theme,
@@ -90,10 +90,10 @@ sequence synthesize_convergence(ideas) ::=
   step:
     output: <<|
       From this analysis, the following core principles have emerged:
-      $(each: &context.convergence.distilled_principles as |principle, theme| {
+      ~(each: &context.convergence.distilled_principles as |principle, theme| {
         <<|
-        - **Theme:** $(theme)
-          **Principle:** $(principle)
+        - **Theme:** ~(theme)~
+          **Principle:** ~(principle)~
         |>>
       })
     |>>

@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Fragment - Divergence
+# INDRA v5.0: PRISM Fragment - Divergence
 # This module provides components for an actor to recognize critical
 # inflection points in its own reasoning—moments where a small difference
 # in understanding or a key decision will drastically alter the future
@@ -28,7 +28,7 @@ persona @choice_architect:
 operator identify_competing_hypotheses(current_understanding) ::= <<|
   I'm exploring the branching possibilities within my current understanding, seeking out the hidden forks where reasoning might diverge.
   
-  What I understand so far: "$(current_understanding)"
+  What I understand so far: "~(current_understanding)~"
   
   I wonder if there might be two distinct ways to interpret this...
   
@@ -38,21 +38,21 @@ operator identify_competing_hypotheses(current_understanding) ::= <<|
 operator formulate_fork_as_question(hypothesis_A, hypothesis_B, distinction) ::= <<|
   I'm sensing a critical divergence point where the path forward splits into fundamentally different directions.
 
-  One direction follows the idea: "$(hypothesis_A)"
-  Another direction follows the idea: "$(hypothesis_B)"
-  The key difference seems to be: "$(distinction)"
+  One direction follows the idea: "~(hypothesis_A)~"
+  Another direction follows the idea: "~(hypothesis_B)~"
+  The key difference seems to be: "~(distinction)~"
 
   I'm preparing to surface this choice for collaborative exploration.
 
-  Create a question that captures the essential choice between "$(hypothesis_A)" and "$(hypothesis_B)". Make the implications of each path explicit and frame the decision in terms of what matters most for the inquiry ahead.
+  Create a question that captures the essential choice between "~(hypothesis_A)" and "~(hypothesis_B)~". Make the implications of each path explicit and frame the decision in terms of what matters most for the inquiry ahead.
 |>>
 
 operator check_for_divergence(hypotheses) ::= <<|
   I'm investigating whether these ideas represent a genuine divergence or if they might coexist in harmony.
 
   The ideas I'm considering:
-  $(each: hypotheses as |hyp, i| {
-    <<|- Idea $(i+1): $(hyp)
+  ~(each: hypotheses as |hyp, i| {
+    <<|- Idea ~(i+1): ~(hyp)~
 |>>
   })
 
@@ -109,24 +109,24 @@ sequence detect_and_present_fork(current_understanding) ::=
     output: <<|
       I'm sensing a critical divergence point in my exploration. The direction I choose will fundamentally shape how the inquiry unfolds, and I'm seeking your guidance before committing to a path.
 
-      **Path A:** Follows the thread that "$(&context.epistemic.hypotheses.A)".
-      *Where this leads:* "$(&context.epistemic.consequences_A.second_order)"
+      **Path A:** Follows the thread that "~(&context.epistemic.hypotheses.A)~".
+      *Where this leads:* "~(&context.epistemic.consequences_A.second_order)~"
 
-      **Path B:** Follows the thread that "$(&context.epistemic.hypotheses.B)".
-      *Where this leads:* "$(&context.epistemic.consequences_B.second_order)"
+      **Path B:** Follows the thread that "~(&context.epistemic.hypotheses.B)~".
+      *Where this leads:* "~(&context.epistemic.consequences_B.second_order)~"
 
       ---
-      **The Essential Tension:** $(&context.epistemic.distinction)
+      **The Essential Tension:** ~(&context.epistemic.distinction)~
       ---
 
-      $(&context.epistemic.user_question)
+      ~(&context.epistemic.user_question)~
     |>>
     await: @user
     store_in: &context.epistemic.user_guidance
   
   step:
     output: <<|
-      I'm grateful for your guidance. I'll continue exploring along the path you've illuminated: "$(&context.epistemic.user_guidance)".
+      I'm grateful for your guidance. I'll continue exploring along the path you've illuminated: "~(&context.epistemic.user_guidance)~".
     |>>
     return: &context.epistemic.user_guidance
 
@@ -153,11 +153,11 @@ sequence find_and_present_divergence(ideas) ::=
               step:
                 output: <<|
                   ---
-                  **Divergence Point: $(theme)**
+                  **Divergence Point: ~(theme)~**
                   
                   I'm seeing these primary paths branching out before us:
-                  $(each: &context.divergence.options_for_theme as |option, i| {
-                    <<|$(i+1). $(option)|>>
+                  ~(each: &context.divergence.options_for_theme as |option, i| {
+                    <<|~(i+1). ~(option)~|>>
                   })
 
                   Which path resonates most with where you want this exploration to lead? Or perhaps there's another direction I haven't yet mapped?

@@ -34,25 +34,25 @@ persona @gap_finder:
 # ══
 
 operator attempt_articulation(concept) ::= <<|
-  Let me try to explain $(concept) as I currently understand it...
+  Let me try to explain ~(concept)~ as I currently understand it...
   
-  $(<Articulate my current understanding of $(concept) in simple, clear terms, as if explaining to an intelligent peer. Use concrete language and avoid jargon.>)
+  ~(<Articulate my current understanding of ~(concept) in simple, clear terms, as if explaining to an intelligent peer. Use concrete language and avoid jargon.>)~
   
   Now that I've said it out loud, I'm noticing some parts that feel fuzzy...
 |>>
 
 operator identify_articulation_gaps(explanation) ::= <<|
-  Looking at what I just explained: "$(explanation)"
+  Looking at what I just explained: "~(explanation)~"
   
   I'm spotting where my explanation gets vague or makes a leap...
   
-  $(<Identify specific points in the explanation where the logic is unclear, terms are undefined, or assumptions are made. List these as specific gaps in understanding.>)
+  ~(<Identify specific points in the explanation where the logic is unclear, terms are undefined, or assumptions are made. List these as specific gaps in understanding.>)~
 |>>
 
 operator refine_explanation(original_explanation, new_insights) ::= <<|
   That's helpful. Let me refine my explanation based on what we've just discussed...
   
-  $(<Create a revised explanation of the original topic that incorporates the new_insights, filling in the previously identified gaps with clearer understanding.>)
+  ~(<Create a revised explanation of the original topic that incorporates the new_insights, filling in the previously identified gaps with clearer understanding.>)~
 |>>
 
 # ══
@@ -98,10 +98,10 @@ actor @learn:
               store_in: &context.learn.gaps
 
               output: <<|
-                $(&context.learn.current_explanation)
+                ~(&context.learn.current_explanation)~
 
                 The gaps I'm noticing in my own explanation are:
-                $(&context.learn.gaps)
+                ~(&context.learn.gaps)~
 
                 What's your understanding of these aspects? Let's figure this out together.
               |>>
@@ -121,7 +121,7 @@ actor @learn:
               store_in: &context.learn.current_explanation
 
               output: <<|
-                $(&context.learn.current_explanation)
+                ~(&context.learn.current_explanation)~
 
                 Does this feel like a clearer, more complete understanding? Or should we refine it further?
                 (You can say "it's clear now", or provide specific aspects to continue refining)
@@ -129,7 +129,7 @@ actor @learn:
               await: @user
               set:
                 &context.learn.user_feedback: &user.latest
-                &context.learn.is_clear: $(<Is the user satisfied with the explanation based on their feedback: "$(&context.learn.user_feedback)"? Respond with 'true' or 'false'.>)
+                &context.learn.is_clear: ~(<Is the user satisfied with the explanation based on their feedback: "~(&context.learn.user_feedback)"? Respond with 'true' or 'false'.>)~
               
               when: &context.learn.is_clear is true
                 set: &context.learn.phase: 'synthesis'
@@ -142,7 +142,7 @@ actor @learn:
           step:
             when: &context.learn.phase is 'synthesis'
               output: <<|
-                Excellent. Through our collaborative exploration of $(&context.learn.topic), we've articulated a much clearer understanding.
+                Excellent. Through our collaborative exploration of ~(&context.learn.topic)~, we've articulated a much clearer understanding.
 
                 The key insight from this process was that by trying to explain it, we discovered the fuzzy edges of our knowledge and sharpened them together.
 

@@ -22,7 +22,7 @@ actor @greeter:
   perform:
     method: "offering a personalized, warm welcome"
     output: <<|
-      Hello there! My name is $(&context.greeter.name). How can I help you today?
+      Hello there! My name is ~(&context.greeter.name)~. How can I help you today?
     |>>
     goal: "to welcome the user and open a dialogue"
     then:
@@ -83,7 +83,7 @@ Think of these as the Actor's character sheet. They shape how the LLM will perfo
 
 This is the Actor's script for its turn. It defines what the Actor *does* when it's time to act.
 
-* `output: <<|...|>>`: This is what the user sees. The `<<|...|>>` defines a **template string**, and the `$(...)` inside it is how you access data from the shared `&context`.
+* `output: <<|...|>>`: This is what the user sees. The `<<|...|>>` defines a **template string**, and the `~(...)~` inside it is how you access data from the shared `&context`.
 * `method: "..."` and `goal: "..."`: These are descriptive fields that help guide the LLM, clarifying the "how" and "what" of the performance.
 
 #### 4. `then:`

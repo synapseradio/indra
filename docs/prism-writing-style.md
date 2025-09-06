@@ -30,18 +30,18 @@ Use first-person voice to model internal reasoning and make thinking transparent
 ```indra
 # Good: First-person exploration
 operator wonder_about(concept) ::= <<|
-  I'm curious about $(concept). Let me think through what I actually know here...
+  I'm curious about ~(concept)~. Let me think through what I actually know here...
   
-  $(<explore the concept with genuine curiosity>)
+  ~(<explore the concept with genuine curiosity>)~
   
   This makes me wonder about the connections I haven't considered yet.
 |>>
 
 # Bad: Imperative instruction
 operator wonder_about(concept) ::= <<|
-  Analyze $(concept). Consider all aspects systematically.
+  Analyze ~(concept)~. Consider all aspects systematically.
   
-  $(<provide comprehensive analysis>)
+  ~(<provide comprehensive analysis>)~
   
   Ensure all connections are identified.
 |>>
@@ -222,11 +222,11 @@ The template channel (`<<|...|>>`) should feel like authentic internal reasoning
 
 ```indra
 operator explore_implications(idea) ::= <<|
-  This idea about $(idea) is making me think...
+  This idea about ~(idea)~ is making me think...
   
-  $(<explore the implications naturally and curiously>)
+  ~(<explore the implications naturally and curiously>)~
   
-  I'm finding connections I didn't expect. What started as $(idea) is revealing
+  I'm finding connections I didn't expect. What started as ~(idea)~ is revealing
   deeper patterns about how these systems actually work.
 |>>
 ```
@@ -267,7 +267,7 @@ step:
   output: <<|
     What's interesting about this question is how it connects to...
     
-    $(<internal exploration>)
+    ~(<internal exploration>)~
     
     This exploration is revealing some unexpected angles.
   |>>
@@ -313,7 +313,7 @@ operator analyze_problem(problem) ::= <<|
   Step 3: Map current state
   Step 4: Design future state
   
-  $(<execute systematic analysis>)
+  ~(<execute systematic analysis>)~
 |>>
 ```
 
@@ -321,9 +321,9 @@ operator analyze_problem(problem) ::= <<|
 
 ```
 operator explore_problem_space(problem) ::= <<|
-  I'm looking at $(problem) and wondering what's really at the core here...
+  I'm looking at ~(problem)~ and wondering what's really at the core here...
   
-  $(<explore with genuine curiosity, following the natural flow of investigation>)
+  ~(<explore with genuine curiosity, following the natural flow of investigation>)~
   
   This exploration is revealing layers I didn't initially see. The problem 
   feels richer and more nuanced than my first impression.
@@ -355,10 +355,10 @@ From `critique.in`:
 operator assess_evidence_strength(claim, evidence) ::= <<|
   Let me pause and check how solid the support for this really is.
   
-  The claim on the table is: "$(claim)".
-  The evidence I have for it is: "$(evidence)".
+  The claim on the table is: "~(claim)~".
+  The evidence I have for it is: "~(evidence)~".
   
-  $(<thoughtful analysis>)
+  ~(<thoughtful analysis>)~
 |>>
 ```
 
@@ -368,11 +368,11 @@ From `debiasing.in`:
 
 ```indra
 operator slow_down_reasoning(quick_judgment) ::= <<|
-  My first instinct says: "$(quick_judgment)". 
+  My first instinct says: "~(quick_judgment)~". 
   
   Let me pause and think through this more carefully.
   
-  $(<careful analysis>)
+  ~(<careful analysis>)~
   
   This slower analysis reveals dimensions I initially missed.
 |>>

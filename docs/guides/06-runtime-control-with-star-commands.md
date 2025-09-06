@@ -47,7 +47,7 @@ actor @reason:
         set:
           &context.reason.force_strategy: &args
         output: <<|
-          *Strategy override: [$(each: &args as |s| { <<|$(s)|>> })]. I will use this plan for the next reasoning task.*
+          *Strategy override: [~(each: &args as |s| { <<|~(s)|>> })~]. I will use this plan for the next reasoning task.*
         |>>
 
   perform:
@@ -68,7 +68,7 @@ actor @reason:
           otherwise:
             # If not, compose a plan dynamically.
             set:
-              &context.reason.plan: $(compose_reasoning_plan(...))
+              &context.reason.plan: ~(compose_reasoning_plan(...))~
       # ...
 ```
 

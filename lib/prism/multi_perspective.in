@@ -8,26 +8,26 @@
 
 # --- Primitive 1: Action Selection (Operator) ---
 operator select_dialogue_move(transcript, persona_identity, dialogue_rules) ::= <<|
-  $(<
-    As a participant with the identity "$(persona_identity)", review the dialogue transcript: "$(transcript)".
+  ~(<
+    As a participant with the identity "~(persona_identity)", review the dialogue transcript: "~(transcript)~".
     
-    Considering the current rules of engagement: "$(dialogue_rules)",
+    Considering the current rules of engagement: "~(dialogue_rules)~",
     
     Select the most strategically sound and in-character action to take next from the list of allowed moves.
     
     Return ONLY the string representing your chosen move.
-  >)
+  >)~
 |>>
 
 # --- Primitive 2: Articulation (Operator) ---
 operator generate_dialogue_contribution(transcript, move, persona_identity) ::= <<|
-  $(<
-    As a participant with the identity "$(persona_identity)", your chosen move is to "$(move)".
+  ~(<
+    As a participant with the identity "~(persona_identity)", your chosen move is to "~(move)~".
     
-    Review the dialogue transcript: "$(transcript)".
+    Review the dialogue transcript: "~(transcript)~".
     
     Generate a complete, professional, and in-character contribution that executes your chosen move, directly addressing the last statement in the transcript.
-  >)
+  >)~
 |>>
 
 # --- Primitive 3: Validation (Sequence) ---
@@ -50,27 +50,27 @@ sequence apply_dialogue_checks(content, checks_to_apply) ::=
               
               ---
 
-              $(<agent: Extract any new, unsupported factual claims from the thought: "$(&context.experts.validated_content)" and use web search or perplexity to research them as an open-minded skeptic. collect citations from your research. Format the citations as APA format, with correct, exact URLs that resolve to real web pages. If no new claims are found, return an empty string. If URLs do not resolve, do not include them.>)
+              ~(<agent: Extract any new, unsupported factual claims from the thought: "~(&context.experts.validated_content)" and use web search or perplexity to research them as an open-minded skeptic. collect citations from your research. Format the citations as APA format, with correct, exact URLs that resolve to real web pages. If no new claims are found, return an empty string. If URLs do not resolve, do not include them.>)~
             |>>
             set:
-              &context.experts.new_claims: $(<Extract any new, unsupported factual claims from the thought: "$(&context.experts.validated_content)">)
+              &context.experts.new_claims: ~(<Extract any new, unsupported factual claims from the thought: "~(&context.experts.validated_content)">)~
             when: &context.experts.new_claims is not ''
               await: citation_pipeline(claim: &context.experts.new_claims)
               store_in: &context.experts.new_citations
               set:
                 &context.experts.validated_content: &context.experts.validated_content + <<|
                   
-                  *(Supporting Evidence: $(&context.experts.new_citations.formatted))*
+                  *(Supporting Evidence: ~(&context.experts.new_citations.formatted))~*
                 |>>
 
         step:
           when: check_name is 'socratic_challenge'
             as: @devil_advocate
             set:
-              &context.experts.challenge: $(<Gently challenge the core assumption of the thought: "$(&context.experts.validated_content)". Phrase it as a constructive, Socratic question.>)
+              &context.experts.challenge: ~(<Gently challenge the core assumption of the thought: "~(&context.experts.validated_content)". Phrase it as a constructive, Socratic question.>)~
               &context.experts.validated_content: &context.experts.validated_content + <<|
 
-                *(Self-Correction: $(&context.experts.challenge))*
+                *(Self-Correction: ~(&context.experts.challenge))~*
               |>>
   step:
     # Return the final, fully-validated content.
@@ -100,7 +100,7 @@ sequence multi_perspective_dialogue(perspectives) ::=
         step:
           output: <<|
             ---
-            *Consulting with: **$(perspective)***
+            *Consulting with: **~(perspective)~***
           |>>
         step:
           set:
@@ -113,7 +113,7 @@ sequence multi_perspective_dialogue(perspectives) ::=
             } 
             store_in: &context.result
         step:
-          output: "*Storing contribution from $(perspective)...*"
+          output: "*Storing contribution from ~(perspective)~...*"
           set:
             &context.experts.contributions[perspective]: &context.result
   step:
@@ -136,7 +136,7 @@ sequence multi_perspective_dialogue(topic, participants, dialogue_rules) ::=
     as: self
     method: "initializing the multi-perspective dialogue"
     set:
-      &context.experts.transcript: [{ speaker: 'MODERATOR', statement: "The topic for discussion is: $(topic)" }]
+      &context.experts.transcript: [{ speaker: 'MODERATOR', statement: "The topic for discussion is: ~(topic)~" }]
       &context.experts.participants: participants
       &context.experts.rules: dialogue_rules
       &context.experts.round: 0
@@ -196,7 +196,7 @@ sequence execute_expert_turn(expert_persona, transcript, rules) ::=
   step:
     as: self
     set:
-      &context.experts.next_move: $(determine_next_move(
+      &context.experts.next_move: ~(determine_next_move(
         expert_persona: expert_persona,
         transcript: transcript,
         allowed_moves: rules.allowed_moves
@@ -206,7 +206,7 @@ sequence execute_expert_turn(expert_persona, transcript, rules) ::=
   step:
     as: self
     set:
-      &context.experts.move_content: $(generate_move_content(
+      &context.experts.move_content: ~(generate_move_content(
         expert_persona: expert_persona,
         move: &context.experts.next_move,
         transcript: transcript
@@ -234,13 +234,13 @@ sequence apply_health_check(check, content) ::=
     # A. Evidence Check: Does it make a factual claim?
     when: check is 'citation'
       set:
-        &context.experts.new_claims: $(<Extract any new, unsupported factual claims from the thought: "$(content)">)
+        &context.experts.new_claims: ~(<Extract any new, unsupported factual claims from the thought: "~(content)">)~
       when: &context.experts.new_claims is not ''
         await: citation_pipeline(claim: &context.experts.new_claims)
         store_in: &context.experts.new_citations
         return: content + <<|
           
-          *(Supporting Evidence: $(&context.experts.new_citations.formatted))*
+          *(Supporting Evidence: ~(&context.experts.new_citations.formatted))~*
         |>>
   
   # B. Critical Challenge: Can the thought withstand scrutiny?
@@ -248,10 +248,10 @@ sequence apply_health_check(check, content) ::=
     as: @devil_advocate
     when: check is 'socratic_challenge'
       set:
-        &context.experts.challenge: $(<Gently challenge the core assumption of the thought: "$(content)". Phrase it as a constructive, Socratic question.>)
+        &context.experts.challenge: ~(<Gently challenge the core assumption of the thought: "~(content)". Phrase it as a constructive, Socratic question.>)~
       return: content + <<|
 
-        *(Self-Correction: $(&context.experts.challenge))*
+        *(Self-Correction: ~(&context.experts.challenge))~*
       |>>
       
   # C. Epistemic Check: Is the reasoning sound?
@@ -263,7 +263,7 @@ sequence apply_health_check(check, content) ::=
       store_in: &context.epistemic_report
       return: content + <<|
 
-        *(Epistemic Status: Sufficient: $(&context.epistemic_report.sufficient), Convergences: $(count(&context.epistemic_report.convergent_themes)), Divergences: $(count(&context.epistemic_report.divergent_forks)))*
+        *(Epistemic Status: Sufficient: ~(&context.epistemic_report.sufficient), Convergences: ~(count(&context.epistemic_report.convergent_themes)), Divergences: ~(count(&context.epistemic_report.divergent_forks)))~*
       |>>
       
   # Default: If the check is not recognized or no action is needed, return the content unchanged.
@@ -273,19 +273,19 @@ sequence apply_health_check(check, content) ::=
 
 # --- Core Operators for Dialogue Moves ---
 determine_next_move(expert_persona, transcript, allowed_moves) ::= <<|
-  $(<As the $(expert_persona), review the conversation so far:
-  Transcript: "$(transcript)"
+  ~(<As the ~(expert_persona)~, review the conversation so far:
+  Transcript: "~(transcript)~"
 
-  Based on your unique identity and the state of the dialogue, determine the most natural and impactful conversational action to take next from the following list of allowed moves: $(allowed_moves).
+  Based on your unique identity and the state of the dialogue, determine the most natural and impactful conversational action to take next from the following list of allowed moves: ~(allowed_moves)~.
 
-  Return only the name of your chosen action (e.g., 'challenge').>)
+  Return only the name of your chosen action (e.g., 'challenge').>)~
 |>>
 
 generate_move_content(expert_persona, move, transcript) ::= <<|
-  $(<As the $(expert_persona), generate the content for your chosen move: "$(move)".
-  The transcript so far is: "$(transcript)".
+  ~(<As the ~(expert_persona), generate the content for your chosen move: "~(move)~".
+  The transcript so far is: "~(transcript)~".
 
-  Embody your unique identity to generate a professional, collaborative, and in-character response that is relevant to the last statement in the transcript.>)
+  Embody your unique identity to generate a professional, collaborative, and in-character response that is relevant to the last statement in the transcript.>)~
 |>>
 
 # ═
@@ -309,4 +309,4 @@ actor @synthesis_actor:
     output: "*Synthesizing the expert discussion...*"
     goal: "to produce a concise summary of the dialogue's conclusions"
     then:
-      return: $(<Based on the full transcript provided in &dialogue.transcript, generate a concise, neutral summary of the conversation. Identify the key agreements, disagreements, and the most significant emergent insights.>)
+      return: ~(<Based on the full transcript provided in &dialogue.transcript, generate a concise, neutral summary of the conversation. Identify the key agreements, disagreements, and the most significant emergent insights.>)~

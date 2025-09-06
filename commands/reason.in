@@ -1,4 +1,4 @@
-# INDRA v4.0 Command: reason (v3, Adaptive)
+# INDRA v5.0 Command: reason (v3, Adaptive)
 # A performative, compositional, and collaborative reasoning partner that adapts its plan.
 
 >>read_file: '../lib/prism/thinking_primitives.in'<<
@@ -10,9 +10,9 @@
 # --- Operators ---
 
 operator compose_reasoning_plan(query_breakdown, confirmed_depth) ::= <<|
-  $(<
-    As a reasoning expert, analyze the query breakdown: "$(query_breakdown)".
-    The user has requested a "$(confirmed_depth)" analysis.
+  ~(<
+    As a reasoning expert, analyze the query breakdown: "~(query_breakdown)~".
+    The user has requested a "~(confirmed_depth)~" analysis.
 
     Devise a sophisticated, initial multi-step reasoning plan by composing the available high-level strategies.
     
@@ -32,15 +32,15 @@ operator compose_reasoning_plan(query_breakdown, confirmed_depth) ::= <<|
     Output your response as an object with two keys:
     1. "plan_narrative": A user-facing, natural language explanation of the plan.
     2. "strategy_list": An array of strings from the available strategies.
-  >)
+  >)~
 |>>
 
 operator reflect_and_update_plan(plan, latest_insights) ::= <<|
-  $(<
+  ~(<
     As a reasoning strategist, reflect on our progress.
-    Our original plan was: "$(plan.plan_narrative)"
-    The remaining steps are: [$(plan.strategy_list)]
-    The latest insights we've uncovered are: "$(latest_insights)"
+    Our original plan was: "~(plan.plan_narrative)~"
+    The remaining steps are: [~(plan.strategy_list)~]
+    The latest insights we've uncovered are: "~(latest_insights)~"
 
     Is the current plan still the best path forward?
     - If yes, simply state that the plan remains sound and why.
@@ -52,7 +52,7 @@ operator reflect_and_update_plan(plan, latest_insights) ::= <<|
     Return an object with:
     1. "reflection": Your narrative reflection and proposal.
     2. "new_plan": An object with the new `plan_narrative` and `strategy_list`, or the original plan if no change is needed.
-  >)
+  >)~
 |>>
 
 # --- Sequences ---
@@ -64,11 +64,11 @@ sequence clarify_and_scope_inquiry() ::=
     store_in: &context.query_breakdown
   step:
     output: <<|
-      $(&context.query_breakdown)
+      ~(&context.query_breakdown)~
       First, have I understood your request correctly?
     |>>
     await: @user
-    set: &context.reason.understanding_confirmed: $(<Does the user's response indicate approval?>)
+    set: &context.reason.understanding_confirmed: ~(<Does the user's response indicate approval?>)~
   step:
     when: &context.reason.understanding_confirmed is true
       output: <<|
@@ -77,7 +77,7 @@ sequence clarify_and_scope_inquiry() ::=
       |>>
       await: @user
       set:
-        &context.reason.confirmed_depth: $(
+        &context.reason.confirmed_depth: ~(
           <&user.latest contains 'shallow' ? 'shallow' :
           (&user.latest contains 'deep' ? 'deep' : 'moderate')>
         )
@@ -90,7 +90,7 @@ sequence execute_strategy_step(strategy_name, current_synthesis) ::=
   step:
     output: <<|
       ---
-      *Executing strategy: **$(strategy_name)***
+      *Executing strategy: **~(strategy_name)~***
     |>>
     when: strategy_name is 'foundational_analysis'
       read_file: '../lib/prism/tree_of_thought.in'
@@ -100,7 +100,7 @@ sequence execute_strategy_step(strategy_name, current_synthesis) ::=
     when: strategy_name is 'multi-perspective'
       read_file: '../lib/prism/multi_perspective.in'
       set:
-        &context.reasoning.config.perspectives: $(dynamically_select_perspectives(query: &context.query))
+        &context.reasoning.config.perspectives: ~(dynamically_select_perspectives(query: &context.query))~
       await: multi_perspective_dialogue(perspectives: &context.reasoning.config.perspectives)
       store_in: &context.synthesis
     when: strategy_name is 'gather_evidence'
@@ -164,7 +164,7 @@ actor @reason:
               await: clarify_and_scope_inquiry()
               when: &context.reason.understanding_confirmed is true
                 set:
-                  &context.reason.plan: $(compose_reasoning_plan(query_breakdown: &context.query_breakdown, confirmed_depth: &context.reason.confirmed_depth))
+                  &context.reason.plan: ~(compose_reasoning_plan(query_breakdown: &context.query_breakdown, confirmed_depth: &context.reason.confirmed_depth))~
                   &context.reason.executed_steps: []
                   &context.reason.step_index: 0
                   &context.reason.phase: 'executing'
@@ -176,7 +176,7 @@ actor @reason:
             when: &context.reason.phase is 'executing'
               output: <<|
                 Great, we are aligned. Here's the reasoning path I'll construct and follow:
-                $(&context.reason.plan.plan_narrative)
+                ~(&context.reason.plan.plan_narrative)~
               |>>
               set: &context.reason.phase: 'run_step'
               say: to: @reason, what: 'begin_execution'
@@ -199,9 +199,9 @@ actor @reason:
             when: &context.reason.phase is 'reflecting'
               await: reflect_and_update_plan(plan: &context.reason.plan, latest_insights: &context.reason.step_result.synthesis)
               store_in: &context.reason.reflection
-              output: $(&context.reason.reflection.reflection)
+              output: ~(&context.reason.reflection.reflection)~
               await: @user
-              when: $(<Does the user approve the new plan?>)
+              when: ~(<Does the user approve the new plan?>)~
                 set: &context.reason.plan: &context.reason.reflection.new_plan
               set: &context.reason.phase: 'run_step'
               say: to: @reason, what: 'reflection_complete'
@@ -215,8 +215,8 @@ actor @reason:
               # A full present_synthesis sequence would go here.
               each: &context.reason.executed_steps as |step_result, index|
                 output: <<|
-                  **Step $(index + 1): $(&context.reason.plan.strategy_list[index])**
-                  $(&step_result.synthesis)
+                  **Step ~(index + 1): ~(&context.reason.plan.strategy_list[index])~**
+                  ~(&step_result.synthesis)~
                 |>>
               output: "This feels like a natural pause point. What are your thoughts?"
               set: &context.reason.phase: 'ready'

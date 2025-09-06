@@ -1,4 +1,4 @@
-# INDRA v4.0 Command: explore
+# INDRA v5.0 Command: explore
 # Provides natural Tree of Thought exploration and reasoning.
 
 # --- Imports ---
@@ -47,7 +47,7 @@ actor @explore:
         set:
           &context.explore.exploration_style: &args[0]
         output: <<|
-          *Exploration style set to: $(&args[0])*
+          *Exploration style set to: ~(&args[0])~*
         |>>
   perform:
     method: "facilitating natural thought exploration"

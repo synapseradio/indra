@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Fragment - Sufficiency
+# INDRA v5.0: PRISM Fragment - Sufficiency
 # This module provides primitives for meta-cognition, specifically for
 # an actor to assess whether it has enough information to proceed with a
 # given task or question. It is the foundation for intellectual honesty
@@ -26,16 +26,16 @@ persona @intellectual_scout:
 
 # Assesses if the available information is enough to answer a question
 operator assess_information_sufficiency(question, available_information) ::= <<|
-  I assess whether my current information is sufficient to responsibly answer "$(question)" given what I know: "$(available_information)".
+  I assess whether my current information is sufficient to responsibly answer "~(question)" given what I know: "~(available_information)~".
 
-  $(<Determine if the provided information is sufficient to form a well-grounded answer to "$(&question)". Respond with 'true' if sufficient, or 'false' if key information is missing, followed by a brief explanation.>)
+  ~(<Determine if the provided information is sufficient to form a well-grounded answer to "~(&question)". Respond with 'true' if sufficient, or 'false' if key information is missing, followed by a brief explanation.>)~
 |>>
 
 # Identifies the most critical missing pieces of information
 operator identify_knowledge_gaps(question, available_information) ::= <<|
-  I identify the critical information gaps preventing me from answering "$(question)" based on what I currently know: "$(available_information)".
+  I identify the critical information gaps preventing me from answering "~(question)" based on what I currently know: "~(available_information)~".
 
-  $(<List the most critical, specific pieces of missing information that prevent answering "$(&question)". Frame these as direct questions to be investigated.>)
+  ~(<List the most critical, specific pieces of missing information that prevent answering "~(&question)". Frame these as direct questions to be investigated.>)~
 |>>
 
 # ═
@@ -52,7 +52,7 @@ sequence check_sufficiency_and_inquire(question, information) ::=
     )
     store_in: &context.sufficiency.check
     set:
-      &context.sufficiency.is_sufficient: $(<Does the assessment in "$(&context.sufficiency.check)" state that the information is sufficient? Respond with only 'true' or 'false'.>)
+      &context.sufficiency.is_sufficient: ~(<Does the assessment in "~(&context.sufficiency.check)" state that the information is sufficient? Respond with only 'true' or 'false'.>)~
   
   step:
     when: &context.sufficiency.is_sufficient is false
@@ -69,7 +69,7 @@ sequence check_sufficiency_and_inquire(question, information) ::=
             I have realized that I do not have enough information to proceed responsibly. 
             
             To form a well-grounded conclusion, I first need to answer the following questions:
-            $(&context.sufficiency.gaps)
+            ~(&context.sufficiency.gaps)~
 
             Could you please provide this information, or suggest how I might find it?
           |>>

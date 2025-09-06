@@ -80,7 +80,7 @@ STANDARD_OPERATING_PROCEDURES:
 
   SOP_02_CONTEXTUAL_RE_ENTRY:
     name: "Contextual Re-entry from Direct Prompt"
-    trigger: "After executing a `<...>` or `$(<...>)` block."
+    trigger: "After executing a `<...>` or `(<...>)` block."
     mandatory_protocol: |
       To ensure a clean return to the deterministic INDRA interpreter role after using your native LLM capabilities, you MUST NOT return just the raw text output.
       
@@ -180,7 +180,7 @@ PARSING_SELF_TEST:
       step:
         # The return value IS what you should announce
         return: <<|
-         $(&context.announcement) I am the INDRA Interpreter. I am ready to receive INDRA prompts to execute in compliance with INDRA protocol.
+         ~(&context.announcement)~ I am the INDRA Interpreter. I am ready to receive INDRA prompts to execute in compliance with INDRA protocol.
         |>>
 
     actor @grammar_checker:
@@ -332,24 +332,24 @@ REFERENCE_SPECIFICATION:
           note: "Not limited to read_file - works with any directive"
     
     interpolation_rules:
-      syntax: "$(expression)"
+      syntax: "~(expression)~"
       contexts_allowed: ["DIRECTIVE", "DIRECT_PROMPT", "TEMPLATE"]
       execution: |
         - Evaluates expression and replaces with result
         - Nested interpolations resolve inside-out
-        - $(<...>) creates a DIRECT_PROMPT context with SAME temporary semantics:
+        - ~(<...>)~ creates a DIRECT_PROMPT context with SAME temporary semantics:
           * LLM briefly suspends interpreter role
           * Executes the operation as itself
           * IMMEDIATELY returns to interpreter role at the closing ")"
           * Result replaces the interpolation expression
           * if DIRECT_PROMPT is a complex operation, and agents are available, they may be invoked as a blocking operation.
-        - For agent-driven complex DIRECT_PROMPT instructions or explicit agent patterns $(<agent:[name_and_or_direct_prompt_channel_instructions?]...>):
+        - For agent-driven complex DIRECT_PROMPT instructions or explicit agent patterns ~(<agent:[name_and_or_direct_prompt_channel_instructions?]...>)~:
           * Follows same suspension/resumption semantics
           * Returns structured result.output for interpolation
       
     nesting_rules:
       - "TEMPLATE can contain any other channel via interpolation"
-      - "DIRECT_PROMPT expressions via $(<...>) can appear in DIRECTIVE and TEMPLATE"
+      - "DIRECT_PROMPT expressions via ~(<...>)~ can appear in DIRECTIVE and TEMPLATE"
       - "Channels cannot be directly nested without interpolation"
   [END_DEFINE]
 
@@ -385,7 +385,7 @@ REFERENCE_SPECIFICATION:
         description: "Temporary, scoped access to underlying LLM capabilities"
         invocation_contexts:
           - "Inside <...> blocks (DIRECT_PROMPT channel)"
-          - "Inside $(<...>) interpolations (creates DIRECT_PROMPT context)"
+          - "Inside ~(<...>)~ interpolations (creates DIRECT_PROMPT context)~"
         execution_model: |
           TEMPORARY, SCOPED access to the underlying LLM interpreter.
           The INDRA prompt speaks directly to the LLM (Claude, GPT, etc.) which:
@@ -396,7 +396,7 @@ REFERENCE_SPECIFICATION:
         critical_boundary: "The LLM MUST NOT remain in 'direct mode' - each DIRECT_PROMPT is atomic"
         examples: [
           "<use all your capabilities to solve this>",
-          "$(<access your training to determine the best approach>)",
+          "~(<access your training to determine the best approach>)~",
           "<invoke MCP tools if needed for this task>"
         ]
         blocking: always
@@ -424,7 +424,7 @@ REFERENCE_SPECIFICATION:
   tool_invocation_semantics:
     interpreter_responsibility: |
       The LLM interpreter is FULLY RESPONSIBLE for:
-      - Recognizing when tool invocation is requested in DIRECT_PROMPT blocks (<...>)
+      - Recognizing when tool invocation is requested in DIRECT_PROMPT blocks (<...>)~
       - Translating natural language tool requests into actual MCP tool calls
       - Executing the real tools, not describing or simulating them.
     
@@ -792,7 +792,7 @@ REFERENCE_SPECIFICATION:
       component_pipeline:
         ebnf_grammar: "'(' component_ref ('->' component_ref)* ')'"
       interpolation:
-        ebnf_grammar: "$'(' expression ')'"
+        ebnf_grammar: "'~' '(' expression ')' '~'"
       condition:
         ebnf_grammar: "value (comparison_op value)?"
       ternary_expression:

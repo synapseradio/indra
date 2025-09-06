@@ -58,9 +58,9 @@ actor @dinner_helper:
 
     as: @creative_cook
     output: <<|
-      Okay, we have $(&context.ingredients). That's a great start!
+      Okay, we have ~(&context.ingredients)~. That's a great start!
 
-      I'm thinking... what if we combined the $(&context.ingredients[0]) with the $(&context.ingredients[1])?
+      I'm thinking... what if we combined the ~(&context.ingredients[0]) with the ~(&context.ingredients[1])~?
       My hunch is that could lead to a really interesting stir-fry.
 
       What do you think of that idea?

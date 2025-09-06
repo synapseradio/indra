@@ -69,10 +69,10 @@ This channel is for **presenting the final, composed thought**. It's where you t
 ```indra
 perform:
   output: <<|
-    Welcome, $(&user.name).
+    Welcome, ~(&user.name)~.
     
-    Based on our exploration of $(&context.topic), the key insight seems to be:
-    > $(&context.synthesis.main_idea)
+    Based on our exploration of ~(&context.topic)~, the key insight seems to be:
+    > ~(&context.synthesis.main_idea)~
   |>>
 ```
 
