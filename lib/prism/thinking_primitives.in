@@ -20,9 +20,9 @@
 # - specificity.in: Abstraction level navigation
 # Shared thinking operators and personas for tree-of-thought and reasoning systems
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ATOMIC THINKING OPERATORS - Small, Natural Units of Thought
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Generate a curious wondering about something
 operator wonder_about(topic) ::= <<|
@@ -86,27 +86,9 @@ operator connect_dots(thoughts) ::= <<|
      "The common thread seems to be...">)
 |>>
 
-# Check if we're going in circles
-operator sensing_repetition(recent_thoughts) ::= <<|
-  $(<Looking at these recent thoughts: $(recent_thoughts)
-     
-     Are we exploring new territory or revisiting the same ideas?
-     If repetitive, return "cycling"
-     If fresh, return "progressing">)
-|>>
-
-# Assess depth vs breadth needs
-operator assess_exploration_mode(current_depth, thoughts_at_level) ::= <<|
-  $(<We're $(current_depth) layers deep with $(thoughts_at_level) thoughts here.
-     
-     Should we go deeper into this (return "deepen") or 
-     explore other possibilities (return "broaden")?
-     Consider: Are we onto something specific, or still surveying options?>)
-|>>
-
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # THINKING MODE PERSONAS - Natural Perspectives for Exploration
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 persona @curious_explorer:
   identity: "I wonder and explore possibilities by following my genuine curiosity wherever it leads"
@@ -148,22 +130,13 @@ persona @synthesizer:
     - "true synthesis transforms constituent elements into emergent insight"
     - "the richness of synthesis comes from preserving nuance while finding unity"
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # CONFIDENCE & CLARITY OPERATORS - Direct checks on our thinking
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
-# Check if first impressions are still driving current thinking
-operator check_first_impression_bias(initial, current) ::= <<|
-  $(<First thought: "$(initial)"
-     Current thought: "$(current)"
-     
-     How much is my current thinking still anchored to that first impression?
-     What would I think if I hadn't started there?>)
-|>>
-
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # CONVERSATIONAL SEQUENCES - Small, Focused Thinking Movements
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Explore a single possibility naturally
 sequence explore_possibility(thought, depth) ::=
@@ -309,10 +282,3 @@ sequence step_back_and_reflect() ::=
       insight: &context.tree.emerging_insight,
       synthesis: $(<the realization>)
     }
-
-
-
-
-
-
-

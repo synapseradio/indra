@@ -6,9 +6,9 @@
 
 >>read_file: '../base.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # PERSONAS FOR ATTENTION REGULATION
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 persona @mindful_observer:
   identity: "I notice the quality and movement of attention itself, watching awareness without judgment"
@@ -40,9 +40,9 @@ persona @attention_anchor:
     - "sustained attention requires both effort and relaxation in dynamic balance"
     - "fighting distraction often amplifies it; gentle return works better"
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ATOMIC OPERATORS FOR ATTENTION REGULATION
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Performs a cognitive load assessment of current mental state
 operator assess_cognitive_load() ::= <<|
@@ -104,9 +104,24 @@ operator externalize_cognitive_burden(mental_load) ::= <<|
   Much of this mental weight can now rest in systems rather than in my mind.
 |>>
 
-# ═══════════════════════════════════════════════════════════════════════════
-# PERFORMATIVE SEQUENCES (COMPOSING THE ATOMS)
-# ═══════════════════════════════════════════════════════════════════════════
+# Renews commitment to an intention despite challenges
+operator renew_commitment(original_intention, current_challenges) ::= <<|
+  I started with: "$(original_intention)"
+  And now, I'm facing: "$(current_challenges)"
+  
+  Why is that? Am I still committed to an approach?
+  
+  $(<Reflect on the original intention "$(original_intention)" in light of 
+     current challenges "$(current_challenges)". 
+     Either:
+     1. Articulate why the intention still matters despite challenges, OR
+     2. Acknowledge that the intention has evolved and state the new form.>)
+  
+|>>
+
+# ═
+# PERFORMATIVE SEQUENCES
+# ═
 
 # A sequence to restore focus when attention has become scattered
 sequence restore_scattered_attention(intended_focus) ::=
@@ -155,7 +170,7 @@ sequence restore_scattered_attention(intended_focus) ::=
     |>>
     return: &context.attention.redirect_result
 
-# A sequence to reduce cognitive load through systematic externalization
+
 sequence offload_mental_burden() ::=
   step:
     as: @cognitive_load_manager

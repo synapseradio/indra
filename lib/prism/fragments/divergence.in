@@ -8,9 +8,9 @@
 >>read_file: '../base.in'<<
 >>read_file: './compare.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # DIVERGENT THINKING PERSONAS
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 persona @epistemic_guardian:
   identity: "I navigate epistemic forks by sensing critical decision points where reasoning paths diverge"
@@ -21,9 +21,9 @@ persona @divergence_explorer:
 persona @choice_architect:
   identity: "I structure decision moments by crystallizing the essential tensions between paths"
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ATOMIC OPERATORS FOR FORK DETECTION
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 operator identify_competing_hypotheses(current_understanding) ::= <<|
   I'm exploring the branching possibilities within my current understanding, seeking out the hidden forks where reasoning might diverge.
@@ -59,9 +59,9 @@ operator check_for_divergence(hypotheses) ::= <<|
   Analyze whether these ideas pull in fundamentally different directions. Determine if choosing one would make the others less relevant or impossible to pursue. Respond with 'true' if these represent a genuine fork, or 'false' if they might work together. Include reasoning for your assessment.
 |>>
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # CORE SEQUENCES: DETECTING AND PRESENTING DIVERGENCE
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence detect_and_present_fork(current_understanding) ::=
   step:

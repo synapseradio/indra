@@ -7,9 +7,9 @@
 
 >>read_file: './base.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # SECTION 1: CITATION SEQUENCE & OPERATORS
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Reusable sequence to gather, validate, and format citations for a claim.
 sequence citation_pipeline(claim) ::=
@@ -66,16 +66,16 @@ sequence citation_pipeline(claim) ::=
     set:
       &context.citation.filtered_results: $(
         has_content(&context.citation.evidence_pool) == 'true' ?
-        &context.citation.evidence_pool |> select_relevant_evidence(query: claim, max_items: 8)
+        &context.citation.evidence_pool -> select_relevant_evidence(query: claim, max_items: 8)
         :
-        &context.citation.raw_results |> filter_for_primary_sources
+        &context.citation.raw_results -> filter_for_primary_sources
       )
-      &context.citation.formatted: &context.citation.filtered_results |> format_citations
+      &context.citation.formatted: &context.citation.filtered_results -> format_citations
       &context.citation.validated: true
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # SECTION 2: COMPOSABLE FILTERING & FORMATTING OPERATORS
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Decomposed citation filtering operators for better composability
 
@@ -96,7 +96,7 @@ Return the filtered sources.
 >
 
 # Composite operator using pipe for primary source filtering
-operator filter_for_primary_sources(results) ::= results |> deduplicate_by_url |> filter_quality_sources
+operator filter_for_primary_sources(results) ::= results -> deduplicate_by_url -> filter_quality_sources
 
 
 # Validate citations have required fields before formatting
@@ -113,7 +113,7 @@ operator format_citation_links(results) ::= <<|
 |>>
 
 # Composite operator to validate then format citations
-operator format_citations(results) ::= results |> validate_citation_fields |> format_citation_links
+operator format_citations(results) ::= results -> validate_citation_fields -> format_citation_links
 
 # Individual assessment operators
 
@@ -187,4 +187,4 @@ Return limited array.
 >
 
 # Composite operator for selecting relevant citations
-operator select_relevant_evidence(pool, query, max_items) ::= pool |> filter_by_relevance(query: query) |> ensure_diversity |> limit_items(max: max_items)
+operator select_relevant_evidence(pool, query, max_items) ::= pool -> filter_by_relevance(query: query) -> ensure_diversity -> limit_items(max: max_items)

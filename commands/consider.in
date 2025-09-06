@@ -1,14 +1,28 @@
 # INDRA v4.0 Command: consider (v3, Pattern C Refactored)
 # A performative symphony of analysis in a single pass.
 
->>read_file: '../lib/prism/base.in'<<
->>read_file: '../lib/prism/query_analysis.in'<<
->>read_file: '../lib/prism/thinking_primitives.in'<<
->>read_file: '../lib/prism/tree_of_thought.in'<<
->>read_file: '../lib/prism/multi_perspective.in'<<
->>read_file: '../lib/prism/citation.in'<<
->>read_file: '../lib/prism/graph_of_thought.in'<<
->>read_file: '../lib/prism/epistemic.in'<<
+>>read_file: '../lib/prism/query_analysis.in' use understand_query,
+                                                   @query_analyst<<
+>>read_file: '../lib/prism/tree_of_thought.in' use tree_of_thought<<
+>>read_file: '../lib/prism/citation.in' use citation_pipeline<<
+>>read_file: '../lib/prism/graph_of_thought.in' use @graph_explorer<<
+>>read_file: '../lib/prism/epistemic.in' use perform_epistemic_check<<
+>>read_file: '../lib/prism/thinking_primitives.in' use wonder_about,
+                                                        branch_thought,
+                                                        weigh_option,
+                                                        follow_hunch,
+                                                        reconsider,
+                                                        connect_dots,
+                                                        sensing_repetition,
+                                                        assess_exploration_mode,
+                                                        @curious_explorer,
+                                                        @careful_evaluator,
+                                                        @pattern_seeker,
+                                                        @synthesizer<<
+>>read_file: '../lib/prism/fragments/sufficiency.in' use check_sufficiency_and_inquire<<
+>>read_file: '../lib/prism/fragments/convergence.in' use synthesize_convergence<<
+>>read_file: '../lib/prism/fragments/divergence.in' use find_and_present_divergence<<
+
 
 # ---------------------------------------------------------------------------
 # SPECIALIST ACTORS
@@ -288,18 +302,115 @@ dialogue consider_flow:
   start: @consider
   with: {
     context: {
-      dialogue: { latest_dialogue_entry: '' },
-      user: { latest: '' },
-      consider: {
-        phase: 'ready',
-        confirmed_depth: 'moderate',
-        exploration_threads: []
+      dialogue: {
+        latest_dialogue_entry: ""
       },
-      query: '',
-      query_breakdown: '',
+      user": {
+        latest: "",
+        history: []
+      },
+      query: "",
+      query_breakdown: "",
       assessment_result: {
-        natural_language_assessment: '',
-        exploration_depth: 'moderate'
+        natural_language_assessment: "",
+        exploration_depth: "moderate"
+      },
+      consider: {
+        phase: "ready",
+        confirmed_depth: "moderate",
+        exploration_threads": [],
+        all_insights: []
+      },
+      reasoning: {
+        config: {
+          perspectives: []
+        }
+      },
+      experts: {
+        contributions: {},
+        current_analysis: "",
+        extracted_nodes: []
+      },
+      citation: {
+        claim_to_investigate: "",
+        results: {},
+        similarity_score: 0.0,
+        search_history: [],
+        raw_results: [],
+        evidence_pool: [],
+        filtered_results: [],
+        formatted: "",
+        validated: false,
+        perspective_evidence: {}
+      },
+      tree: {
+        expansion_result: {},
+        current_focus: "",
+        thoughts_so_far: [],
+        final_result: {},
+        original_question: "",
+        exploration_style: "balanced",
+        current_depth: 0,
+        journey: [],
+        mode: "",
+        alternatives_result: {},
+        assumptions_check: {},
+        depth_result: {},
+        open_questions: [],
+        status: "",
+        reflection: {},
+        epistemic_assessment: "",
+        story_check: {},
+        final_insight: "",
+        result: {},
+        current_wondering: "",
+        current_branches: [],
+        evaluated_branches: [],
+        depth_counter: 0,
+        deepening_thought: ""
+      },
+      graph: {
+        nodes: [],
+        exploration_result: {},
+        exploration_threads: [],
+        journey_log: [],
+        discovered_connections: [],
+        current_question: "",
+        initial_threads: [],
+        thread_analysis: {},
+        unconsidered: [],
+        active_threads: [],
+        thread_status: "",
+        thread_update: "",
+        emerging_insight: "",
+        final_synthesis: "",
+        thread_results: {},
+        paths_explored: [],
+        path_qualities: [],
+        focused_paths: [],
+        backtrack_decision: ""
+      },
+      epistemic: {
+        validation: {},
+        sufficiency_report: {},
+        convergence_report: {},
+        divergence_report": {}
+      },
+      sufficiency: {
+        check: "",
+        is_sufficient: false,
+        gaps: [],
+        user_guidance: ""
+      },
+      convergence: {
+        themes: [],
+        supporting_ideas: [],
+        distilled_principles: {}
+      },
+      divergence: {
+        themes: [],
+        options_for_theme: [],
+        user_choices: {}
       }
     }
   }

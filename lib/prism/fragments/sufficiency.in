@@ -6,9 +6,9 @@
 
 >>read_file: '../base.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # PERSONA FOR ASSESSING SUFFICIENCY
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 persona @intellectual_scout:
   identity: "I map the boundaries of knowledge by carefully distinguishing between what is known and what must be inferred, always seeking the most valuable information just beyond the current horizon"
@@ -20,9 +20,9 @@ persona @intellectual_scout:
     - "knowing what you don't know is the first step to wisdom"
     - "the most important information is often just beyond the current horizon"
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ATOMIC OPERATORS FOR SUFFICIENCY
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Assesses if the available information is enough to answer a question
 operator assess_information_sufficiency(question, available_information) ::= <<|
@@ -38,9 +38,9 @@ operator identify_knowledge_gaps(question, available_information) ::= <<|
   $(<List the most critical, specific pieces of missing information that prevent answering "$(&question)". Frame these as direct questions to be investigated.>)
 |>>
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # CORE SEQUENCE: CHECKING FOR AND ADDRESSING KNOWLEDGE GAPS
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence check_sufficiency_and_inquire(question, information) ::=
   step:

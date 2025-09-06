@@ -6,9 +6,9 @@
 >>read_file: '../fragments/expansion.in'<<
 >>read_file: '../fragments/convergence.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # CREATIVE EXPLORATION STRATEGY
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence explore_creatively(thought, context) ::=
   step:

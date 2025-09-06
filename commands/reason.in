@@ -1,10 +1,11 @@
 # INDRA v4.0 Command: reason (v3, Adaptive)
 # A performative, compositional, and collaborative reasoning partner that adapts its plan.
 
->>read_file: '../lib/prism/base.in'<<
 >>read_file: '../lib/prism/thinking_primitives.in'<<
->>read_file: '../lib/prism/query_analysis.in'<<
->>read_file: '../lib/prism/epistemic.in'<<
+>>read_file: '../lib/prism/query_analysis.in' use @query_analyst<<
+>>read_file: '../lib/prism/epistemic.in' use perform_epistemic_check<<
+>>read_file: '../lib/prism/citation.in' use citation_pipeline<<
+
 
 # --- Operators ---
 
@@ -103,15 +104,14 @@ sequence execute_strategy_step(strategy_name, current_synthesis) ::=
       await: multi_perspective_dialogue(perspectives: &context.reasoning.config.perspectives)
       store_in: &context.synthesis
     when: strategy_name is 'gather_evidence'
-      read_file: '../lib/prism/citation.in'
       await: citation_pipeline(claim: current_synthesis)
       store_in: &context.synthesis
     when: strategy_name is 'creative_exploration'
-      read_file: '../lib/prism/strategies//creative_exploration.in'
+      read_file: '../lib/prism/strategies/creative_exploration.in'
       await: explore_creatively(thought: &context.query, context: current_synthesis)
       store_in: &context.synthesis
     when: strategy_name is 'strategic_prioritization'
-      read_file: '../lib/prism/strategies//strategic_prioritization.in'
+      read_file: '../lib/prism/strategies/strategic_prioritization.in'
       await: prioritize_strategically(options: current_synthesis, goal: &context.query)
       store_in: &context.synthesis
     when: strategy_name is 'critical_challenge'
@@ -228,17 +228,130 @@ dialogue reason_flow:
   start: @reason
   with: {
     context: {
-      dialoge: { latest_dialogue_entry: '' },
-      query: '',
+      dialogue: {
+        latest_dialogue_entry: "",
+        transcript: []
+      },
+      user: {
+        latest: "",
+        history: []
+      },
+      query: "",
+      query_breakdown: "",
+      synthesis: {},
+      epistemic_check: {},
       reason: {
-        phase: 'ready',
+        phase: "ready",
         understanding_confirmed: false,
-        confirmed_depth: 'moderate',
+        confirmed_depth: "moderate",
         plan: {},
         executed_steps: [],
         step_index: 0,
-        current_strategy: '',
-        step_result: {}
+        current_strategy: "",
+        step_result: {},
+        reflection: {},
+        user_confirmation: ""
+      },
+      reasoning: {
+        config: {
+          perspectives: []
+        }
+      },
+      tree: {
+        current_focus: "",
+        thoughts_so_far: [],
+        final_result: {},
+        original_question: "",
+        exploration_style: "balanced",
+        current_depth: 0,
+        journey: [],
+        mode: "",
+        alternatives_result: {},
+        assumptions_check: {},
+        depth_result: {},
+        open_questions: [],
+        status: "",
+        reflection: {},
+        epistemic_assessment: "",
+        story_check: {},
+        final_insight: "",
+        result: {},
+        current_wondering: "",
+        current_branches: [],
+        evaluated_branches: [],
+        depth_counter: 0,
+        deepening_thought: ""
+      },
+      citation: {
+        similarity_score: 0.0,
+        search_history: [],
+        raw_results: [],
+        evidence_pool: [],
+        filtered_results: [],
+        formatted: "",
+        validated: false,
+        perspective_evidence: {}
+      },
+      experts: {
+        validated_content: "",
+        new_claims: "",
+        new_citations: {},
+        challenge: "",
+        contributions: {},
+        current_speaker: "",
+        transcript: [],
+        participants: [],
+        rules: {},
+        round: 0,
+        new_entry: {},
+        final_synthesis: "",
+        next_move: "",
+        move_content: ""
+      },
+      epistemic: {
+        sufficiency_report: {},
+        convergence_report: {},
+        divergence_report: {},
+        hypotheses: {},
+        distinction: "",
+        consequences_A: {},
+        consequences_B: {},
+        user_question: "",
+        user_guidance: ""
+      },
+      divergence: {
+        themes: [],
+        options_for_theme: [],
+        user_choices: {}
+      },
+      sufficiency: {
+        check: "",
+        is_sufficient: false,
+        gaps: [],
+        user_guidance: ""
+      },
+      creative: {
+        analogy: "",
+        scamper_variations: ""
+      },
+      strategy: {
+        leverage: "",
+        matrix: ""
+      },
+      deliberate_analysis: "",
+      opposite_view: "",
+      bias_check: "",
+      failure_modes: [],
+      prioritized_risks: [],
+      convergence: {
+        themes: [],
+        supporting_ideas: [],
+        distilled_principles: {}
+      },
+      focus: {
+        process_map: "",
+        bottleneck: "",
+        ambiguous_terms: []
       }
     }
   }

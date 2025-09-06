@@ -5,9 +5,9 @@
 >>read_file: '../base.in'<<
 >>read_file: '../fragments/reframing.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # THE SIX HATS STRATEGY SEQUENCE
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence six_thinking_hats_analysis(topic) ::=
   step:

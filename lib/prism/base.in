@@ -1,131 +1,9 @@
 # INDRA v4.0: PRISM Base
 # Contains the foundational context schema and universal utility operators for the PRISM library.
 
-context: {
-  query: '',                # User's input query - set by command overlays
-  reason: {
-    phase: 'ready',        # ready, awaiting_query_confirmation, awaiting_plan_confirmation, awaiting_plan_modification, reasoning
-    user_confirmation: ''  # User's response to the proposed plan
-  },
-  reasoning: {
-    strategy: '',          # Routing strategy: 'tree' | 'graph' | 'multi-perspective' | 'auto'
-    complexity: '',        # Computed complexity score for auto-routing decisions
-    verbosity: 'adaptive', # 'concise' | 'standard' | 'comprehensive' | 'adaptive'
-    config: {
-      perspectives: [],    # List of expert perspective names to instantiate
-      tree_depth: 3,       # How many layers deep Tree of Thought should explore
-      citations: true,     # Whether to gather real evidence (always true)
-      challenges: true,    # Whether experts challenge each other's reasoning
-      epistemic_tracking: true,  # Whether to track beliefs/uncertainties
-      expert_conciseness: 0.7  # 0.0-1.0, higher = more concise expert contributions
-    }
-  },
-  experts: {
-    current_speaker: '',   # Name of expert currently performing
-    current_speaker_index: 0,  # Position in perspectives array
-    next_speaker: '',      # Name of next expert to speak
-    next_speaker_index: 0, # Position of next speaker
-    responding_expert: '', # During response phase, who's responding
-    response_index: 0,     # Counter for response phase iteration
-    contributions: {},     # Dict: expert_name -> their full output
-    challenges: '',        # Critical evaluation output from challenge phase
-    phase: 'opening',       # Dialogue phase: 'opening' | 'challenging' | 'responding'
-    current_strategy: 'tree_of_thought', # Default to old behavior
-    current_result: {}
-  },
-  tree: {
-    nodes: {},             # Dict: node_id -> { thought, score, parent_id, children_ids, depth, status }
-    edges: [],             # List of { from_id, to_id, action } representing transitions
-    root_id: '',           # The starting node ID
-    current_node_id: '',   # Active node being explored
-    frontier: [],          # List of node_ids ready for expansion (BFS queue/DFS stack)
-    visited: [],           # List of already explored node_ids
-    backtrack_history: [], # Stack of node_ids for backtracking
-    node_counter: 0,       # For generating unique node IDs
-    
-    search_strategy: 'dfs', # 'bfs' | 'dfs' | 'best_first' | 'beam'
-    branching_factor: 3,    # Number of children to generate per node
-    max_depth: 5,          # Maximum tree depth to explore
-    prune_threshold: 0.3,  # Score below which to prune branches
-    beam_width: 3,         # For beam search strategy
-    
-    best_path: [],         # List of node_ids forming the best solution path
-    final_answer: '',      # Synthesized solution from best path
-    exploration_log: [],   # Natural language log of exploration process
-    
-    for_perspective: '',   # Which expert requested this ToT conversation
-    caller: ''             # Persona to return to after ToT completes
-  },
-  graph: {
-    # Core exploration state (narrative graph)
-    exploration_threads: [],    # List of exploration threads with summaries and insights
-    active_threads: [],         # Currently active threads being explored
-    discovered_connections: [], # Connections found between different threads
-    journey_log: [],           # Natural language log of exploration journey
-    
-    # Current focus and insights
-    current_question: '',      # The question being explored
-    current_focus: '',         # Current point of exploration
-    emerging_insight: '',      # Pattern emerging from exploration
-    final_synthesis: '',       # Final synthesized answer
-    
-    # Path management (narrative)
-    paths_explored: [],        # Narrative descriptions of paths taken
-    path_qualities: [],        # Qualitative assessments of path value
-    focused_paths: [],         # Paths selected for deeper exploration
-    
-    # Exploration parameters 
-    exploration_depth: 'moderate',    # 'shallow' | 'moderate' | 'deep'
-    exploration_breadth: 'balanced',  # 'narrow' | 'balanced' | 'wide'
-    backtrack_threshold: 'when feeling circular', # Natural description
-    
-    # Tracking
-    recent_explorations: [],   # Recent exploration attempts
-    thread_results: {},        # Results from exploring each thread
-    thread_feelings: '',       # Narrative sense of thread promise
-    
-    # Flow control
-    caller: '',               # Who invoked the graph exploration
-    result: {},               # Final result structure
-    
-    # Legacy fields for compatibility
-    final_answer: '',         # The final synthesized answer
-    narrative_log: [],        # Human-readable log (maps to journey_log)
-    node_counter: 0,          # Kept for multi-perspective seeding
-    nodes: {}                 # Kept for multi-perspective integration
-  },
-  epistemic: {
-    models: {},           # Dict: expert -> {claims, uncertainties, assumptions}
-    map: '',              # Analysis of belief convergence/divergence
-    fork_detected: false, # Whether fundamental framework conflict exists
-    severity: ''          # 'high' | 'medium' | 'low' - impact of divergence
-  },
-  citation: {
-    needed_for: '',       # Claim requiring evidence support
-    raw_results: [],      # Raw tool output from perplexity search
-    filtered_results: [], # Deduplicated and quality-filtered list of results
-    validated: false,     # Whether sources passed quality checks
-    quality_score: 0.0,   # Credibility assessment (0-1)
-    diversity_score: 0.0, # Source variety assessment (0-1)
-    formatted: '',        # Markdown-formatted citation list
-    evidence_pool: [],    # Accumulated unique evidence across all searches
-    search_history: [],   # Track what we've searched to avoid exact duplicates
-    perspective_evidence: {} # Evidence gathered per perspective
-  },
-  synthesis: {
-    contributions: [],    # All expert outputs for final integration
-    epistemic_distances: [], # Measured belief gaps between experts
-    themes: [],           # Identified common threads across perspectives
-    critiques: []         # Accumulated critical evaluations
-  },
-  consensus: {
-    status: false         # Whether experts reached alignment
-  }
-}
-
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # SECTION 7: UTILITY OPERATORS  
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # Helper operators for common operations
 
 # Count items in a collection
@@ -158,5 +36,3 @@ operator get_at_index(collection, index) ::= <<|
 operator get_next_perspective(current_index, perspectives) ::= <<|
   $(<Get the next perspective after position $(current_index>) from $(perspectives), wrapping around if needed)
 |>>
-
-

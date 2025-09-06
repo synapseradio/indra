@@ -7,10 +7,11 @@
 >>read_file: './base.in'<<
 >>read_file: './thinking_primitives.in'<<
 >>read_file: './citation.in'<<
+>>read_file: './fragments/dialogue_navigation.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ORCHESTRATION SEQUENCE - The Main Entry Point
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence tree_of_thought(question, exploration_style, max_depth) ::=
   step:
@@ -24,9 +25,9 @@ sequence tree_of_thought(question, exploration_style, max_depth) ::=
   step:
     return: &context.tree.final_result
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # SUB-SEQUENCES - The Core Logic Steps
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence initialize_tree(question, exploration_style, max_depth) ::=
   step:
@@ -196,9 +197,9 @@ sequence synthesize_findings(thoughts) ::=
         key_insight: &context.tree.reflection.insight
       }
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ENTRY POINT ACTOR - To be called by command overlays
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 actor @tree_thinker:
   identity: "I explore ideas thoughtfully and think naturally through problems"

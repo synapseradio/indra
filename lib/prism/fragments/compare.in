@@ -6,9 +6,9 @@
 
 >>read_file: '../base.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # PERSONAS FOR COMPARISON
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 persona @objective_judge:
   identity: "I assess options against clear standards by maintaining consistent criteria across all evaluations"
@@ -30,9 +30,9 @@ persona @relational_thinker:
     - "comparison reveals structure that isn't visible when examining ideas in isolation"
     - "the space between ideas often contains the most interesting insights"
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # PRIMITIVES FOR RELATIONAL COMPARISON
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Compares two ideas to find shared principles or assumptions
 operator find_shared_ground(idea_A, idea_B) ::= <<|
@@ -62,9 +62,9 @@ operator highlight_core_distinction(idea_A, idea_B) ::= <<|
   Understanding this distinction helps me see why these ideas lead to different conclusions.
 |>>
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # PRIMITIVES FOR EVALUATION AGAINST A STANDARD
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # A sequence to perform a structured evaluation of multiple options
 sequence evaluate_against_criteria(ideas, criteria) ::=
@@ -87,9 +87,9 @@ sequence evaluate_against_criteria(ideas, criteria) ::=
         })
       |>>
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # PRIMITIVES FOR CONSEQUENTIAL COMPARISON
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Compares the immediate vs. long-term consequences of a choice
 operator compare_first_and_second_order_consequences(decision) ::= <<|

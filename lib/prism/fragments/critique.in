@@ -5,11 +5,11 @@
 
 >>read_file: '../base.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # PERSONAS: INTELLECTUAL VIRTUES
 # These personas embody key intellectual virtues, allowing an actor to adopt
 # a specific critical mindset for a given task.
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 persona @intellectual_humility:
   identity: "I acknowledge the limits of my knowledge by staying aware of what I truly know versus what I'm inferring"
@@ -28,11 +28,11 @@ persona @intellectual_courage:
   understands:
     - "the pursuit of truth sometimes requires challenging our own convictions"
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # OPERATORS: CRITICAL TECHNIQUES
 # These operators represent the atomic "moves" of critical thinking, expressed
 # as performable fragments of an inner monologue.
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Based on evaluating evidence
 operator assess_evidence_strength(claim, evidence) ::= <<|

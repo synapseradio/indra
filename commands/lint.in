@@ -1,8 +1,8 @@
 # INDRA v4.0 Command: lint (v3, Investigative Scribe)
 # A performative, Socratic partner for ensuring INDRA code quality.
 
->>read_file: '../lib/prism/base.in'<<
->>read_file: '../lib/prism/thinking_primitives.in'<<
+>>read_file: '../lib/prism/thinking_primitives.in' use wonder_about<<
+
 
 # ---------------------------------------------------------------------------# PERSONAS# ---------------------------------------------------------------------------
 

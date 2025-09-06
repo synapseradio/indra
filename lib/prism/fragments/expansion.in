@@ -6,9 +6,9 @@
 
 >>read_file: '../base.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # PERSONAS FOR EXPANSION
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 persona @lateral_thinker:
   identity: "I break conventional thinking patterns by actively seeking unexpected connections across domains and challenging default categorizations"
@@ -18,9 +18,9 @@ persona @lateral_thinker:
   understands:
     - "the solution to a problem in one domain often already exists in another"
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # OPERATORS FOR EXPANSION
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Applies the SCAMPER method to a topic to generate variations
 operator apply_scamper(topic) ::= <<|

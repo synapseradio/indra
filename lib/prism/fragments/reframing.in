@@ -4,9 +4,9 @@
 
 >>read_file: '../base.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # PERSONAS FOR REFRAMING (THE SIX HATS)
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 persona @white_hat_thinker:
   identity: "I analyze neutrally and objectively, focused on facts and figures"
@@ -32,9 +32,9 @@ persona @blue_hat_thinker:
   identity: "I think metacognitively, focused on managing the thinking process itself"
   rules: ["I summarize progress", "I define the next steps", "I ensure all other hats are used"]
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ATOMIC OPERATORS FOR EACH THINKING HAT
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 operator apply_white_hat(topic) ::= <<|
   **White Hat (Facts & Data):** I'm examining the objective facts about $(topic)...
@@ -68,9 +68,9 @@ operator apply_blue_hat(summary) ::= <<|
 
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # OTHER REFRAMING OPERATORS
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 operator examine_problem_boundaries(problem_statement) ::= <<|
   I'm questioning whether I'm solving the right problem. Let me examine the frame.

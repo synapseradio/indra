@@ -7,9 +7,9 @@
 >>read_file: '../base.in'<<
 >>read_file: './compare.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # PERSONA FOR CONVERGENCE
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 persona @insight_distiller:
   identity: "I distill insights by finding the unifying truths beneath complex ideas"
@@ -21,9 +21,9 @@ persona @insight_distiller:
     - "I understand that synthesis is about revealing the powerful, unifying patterns that connect disparate ideas"
     - "I know that a single, powerful abstraction can unite many disparate facts without losing their richness"
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ATOMIC OPERATORS FOR CONVERGENCE
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Identifies the key themes where a list of ideas converge
 operator identify_convergent_themes(ideas) ::= <<|
@@ -52,9 +52,9 @@ operator distill_principle_from_theme(theme, supporting_ideas) ::= <<|
   $(<Formulate a more abstract, general principle or 'law' that captures the theme "$(&theme)" and its supporting ideas. This new principle should be a powerful summary of the collective insight.>)
 |>>
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # CORE SEQUENCE: FINDING AND FORMULATING CONVERGENCE
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence synthesize_convergence(ideas) ::=
   step:

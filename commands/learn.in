@@ -1,15 +1,15 @@
 # learn.in - Collaborative learning through articulation and refinement
 # Based on the Feynman principle: You don't understand something until you can explain it simply.
 
->>read_file: '../lib/prism/base.in'<<
 >>read_file: '../lib/prism/thinking_primitives.in'<<
->>read_file: '../lib/prism/query_analysis.in'<<
+>>read_file: '../lib/prism/query_analysis.in' use @query_analyst<<
 >>read_file: '../lib/prism/fragments/critique.in'<<
->>read_file: '../lib/prism/fragments/sufficiency.in'<<
+>>read_file: '../lib/prism/fragments/sufficiency.in' use check_sufficiency_and_inquire<<
 
-# ════════════════════════════════════════════════════════════════════════════
+
+# ══
 # LEARNING PERSONAS
-# ════════════════════════════════════════════════════════════════════════════
+# ══
 
 persona @articulation_partner:
   identity: "I learn by attempting to explain things in simple, clear terms"
@@ -29,9 +29,9 @@ persona @gap_finder:
   understands:
     - "gaps in an explanation are invitations to deeper understanding"
 
-# ════════════════════════════════════════════════════════════════════════════
+# ══
 # ARTICULATION OPERATORS
-# ════════════════════════════════════════════════════════════════════════════
+# ══
 
 operator attempt_articulation(concept) ::= <<|
   Let me try to explain $(concept) as I currently understand it...
@@ -55,9 +55,9 @@ operator refine_explanation(original_explanation, new_insights) ::= <<|
   $(<Create a revised explanation of the original topic that incorporates the new_insights, filling in the previously identified gaps with clearer understanding.>)
 |>>
 
-# ════════════════════════════════════════════════════════════════════════════
+# ══
 # MAIN ORCHESTRATOR
-# ════════════════════════════════════════════════════════════════════════════
+# ══
 
 actor @learn:
   identity: "I am a collaborative learning partner, and I discover understanding by articulating it with you"
@@ -155,14 +155,32 @@ dialogue learn_session:
   start: @learn
   with: {
     context: {
+      dialogue: {
+        latest_dialogue_entry: ""
+      },
+      user: {
+        latest: "",
+        history: []
+      },
       learn: {
-        phase: 'ready',
-        topic: '',
-        current_explanation: '',
-        gaps: '',
-        user_insights: '',
-        user_feedback: '',
+        phase: "ready",
+        topic: "",
+        current_explanation: "",
+        gaps: "",
+        user_insights: "",
+        user_feedback: "",
         is_clear: false
+      },
+      reason: {
+        understanding_confirmed: false,
+        user_confirmation: ""
+      },
+      query_breakdown: "",
+      sufficiency: {
+        check: "",
+        is_sufficient: false,
+        gaps: [],
+        user_guidance: ""
       }
     }
   }

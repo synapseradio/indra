@@ -5,9 +5,9 @@
 >>read_file: '../base.in'<<
 >>read_file: '../fragments/focus.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # STRATEGIC PRIORITIZATION STRATEGY
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence prioritize_strategically(options, goal) ::=
   step:

@@ -4,9 +4,9 @@
 
 >>read_file: '../base.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ATOMIC OPERATORS FOR SPECIFICITY
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 operator move_up_abstraction_ladder(concept) ::= <<|
   I navigate up the abstraction ladder for "$(concept)" by identifying its higher-level purpose and fundamental principles.
@@ -33,9 +33,9 @@ operator generate_mitigations(failure_modes) ::= <<|
   $(<For each failure mode above, identify one specific action that could be taken today to prevent it. Format as a list of mitigations.>)
 |>>
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # PERFORMATIVE SEQUENCES
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence conduct_pre_mortem(project_goal) ::=
   step:

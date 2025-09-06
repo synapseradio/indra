@@ -1,11 +1,11 @@
 # INDRA v4.0 Command: research
 # A collaborative, performative, and evidence-grounded research partner.
 
->>read_file: '../lib/prism/base.in'<<
->>read_file: '../lib/prism/epistemic.in'<<
->>read_file: '../lib/prism/multi_perspective.in'<<
+>>read_file: '../lib/prism/epistemic.in' use perform_epistemic_check<<
+>>read_file: '../lib/prism/multi_perspective.in' use @synthesis_actor<<
 >>read_file: '../lib/prism/thinking_primitives.in'<<
->>read_file: '../lib/prism/citation.in'<<
+>>read_file: '../lib/prism/citation.in' use citation_pipeline<<
+
 
 # --- Performative Operators ---
 
@@ -162,13 +162,85 @@ dialogue research_flow:
   with: {
     context: {
       dialogue: {
-        latest_dialogue_entry: ''
+        latest_dialogue_entry: "",
+        transcript: []
       },
-      query: '',
+      user: {
+        latest: "",
+        history: []
+      },
+      query: "",
+      synthesis: {},
+      epistemic_report: {},
       research: {
-        phase: 'ready',
-        plan_approved: false,
-        core_questions: ''
+        phase: "ready",
+        plan_approved": false,
+        core_questions: ""
+      },
+      reason: {
+        user_clarification: ""
+      },
+      reasoning: {
+        config: {
+          perspectives: []
+        }
+      },
+      experts: {
+        contributions: {},
+        current_speaker: "",
+        transcript: [],
+        participants: [],
+        rules: {},
+        round: 0,
+        new_entry: {},
+        final_synthesis: "",
+        next_move: "",
+        move_content: "",
+        validated_content: "",
+        new_claims: "",
+        new_citations: {},
+        challenge: ""
+      },
+      citation: {
+        similarity_score: 0.0,
+        search_history: [],
+        raw_results: [],
+        evidence_pool: [],
+        filtered_results: [],
+        formatted: "",
+        validated: false,
+        perspective_evidence: {}
+      },
+      epistemic: {
+        sufficiency_report: {},
+        convergence_report: {},
+        divergence_report": {}
+      },
+      sufficiency: {
+        check: "",
+        is_sufficient: false,
+        gaps: [],
+        user_guidance: ""
+      },
+      convergence: {
+        themes: [],
+        supporting_ideas: [],
+        distilled_principles: {}
+      },
+      divergence: {
+        themes: [],
+        options_for_theme: [],
+        user_choices: {}
+      },
+      tree: {
+        current_wondering: "",
+        original_question: "",
+        current_branches: [],
+        evaluated_branches: [],
+        depth_counter: 0,
+        deepening_thought: "",
+        thoughts_so_far: [],
+        emerging_insight: ""
       }
     }
   }

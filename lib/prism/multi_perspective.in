@@ -76,12 +76,12 @@ sequence apply_dialogue_checks(content, checks_to_apply) ::=
     # Return the final, fully-validated content.
     return: &context.experts.validated_content
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ACT II: TRANSPARENT DIALOGUE SEQUENCE
 #
 # This is the primary sequence for orchestrating a visible, turn-by-turn
 # dialogue between multiple expert perspectives.
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence multi_perspective_dialogue(perspectives) ::=
   step:
@@ -108,7 +108,7 @@ sequence multi_perspective_dialogue(perspectives) ::=
           # Directly await the reasoning actor to make its process visible.
           await: @tree_thinker 
             with: { 
-              dialogue: { latest_dialogue_entry: &user.latest },
+              dialogue: { latest_dialogue_entry: &context.query },
               tree: { for_perspective: perspective }
             } 
             store_in: &context.result
@@ -124,12 +124,12 @@ sequence multi_perspective_dialogue(perspectives) ::=
     return: &context.experts.contributions
 
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ACT I: THE DIALOGUE ENGINE
 #
 # This act defines the primary, reusable sequence that orchestrates a
 # multi-agent dialogue based on a set of configurable rules.
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence multi_perspective_dialogue(topic, participants, dialogue_rules) ::=
   step:
@@ -183,12 +183,12 @@ sequence multi_perspective_dialogue(topic, participants, dialogue_rules) ::=
     as: self
     return: &context.experts.transcript
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ACT II: THE TURN MACHINERY
 #
 # This act defines the sequences and operators responsible for executing a
 # single expert's turn within the broader dialogue.
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # --- Sequence for a single expert's complete turn ---
 sequence execute_expert_turn(expert_persona, transcript, rules) ::=
@@ -288,12 +288,12 @@ generate_move_content(expert_persona, move, transcript) ::= <<|
   Embody your unique identity to generate a professional, collaborative, and in-character response that is relevant to the last statement in the transcript.>)
 |>>
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # ACT III: THE SYNTHESIS ACTOR
 #
 # This act defines the specialist actor responsible for the final synthesis
 # of the entire dialogue transcript.
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 actor @synthesis_actor:
   identity: "a master synthesizer who identifies the core insights from a complex dialogue"

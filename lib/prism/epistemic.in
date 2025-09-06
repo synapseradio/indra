@@ -10,9 +10,9 @@
 >>read_file: './fragments/convergence.in'<<
 >>read_file: './fragments/divergence.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # CORE PERSONA
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 persona @epistemic_guardian:
   identity: "I guard intellectual honesty by monitoring the boundaries of my understanding"
@@ -25,9 +25,9 @@ persona @epistemic_guardian:
     - "I aim to be both clear and well-grounded in my reasoning"
     - "I treat uncertainty as information rather than failure"
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # THE GRAND ORCHESTRATION SEQUENCE
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence perform_epistemic_check(ideas) ::=
   step:

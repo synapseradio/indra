@@ -8,9 +8,9 @@
 >>read_file: './base.in'<<
 >>read_file: './citation.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # JOURNEY WEAVERS - Natural exploration guides
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # I follow multiple threads of possibility, sensing which paths call to explore
 # I recognize when threads lead nowhere meaningful and trust intuition about promising paths
@@ -20,9 +20,9 @@
 # I feel coherence between connected thoughts and recognize promising patterns
 # I understand that quality emerges from harmonizing thoughts and simple paths often lead to clarity
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # NATURAL EXPLORATION HELPERS
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Begin a new journey of understanding
 operator begin_journey(starting_thought) ::= <<|
@@ -40,26 +40,28 @@ operator weave_forward(journey_id, new_insight) ::= <<|
 
 # Sense the resonance of a journey
 operator feel_resonance(journey) ::= <<|
-  I'm sensing how strongly this journey resonates...
+  This is the journey so far: $(journey)
+  - Does it address the core question?
+  - Do the insights build naturally?
+  - Is there a sense of deepening understanding?
+  
   $(<
-    Evaluate how strongly this journey resonates:
+    Evaluate how strongly $(journey) resonates by answering:
     - Does it address the core question?
     - Do the insights build naturally?
     - Is there a sense of deepening understanding?
-    Return a feeling of resonance strength
   >)
 |>>
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # EXPLORATION SEQUENCES - Natural flow of discovery
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence explore_possibilities() ::=
-  # Step 1: Sense which journeys call most strongly
   step:
-    method: "feeling which threads of thought resonate most"
+    method: "feeling which threads of thought feel most promising as paths of inquiry"
     output: <<|
-      I'm sensing which directions feel most promising...
+      Which directions feel most promising?
       
       $(each: &context.web.active_journeys as |journey, index| {
         <<|
@@ -73,8 +75,8 @@ sequence explore_possibilities() ::=
     goal: "to identify the most promising directions"
     set:
       &context.web.active_journeys: $(<
-        Keep the journeys that resonate most strongly,
-        letting go of those that feel less promising
+        Return notes on which threads / journey show the most promise,
+        and signal which ones we can safely let go of in our thought process.
       >)
 
   # Step 2: Notice where I might be stuck
@@ -82,13 +84,16 @@ sequence explore_possibilities() ::=
     method: "recognizing when to reconsider"
     output: <<|
       I'm checking if any paths feel stuck...
-      
+      Does any feel like they're going in circles?
+      Have I reached a natural stopping point with any of them?
+      Do any merit further exploration?
+
       $(each: &context.web.active_journeys as |journey| {
         <<|
         Journey $(journey.id): $(<
           Does this feel like it's going in circles?
-          Have I reached a natural stopping point?
-          Is there still curiosity to explore further?
+          Have I reached a natural stopping point with $(journey)?
+          Is there still reason to explore further?
         >)
         |>>
       })
@@ -96,42 +101,46 @@ sequence explore_possibilities() ::=
     goal: "to recognize where reconsideration might help"
     set:
       &context.web.journeys_to_reconsider: $(<
-        Note which journeys need a fresh perspective
+        Note which of $(&context.web.active_journeys) journeys merit a fresh look from a different angle.
       >)
 
   # Step 3: Weave new possibilities
   step:
     method: "spinning new threads from existing understanding"
     output: <<|
-      I'm seeing what new insights emerge from here...
+      Do any new insights emerge from this point?
       
       $(each: &context.web.active_journeys as |journey| {
         <<|
         From "$(journey.latest_insight)", I'm sensing:
-          $(<Generate 2-3 natural next thoughts that flow from this insight>)
+          $(<answer: Do any new insights emerge from this point? If so, generate 2-3 natural next thoughts that flow from $(journey.latest_insight)>)
         |>>
       })
     |>>
     set:
       &context.web.emerging_insights: $(<
-        Capture the new possibilities that have emerged
+        $(<return the output from your previous execution of - answer: Do any new insights emerge from this point? If so, generate 2-3 natural next thoughts that flow from $(journey.latest_insight)>)
       >)
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # RECONSIDERATION SEQUENCE - Natural stepping back
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence step_back_and_reconsider(journey_id) ::=
   step:
     method: "reflecting on what led here"
     output: <<|
-      I'm noticing journey $(journey_id) isn't quite working...
+      I'm noticing that the path $(journey_id) isn't quite working. What have I learned from this?
+
+      Some reflection: 
       
-      I'm reflecting: $(<What about this path felt off or incomplete?>)
+      $(<What about $(journey_id) felt off or incomplete?>)
       
-      What I'm learning from this: $(<What insight does this dead end offer?>)
-    |>>
-    goal: "to learn from where this didn't work"
+      What I'm learning from this: 
+      
+      $(<What insight does the dead end from $(journey_id) offer?>)
+|>>
+    
     set:
       &context.web.learnings: &context.web.learnings + [{
         journey_id: $(journey_id),
@@ -142,7 +151,7 @@ sequence step_back_and_reconsider(journey_id) ::=
   step:
     method: "finding where to pick up the thread again"
     output: <<|
-      I'm tracing back to where I might explore differently...
+      I'd like to trace back to another thread that could allow me to explore this differently.
       
       This journey went: $(
         each: &context.web.journeys[$(journey_id)].insight_sequence as |insight, index| {
@@ -151,19 +160,17 @@ sequence step_back_and_reconsider(journey_id) ::=
           |>>
         }
       )
-      
       I sense I could reconsider from: $(<
-        Which earlier insight still has unexplored potential?
+        Which earlier insight from $(&context.web.journeys[$(journey_id)]) still has unexplored potential?
       >)
     |>>
-    goal: "to find a natural place to resume exploring"
     set:
-      &context.web.reconsideration_point: $(<Identify the insight to branch from>)
+      &context.web.reconsideration_point: $(<Identify the insight from $(&context.web.journeys[$(journey_id)]) to branch from>)
       &context.web.journeys[$(journey_id)].status: 'reconsidering'
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # RESONANCE FLOW - How understanding deepens
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 sequence deepen_resonance() ::=
   step:
@@ -186,9 +193,9 @@ sequence deepen_resonance() ::=
         Update each insight's resonance based on how it's influenced by others
       >)
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # INSIGHT CULTIVATION - Growing understanding naturally
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # I spin new thoughts from existing threads, letting insights emerge naturally
 # I don't force connections - I let them reveal themselves
@@ -206,9 +213,9 @@ sequence deepen_resonance() ::=
 # I feel coherence and completeness of understanding, trusting intuitive recognition of quality
 # I understand that truth often feels like recognition rather than discovery
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # UNDERSTANDING HELPERS - Natural ways to deepen insight
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Weave a new insight into the web
 operator weave_insight(understanding, inspired_by) ::= <<|
@@ -372,9 +379,9 @@ sequence one_cycle_of_understanding() ::=
         Collect the strongest insights from each journey
       >)
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # THE WEB WEAVER - Orchestrating natural understanding
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 actor @web_weaver:
   identity: "I weave understanding through patient exploration"

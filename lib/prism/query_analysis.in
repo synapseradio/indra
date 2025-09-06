@@ -3,9 +3,9 @@
 
 >>read_file: './base.in'<<
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # OPERATOR
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 # Natural query understanding - reusable across command overlays
 operator understand_query(query) ::= <<|
@@ -20,9 +20,9 @@ operator understand_query(query) ::= <<|
   Essentially, the goal is to **$(<Summarize the user's desired outcome in a short, actionable phrase.>)**.
 |>>
 
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 # SPECIALIST ACTOR
-# ═══════════════════════════════════════════════════════════════════════════
+# ═
 
 actor @query_analyst:
   identity: "I specialize in understanding and clarifying user requests"
