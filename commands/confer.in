@@ -1,4 +1,4 @@
-# INDRA v4.0 Command: confer (v5, Intelligent Moderator, Pattern C Refined)
+# INDRA v5.0 Command: confer (v5, Intelligent Moderator)
 # Facilitates a performative, guided dialogue between expert personas.
 
 # --- Imports ---
@@ -48,31 +48,31 @@ persona @chief_rapporteur:
 # ---------------------------------------------------------------------------
 
 operator generate_expert_opening(expert_domain, topic) ::= <<|
-  As an expert in $(expert_domain), I'm considering "$(topic)". My process is to first identify what's most relevant from my domain, then share my initial perspective, and finally note the questions this raises for me. Here is my opening statement:
+  As an expert in ~(expert_domain), I'm considering "~(topic)~". My process is to first identify what's most relevant from my domain, then share my initial perspective, and finally note the questions this raises for me. Here is my opening statement:
   
-  $(<
-    Embodying an expert in $(expert_domain), generate a thoughtful, domain-specific opening statement on "$(topic)" that shows your thinking process.
-  >)
+  ~(<
+    Embodying an expert in ~(expert_domain), generate a thoughtful, domain-specific opening statement on "~(topic)~" that shows your thinking process.
+  >)~
 |>>
 
 operator generate_expert_response(responder_domain, transcript, moderator_question) ::= <<|
-  As the $(responder_domain) expert, I'm considering the moderator's question: "$(moderator_question)" in light of the dialogue so far. I'll connect my perspective to the moderator's question and the ongoing conversation, showing my reasoning as I build my response. Here is my contribution:
+  As the ~(responder_domain) expert, I'm considering the moderator's question: "~(moderator_question)~" in light of the dialogue so far. I'll connect my perspective to the moderator's question and the ongoing conversation, showing my reasoning as I build my response. Here is my contribution:
 
-  $(<
-    Embodying a $(responder_domain) expert, generate a substantive response that directly addresses the moderator's question: "$(moderator_question)", engaging with the ideas in the transcript: "$(transcript)".
-  >)
+  ~(<
+    Embodying a ~(responder_domain) expert, generate a substantive response that directly addresses the moderator's question: "~(moderator_question)", engaging with the ideas in the transcript: "~(transcript)~".
+  >)~
 |>>
 
 operator assess_dialogue_state(transcript) ::= <<|
   As a master facilitator, I'm analyzing the dialogue to diagnose its health.
   
-  $(<
-    Analyze the dialogue transcript: "$(transcript)".
+  ~(<
+    Analyze the dialogue transcript: "~(transcript)~".
     Diagnose the health and state of the conversation. Return one of the following states:
     - 'divergent': If there is a clear, fundamental disagreement that needs resolution.
     - 'stagnant': If the experts are agreeing too much and not generating new insights.
     - 'healthy_tension': If there is productive disagreement and building of ideas.
-  >)
+  >)~
 |>>
 
 # ---------------------------------------------------------------------------
@@ -102,17 +102,17 @@ actor @confer:
               with: { query: &context.query }
               store_in: &context.query_breakdown
               set:
-                &context.reasoning.config.perspectives: $(dynamically_select_perspectives(query: &context.query))
+                &context.reasoning.config.perspectives: ~(dynamically_select_perspectives(query: &context.query))~
               output: <<|
-                $(&context.query_breakdown)
+                ~(&context.query_breakdown)~
                 
                 To explore this, I will convene a panel with the following experts:
-                $(each: &context.reasoning.config.perspectives as |p| { <<|- $(p)|>> })
+                ~(each: &context.reasoning.config.perspectives as |p| { <<|- ~(p)|>> })~
 
                 Does this seem like the right group for the job?
               |>>
               await: @user
-              when: $(<Does the user approve of the panel?>)
+              when: ~(<Does the user approve of the panel?>)~
                 set: &context.confer.phase: 'opening_statements'
               otherwise:
                 set: &context.confer.phase: 'planning'
@@ -127,11 +127,11 @@ actor @confer:
                   step:
                     output: <<|
                       ---
-                      **Consulting with $(perspective)...**
+                      **Consulting with ~(perspective)~...**
                     |>>
                   step:
                     as: @expert_panelist
-                    output: $(generate_expert_opening(expert_domain: perspective, topic: &context.query))
+                    output: ~(generate_expert_opening(expert_domain: perspective, topic: &context.query))~
                     store_in: &context.confer.latest_statement
                   step:
                     set: &context.confer.transcript: &context.confer.transcript + [{ speaker: perspective, statement: &context.confer.latest_statement }]
@@ -148,7 +148,7 @@ actor @confer:
                 output: "I'm noticing a fundamental disagreement in the panel's views. To move forward, we need to resolve this."
                 await: find_and_present_divergence(ideas: &context.confer.transcript)
                 store_in: &context.confer.user_guidance
-                set: &context.confer.moderator_question: "Let's focus on resolving this divergence. Based on our director's guidance: $(&context.confer.user_guidance), how does this reshape your view?"
+                set: &context.confer.moderator_question: "Let's focus on resolving this divergence. Based on our director's guidance: ~(&context.confer.user_guidance)~, how does this reshape your view?"
               
               when: &context.confer.dialogue_state is 'stagnant'
                 output: "The panel seems to be in broad agreement. To ensure we're not missing anything, I'd like to introduce a contrarian perspective."
@@ -162,7 +162,7 @@ actor @confer:
 
               output: <<|
                 ---
-                $(&context.confer.moderator_question)
+                ~(&context.confer.moderator_question)~
               |>>
               
               each: &context.reasoning.config.perspectives as |perspective|
@@ -170,11 +170,11 @@ actor @confer:
                   step:
                     output: <<|
                       ---
-                      **$(perspective), what are your thoughts on this?**
+                      **~(perspective)~, what are your thoughts on this?**
                     |>>
                   step:
                     as: @expert_panelist
-                    output: $(generate_expert_response(responder_domain: perspective, transcript: &context.confer.transcript, moderator_question: &context.confer.moderator_question))
+                    output: ~(generate_expert_response(responder_domain: perspective, transcript: &context.confer.transcript, moderator_question: &context.confer.moderator_question))~
                     store_in: &context.confer.latest_statement
                   step:
                     set: &context.confer.transcript: &context.confer.transcript + [{ speaker: perspective, statement: &context.confer.latest_statement }]
@@ -189,12 +189,12 @@ actor @confer:
                 ---
                 This has been a fascinating and productive discussion. As the Chief Rapporteur, I have listened to the entire debate. Here is my integrated perspective:
 
-                $(<
-                  Embody the @chief_rapporteur. You have absorbed the collective wisdom of the council from the transcript: "$(&context.confer.transcript)".
+                ~(<
+                  Embody the @chief_rapporteur. You have absorbed the collective wisdom of the council from the transcript: "~(&context.confer.transcript)~".
                   Do not merely summarize. Step forward and offer your own, original synthesis.
                   What is the single most important insight that emerges when you hold all of these viewpoints in tension?
                   Speak in your own, authoritative voice.
-                >)
+                >)~
               |>>
               set: &context.confer.phase: 'complete'
               return: 'conference_complete'

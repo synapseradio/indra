@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Module - Citation Pipeline
+# INDRA v5.0: PRISM Module - Citation Pipeline
 # This module provides a complete, reusable pipeline for gathering,
 # validating, and formatting evidence for factual claims. It is designed
 # to be invoked by any actor or sequence that needs to ground its
@@ -17,15 +17,15 @@ sequence citation_pipeline(claim) ::=
     as: self
     method: "checking search overlap"
     output: <<|
-      *Analyzing if "$(claim)" requires new evidence beyond our pool...*
+      *Analyzing if "~(claim)~" requires new evidence beyond our pool...*
     |>>
     set:
-      &context.citation.similarity_score: $(
+      &context.citation.similarity_score: ~(
         has_content(&context.citation.search_history) == 'true' ?
-        $(<
-          Compare "$(claim)" to &context.citation.search_history. 
+        ~(<
+          Compare "~(claim)~" to &context.citation.search_history. 
           Return a score 0.0-1.0 where 1.0 means identical query, 0.0 means completely novel.
-        >) : 
+        >)~ : 
         0.0
       )
   step:
@@ -33,12 +33,12 @@ sequence citation_pipeline(claim) ::=
     when: &context.citation.similarity_score less_than 0.7
     method: "evidence gathering via tool invocation"
     output: <<|
-      *Gathering additional evidence for novel angle: "$(claim)"*
-      $(<use perplexity mcp to search with query='$(claim)' and recency='month'. if perplexity is unavailable, use google search or Web Search instead. Filter out low-quality sources and information, including social media, content farms, ads, sponsored content, and personal blogs.>)
+      *Gathering additional evidence for novel angle: "~(claim)~"*
+      ~(<use perplexity mcp to search with query='~(claim)' and recency='month'. if perplexity is unavailable, use google search or Web Search instead. Filter out low-quality sources and information, including social media, content farms, ads, sponsored content, and personal blogs.>)~
     |>>
     goal: "to expand evidence pool with new perspectives"
     set:
-      &context.citation.raw_results: $(<Store the Perplexity search results from above>)
+      &context.citation.raw_results: ~(<Store the Perplexity search results from above>)~
       &context.citation.search_history: &context.citation.search_history + [claim]
       &context.citation.search_attempted: true
   step:
@@ -49,7 +49,7 @@ sequence citation_pipeline(claim) ::=
       *Adding new sources to evidence pool...*
     |>>
     set:
-      &context.citation.evidence_pool: $(merge_unique_evidence(
+      &context.citation.evidence_pool: ~(merge_unique_evidence(
         items: &context.citation.raw_results,
         existing: &context.citation.evidence_pool
       ))
@@ -57,14 +57,14 @@ sequence citation_pipeline(claim) ::=
     as: self
     method: "selecting relevant evidence from pool"
     output: <<|
-      *Selecting most relevant evidence from pool of $(
+      *Selecting most relevant evidence from pool of ~(
         has_content(&context.citation.evidence_pool) == 'true' ? 
         count(&context.citation.evidence_pool) : 
         count(&context.citation.raw_results)
       ) sources...*
     |>>
     set:
-      &context.citation.filtered_results: $(
+      &context.citation.filtered_results: ~(
         has_content(&context.citation.evidence_pool) == 'true' ?
         &context.citation.evidence_pool -> select_relevant_evidence(query: claim, max_items: 8)
         :
@@ -81,14 +81,14 @@ sequence citation_pipeline(claim) ::=
 
 # Remove duplicate entries by URL field
 operator deduplicate_by_url(results) ::= <
-Given the results in $(results), remove all duplicate entries by the 'url' field.
+Given the results in ~(results)~, remove all duplicate entries by the 'url' field.
 Keep only the first occurrence of each unique URL.
 Return the deduplicated array.
 >
 
 # Filter out low-quality sources
 operator filter_quality_sources(results) ::= <
-Given the results in $(results), filter to keep only high-quality sources.
+Given the results in ~(results)~, filter to keep only high-quality sources.
 Exclude: social media (Instagram, Twitter, TikTok), content farms, QA sites (Quora, etc.), 
 and personal blogs unless widely recognized as expert sources.
 Prioritize: academic journals, reputable news organizations, university websites, established publications.
@@ -101,14 +101,14 @@ operator filter_for_primary_sources(results) ::= results -> deduplicate_by_url -
 
 # Validate citations have required fields before formatting
 operator validate_citation_fields(results) ::= <
-Filter $(results) to only include items that have both 'title' and 'url' fields.
+Filter ~(results)~ to only include items that have both 'title' and 'url' fields.
 Return filtered array with valid citations only.
 >
 
 # Format validated citations into markdown links
 operator format_citation_links(results) ::= <<|
-  $(each: results as |result, index| {
-    <<|$(index + 1). [$(result.title)]($(result.url))|>>
+  ~(each: results as |result, index| {
+    <<|~(index + 1). [~(result.title)](~(result.url))~|>>
   })
 |>>
 
@@ -118,11 +118,11 @@ operator format_citations(results) ::= results -> validate_citation_fields -> fo
 # Individual assessment operators
 
 # Count sources in collection
-operator count_sources(results) ::= <count the sources in $(results)>
+operator count_sources(results) ::= <count the sources in ~(results)~>
 
 # Assess credibility of sources
 operator assess_credibility(results) ::= <
-Evaluate credibility of $(results):
+Evaluate credibility of ~(results)~:
 - Are these primary sources?
 - Recognized authors?
 - Peer-reviewed?
@@ -132,7 +132,7 @@ Return credibility assessment.
 
 # Assess diversity of sources
 operator assess_diversity(results) ::= <
-Assess variety in $(results):
+Assess variety in ~(results)~:
 - Different domains represented?
 - Competing viewpoints included?
 - Geographic spread?
@@ -141,20 +141,20 @@ Return diversity assessment.
 
 # Composite quality assessment using piped operators
 operator assess_quality(results) ::= <<|
-  Sources found: $(count_sources(results: results))
-  Credibility: $(assess_credibility(results: results))
-  Diversity: $(assess_diversity(results: results))
+  Sources found: ~(count_sources(results: results))~
+  Credibility: ~(assess_credibility(results: results))~
+  Diversity: ~(assess_diversity(results: results))~
 |>>
 
 # Operator to merge evidence while maintaining uniqueness and quality
 # Note: Referenced as merge_unique_evidence in the sequence
-operator merge_unique_evidence(items, existing) ::= $(
+operator merge_unique_evidence(items, existing) ::= ~(
   merge_with_existing(items: deduplicate_by_url(results: items), existing: existing)
 )
 
 # Helper to merge new items with existing collection
 operator merge_with_existing(items, existing) ::= <
-Merge $(items) into $(existing):
+Merge ~(items) into ~(existing)~:
 - Add all new items not already in existing (by URL)
 - When duplicates exist, keep higher quality version
 - Maintain overall diversity
@@ -165,7 +165,7 @@ Return merged array.
 
 # Filter citations by relevance to query
 operator filter_by_relevance(pool, query) ::= <
-Score each item in $(pool) by relevance to "$(query)".
+Score each item in ~(pool) by relevance to "~(query)~".
 Keep items with relevance score > 0.3.
 Sort by relevance score descending.
 Return sorted array.
@@ -173,7 +173,7 @@ Return sorted array.
 
 # Ensure diversity of sources
 operator ensure_diversity(items) ::= <
-Given $(items), ensure source diversity:
+Given ~(items)~, ensure source diversity:
 - Include different domains (academic, news, technical)
 - Include different perspectives where available
 - Avoid over-representation from single sources
@@ -182,7 +182,7 @@ Return diverse selection maintaining order.
 
 # Limit to maximum number of items
 operator limit_items(items, max) ::= <
-Take the first $(max) items from $(items).
+Take the first ~(max) items from ~(items)~.
 Return limited array.
 >
 

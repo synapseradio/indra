@@ -71,13 +71,13 @@ actor @orchestrator:
       store_in: &context.analysis_result
 
       # 3. Use the result to continue its own work.
-      output: "The analyst reported: $(&context.analysis_result)"
+      output: "The analyst reported: ~(&context.analysis_result)~"
 
 actor @query_analyst:
   perform:
     then:
       # 2. Perform its specialized task and return the result.
-      set: &result: $(understand_query(query: &context.query))
+      set: &result: ~(understand_query(query: &context.query))~
       return: &result
 ```
 

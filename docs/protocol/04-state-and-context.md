@@ -35,7 +35,7 @@ From this point on, any actor can reference this shared understanding.
 actor @guide:
   perform:
     output: <<|
-      Welcome to $(&context.map.location). I see your quest is $(&context.quest.status).
+      Welcome to ~(&context.map.location). I see your quest is ~(&context.quest.status)~.
     |>>
     ...
 ```
@@ -49,7 +49,7 @@ When an actor uses the `set:` directive, it's not changing the world in that ins
 ```indra
 perform:
   # The guide speaks based on the current state of the world.
-  output: "The quest status is currently: $(&context.quest.status)." # -> "not yet accepted"
+  output: "The quest status is currently: ~(&context.quest.status)~." # -> "not yet accepted"
   then:
     # The guide proposes a change to the shared understanding.
     # This change becomes "real" only after this turn is complete.
@@ -79,7 +79,7 @@ This allows actors to be truly responsive partners:
 actor @listener:
   perform:
     output: <<|
-      I hear you. You said, "$(&user.latest)". Let me reflect on that.
+      I hear you. You said, "~(&user.latest)~". Let me reflect on that.
     |>>
     ...
 ```

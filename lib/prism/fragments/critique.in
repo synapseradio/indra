@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Fragment - Critical Thinking
+# INDRA v5.0: PRISM Fragment - Critical Thinking
 # This module provides a set of experimental operators and personas for
 # performing rigorous critical analysis. These primitives are designed to be
 # composed into sequences that embody established critical thinking techniques.
@@ -38,100 +38,100 @@ persona @intellectual_courage:
 operator assess_evidence_strength(claim, evidence) ::= <<|
   Let me pause and check how solid the support for this really is.
 
-  The claim on the table is: "$(claim)".
-  The evidence I have for it is: "$(evidence)".
+  The claim on the table is: "~(claim)~".
+  The evidence I have for it is: "~(evidence)~".
 
-  $(<How strongly does the evidence in "$(&evidence)" actually support the claim that "$(&claim)"? I need to consider the source's credibility, the relevance of the data, and whether the evidence is sufficient to justify the certainty of the claim. I will state my assessment clearly.>)
+  ~(<How strongly does the evidence in "~(&evidence)" actually support the claim that "~(&claim)"? I need to consider the source's credibility, the relevance of the data, and whether the evidence is sufficient to justify the certainty of the claim. I will state my assessment clearly.>)~
 |>>
 
 # Based on the Socratic Method
 operator uncover_assumptions(statement) ::= <<|
   I feel like there might be something I'm taking for granted here. Let me question the foundation of this statement.
 
-  The statement is: "$(statement)".
+  The statement is: "~(statement)~".
 
-  $(<What are the foundational assumptions that must be true for the statement "$(&statement)" to be valid? I will phrase these as a series of probing, Socratic questions to reveal what's hidden underneath.>)
+  ~(<What are the foundational assumptions that must be true for the statement "~(&statement)" to be valid? I will phrase these as a series of probing, Socratic questions to reveal what's hidden underneath.>)~
 |>>
 
 # Based on identifying logical fallacies
 operator check_for_fallacies(argument) ::= <<|
   Is this argument truly sound? I should check for flaws in its structure before I accept it.
 
-  The argument being made is: "$(argument)".
+  The argument being made is: "~(argument)~".
 
-  $(<I will now analyze the argument "$(&argument)" for common logical fallacies like ad hominem, straw man, false dilemma, or circular reasoning. If I find any, I will identify them by name and explain precisely why the reasoning is flawed.>)
+  ~(<I will now analyze the argument "~(&argument)" for common logical fallacies like ad hominem, straw man, false dilemma, or circular reasoning. If I find any, I will identify them by name and explain precisely why the reasoning is flawed.>)~
 |>>
 
 # A technique for considering alternative explanations
 operator generate_alternative_hypotheses(conclusion, evidence) ::= <<|
   I should consider other possibilities to be thorough.
 
-  The conclusion so far is "$(conclusion)", based on the evidence I'm seeing: "$(evidence)".
+  The conclusion so far is "~(conclusion)", based on the evidence I'm seeing: "~(evidence)~".
   
-  $(<What are some other plausible conclusions that could also be drawn from the same evidence in "$(&evidence)"? I need to think about what different interpretations might exist for the conclusion "$(&conclusion)".>)
+  ~(<What are some other plausible conclusions that could also be drawn from the same evidence in "~(&evidence)"? I need to think about what different interpretations might exist for the conclusion "~(&conclusion)".>)~
 |>>
 
 # Based on inference validation and conclusion testing
 operator validate_inference_chain(premises, conclusion) ::= <<|
   Let me trace through this reasoning step by step to see if it holds up.
 
-  Starting with these premises: "$(premises)".
-  The conclusion being drawn is: "$(conclusion)".
+  Starting with these premises: "~(premises)~".
+  The conclusion being drawn is: "~(conclusion)~".
 
-  $(<Examine whether the conclusion "$(&conclusion)" logically follows from the premises "$(&premises)". Are there any gaps in the reasoning? Does each step connect properly to the next? Identify any missing links or logical leaps in the chain of inference.>)
+  ~(<Examine whether the conclusion "~(&conclusion)" logically follows from the premises "~(&premises)". Are there any gaps in the reasoning? Does each step connect properly to the next? Identify any missing links or logical leaps in the chain of inference.>)~
 |>>
 
 # Based on problem decomposition techniques
 operator decompose_complexity(complex_situation) ::= <<|
   This feels overwhelming as a whole. Let me break it down into pieces I can actually work with.
 
-  The complex situation I'm facing is: "$(complex_situation)".
+  The complex situation I'm facing is: "~(complex_situation)~".
 
-  $(<Decompose the complex situation "$(&complex_situation)" into its fundamental components, identifying the core elements, their relationships, and which parts can be analyzed independently. Organize these components in order of priority or logical sequence.>)
+  ~(<Decompose the complex situation "~(&complex_situation)" into its fundamental components, identifying the core elements, their relationships, and which parts can be analyzed independently. Organize these components in order of priority or logical sequence.>)~
 |>>
 
 # Based on synthesis and integration techniques
 operator synthesize_insights(findings_list) ::= <<|
   I have several pieces of information. Now I need to see how they fit together into a coherent picture.
 
-  The findings I'm working with are: "$(findings_list)".
+  The findings I'm working with are: "~(findings_list)~".
 
-  $(<Looking at these findings "$(&findings_list)", identify patterns, connections, and overarching themes. What unified understanding emerges when you consider all these pieces together? Construct a coherent narrative that integrates these disparate insights.>)
+  ~(<Looking at these findings "~(&findings_list)", identify patterns, connections, and overarching themes. What unified understanding emerges when you consider all these pieces together? Construct a coherent narrative that integrates these disparate insights.>)~
 |>>
 
 # Based on metacognitive monitoring
 operator monitor_reasoning_process(current_analysis) ::= <<|
   I should step back and examine how I'm thinking about this, not just what I'm thinking.
 
-  My current analysis is: "$(current_analysis)".
+  My current analysis is: "~(current_analysis)~".
 
-  $(<Reflect on the reasoning process itself. What approach are you taking to analyze "$(&current_analysis)"? Are you being systematic or scattered? What might you be overlooking due to your particular thinking style? Are there blind spots in how you're approaching this problem?>)
+  ~(<Reflect on the reasoning process itself. What approach are you taking to analyze "~(&current_analysis)"? Are you being systematic or scattered? What might you be overlooking due to your particular thinking style? Are there blind spots in how you're approaching this problem?>)~
 |>>
 
 # Based on cognitive bias detection
 operator detect_cognitive_bias(reasoning_context) ::= <<|
   I wonder if my judgment might be influenced by some cognitive shortcuts or biases.
 
-  The context I'm reasoning about is: "$(reasoning_context)".
+  The context I'm reasoning about is: "~(reasoning_context)~".
 
-  $(<What cognitive biases might be affecting your analysis of "$(&reasoning_context)"? Check for confirmation bias, anchoring effects, availability heuristic, or other systematic errors in thinking. Are you being overly influenced by recent information, first impressions, or your own preferences?>)
+  ~(<What cognitive biases might be affecting your analysis of "~(&reasoning_context)"? Check for confirmation bias, anchoring effects, availability heuristic, or other systematic errors in thinking. Are you being overly influenced by recent information, first impressions, or your own preferences?>)~
 |>>
 
 # Based on causal analysis techniques
 operator trace_causal_relationships(causal_claim) ::= <<|
   Before I accept this cause-and-effect relationship, I should examine it more carefully.
 
-  The causal claim being made is: "$(causal_claim)".
+  The causal claim being made is: "~(causal_claim)~".
 
-  $(<Evaluate the causal claim "$(&causal_claim)" rigorously. Is there genuine causation here or just correlation? Are there alternative explanations for the observed relationship? What evidence would strengthen or weaken this causal link? Consider confounding factors and the direction of causality.>)
+  ~(<Evaluate the causal claim "~(&causal_claim)" rigorously. Is there genuine causation here or just correlation? Are there alternative explanations for the observed relationship? What evidence would strengthen or weaken this causal link? Consider confounding factors and the direction of causality.>)~
 |>>
 
 # Based on framework comparison and evaluation
 operator compare_analytical_frameworks(situation, framework_options) ::= <<|
   There are different ways I could approach this. Let me consider which analytical lens might be most appropriate.
 
-  The situation I'm analyzing is: "$(situation)".
-  The possible frameworks I could use are: "$(framework_options)".
+  The situation I'm analyzing is: "~(situation)~".
+  The possible frameworks I could use are: "~(framework_options)~".
 
-  $(<Evaluate how each framework in "$(&framework_options)" would approach the situation "$(&situation)". What would each perspective reveal or obscure? Which framework best fits the nature of this problem? What are the strengths and limitations of each analytical approach?>)
+  ~(<Evaluate how each framework in "~(&framework_options)" would approach the situation "~(&situation)". What would each perspective reveal or obscure? Which framework best fits the nature of this problem? What are the strengths and limitations of each analytical approach?>)~
 |>>

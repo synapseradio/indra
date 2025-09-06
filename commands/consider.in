@@ -1,4 +1,4 @@
-# INDRA v4.0 Command: consider (v3, Pattern C Refactored)
+# INDRA v5.0 Command: consider 
 # A performative symphony of analysis in a single pass.
 
 >>read_file: '../lib/prism/query_analysis.in' use understand_query,
@@ -44,26 +44,26 @@ actor @expert_contributor:
       sequence:
         step:
           set:
-            &context.citation.claim_to_investigate: $(<
-              As an expert in "$(&context.perspective)", what is the most critical factual question you need to answer to analyze these threads: "$(&context.threads)"?
-            >)
+            &context.citation.claim_to_investigate: ~(<
+              As an expert in "~(&context.perspective)", what is the most critical factual question you need to answer to analyze these threads: "~(&context.threads)~"?
+            >)~
         step:
           await: citation_pipeline(claim: &context.citation.claim_to_investigate)
           store_in: &context.citation.results
         step:
           set:
-            &context.experts.current_analysis: $(<
-              As an expert in "$(&context.perspective)", and based on the evidence you've gathered: "$(&context.citation.results.formatted)",
-              provide your core analysis of the exploration threads: "$(&context.threads)".
+            &context.experts.current_analysis: ~(<
+              As an expert in "~(&context.perspective)", and based on the evidence you've gathered: "~(&context.citation.results.formatted)~",
+              provide your core analysis of the exploration threads: "~(&context.threads)~".
               Your analysis should be a concise, insightful narrative.
-            >)
+            >)~
         step:
           set:
-            &context.experts.extracted_nodes: $(<
+            &context.experts.extracted_nodes: ~(<
               From your analysis above, identify 2-3 of the most essential, atomic concepts or claims.
               Format them as a list of graph node objects. Each object should have a 'content' field with the insight,
-              and an 'author' field with your perspective name, "$(&context.perspective)".
-            >)
+              and an 'author' field with your perspective name, "~(&context.perspective)~".
+            >)~
       return: {
         full_analysis: &context.experts.current_analysis,
         evidence: &context.citation.results.formatted,
@@ -81,7 +81,7 @@ actor @one_shot_query_analyst:
     method: "query deconstruction via the core 'understand_query' operator"
     goal: "to provide a clear, structured breakdown of the user's request"
     then:
-      return: $(understand_query(query: &context.query))
+      return: ~(understand_query(query: &context.query))~
 
 actor @natural_complexity_assessor:
   identity: "a thoughtful analyst who assesses a problem's complexity in natural language"
@@ -95,7 +95,7 @@ actor @natural_complexity_assessor:
     goal: "to communicate the query's complexity and recommend an analytical scope"
     then:
       return: <
-        Based on the query breakdown: "$(&context.query_breakdown)", think through the complexity.
+        Based on the query breakdown: "~(&context.query_breakdown)~", think through the complexity.
         Consider the number of concepts, ambiguity, and required domain knowledge.
         Express your reasoning naturally.
         Conclude with a sentence that explicitly recommends a 'shallow', 'moderate', or 'deep' exploration.
@@ -136,13 +136,13 @@ actor @consider:
             store_in: &context.assessment_result.natural_language_assessment
           step:
             set:
-              &context.assessment_result.exploration_depth: $(<
-                From the text "$(&context.assessment_result.natural_language_assessment)",
+              &context.assessment_result.exploration_depth: ~(<
+                From the text "~(&context.assessment_result.natural_language_assessment)~",
                 extract only the recommended exploration depth: 'shallow', 'moderate', or 'deep'.
-              >)
+              >)~
           step:
             output: <<|
-              $(&context.query_breakdown)
+              ~(&context.query_breakdown)~
 
               First, have I understood your request correctly?
             |>>
@@ -150,15 +150,15 @@ actor @consider:
         say: to: @consider, what: 'understanding_presented'
 
       when: &context.consider.phase is 'awaiting_scope_confirmation'
-        when: $(<&user.latest is something like 'yes' or 'correct'>)
+        when: ~(<&user.latest is something like 'yes' or 'correct'>)~
           output: <<|
-            Excellent. Based on my analysis, $(&context.assessment_result.natural_language_assessment)
-            I propose a **$(&context.assessment_result.exploration_depth)** investigation.
+            Excellent. Based on my analysis, ~(&context.assessment_result.natural_language_assessment)~
+            I propose a **~(&context.assessment_result.exploration_depth)~** investigation.
             Shall I proceed? (You can also request 'shallow' or 'deep').
           |>>
           await: @user
           set:
-            &context.consider.confirmed_depth: $(
+            &context.consider.confirmed_depth: ~(
               <&user.latest contains 'shallow' ? 'shallow' :
               (&user.latest contains 'deep' ? 'deep' : &context.assessment_result.exploration_depth)>
             )
@@ -172,7 +172,7 @@ actor @consider:
         sequence:
           step:
             output: <<|
-              *Beginning a **$(&context.consider.confirmed_depth)** analysis.*
+              *Beginning a **~(&context.consider.confirmed_depth)~** analysis.*
               
               **Movement I: Decomposing the Query**
               I'll begin by branching the core question into several explorable threads...
@@ -180,7 +180,7 @@ actor @consider:
             await: tree_of_thought(
               question: &context.query_breakdown,
               exploration_style: "systematic decomposition for multi-perspective analysis",
-              max_depth: $(
+              max_depth: ~(
                 &context.consider.confirmed_depth is 'shallow' ? 2 :
                 (&context.consider.confirmed_depth is 'deep' ? 5 : 3)
               )
@@ -196,16 +196,16 @@ actor @consider:
         sequence:
           step:
             set:
-              &context.reasoning.config.perspectives: $(<
-                Consider the query and its threads: "$(&context.consider.exploration_threads)".
-                Based on a "$(&context.consider.confirmed_depth)" analysis, what expert perspectives are needed?
+              &context.reasoning.config.perspectives: ~(<
+                Consider the query and its threads: "~(&context.consider.exploration_threads)~".
+                Based on a "~(&context.consider.confirmed_depth)~" analysis, what expert perspectives are needed?
                 Return only the list of their titles.
-              >)
+              >)~
           step:
             output: <<|
               **Movement II: Multi-Perspective Analysis**
               To analyze these threads, I will consult the following perspectives:
-              $(each: &context.reasoning.config.perspectives as |p| { <<|- $(p)|>> })
+              ~(each: &context.reasoning.config.perspectives as |p| { <<|- ~(p)|>> })~
             |>>
           step:
             each: &context.reasoning.config.perspectives as |perspective|
@@ -213,7 +213,7 @@ actor @consider:
                 step:
                   output: <<|
                     
-                    **Consulting with $(perspective)...**
+                    **Consulting with ~(perspective)~...**
                   |>>
                 step:
                   await: @expert_contributor
@@ -225,8 +225,8 @@ actor @consider:
                   store_in: &context.experts.contributions[perspective]
                 step:
                   output: <<|
-                    > $(&context.experts.contributions[perspective].full_analysis)
-                    > *Evidence: $(&context.experts.contributions[perspective].evidence)*
+                    > ~(&context.experts.contributions[perspective].full_analysis)~
+                    > *Evidence: ~(&context.experts.contributions[perspective].evidence)~*
                   |>>
                 step:
                   set:
@@ -240,7 +240,7 @@ actor @consider:
           step:
             output: <<|
               **Movement III: Weaving Connections**
-              Now I will explore the emergent, non-obvious connections between the $(count(&context.graph.nodes)) insights from our experts...
+              Now I will explore the emergent, non-obvious connections between the ~(count(&context.graph.nodes))~ insights from our experts...
             |>>
             await: @graph_explorer
             with: {
@@ -272,29 +272,29 @@ actor @consider:
               ### Comprehensive Analysis
 
               **1. Our Inquiry**
-              $(&context.query_breakdown)
+              ~(&context.query_breakdown)~
 
               **2. The Journey of Thought**
               My analysis began by decomposing the query into several threads:
-              $(each: &context.consider.exploration_threads as |thread| { <<|- $(thread)|>> })
+              ~(each: &context.consider.exploration_threads as |thread| { <<|- ~(thread)|>> })~
               
               I then convened a council of experts to analyze these threads. Their insights were then woven together to find emergent connections, leading to this final synthesis.
 
               **3. Integrated Understanding**
-              $(<
+              ~(<
                 As a master synthesizer, weave together all the preceding insights—the query breakdown, the tree threads, the expert analyses, and the graph connections—into a final, comprehensive answer.
                 Address the user's original query directly with the full richness of the multi-faceted exploration.
                 In your synthesis, thoughtfully incorporate the results of the epistemic check:
                 - If information was insufficient, state what knowledge gaps remain.
                 - Acknowledge any divergent forks that required choices.
-                Epistemic Validation: "$(&context.epistemic.validation)"
-              >)
+                Epistemic Validation: "~(&context.epistemic.validation)~"
+              >)~
 
               **4. To Explore Further**
               *To continue this inquiry, we could:*
-              $(<
+              ~(<
                 Based on the complete analysis, suggest 2-4 insightful next steps or deeper questions the user might want to pursue.
-              >)
+              >)~
             |>>
         return: 'analysis_complete'
 

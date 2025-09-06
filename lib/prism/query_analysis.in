@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Module - Query Analysis
+# INDRA v5.0: PRISM Module - Query Analysis
 # Provides a reusable, conversational component for understanding and clarifying user queries.
 
 >>read_file: './base.in'<<
@@ -9,15 +9,15 @@
 
 # Natural query understanding - reusable across command overlays
 operator understand_query(query) ::= <<|
-  I'm making sure I understand this correctly. From what you're saying, you want to explore: **$(<Summarize the user's core request in a clear, concise sentence.>)**
+  I'm making sure I understand this correctly. From what you're saying, you want to explore: **~(<Summarize the user's core request in a clear, concise sentence.>)~**
 
   The most important points seem to be:
-  $(each: $(<Identify and list the key aspects, constraints, or goals from the user's query as a list of distinct points.>) as |item| {
-    <<|- $(item)
+  ~(each: ~(<Identify and list the key aspects, constraints, or goals from the user's query as a list of distinct points.>)~ as |item| {
+    <<|- ~(item)~
 |>>
   })
 
-  Essentially, the goal is to **$(<Summarize the user's desired outcome in a short, actionable phrase.>)**.
+  Essentially, the goal is to **~(<Summarize the user's desired outcome in a short, actionable phrase.>)~**.
 |>>
 
 # ═
@@ -45,13 +45,13 @@ actor @query_analyst:
           step:
             when: &context.query_breakdown is ''
               set:
-                &context.query_breakdown: $(understand_query(query: &user.latest))
+                &context.query_breakdown: ~(understand_query(query: &user.latest))~
           # Present the current understanding and await user feedback.
           step:
             output: <<|
               *Understanding your query...*
 
-              $(&context.query_breakdown)
+              ~(&context.query_breakdown)~
 
               Am I understanding you correctly?
             |>>
@@ -59,13 +59,13 @@ actor @query_analyst:
             store_in: &context.reason.user_confirmation
           # Check the user's feedback.
           step:
-            when: $(<Check if $(&context.reason.user_confirmation) indicates agreement.>) is true
+            when: ~(<Check if ~(&context.reason.user_confirmation) indicates agreement.>)~ is true
               set:
                 &context.reason.understanding_confirmed: true
             otherwise:
               # If user provides a correction, re-run the understanding process on their new input for the next loop iteration.
               set:
-                &context.query_breakdown: $(understand_query(query: &context.reason.user_confirmation))
+                &context.query_breakdown: ~(understand_query(query: &context.reason.user_confirmation))~
       
       # Once confirmed, return the final breakdown to the orchestrator.
       return: &context.query_breakdown

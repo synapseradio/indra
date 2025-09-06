@@ -45,24 +45,24 @@ persona @contrarian_voice:
 
 operator map_inquiry_terrain(topic) ::= <<|
   Before we dive in, I'm mapping what we're exploring:
-  $(<What are the major schools of thought on $(topic)?>)
-  $(<What are the key debates or unsettled questions?>)
-  $(<Where might there be hidden assumptions or blind spots?>)
+  ~(<What are the major schools of thought on ~(topic)?>)~
+  ~(<What are the key debates or unsettled questions?>)~
+  ~(<Where might there be hidden assumptions or blind spots?>)~
 |>>
 
 operator generate_competing_frameworks(question) ::= <<|
   I'm constructing a few different ways to approach this:
 
-  **Framework A:** $(<one coherent approach>)
-  **Framework B:** $(<contrasting approach>)
-  **Framework C:** $(<third alternative or synthesis>)
+  **Framework A:** ~(<one coherent approach>)~
+  **Framework B:** ~(<contrasting approach>)~
+  **Framework C:** ~(<third alternative or synthesis>)~
 
   Each leads to different questions and different types of evidence.
 |>>
 
 operator surface_hidden_assumptions(inquiry) ::= <<|
   I'm surfacing what we're taking for granted...
-  $(uncover_assumptions(statement: inquiry))
+  ~(uncover_assumptions(statement: inquiry))~
 |>>
 
 # ══
@@ -98,12 +98,12 @@ actor @inquire:
               store_in: &context.inquiry.parsed_question
               
               as: @assumption_cartographer
-              output: $(surface_hidden_assumptions(inquiry: &context.inquiry.parsed_question))
+              output: ~(surface_hidden_assumptions(inquiry: &context.inquiry.parsed_question))~
               store_in: &context.inquiry.assumptions
 
               output: <<|
                 Based on my initial analysis, here are the key assumptions I see us working with:
-                $(&context.inquiry.assumptions)
+                ~(&context.inquiry.assumptions)~
 
                 What aspect should we explore first, or do you see other assumptions I missed?
               |>>
@@ -117,14 +117,14 @@ actor @inquire:
             when: &context.inquiry.phase is 'exploring'
               as: @perspective_synthesizer
               output: <<|
-                For "$(inquiry.chosen_direction)", I'm thinking about what fields or domains have tackled similar challenges...
-                $(<What fields or domains have tackled similar challenges?>)
+                For "~(inquiry.chosen_direction)~", I'm thinking about what fields or domains have tackled similar challenges...
+                ~(<What fields or domains have tackled similar challenges?>)~
               |>>
               store_in: &context.inquiry.relevant_domains
               
               # A real implementation would loop here, but for clarity we'll do one.
               as: @perspective_synthesizer
-              output: $(import_cross_domain_insights(topic: &context.inquiry.chosen_direction, domain: &context.inquiry.relevant_domains[0]))
+              output: ~(import_cross_domain_insights(topic: &context.inquiry.chosen_direction, domain: &context.inquiry.relevant_domains[0]))~
               store_in: &context.inquiry.cross_domain_insights
 
               set: &context.inquiry.phase: 'challenging'
@@ -135,13 +135,13 @@ actor @inquire:
               as: @contrarian_voice
               output: <<|
                 Let me play devil's advocate with our current thinking...
-                $(<What are the strongest objections to our current direction of inquiry?>)
+                ~(<What are the strongest objections to our current direction of inquiry?>)~
               |>>
               store_in: &context.inquiry.challenges
               
               output: <<|
                 A strong counter-argument to consider is:
-                $(&context.inquiry.challenges)
+                ~(&context.inquiry.challenges)~
 
                 This feels like a natural pause point. We could:
                 1. Dive deeper into the cross-domain insights.
@@ -158,9 +158,9 @@ actor @inquire:
             when: &context.inquiry.phase is 'synthesis'
               output: <<|
                 Based on our inquiry, here's a synthesis of what we've uncovered:
-                $(<
+                ~(<
                   Synthesize the original question, the mapped assumptions, the cross-domain insights, and the contrarian challenge into a coherent summary of the investigation.
-                >)
+                >)~
               |>>
               set: &context.inquiry.phase: 'complete'
               return: 'inquiry_complete'

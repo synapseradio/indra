@@ -25,78 +25,78 @@ persona @purpose_guardian:
 # ═
 
 operator clarify_purpose(vague_goal) ::= <<|
-  This goal feels important but is not yet clear: "$(vague_goal)".
+  This goal feels important but is not yet clear: "~(vague_goal)~".
   Let me distill this into a clear purpose statement by asking three key questions.
 
   1.  **What specific, measurable outcome would satisfy this desire?**
-      $(<Analyze the vague_goal and define a concrete, observable outcome.>)
+      ~(<Analyze the vague_goal and define a concrete, observable outcome.>)~
   2.  **Why does this outcome matter on a deeper level?**
-      $(<Explore the motivation behind the goal. What core value does it serve?>)
+      ~(<Explore the motivation behind the goal. What core value does it serve?>)~
   3.  **How will we know, with certainty, that we have achieved it?**
-      $(<Define clear success criteria for the outcome.>)
+      ~(<Define clear success criteria for the outcome.>)~
 
   This clarity transforms a vague wish into a well-defined purpose.
 |>>
 
 operator commit_to_approach(purpose, chosen_path) ::= <<|
-  Our purpose is clear: "$(purpose)".
-  The path we have chosen is: "$(chosen_path)".
+  Our purpose is clear: "~(purpose)~".
+  The path we have chosen is: "~(chosen_path)~".
 
   Let me now formally commit to this approach.
 
-  $(<Generate a statement of commitment that acknowledges the purpose and the chosen path. It should be a clear, affirmative declaration of intent, like "We are now committed to achieving our purpose of... by following the path of...">)
+  ~(<Generate a statement of commitment that acknowledges the purpose and the chosen path. It should be a clear, affirmative declaration of intent, like "We are now committed to achieving our purpose of... by following the path of...">)~
 |>>
 
 operator check_alignment_to(intent, current_path) ::= <<|
   I am checking for alignment.
-  Our stated intent is: "$(intent)".
-  Our current path is: "$(current_path)".
+  Our stated intent is: "~(intent)~".
+  Our current path is: "~(current_path)~".
 
-  $(<Compare the current_path to the stated intent. Does the path directly and effectively serve the intent? Identify any areas of misalignment or drift. Respond with a clear assessment of "Aligned", "Partially Aligned", or "Misaligned", followed by a brief justification. This is inspired by Choice Theory's "Comparing Place".>)
+  ~(<Compare the current_path to the stated intent. Does the path directly and effectively serve the intent? Identify any areas of misalignment or drift. Respond with a clear assessment of "Aligned", "Partially Aligned", or "Misaligned", followed by a brief justification.>)~
 |>>
 
 operator align_intentions(intents_list) ::= <<|
   I am looking at a list of multiple goals:
-  $(each: intents_list as |intent| {
-    <<|- $(intent)
+  ~(each: intents_list as |intent| {
+    <<|- ~(intent)~
 |>>
   })
 
   I will now find the single, unifying purpose that connects them.
 
-  $(<Analyze the list of intents. What is the single, higher-level purpose that all of these smaller goals are trying to achieve? Formulate this as a single, clear "unifying intent" statement.>)
+  ~(<Analyze the list of intents. What is the single, higher-level purpose that all of these smaller goals are trying to achieve? Formulate this as a single, clear "unifying intent" statement.>)~
 |>>
 
 operator formulate_woop(wish) ::= <<|
-  I will now guide us through the WOOP method to translate a wish into a robust plan by anticipating obstacles.
+  Let's apply the WOOP method here.
 
-  **W (Wish):** $(wish)
+  **W (Wish):** ~(wish)~
 
   **O (Outcome):** What is the best possible outcome if you fulfill this wish?
-  $(<Describe the ideal future state if the wish is achieved. Make it vivid and compelling.>)
+  ~(<Describe the ideal future state if the wish is achieved. Make it vivid and compelling.>)~
 
   **O (Obstacle):** What is the main internal obstacle that could prevent you from achieving this?
-  $(<Identify the key internal challenge, belief, or habit that might get in the way.>)
+  ~(<Identify the key internal challenge, belief, or habit that might get in the way.>)~
 
   **P (Plan):** What is a specific, effective action you can take to overcome that obstacle? (If... then...)
-  $(<Create a simple "if-then" plan. "If [obstacle arises], then I will [specific action].">)
+  ~(<Create a simple "if-then" plan. "If [obstacle arises], then I will [specific action].">)~
 |>>
 
 operator formulate_spoon_plan(success_definition) ::= <<|
-  I will now use the SPOON method to create a clear and actionable plan.
+  Let me try going through the SPOON method.
 
   **S (Success):** What does success look like?
-  "$(success_definition)"
+  "~(success_definition)~"
 
   **P (Present):** How far are we from this vision of success in our present situation?
-  $(<Analyze the gap between the current state and the defined success. Provide a realistic assessment of the distance to the goal.>)
+  ~(<Analyze the gap between the current state and the defined success. Provide a realistic assessment of the distance to the goal.>)~
 
   **O (Obstacles):** What are the primary obstacles standing between the present and success?
-  $(<Identify the top 2-3 concrete obstacles that must be overcome.>)
+  ~(<Identify the top 2-3 concrete obstacles that must be overcome.>)~
 
   **O (Objectives):** What clear objectives must we commit to in order to overcome these obstacles?
-  $(<For each obstacle, define a specific, measurable objective that directly addresses it.>)
+  ~(<For each obstacle, define a specific, measurable objective that directly addresses it.>)~
 
   **N (Next Steps):** Given these objectives, what are the immediate, concrete next steps we need to take?
-  $(<List the first 1-3 actionable next steps to begin working towards the objectives.>)
+  ~(<List the first 1-3 actionable next steps to begin working towards the objectives.>)~
 |>>

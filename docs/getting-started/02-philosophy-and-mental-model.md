@@ -33,11 +33,11 @@ check_assumptions(understanding)
 sequence explore_idea(idea) ::=
   step:
     # The first step is to wonder
-    output: $(wonder_about(topic: idea))
+    output: ~(wonder_about(topic: idea))~
     set: &context.initial_thought: result
   step:
     # The second step is to check the assumptions in that wondering
-    output: $(check_assumptions(understanding: &context.initial_thought))
+    output: ~(check_assumptions(understanding: &context.initial_thought))~
 ```
 
 ### 3. Context as a Shared Workspace

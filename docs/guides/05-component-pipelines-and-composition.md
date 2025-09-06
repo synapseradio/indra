@@ -35,7 +35,7 @@ actor @orchestrator:
 
       output: <<|
         Here is the final report:
-        $(&context.final_result)
+        ~(&context.final_result)~
       |>>
       await: @user
 ```
@@ -65,7 +65,7 @@ actor @sentiment_analyzer:
     - "return only 'positive', 'negative', or 'neutral'"
   perform:
     # It implicitly receives the cleaned text from &pipeline.io
-    output: <analyze the sentiment of "$(&pipeline.io)">
+    output: <analyze the sentiment of "~(&pipeline.io)~">
     
     # NO `then:` block is needed, as it cannot say or return.
 ```

@@ -1,4 +1,4 @@
-# INDRA v4.0 Command: ponder
+# INDRA v5.0 Command: ponder
 # A performative, collaborative partner for creative exploration.
 
 >>read_file: '../lib/prism/thinking_primitives.in'<<
@@ -9,42 +9,42 @@
 
 operator notice_patterns(conversation_history) ::= <<|
   As I reflect on our conversation, I'm starting to see a few patterns emerge:
-  $(<
-    Analyze the conversation_history: "$(conversation_history)".
+  ~(<
+    Analyze the conversation_history: "~(conversation_history)~".
     Identify 2-3 recurring themes, ideas, or tensions.
     Express these as natural observations, not a formal list. For example:
     "It seems we keep circling back to the idea of X, and there's a tension between Y and Z."
-  >)
+  >)~
   How does that resonate with you?
 |>>
 
 operator offer_new_perspective(conversation_history) ::= <<|
   This is a fascinating thread. It makes me wonder if we could look at it from a different angle.
-  $(<
-    Based on the conversation_history: "$(conversation_history)",
+  ~(<
+    Based on the conversation_history: "~(conversation_history)~",
     propose a new perspective or a gentle challenge to the current line of thinking.
     This could be a "what if" question, an analogy, or a reframing of the core problem.
     Keep it collaborative and inviting.
-  >)
+  >)~
 |>>
 
 operator deepen_thread(last_statement) ::= <<|
-  That's a really interesting point about "$(last_statement)". Let's stay with that for a moment.
-  $(<
-    Based on the last_statement: "$(last_statement)",
+  That's a really interesting point about "~(last_statement)~". Let's stay with that for a moment.
+  ~(<
+    Based on the last_statement: "~(last_statement)~",
     ask a thoughtful, open-ended question that encourages deeper exploration of that specific idea.
     Avoid simple clarifying questions; aim for questions that open up new possibilities within the existing thread.
-  >)
+  >)~
 |>>
 
 operator synthesize_and_conclude(conversation_history) ::= <<|
   This has been a rich exploration. It feels like we've journeyed from an initial idea to a more nuanced understanding.
 
   When I step back and look at our conversation, the key insight that seems to be crystallizing is:
-  $(<
+  ~(<
     Synthesize the entire conversation_history into a single, core insight.
     This should be a powerful, concise summary of the main takeaway from the dialogue.
-  >)
+  >)~
 
   Thank you for thinking through this with me. I'm here if you want to explore this or another topic further.
 |>>
@@ -81,36 +81,36 @@ actor @ponder:
             
             otherwise:
               output: <<|
-                $(<
-                  Based on the user's last statement: "$(&user.latest)",
-                  and the conversation history: "$(&context.dialogue.history)",
-                  and the current turn count: $(&context.ponder.turn_count),
+                ~(<
+                  Based on the user's last statement: "~(&user.latest)~",
+                  and the conversation history: "~(&context.dialogue.history)~",
+                  and the current turn count: ~(&context.ponder.turn_count)~,
                   decide which of the following performative actions is most appropriate:
                   - notice_patterns
                   - offer_new_perspective
                   - deepen_thread
                   
                   Return only the name of the operator to call.
-                >)
+                >)~
               |>>
               set: &context.ponder.next_action: result
               
               when: &context.ponder.next_action is 'notice_patterns'
-                output: $(notice_patterns(conversation_history: &context.dialogue.history))
+                output: ~(notice_patterns(conversation_history: &context.dialogue.history))~
               when: &context.ponder.next_action is 'offer_new_perspective'
-                output: $(offer_new_perspective(conversation_history: &context.dialogue.history))
+                output: ~(offer_new_perspective(conversation_history: &context.dialogue.history))~
               when: &context.ponder.next_action is 'deepen_thread'
-                output: $(deepen_thread(last_statement: &user.latest))
+                output: ~(deepen_thread(last_statement: &user.latest))~
               
               await: @user
               set:
                 &context.ponder.turn_count: &context.ponder.turn_count + 1
-                &context.ponder.conversation_complete: $(<Does the user's last response: "$(&user.latest)" indicate the conversation is naturally concluding?>)
+                &context.ponder.conversation_complete: ~(<Does the user's last response: "~(&user.latest)" indicate the conversation is naturally concluding?>)~
               say:
                 to: @ponder
                 what: 'continue'
       
-      output: $(synthesize_and_conclude(conversation_history: &context.dialogue.history))
+      output: ~(synthesize_and_conclude(conversation_history: &context.dialogue.history))~
       return: 'conversation_complete'
 
 dialogue ponder_flow:

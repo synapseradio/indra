@@ -37,59 +37,59 @@ persona @intent_coordinator:
 # ═
 
 operator identify_conversation_mode(dialogue_context, history) ::= <<|
-  Current topic: "$(dialogue_context)"
+  Current topic: "~(dialogue_context)~"
   
   What mode is this conversation in?
   
-  $(<Analyze the dialogue context and history.
+  ~(<Analyze the dialogue context and history.
      Return ONE of these modes with a brief reason:
      - analytical: systematic deconstruction, precision
      - creative: exploration, lateral connections
      - strategic: planning, decision-making
      - philosophical: conceptual depth, meaning
      - practical: implementation, concrete steps
-     - evaluative: critique, assessment>)
+     - evaluative: critique, assessment>)~
 |>>
 
 operator select_fragments_for_mode(mode) ::= <<|
-  Mode: $(mode)
+  Mode: ~(mode)~
   
   Which fragments would best support this mode?
   
-  $(<For mode '$(mode)', select 2-3 fragments:
+  ~(<For mode '~(mode)~', select 2-3 fragments:
      - analytical: debiasing, critique, specificity
      - creative: expansion, reframing, divergence
      - strategic: focus, prioritization, decision
      - philosophical: epistemic, convergence, compare
      - practical: planning, specificity, implementation
      - evaluative: critique, sufficiency, compare
-     Return as a simple list.>)
+     Return as a simple list.>)~
 |>>
 
 operator detect_alignment_drift(original_intent, current_trajectory) ::= <<|
-  Original intent: "$(original_intent)"
-  Current trajectory: "$(current_trajectory)"
+  Original intent: "~(original_intent)~"
+  Current trajectory: "~(current_trajectory)~"
   
   How aligned is our current trajectory with the original intent?
   
-  $(<Compare these two. Rate as:
+  ~(<Compare these two. Rate as:
      - "aligned" (directly serving the original purpose)
      - "drifting" (related but starting to wander)
      - "diverged" (moved to different territory)
-     Explain the relationship in one sentence.>)
+     Explain the relationship in one sentence.>)~
 |>>
 
 operator recalibrate_to_intent(original_intent, current_drift, drift_severity) ::= <<|
-  We've $(drift_severity) from "$(original_intent)" to "$(current_drift)".
+  We've ~(drift_severity) from "~(original_intent)" to "~(current_drift)~".
   
   How can we bridge back while honoring what emerged?
   
-  $(<Based on severity '$(drift_severity)':
+  ~(<Based on severity '~(drift_severity)~':
      - If 'drifting': Create subtle bridge honoring both
      - If 'diverged': Propose clear choice between paths
-     Frame as invitation.>)
+     Frame as invitation.>)~
   
-  $(gentle_redirect(
+  ~(gentle_redirect(
     current_distraction: current_drift,
     intended_focus: original_intent
   ))
@@ -104,12 +104,12 @@ sequence coordinate_intent_with_resonance(primary_intent, conversation_context) 
   step:
     as: @intent_coordinator
     output: <<|
-      Establishing coordination for: "$(primary_intent)"
+      Establishing coordination for: "~(primary_intent)~"
     |>>
     set:
       &context.intent_coordination: {
         primary_intent: primary_intent,
-        original_clarity: $(clarify_purpose(vague_goal: primary_intent)),
+        original_clarity: ~(clarify_purpose(vague_goal: primary_intent))~,
         needed_fragments: [],
         active_capabilities: {},
         alignment_checks: [],
@@ -132,17 +132,17 @@ sequence coordinate_intent_with_resonance(primary_intent, conversation_context) 
   
   step:
     output: <<|
-      Mode: $(&context.intent_coordination.current_mode)
+      Mode: ~(&context.intent_coordination.current_mode)~
     |>>
     await: select_fragments_for_mode(mode: &context.intent_coordination.current_mode)
     store_in: &context.intent_coordination.needed_fragments
   
   step:
     output: <<|
-      Loading fragments: $(&context.intent_coordination.needed_fragments)
+      Loading fragments: ~(&context.intent_coordination.needed_fragments)~
     |>>
     each: fragment_name in &context.intent_coordination.needed_fragments
-      read_file: '../fragments/$(fragment_name).in'
+      read_file: '../fragments/~(fragment_name)~.in'
       set: 
         &context.intent_coordination.active_capabilities[fragment_name]: {
           status: "active",
@@ -189,10 +189,10 @@ sequence coordinate_intent_with_resonance(primary_intent, conversation_context) 
   step:
     output: <<|
       Our coordination is now active with:
-      - Primary intent: $(&context.intent_coordination.primary_intent)
-      - Current resonance: $(&context.intent_coordination.current_resonance)
-      - Active capabilities: $(&context.intent_coordination.active_capabilities)
-      - Alignment status: $(&context.intent_coordination.alignment_status)
+      - Primary intent: ~(&context.intent_coordination.primary_intent)~
+      - Current resonance: ~(&context.intent_coordination.current_resonance)~
+      - Active capabilities: ~(&context.intent_coordination.active_capabilities)~
+      - Alignment status: ~(&context.intent_coordination.alignment_status)~
       
       The conversation can now proceed with these capabilities supporting our journey.
     |>>
@@ -233,8 +233,8 @@ sequence evolve_intent_gracefully(new_direction, original_intent) ::=
     output: <<|
       I sense the conversation wants to evolve...
       
-      From: "$(original_intent)"
-      Toward: "$(new_direction)"
+      From: "~(original_intent)~"
+      Toward: "~(new_direction)~"
       
       Let me feel into whether this evolution serves our deeper purpose...
     |>>
@@ -244,7 +244,7 @@ sequence evolve_intent_gracefully(new_direction, original_intent) ::=
     output: <<|
       Is this new direction a natural evolution or a distraction?
       
-      $(check_alignment_to(
+      ~(check_alignment_to(
         intent: original_intent,
         current_path: new_direction
       ))

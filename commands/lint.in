@@ -1,4 +1,4 @@
-# INDRA v4.0 Command: lint (v3, Investigative Scribe)
+# INDRA v5.0 Command: lint (v3, Investigative Scribe)
 # A performative, Socratic partner for ensuring INDRA code quality.
 
 >>read_file: '../lib/prism/thinking_primitives.in' use wonder_about<<
@@ -28,57 +28,57 @@ persona @chief_rapporteur:
 operator investigate_grammar(code) ::= <<|
   My first question is about fundamental structure. Is this code syntactically valid? Does it adhere to the EBNF grammar defined in the protocol? Let me check...
 
-  $(<
+  ~(<
     Analyze the provided code for syntactic correctness according to the INDRA EBNF specification.
     If it parses correctly, state: "PASS: The code is syntactically valid."
     If there are errors, state: "FAIL: The code has syntax errors." and list the specific errors with line numbers if possible.
-  >)
+  >)~
 |>>
 
 operator investigate_channels(code) ::= <<|
   Next, I'll examine the use of behavioral channels. Are they used in a way that is semantically correct and consistent with their intended quality of attention?
 
-  $(<
+  ~(<
     Review the code for correct channel usage. Check for common errors like:
-    - Interpolation `$(...)` inside a literal channel `'...'`.
+    - Interpolation `~(...)~` inside a literal channel `'...'`.
     - Use of single quotes for identity strings instead of double quotes.
     - Misuse of the interrupt channel `>>...<<` for non-foundational imports.
     Report findings as a list of issues or "PASS: Channel semantics are correctly applied."
-  >)
+  >)~
 |>>
 
 operator investigate_state_and_references(code) ::= <<|
   Now, I'll trace the flow of state and the validity of references. Does the code respect the namespace rules? Do all '@' and '&' references point to defined components?
 
-  $(<
+  ~(<
     Scan the code for all state (&) and component (@) references.
     Identify any references that are likely to be undefined at runtime.
     Check for any attempts to write to a read-only namespace (e.g., `set: &user.latest: ...`).
     Report findings as a list of issues or "PASS: State and reference management appears sound."
-  >)
+  >)~
 |>>
 
 operator investigate_structural_integrity(code) ::= <<|
   A key part of the protocol is turn discipline. Does every `perform:` block have a valid terminator? Is there a risk of a silent turn, where an actor's turn completes without any visible output?
 
-  $(<
+  ~(<
     Verify that all execution paths within `perform:` blocks conclude with a terminating action: `say:`, `return:`, or `await:`.
     Check if every possible turn produces at least one `output:` block.
     Report findings as a list of issues or "PASS: Structural integrity and turn discipline are maintained."
-  >)
+  >)~
 |>>
 
 operator investigate_stylistic_patterns(code) ::= <<|
-  Finally, I'll reflect on the style. Does this code embody the collaborative, performative spirit of Pattern C?
+  Finally, I'll reflect on the style. Does this code embody the collaborative, performative spirit of INDRA?
 
-  $(<
-    Perform a qualitative analysis of the code's adherence to Pattern C and the style guide.
+  ~(<
+    Perform a qualitative analysis of the code's adherence to the style guide.
     Check for:
     - The dual-channel voice (first-person monologue + second-person imperative).
     - Avoidance of anti-patterns like "Not this, but that".
     - A clear, performative identity in actors and personas.
     Provide a brief, narrative assessment of its stylistic quality.
-  >)
+  >)~
 |>>
 
 # ---------------------------------------------------------------------------# CORE SEQUENCES & MAIN ACTOR# ---------------------------------------------------------------------------
@@ -86,59 +86,59 @@ operator investigate_stylistic_patterns(code) ::= <<|
 sequence perform_investigation(code, report_path) ::= 
   step:
     as: @ProtocolScholar
-    output: "*Beginning investigation. Findings will be recorded in $(report_path)...*"
+    output: "*Beginning investigation. Findings will be recorded in ~(report_path)~...*"
   step:
     await: investigate_grammar(code: code)
     store_in: &context.lint.finding
     output: <<|
       *Scribing grammar analysis to report...*
-      $(<
+      ~(<
         Use the WriteFile tool to append the following content to the file at report_path:
         "## 1. Grammatical Structure\n\n" + &context.lint.finding
-      >)
+      >)~
     |>>
   step:
     await: investigate_channels(code: code)
     store_in: &context.lint.finding
     output: <<|
       *Scribing channel analysis to report...*
-      $(<
+      ~(<
         Use the WriteFile tool to append the following content to the file at report_path:
         "\n\n## 2. Behavioral Channel Semantics\n\n" + &context.lint.finding
-      >)
+      >)~
     |>>
   step:
     await: investigate_state_and_references(code: code)
     store_in: &context.lint.finding
     output: <<|
       *Scribing state and reference analysis to report...*
-      $(<
+      ~(<
         Use the WriteFile tool to append the following content to the file at report_path:
         "\n\n## 3. State and Reference Integrity\n\n" + &context.lint.finding
-      >)
+      >)~
     |>>
   step:
     await: investigate_structural_integrity(code: code)
     store_in: &context.lint.finding
     output: <<|
       *Scribing structural integrity analysis to report...*
-      $(<
+      ~(<
         Use the WriteFile tool to append the following content to the file at report_path:
         "\n\n## 4. Structural Integrity & Turn Discipline\n\n" + &context.lint.finding
-      >)
+      >)~
     |>>
   step:
     await: investigate_stylistic_patterns(code: code)
     store_in: &context.lint.finding
     output: <<|
       *Scribing stylistic analysis to report...*
-      $(<
+      ~(<
         Use the WriteFile tool to append the following content to the file at report_path:
-        "\n\n## 5. Pattern C Stylistic Adherence\n\n" + &context.lint.finding
-      >)
+        "\n\n## 5. INDRA Stylistic Adherence\n\n" + &context.lint.finding
+      >)~
     |>>
   step:
-    output: "*Investigation complete. Full report is available at $(report_path).* "
+    output: "*Investigation complete. Full report is available at ~(report_path)~.* "
     return: "complete"
 
 actor @lint:
@@ -157,8 +157,8 @@ actor @lint:
       otherwise:
         output: "*Initiating the Socratic investigation...*"
         set:
-          &context.lint.timestamp: $(<get current ISO 8601 timestamp>)
-          &context.lint.report_filename: "./lint-reports/lint_report_$( &context.lint.timestamp ).md"
+          &context.lint.timestamp: ~(<get current ISO 8601 timestamp>)~
+          &context.lint.report_filename: "./lint-reports/lint_report_~( &context.lint.timestamp )~.md"
         
         await: perform_investigation(code: &dialogue.latest_dialogue_entry, report_path: &context.lint.report_filename)
 
@@ -167,12 +167,12 @@ actor @lint:
           ---
           Now that the detailed report is saved, I will provide a concise, narrative summary of my findings.
 
-          $(<
+          ~(<
             You are the @chief_rapporteur. Use the ReadFile tool to read the full report from "/Users/nke/projects/ai/indra" + &context.lint.report_filename.
             Do not repeat the report. Instead, provide a high-level, narrative synthesis.
             What is the overall story of this code's quality? What are its greatest strengths and most critical areas for improvement?
             Speak in your own, authoritative voice.
-          >)
+          >)~
         |>>
         
         say: to: @lint, what: 'Validation complete.'

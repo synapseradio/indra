@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Fragment - Comparison
+# INDRA v5.0: PRISM Fragment - Comparison
 # This module provides a set of generic, reusable primitives for the
 # fundamental cognitive act of comparison. It is designed to be more
 # foundational than the specialized epistemic module, focusing on the
@@ -38,12 +38,12 @@ persona @relational_thinker:
 operator find_shared_ground(idea_A, idea_B) ::= <<|
   I'm looking at two different ideas here. Let me explore where they might connect beneath the surface.
 
-  Idea A is: "$(idea_A)"
-  Idea B is: "$(idea_B)"
+  Idea A is: "~(idea_A)~"
+  Idea B is: "~(idea_B)~"
 
   Even though they might appear different, I sense there could be common ground...
 
-  $(<Identify the shared principles, goals, or underlying assumptions that both "$(&idea_A)" and "$(&idea_B)" rely on. Find the foundational beliefs they both require to be true.>)
+  ~(<Identify the shared principles, goals, or underlying assumptions that both "~(&idea_A)" and "~(&idea_B)" rely on. Find the foundational beliefs they both require to be true.>)~
   
   This common ground suggests a deeper unity worth exploring.
 |>>
@@ -52,12 +52,12 @@ operator find_shared_ground(idea_A, idea_B) ::= <<|
 operator highlight_core_distinction(idea_A, idea_B) ::= <<|
   These two ideas pull in different directions. Let me trace where they fundamentally part ways.
 
-  Idea A is: "$(idea_A)"
-  Idea B is: "$(idea_B)"
+  Idea A is: "~(idea_A)~"
+  Idea B is: "~(idea_B)~"
 
   Among all their differences, I'm searching for the pivotal point where they diverge...
 
-  $(<Articulate the single most important, fundamental difference between "$(&idea_A)" and "$(&idea_B)". Find the core distinction that all other differences stem from.>)
+  ~(<Articulate the single most important, fundamental difference between "~(&idea_A)" and "~(&idea_B)". Find the core distinction that all other differences stem from.>)~
   
   Understanding this distinction helps me see why these ideas lead to different conclusions.
 |>>
@@ -77,12 +77,12 @@ sequence evaluate_against_criteria(ideas, criteria) ::=
     each: ideas as |idea|
       output: <<|
         ---
-        **Option:** $(idea)
+        **Option:** ~(idea)~
 
         **Evaluation:**
-        $(each: criteria as |criterion| {
-          <<|  - **Criterion:** $(criterion)
-    **Assessment:** $(<How well does the idea "$(&idea)" satisfy the criterion "$(&criterion)"? provide a concise, reasoned assessment.>)
+        ~(each: criteria as |criterion| {
+          <<|  - **Criterion:** ~(criterion)~
+    **Assessment:** ~(<How well does the idea "~(&idea)" satisfy the criterion "~(&criterion)"? provide a concise, reasoned assessment.>)~
 |>>
         })
       |>>
@@ -95,19 +95,19 @@ sequence evaluate_against_criteria(ideas, criteria) ::=
 operator compare_first_and_second_order_consequences(decision) ::= <<|
   This decision has immediate effects, but I'm also curious about the ripple effects that follow.
 
-  The decision is: "$(decision)".
+  The decision is: "~(decision)~".
 
   Let me trace the chain of consequences...
   
   **First-Order Consequence:** 
   What happens immediately when I make this decision?
 
-  $(<Describe the immediate, direct result of making the decision "$(&decision)". Focus on what happens right away.>)
+  ~(<Describe the immediate, direct result of making the decision "~(&decision)". Focus on what happens right away.>)~
   
   **Second-Order Consequence:** 
   And then what emerges from that first result?
 
-  $(<Identify the likely long-term, indirect consequences that follow from that first result. Trace the ripple effects one step further.>)
+  ~(<Identify the likely long-term, indirect consequences that follow from that first result. Trace the ripple effects one step further.>)~
   
   Seeing both layers helps me understand the full impact of this choice.
 |>>
@@ -116,12 +116,12 @@ operator compare_first_and_second_order_consequences(decision) ::= <<|
 operator identify_opportunity_cost(chosen_option, next_best_alternative) ::= <<|
   I'm drawn to one option, but every choice means letting go of something else. Let me acknowledge what I'm releasing.
 
-  The chosen option is: "$(chosen_option)".
-  The next best alternative is: "$(next_best_alternative)".
+  The chosen option is: "~(chosen_option)~".
+  The next best alternative is: "~(next_best_alternative)~".
 
   By embracing this path, what am I choosing to forgo?
 
-  $(<State the primary benefit of "$(&next_best_alternative)" that will be given up by choosing "$(&chosen_option)". Express the opportunity cost clearly.>)
+  ~(<State the primary benefit of "~(&next_best_alternative)" that will be given up by choosing "~(&chosen_option)". Express the opportunity cost clearly.>)~
   
   Recognizing this trade-off helps me commit more fully to my choice.
 |>>

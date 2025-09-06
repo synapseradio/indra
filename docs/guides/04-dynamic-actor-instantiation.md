@@ -66,10 +66,10 @@ actor @orchestrator:
       perform:
         method: "challenging the current conclusion"
         output: <<|
-          I have been asked to challenge the conclusion: "$(&context.conclusion_to_test)".
+          I have been asked to challenge the conclusion: "~(&context.conclusion_to_test)~".
 
           My skeptical analysis is:
-          $(<As a skeptic, what is the primary flaw or alternative explanation for this conclusion?>)
+          ~(<As a skeptic, what is the primary flaw or alternative explanation for this conclusion?>)~
         |>>
         goal: "to provide a rigorous counter-argument"
         then:

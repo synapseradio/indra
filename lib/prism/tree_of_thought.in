@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Module - Tree of Thought
+# INDRA v5.0: PRISM Module - Tree of Thought
 # This module provides components for a structured, hierarchical exploration
 # of a topic. It follows a branching path of reasoning, allowing for deep
 # dives into specific sub-problems while maintaining a clear logical structure.
@@ -34,9 +34,9 @@ sequence initialize_tree(question, exploration_style, max_depth) ::=
     as: self
     method: "beginning exploration"
     output: <<|
-      I'm thinking through this with $(exploration_style)...
+      I'm thinking through this with ~(exploration_style)~...
       
-      The question is: $(question)
+      The question is: ~(question)~
     |>>
     set:
       &context.tree.original_question: question
@@ -48,10 +48,10 @@ sequence initialize_tree(question, exploration_style, max_depth) ::=
     as: @curious_explorer
     method: "initial wondering"
     output: <<|
-      $(wonder_about(topic: question))
+      ~(wonder_about(topic: question))~
     |>>
     set:
-      &context.tree.current_focus: $(<the wondering>)
+      &context.tree.current_focus: ~(<the wondering>)~
       &context.tree.thoughts_so_far: [&context.tree.current_focus]
 
 sequence branch_and_explore(current_focus) ::=
@@ -59,13 +59,13 @@ sequence branch_and_explore(current_focus) ::=
     as: self
     method: "choosing exploration path"
     output: <<|
-      $(assess_exploration_mode(
+      ~(assess_exploration_mode(
         current_depth: &context.tree.current_depth,
         thoughts_at_level: count(&context.tree.thoughts_so_far)
       ))
     |>>
     set:
-      &context.tree.mode: $(<deepen or broaden>)
+      &context.tree.mode: ~(<deepen or broaden>)~
   step:
     as: self
     when: &context.tree.mode is 'broaden'
@@ -82,10 +82,10 @@ sequence branch_and_explore(current_focus) ::=
       I see several possibilities here...
       
       Let me check what I'm assuming:
-      - Evidence-based: $(context.tree.assumptions_check.evidence_based)
-      - Assumptions: $(context.tree.assumptions_check.assumptions)
-      $(context.tree.assumptions_check.blind_spots ? 
-        '- Not considering: $(context.tree.assumptions_check.blind_spots)' : '')
+      - Evidence-based: ~(context.tree.assumptions_check.evidence_based)~
+      - Assumptions: ~(context.tree.assumptions_check.assumptions)~
+      ~(context.tree.assumptions_check.blind_spots ? 
+        '- Not considering: ~(context.tree.assumptions_check.blind_spots)' : '')~
     |>>
     set:
       &context.tree.thoughts_so_far: &context.tree.alternatives_result.branches
@@ -109,10 +109,10 @@ sequence deepen_and_validate(thought, max_depth) ::=
     method: "identifying knowledge gaps"
     output: <<|
       Looking at what I've explored, I need evidence for:
-      $(<Based on &context.tree.thoughts_so_far, what specific factual questions or claims need evidence?>)
+      ~(<Based on &context.tree.thoughts_so_far, what specific factual questions or claims need evidence?>)~
     |>>
     set:
-      &context.tree.open_questions: $(<list of specific questions needing evidence>)
+      &context.tree.open_questions: ~(<list of specific questions needing evidence>)~
   step:
     as: self
     when: has_content(&context.tree.open_questions) is 'true'
@@ -131,22 +131,22 @@ sequence synthesize_findings(thoughts) ::=
     as: self
     method: "checking our path"
     output: <<|
-      $(sensing_repetition(recent_thoughts: thoughts))
+      ~(sensing_repetition(recent_thoughts: thoughts))~
     |>>
     set:
-      &context.tree.status: $(<cycling or progressing>)
+      &context.tree.status: ~(<cycling or progressing>)~
   step:
     as: self
     when: &context.tree.status is 'cycling'
     method: "finding a new angle"
     output: <<|
-      $(reconsider(
+      ~(reconsider(
         current_path: &context.tree.current_focus,
         reason: "seems to be going in circles"
       ))
     |>>
     set:
-      &context.tree.current_focus: $(<the new direction>)
+      &context.tree.current_focus: ~(<the new direction>)~
       &context.tree.thoughts_so_far: [&context.tree.current_focus]
   step:
     as: self
@@ -160,37 +160,37 @@ sequence synthesize_findings(thoughts) ::=
     method: "epistemic self-assessment"
     output: <<|
       Let me check my reasoning:
-      - Am I overconfident about any claims? $(<Review &context.tree.thoughts_so_far for claims that exceed available evidence>)
-      - What assumptions am I making? $(<Identify implicit assumptions in &context.tree.thoughts_so_far>)
-      - Where are my knowledge boundaries? $(<What questions remain unanswered or uncertain?>)
+      - Am I overconfident about any claims? ~(<Review &context.tree.thoughts_so_far for claims that exceed available evidence>)~
+      - What assumptions am I making? ~(<Identify implicit assumptions in &context.tree.thoughts_so_far>)~
+      - Where are my knowledge boundaries? ~(<What questions remain unanswered or uncertain?>)~
     |>>
     set:
-      &context.tree.epistemic_assessment: $(<summary of the epistemic check above>)
+      &context.tree.epistemic_assessment: ~(<summary of the epistemic check above>)~
   step:
     as: @synthesizer
     method: "creating coherent understanding"
     await: check_story_quality(
-      narrative: $(connect_dots(thoughts: &context.tree.thoughts_so_far))
+      narrative: ~(connect_dots(thoughts: &context.tree.thoughts_so_far))~
     )
     store_in: &context.tree.story_check
     output: <<|
       Through this exploration, here's what I've discovered:
       
-      $(context.tree.story_check.too_neat is 'yes' ? 
+      ~(context.tree.story_check.too_neat is 'yes' ? 
         'Actually, this might be too neat. Let me include the complications:
-        $(context.tree.story_check.missing_complexity)
+        ~(context.tree.story_check.missing_complexity)~
         
-        ' : '')$(connect_dots(thoughts: &context.tree.thoughts_so_far))
+        ' : '')~(connect_dots(thoughts: &context.tree.thoughts_so_far))~
       
-      $(&context.tree.reflection.synthesis)
+      ~(&context.tree.reflection.synthesis)~
       
-      To directly address your question: $(<
+      To directly address your question: ~(<
         Based on everything explored, provide a clear answer
         that acknowledges uncertainty where appropriate.
-      >)
+      >)~
     |>>
     set:
-      &context.tree.final_insight: $(<the final answer>)
+      &context.tree.final_insight: ~(<the final answer>)~
       &context.tree.final_result: {
         answer: &context.tree.final_insight,
         journey: &context.tree.thoughts_so_far,
@@ -212,11 +212,11 @@ actor @tree_thinker:
   perform:
     method: "orchestrating natural thought exploration"
     output: <<|
-      $(<Express understanding of the user's request naturally and specifically.
+      ~(<Express understanding of the user's request naturally and specifically.
          Don't categorize - reflect what you sense about their needs.
          For example: "I sense you want to explore the playful possibilities here..." or
          "This needs careful systematic breakdown..." or "What a deep question to contemplate..." 
-         or whatever genuinely fits their request.>)
+         or whatever genuinely fits their request.>)~
       
       I'll explore this through tree-like thinking, adapting my approach to what you need...
     |>>
@@ -224,15 +224,15 @@ actor @tree_thinker:
     then:
       await: tree_of_thought(
         question: &dialogue.latest_dialogue_entry,
-        exploration_style: $(<
+        exploration_style: ~(<
           Describe the thinking style needed in rich, natural language that 
           captures what's required. Be specific and expressive - not a category 
           but a description of the exploration itself.
-        >),
-        max_depth: $(<
+        >)~,
+        max_depth: ~(<
           Determine the appropriate exploration depth based on the 
           complexity of this request. Choose a value between 2-8.
-        >)
+        >)~
       )
       store_in: &context.tree.result
       return: &context.tree.result

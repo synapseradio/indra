@@ -1,4 +1,4 @@
-# INDRA v4.0 Command: research
+# INDRA v5.0 Command: research
 # A collaborative, performative, and evidence-grounded research partner.
 
 >>read_file: '../lib/prism/epistemic.in' use perform_epistemic_check<<
@@ -10,7 +10,7 @@
 # --- Performative Operators ---
 
 operator formulate_research_plan(query) ::= <<|
-  I'm thinking about how to best research "$(query)". A good plan would be to:
+  I'm thinking about how to best research "~(query)~". A good plan would be to:
 
   1.  **Deconstruct the Query:** First, I'll break down your request to identify the core questions. This will ensure we're focused on what matters most.
   2.  **Initial Exploration & Evidence Gathering:** Next, I'll conduct a broad search to get a map of the territory and gather a wide range of perspectives and initial evidence.
@@ -19,11 +19,11 @@ operator formulate_research_plan(query) ::= <<|
 |>>
 
 operator dynamically_select_perspectives(query) ::= <<|
-  $(<
-    Based on the query "$(query)", what are 3-4 diverse and insightful expert personas to consult for a rich analysis?
+  ~(<
+    Based on the query "~(query)~", what are 3-4 diverse and insightful expert personas to consult for a rich analysis?
     Think beyond the obvious. For a query on "climate change," you might include not just a @climatologist but also an @economist, a @historian, and a @systems_thinker.
     Return only a list of persona names.
-  >)
+  >)~
 |>>
 
 # --- The Research Actor ---
@@ -56,15 +56,15 @@ actor @research:
         sequence:
           step:
             output: <<|
-              Of course. Let's research $(&context.query) together. To ensure we're thorough and aligned, here is the research plan I've prepared:
+              Of course. Let's research ~(&context.query)~ together. To ensure we're thorough and aligned, here is the research plan I've prepared:
 
-              $(formulate_research_plan(query: &context.query))
+              ~(formulate_research_plan(query: &context.query))~
 
               Does this plan look like a good approach to you? If so, I'll begin the first step.
             |>>
             await: @user
             set:
-              &context.research.plan_approved: $(<Does the user's response indicate approval?>)
+              &context.research.plan_approved: ~(<Does the user's response indicate approval?>)~
           step:
             when: &context.research.plan_approved is true
               set: &context.research.phase: 'executing'
@@ -89,7 +89,7 @@ actor @research:
               
               **Step 1: Deconstructing the Query**
               I'm breaking down your request to identify the core questions...
-              $(<Based on "$(&context.query)", what are the 2-3 core questions we need to answer?>)
+              ~(<Based on "~(&context.query)", what are the 2-3 core questions we need to answer?>)~
             |>>
             set: &context.research.core_questions: result
           step:
@@ -97,10 +97,10 @@ actor @research:
               **Step 2: Initial Exploration & Evidence Gathering**
               Now, I'll conduct a broad search to gather a wide range of perspectives. I'm selecting a few expert lenses to guide this search...
             |>>
-            set: &context.reasoning.config.perspectives: $(dynamically_select_perspectives(query: &context.query))
+            set: &context.reasoning.config.perspectives: ~(dynamically_select_perspectives(query: &context.query))~
           step:
             output: <<|
-              I'll be consulting with: $(&context.reasoning.config.perspectives).
+              I'll be consulting with: ~(&context.reasoning.config.perspectives)~.
               
               *Initiating research dialogue...*
             |>>
@@ -109,12 +109,12 @@ actor @research:
                 step:
                   output: <<|
                     ---
-                    *Consulting with: **$(perspective)***
-                    I'm looking for what a $(perspective) would find most salient about "$(&context.research.core_questions)"...
+                    *Consulting with: **~(perspective)~***
+                    I'm looking for what a ~(perspective) would find most salient about "~(&context.research.core_questions)~"...
                   |>>
                 step:
                   # This is a critical step: the expert's "thought" is an evidence-gathering directive.
-                  await: citation_pipeline(claim: $(<As a $(perspective), what is the most important claim or question to investigate regarding "$(&context.research.core_questions)">))
+                  await: citation_pipeline(claim: ~(<As a ~(perspective), what is the most important claim or question to investigate regarding "~(&context.research.core_questions)">)~)~
                   store_in: &context.experts.contributions[perspective]
             output: <<|
               ---
@@ -127,7 +127,7 @@ actor @research:
             when: &context.epistemic_report.sufficient is false or has_content(&context.epistemic_report.divergent_forks)
               output: <<|
                 I've encountered a point where I need your guidance:
-                $(&context.epistemic_report.user_guidance_received)
+                ~(&context.epistemic_report.user_guidance_received)~
               |>>
               await: @user
               set: &context.reason.user_clarification: &user.latest
@@ -143,7 +143,7 @@ actor @research:
             store_in: &context.synthesis
           step:
             output: <<|
-              Our research into $(&context.query) is complete. Here is the synthesized report.
+              Our research into ~(&context.query)~ is complete. Here is the synthesized report.
 
               ### Research Methodology
               This report was generated by following our agreed-upon research plan. I began by identifying key themes in your query, conducted searches through the lenses of multiple expert perspectives, and synthesized the findings.
@@ -152,7 +152,7 @@ actor @research:
 
               ---
 
-              $(&context.synthesis)
+              ~(&context.synthesis)~
             |>>
             set: &context.research.phase: 'ready'
             return: &context.synthesis

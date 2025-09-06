@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Module - Graph of Thought
+# INDRA v5.0: PRISM Module - Graph of Thought
 # This module provides components for a non-linear, exploratory reasoning
 # process. Unlike the hierarchical Tree of Thought, Graph of Thought is
 # about discovering and weaving together emergent, interconnected insights.
@@ -74,90 +74,90 @@ persona @path_navigator:
 
 # Analyze continuation potential for a thought
 operator analyze_continuation_potential(thought) ::= <<|
-  I'm examining this thought: "$(thought)" to see if it has more to offer...
-  $(<Analyze the thought "$(thought)":
+  I'm examining this thought: "~(thought)~" to see if it has more to offer...
+  ~(<Analyze the thought "~(thought)~":
     
     1. What specific aspects remain unexplored?
     2. Are there logical next steps or extensions?
     3. Would further exploration yield diminishing returns?
     
-    Provide concrete analysis of continuation viability.>)
+    Provide concrete analysis of continuation viability.>)~
 |>>
 
 # Detect circular patterns in recent exploration
 operator detect_circular_patterns(recent_thoughts) ::= <<|
   I'm scanning our recent thinking for patterns that might indicate we're going in circles...
-  $(<Examine recent exploration history:
-    $(recent_thoughts)
+  ~(<Examine recent exploration history:
+    ~(recent_thoughts)~
     
     1. Identify any repeated conceptual territory
     2. List specific redundancies if present
     3. Determine if repetition is elaborative or circular
     
-    Output: Concrete pattern analysis with examples.>)
+    Output: Concrete pattern analysis with examples.>)~
 |>>
 
 # Evaluate thread potential for continued exploration
 operator evaluate_thread_potential(thread) ::= <<|
-  I'm assessing whether this thread has more room to grow: "$(thread)"
-  $(<Evaluate exploration thread:
-    "$(thread)"
+  I'm assessing whether this thread has more room to grow: "~(thread)~"
+  ~(<Evaluate exploration thread:
+    "~(thread)~"
     
     1. Unexplored branches: [identify specific sub-topics]
     2. Conceptual depth available: [shallow/moderate/deep]
     3. Connection potential to other threads: [list possibilities]
     
-    Assessment: Concrete evaluation with specific next steps.>)
+    Assessment: Concrete evaluation with specific next steps.>)~
 |>>
 
 # Weave connections between threads
 operator weaving_connections(thread1, thread2) ::= <<|
-  I'm exploring how these threads might connect: "$(thread1)" and "$(thread2)"
-  $(<Look at these two threads:
-    Thread 1: $(thread1)
-    Thread 2: $(thread2)
+  I'm exploring how these threads might connect: "~(thread1)" and "~(thread2)~"
+  ~(<Look at these two threads:
+    Thread 1: ~(thread1)~
+    Thread 2: ~(thread2)~
     
     What connections do you identify?
     How might they inform each other?
     What emerges from holding both?
-    Express the relationship you discover.>)
+    Express the relationship you discover.>)~
 |>>
 
 # Analyze path coherence and progression
 operator analyze_path_coherence(path_journey) ::= <<|
   I'm checking the logical flow and quality of this exploration path...
-  $(<Analyze this exploration path:
-    $(path_journey)
+  ~(<Analyze this exploration path:
+    ~(path_journey)~
     
     1. Logical progression: Does each step build on previous insights?
     2. Coherence: Are the steps connected by clear reasoning?
     3. Depth accumulation: What specific insights have been gained?
     4. Direction clarity: Is there a clear trajectory toward resolution?
     
-    Analysis: Concrete assessment of path quality and direction.>)
+    Analysis: Concrete assessment of path quality and direction.>)~
 |>>
 
 # Evaluate backtrack necessity and optimal points
 operator evaluate_backtrack_necessity(current_path, recent_attempts) ::= <<|
   I'm sensing whether we need to step back and try a different approach...
-  $(<Evaluate current exploration state:
-    Current path: $(current_path)
-    Recent attempts: $(recent_attempts)
+  ~(<Evaluate current exploration state:
+    Current path: ~(current_path)~
+    Recent attempts: ~(recent_attempts)~
     
     1. Path exhaustion indicators: [list specific signs]
     2. Alternative angles available: [identify unexplored approaches]
     3. Optimal backtrack points: [specify where to return for maximum insight]
     4. Expected benefit: [what new directions might emerge]
     
-    Decision: Concrete recommendation with specific action steps.>)
+    Decision: Concrete recommendation with specific action steps.>)~
 |>>
 
 # Prioritize exploration paths based on potential
 operator prioritize_exploration_paths(all_paths, exploration_energy) ::= <<|
   I'm weighing which paths deserve our exploration energy...
-  $(<Analyze available exploration paths:
-    Paths: $(all_paths)
-    Available resources: $(exploration_energy)
+  ~(<Analyze available exploration paths:
+    Paths: ~(all_paths)~
+    Available resources: ~(exploration_energy)~
     
     For each path, assess:
     1. Unexplored depth potential
@@ -165,7 +165,7 @@ operator prioritize_exploration_paths(all_paths, exploration_energy) ::= <<|
     3. Connection opportunities to other paths
     4. Resource requirements vs. expected yield
     
-    Recommendation: Select 2-3 highest-potential paths with justification.>)
+    Recommendation: Select 2-3 highest-potential paths with justification.>)~
 |>>
 
 # ═
@@ -180,13 +180,13 @@ sequence explore_multiple_threads(question) ::=
     output: <<|
       Let me explore this question from multiple angles...
       
-      The question is: $(question)
+      The question is: ~(question)~
       
       I'm sensing several possible directions we could take...
     |>>
     set:
       &context.graph.exploration_threads: []
-      &context.graph.journey_log: ['Started exploring: $(question)']
+      &context.graph.journey_log: ['Started exploring: ~(question)~']
       &context.graph.discovered_connections: []
       &context.graph.current_question: question
 
@@ -195,18 +195,18 @@ sequence explore_multiple_threads(question) ::=
     as: @exploration_guide
     method: "opening multiple threads"
     output: <<|
-      $(wonder_about(
+      ~(wonder_about(
         current_focus: &context.graph.current_question,
         context: "just beginning"
       ))
     |>>
     set:
-      &context.graph.initial_threads: $(<Extract the 2-3 exploration threads from the output above. 
+      &context.graph.initial_threads: ~(<Extract the 2-3 exploration threads from the output above. 
         Format as array of objects: [
           { summary: "thread description", status: "pending", depth: 0 },
           { summary: "thread description", status: "pending", depth: 0 },
           { summary: "thread description", status: "pending", depth: 0 }
-        ]>)
+        ]>)~
       &context.graph.exploration_threads: &context.graph.initial_threads
       &context.graph.journey_log: &context.graph.journey_log + ['Opened initial threads of exploration']
 
@@ -218,15 +218,15 @@ sequence analyze_and_select_threads() ::=
     output: <<|
       Analyzing potential of each exploration thread...
       
-      $(each: &context.graph.exploration_threads as |thread| {
+      ~(each: &context.graph.exploration_threads as |thread| {
         <<|
-        Thread: $(thread.summary)
-        $(evaluate_thread_potential(thread: thread.summary))
+        Thread: ~(thread.summary)~
+        ~(evaluate_thread_potential(thread: thread.summary))~
         |>>
       })
     |>>
     set:
-      &context.graph.thread_analysis: $(<Extract the thread evaluations above as structured assessments with specific potential indicators for each thread.>)
+      &context.graph.thread_analysis: ~(<Extract the thread evaluations above as structured assessments with specific potential indicators for each thread.>)~
 
   # Check if we're missing important perspectives
   step:
@@ -235,14 +235,14 @@ sequence analyze_and_select_threads() ::=
     output: <<|
       Before committing to these threads, what am I not considering?
       
-      $(identify_blind_spots(
+      ~(identify_blind_spots(
         current_focus: &context.graph.exploration_threads
       ))
     |>>
     set:
-      &context.graph.unconsidered: $(<list of missing perspectives>)
+      &context.graph.unconsidered: ~(<list of missing perspectives>)~
       &context.graph.exploration_threads: &context.graph.exploration_threads + 
-        $(<1-2 threads based on blind spots if significant>)
+        ~(<1-2 threads based on blind spots if significant>)~
 
   # Select threads to continue
   step:
@@ -251,10 +251,10 @@ sequence analyze_and_select_threads() ::=
     output: <<|
       Based on the analysis, selecting threads for deep exploration:
       
-      $(<Based on the thread analysis above, select 2-3 threads with highest exploration potential. For each selected thread, provide specific justification citing the analysis.>)
+      ~(<Based on the thread analysis above, select 2-3 threads with highest exploration potential. For each selected thread, provide specific justification citing the analysis.>)~
     |>>
     set:
-      &context.graph.active_threads: $(<Based on the analysis above, select 2-3 threads for deep exploration. Format as array with full thread objects from initial_threads.>)
+      &context.graph.active_threads: ~(<Based on the analysis above, select 2-3 threads for deep exploration. Format as array with full thread objects from initial_threads.>)~
       &context.graph.journey_log: &context.graph.journey_log + ['Selected high-potential threads based on analytical assessment']
 
 sequence explore_thread_deeper(thread) ::=
@@ -265,23 +265,23 @@ sequence explore_thread_deeper(thread) ::=
     output: <<|
       Before going deeper, let me analyze if this thread has remaining potential...
       
-      $(analyze_continuation_potential(thought: thread.latest))
+      ~(analyze_continuation_potential(thought: thread.latest))~
       
-      $(detect_circular_patterns(recent_thoughts: thread.history))
+      ~(detect_circular_patterns(recent_thoughts: thread.history))~
     |>>
     set:
-      &context.graph.thread_status: $(<Based on the analysis above, determine if this thread should continue or conclude. Output exactly 'continue' or 'conclude'.>)
+      &context.graph.thread_status: ~(<Based on the analysis above, determine if this thread should continue or conclude. Output exactly 'continue' or 'conclude'.>)~
 
   # Explore further if thread has potential
   step:
     as: @exploration_guide
     method: "going deeper"
     output: <<|
-      $(&context.graph.thread_status is 'continue' ? {
+      ~(&context.graph.thread_status is 'continue' ? {
         <<|
         This thread still has energy. Let me explore further...
         
-        $(wonder_about(
+        ~(wonder_about(
           current_focus: thread.latest,
           context: thread.history
         ))
@@ -290,12 +290,12 @@ sequence explore_thread_deeper(thread) ::=
         <<|
         This thread is exhausted. I'll note what we learned and move on.
         
-        Key insight from this thread: $(<Summarize the specific insights gained from this thread exploration in 1-2 sentences.>)
+        Key insight from this thread: ~(<Summarize the specific insights gained from this thread exploration in 1-2 sentences.>)~
         |>>
       })
     |>>
     set:
-      &context.graph.thread_update: $(<Extract the specific exploration results or conclusions from the step above.>)
+      &context.graph.thread_update: ~(<Extract the specific exploration results or conclusions from the step above.>)~
 
 sequence discover_connections() ::=
   step:
@@ -304,11 +304,11 @@ sequence discover_connections() ::=
     output: <<|
       Now let me look across our different threads for connections...
       
-      $(each: &context.graph.exploration_threads as |thread1, index1| {
+      ~(each: &context.graph.exploration_threads as |thread1, index1| {
         each: &context.graph.exploration_threads as |thread2, index2| {
           when: index2 > index1 {
             <<|
-            $(weaving_connections(
+            ~(weaving_connections(
               thread1: thread1.summary,
               thread2: thread2.summary
             ))
@@ -318,11 +318,11 @@ sequence discover_connections() ::=
       })
       
       The pattern I'm sensing across all threads:
-      $(<What larger understanding emerges from these connections? Provide 2-3 sentences describing the overarching pattern.>)
+      ~(<What larger understanding emerges from these connections? Provide 2-3 sentences describing the overarching pattern.>)~
     |>>
     set:
-      &context.graph.discovered_connections: &context.graph.discovered_connections + [$(<Extract the specific connections found in the analysis above.>)]
-      &context.graph.emerging_insight: $(<Extract the larger pattern or understanding described above.>)
+      &context.graph.discovered_connections: &context.graph.discovered_connections + [~(<Extract the specific connections found in the analysis above.>)~]
+      &context.graph.emerging_insight: ~(<Extract the larger pattern or understanding described above.>)~
 
 sequence synthesize_exploration() ::=
   step:
@@ -332,28 +332,28 @@ sequence synthesize_exploration() ::=
       After exploring multiple threads and discovering connections, here's what emerged:
       
       **The Journey**
-      $(each: &context.graph.journey_log as |entry| {
-        <<|- $(entry)|>>
+      ~(each: &context.graph.journey_log as |entry| {
+        <<|- ~(entry)~|>>
       })
       
       **Key Threads Explored**
-      $(each: &context.graph.exploration_threads as |thread| {
+      ~(each: &context.graph.exploration_threads as |thread| {
         <<|
-        - $(thread.summary): $(thread.key_insight)
+        - ~(thread.summary): ~(thread.key_insight)~
         |>>
       })
       
       **Connections Discovered**
-      $(each: &context.graph.discovered_connections as |connection| {
-        <<|- $(connection)|>>
+      ~(each: &context.graph.discovered_connections as |connection| {
+        <<|- ~(connection)~|>>
       })
       
       **Synthesis**
-      $(<Weave together all threads and connections into a coherent answer to the original question.
-         This should be substantial and integrate the full exploration.>)
+      ~(<Weave together all threads and connections into a coherent answer to the original question.
+         This should be substantial and integrate the full exploration.>)~
     |>>
     set:
-      &context.graph.final_synthesis: $(<Extract the complete synthesis from the output above.>)
+      &context.graph.final_synthesis: ~(<Extract the complete synthesis from the output above.>)~
 
 sequence explore_active_threads() ::=
   step:
@@ -374,32 +374,32 @@ sequence explore_active_threads() ::=
         # Step 1: Expand the thread into sub-questions
         step:
           output: <<|
-            **Thread $(index + 1): $(thread.summary)**
+            **Thread ~(index + 1): ~(thread.summary)~**
             
             Breaking down into explorable components:
-            $(<Given the thread "$(thread.summary)", identify 3-4 specific sub-questions or aspects that need exploration. Output as a numbered list.>)
+            ~(<Given the thread "~(thread.summary)", identify 3-4 specific sub-questions or aspects that need exploration. Output as a numbered list.>)~
           |>>
           set:
-            &context.graph.thread_results[index].sub_questions: $(<Extract the specific sub-questions generated above as an array of strings.>)
+            &context.graph.thread_results[index].sub_questions: ~(<Extract the specific sub-questions generated above as an array of strings.>)~
         
         # Step 2: Explore each sub-question
         step:
           output: <<|
             Exploring each component:
             
-            $(<For each sub-question identified above, provide a substantive 2-3 sentence exploration that advances our understanding. Include specific details, examples, or connections.>)
+            ~(<For each sub-question identified above, provide a substantive 2-3 sentence exploration that advances our understanding. Include specific details, examples, or connections.>)~
           |>>
           set:
-            &context.graph.thread_results[index].explorations: $(<Extract the explorations generated above as structured content.>)
+            &context.graph.thread_results[index].explorations: ~(<Extract the explorations generated above as structured content.>)~
         
         # Step 3: Synthesize thread insights
         step:
           output: <<|
             Thread synthesis:
-            $(<Based on the explorations above, synthesize the key insight from this thread in 2-3 sentences. Be specific and actionable.>)
+            ~(<Based on the explorations above, synthesize the key insight from this thread in 2-3 sentences. Be specific and actionable.>)~
           |>>
           set:
-            &context.graph.thread_results[index].synthesis: $(<Extract the synthesis generated above.>)
+            &context.graph.thread_results[index].synthesis: ~(<Extract the synthesis generated above.>)~
             &context.graph.paths_explored: &context.graph.paths_explored + [{
               thread_id: index,
               summary: thread.summary,
@@ -415,27 +415,27 @@ sequence manage_exploration_paths() ::=
     output: <<|
       Analyzing the quality and coherence of explored paths...
       
-      $(each: &context.graph.paths_explored as |path| {
+      ~(each: &context.graph.paths_explored as |path| {
         <<|
-        Path: $(path.summary)
-        $(analyze_path_coherence(path_journey: path.key_insight))
+        Path: ~(path.summary)~
+        ~(analyze_path_coherence(path_journey: path.key_insight))~
         |>>
       })
     |>>
     set:
-      &context.graph.path_qualities: $(<Extract the path quality analyses above as structured assessments for each path.>)
+      &context.graph.path_qualities: ~(<Extract the path quality analyses above as structured assessments for each path.>)~
   
   step:
     as: @path_navigator
     method: "focusing exploration energy"
     output: <<|
-      $(prioritize_exploration_paths(
+      ~(prioritize_exploration_paths(
         all_paths: &context.graph.path_qualities,
         exploration_energy: "moderate depth with good coverage"
       ))
     |>>
     set:
-      &context.graph.focused_paths: $(<Extract the 2-3 highest-priority paths from the analysis above.>)
+      &context.graph.focused_paths: ~(<Extract the 2-3 highest-priority paths from the analysis above.>)~
       &context.graph.journey_log: &context.graph.journey_log + ["Focused on most promising paths"]
 
 # Sequence for recognizing and handling dead ends
@@ -444,30 +444,30 @@ sequence handle_dead_ends() ::=
     as: @reflection_keeper
     method: "recognizing exhausted paths"
     output: <<|
-      $(evaluate_backtrack_necessity(
+      ~(evaluate_backtrack_necessity(
         current_path: &context.graph.current_focus,
         recent_attempts: &context.graph.recent_explorations
       ))
     |>>
     set:
-      &context.graph.backtrack_decision: $(<Based on the analysis above, should we backtrack? Output exactly 'backtrack' or 'continue'.>)
+      &context.graph.backtrack_decision: ~(<Based on the analysis above, should we backtrack? Output exactly 'backtrack' or 'continue'.>)~
   
   step:
     as: @exploration_guide
     method: "finding fresh perspective"
     output: <<|
-      $(&context.graph.backtrack_decision is 'backtrack' ? 
+      ~(&context.graph.backtrack_decision is 'backtrack' ? 
         <<|Stepping back to find a new angle...
       
       From this vantage point, I can see:
-      $(<Based on the backtrack analysis, identify 2-3 specific new exploration directions that become accessible.>)|>> : 
+      ~(<Based on the backtrack analysis, identify 2-3 specific new exploration directions that become accessible.>)~|>> : 
         'Continuing on current path...')
     |>>
     set:
-      &context.graph.current_focus: $(&context.graph.backtrack_decision is 'backtrack' ? 
-        $(<Extract the new exploration direction from the backtrack analysis.>) : 
+      &context.graph.current_focus: ~(&context.graph.backtrack_decision is 'backtrack' ? 
+        ~(<Extract the new exploration direction from the backtrack analysis.>)~ : 
         &context.graph.current_focus)
-      &context.graph.journey_log: $(&context.graph.backtrack_decision is 'backtrack' ? 
+      &context.graph.journey_log: ~(&context.graph.backtrack_decision is 'backtrack' ? 
         &context.graph.journey_log + ["Backtracked to find fresh perspective"] : 
         &context.graph.journey_log)
 
@@ -553,23 +553,23 @@ actor @synthesis_presenter:
       After exploring multiple interconnected threads, here's what emerged:
       
       **The Journey of Exploration**
-      $(<Narrate the exploration journey from &context.graph.journey_log
-         in a natural, engaging way>)
+      ~(<Narrate the exploration journey from &context.graph.journey_log
+         in a natural, engaging way>)~
       
       **Key Insights from Each Thread**
-      $(each: &context.graph.exploration_threads as |thread| {
+      ~(each: &context.graph.exploration_threads as |thread| {
         <<|
-        • $(thread.summary)
-          $(thread.key_insight ? thread.key_insight : "(still emerging)")
+        • ~(thread.summary)~
+          ~(thread.key_insight ? thread.key_insight : "(still emerging)")~
         |>>
       })
       
       **Connections That Emerged**
-      $(<Describe the connections discovered in a narrative way,
-         not as a list but as a flowing understanding>)
+      ~(<Describe the connections discovered in a narrative way,
+         not as a list but as a flowing understanding>)~
       
       **Synthesis**
-      $(&context.graph.final_synthesis)
+      ~(&context.graph.final_synthesis)~
     |>>
     goal: "to share the complete understanding that emerged"
     then:

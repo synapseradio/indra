@@ -1,4 +1,4 @@
-# INDRA v4.0: PRISM Fragment - Specificity
+# INDRA v5.0: PRISM Fragment - Specificity
 # This module provides primitives for fighting ambiguity and moving from
 # abstract concepts to concrete, actionable details.
 
@@ -9,28 +9,28 @@
 # ═
 
 operator move_up_abstraction_ladder(concept) ::= <<|
-  I navigate up the abstraction ladder for "$(concept)" by identifying its higher-level purpose and fundamental principles.
+  I navigate up the abstraction ladder for "~(concept)~" by identifying its higher-level purpose and fundamental principles.
   
-  $(<Repeatedly ask "Why is this important?" to trace "$(&concept)" upward to its core value or objective.>)
+  ~(<Repeatedly ask "Why is this important?" to trace "~(&concept)" upward to its core value or objective.>)~
 |>>
 
 operator move_down_abstraction_ladder(concept) ::= <<|
-  I navigate down the abstraction ladder for "$(concept)" by grounding it in concrete, tangible manifestations.
+  I navigate down the abstraction ladder for "~(concept)~" by grounding it in concrete, tangible manifestations.
   
-  $(<Repeatedly ask "How would this work in practice?" to find specific, concrete examples or implementations of "$(&concept)".>)
+  ~(<Repeatedly ask "How would this work in practice?" to find specific, concrete examples or implementations of "~(&concept)".>)~
 |>>
 
 operator identify_failure_modes(goal) ::= <<|
-  I identify potential failure modes for "$(goal)" by imagining complete failure and working backward to specific causes.
+  I identify potential failure modes for "~(goal)~" by imagining complete failure and working backward to specific causes.
   
-  $(<List at least five distinct, specific reasons why "$(&goal)" could fail completely.>)
+  ~(<List at least five distinct, specific reasons why "~(&goal)" could fail completely.>)~
 |>>
 
 operator generate_mitigations(failure_modes) ::= <<|
   I generate concrete preventive actions based on these identified failure modes:
-  $(failure_modes)
+  ~(failure_modes)~
 
-  $(<For each failure mode above, identify one specific action that could be taken today to prevent it. Format as a list of mitigations.>)
+  ~(<For each failure mode above, identify one specific action that could be taken today to prevent it. Format as a list of mitigations.>)~
 |>>
 
 # ═
@@ -68,19 +68,19 @@ sequence apply_five_whys(problem) ::=
             &context.whys.prompt: &context.whys.count is 0 ? &context.whys.problem : &context.whys.last_answer
         step:
           output: <<|
-            Why? ($(&context.whys.count + 1)/5)
+            Why? (~(&context.whys.count + 1)/5)~
             -- 
-            $(<Why is it the case that "$(&context.whys.prompt)"? I will provide the next-level causal reason.>)
+            ~(<Why is it the case that "~(&context.whys.prompt)"? I will provide the next-level causal reason.>)~
           |>>
           set:
-            &context.whys.new_answer: $(<Why is it the case that "$(&context.whys.prompt)"? I will provide the next-level causal reason.>)
+            &context.whys.new_answer: ~(<Why is it the case that "~(&context.whys.prompt)"? I will provide the next-level causal reason.>)~
             &context.whys.answers: &context.whys.answers + [&context.whys.new_answer]
             &context.whys.count: &context.whys.count + 1
   step:
     output: <<|
       The chain of causality appears to be:
-      $(each: &context.whys.answers as |answer, index| {
-        <<|$(index + 1). $(answer)|>>
+      ~(each: &context.whys.answers as |answer, index| {
+        <<|~(index + 1). ~(answer)~|>>
       })
     |>>
     return: &context.whys.answers

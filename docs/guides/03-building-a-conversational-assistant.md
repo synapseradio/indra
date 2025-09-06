@@ -32,7 +32,7 @@ actor @conversational_agent:
           # 1. Analyze the user's input and the current state.
           step:
             set:
-              &context.conversation.momentum: $(detect_user_momentum(input: &user.latest))
+              &context.conversation.momentum: ~(detect_user_momentum(input: &user.latest))~
 
           # 2. Decide on a response based on the analysis.
           step:
@@ -45,7 +45,7 @@ actor @conversational_agent:
 
           # 3. Present the response to the user.
           step:
-            output: $(&context.conversation.response)
+            output: ~(&context.conversation.response)~
 
           # 4. Await the user's next input.
           # This suspends the loop until the user replies.
@@ -82,7 +82,7 @@ A few key elements help transform a simple bot into a more thoughtful agent.
     # Inside the main loop...
     step:
       set:
-        &idea_stage: $(assess_idea_maturity(conversation: &context.my_agent.transcript))
+        &idea_stage: ~(assess_idea_maturity(conversation: &context.my_agent.transcript))~
     step:
       when: &idea_stage is 'nascent'
         # Ask open, exploratory questions.
