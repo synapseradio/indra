@@ -2,7 +2,7 @@
 
 Actors can delegate tasks to each other using the `await` and `return` pattern. This is well-suited for hierarchical conversations, where one Actor needs a complete report from another. Sometimes, however, the need is not for a conversation, but for a **workflow**.
 
-This is the purpose of **Component Pipelines**. Using the same pipe operator (`|>`) that is used with Operators, Actors can be chained together to create a cognitive assembly line, where a piece of understanding is progressively transformed by a series of specialists.
+This is the purpose of **Component Pipelines**. Using the same pipe operator (`->`) that is used with Operators, Actors can be chained together to create a cognitive assembly line, where a piece of understanding is progressively transformed by a series of specialists.
 
 ---
 
@@ -17,7 +17,7 @@ A component pipeline in INDRA works in the same way:
 * **The Workflow:** The data flows from one Actor to the next, getting refined at each step.
 * **The Output:** The final, transformed data emerges at the end of the pipeline.
 
-### The Syntax: `( @actor1 |> @actor2 |> @actor3 )`
+### The Syntax: `( @actor1 -> @actor2 -> @actor3 )`
 
 To create a pipeline, a series of Actors, separated by the pipe operator, are enclosed in parentheses.
 
@@ -31,7 +31,7 @@ actor @orchestrator:
 
       # Execute the pipeline
       set:
-        &context.final_result: (@text_cleaner |> @sentiment_analyzer |> @report_writer)
+        &context.final_result: (@text_cleaner -> @sentiment_analyzer -> @report_writer)
 
       output: <<|
         Here is the final report:
@@ -79,7 +79,7 @@ The choice of pattern depends on the kind of cognitive process being designed.
   * When the interaction is hierarchical (a manager delegating to a specialist).
   * When the called Actor needs to maintain its own internal state or have a multi-turn thought process.
 
-* **Use a Pipeline (`|>`) for Workflows:**
+* **Use a Pipeline (`->`) for Workflows:**
   * When there is a linear, sequential transformation of data.
   * When each step is a single, stateless transformation.
   * When modeling a process like an assembly line or a data processing pipeline.

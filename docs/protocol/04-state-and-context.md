@@ -18,6 +18,11 @@ dialogue our_journey:
   with:
     context:
       # This is the world our journey begins in.
+      dialogue:
+        latest_dialogue_entry: ""
+      user:
+        latest: ""
+        history: []
       map:
         location: 'the starting village'
       quest:

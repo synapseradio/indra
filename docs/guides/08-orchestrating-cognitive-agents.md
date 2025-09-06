@@ -66,7 +66,7 @@ Let's try a common use case: **getting a balanced analysis of a complex decision
 
 The `@thinkies` orchestrator will analyze your request and design a multi-agent pipeline to address it. Internally, it might generate a plan like this:
 
-`@agent-understand -> (@agent-ground | @agent-challenge) -> @agent-plan -> @agent-evaluate`
+`@agent-understand -> (@agent-ground -> @agent-challenge) -> @agent-plan -> @agent-evaluate`
 
 It will then execute this plan step-by-step:
 

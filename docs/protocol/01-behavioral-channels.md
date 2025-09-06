@@ -11,14 +11,14 @@ Think of it this way: you don't speak to a brainstorming partner in the same ton
 * **Syntax:** Single quotes (`'...'`)
 * **Quality of Attention:** "Look at this specific thing. It is what it is."
 
-This channel tells your partner that the enclosed text is **data**. It's a fact, an identifier, a path to a file. It has no hidden meaning and requires no interpretation. You are simply pointing to it.
+This channel tells the LLM that the enclosed text is **data**. It's a fact, an identifier, a path to a file. It has no hidden meaning and requires no interpretation. You are simply pointing to it.
 
 ```indra
-# We are pointing to a specific file on the filesystem.
->>read_file: 'core/prism/base.in'<<
-
 # We are pointing to a specific state called 'ready'.
 set: &context.consider.phase: 'ready'
+
+# We are providing a literal path for a dynamic import.
+read_file: './some_dynamic_module.in'
 ```
 
 Using the literal channel removes ambiguity. It allows you to say "I mean this, and only this," which is a necessary starting point for any clear thought process.
@@ -47,7 +47,7 @@ This channel allows a cognitive process to have a persistent character and direc
 * **Syntax:** Angle brackets (`<...>`)
 * **Quality of Attention:** "Let's create something new. What could this be?"
 
-This is the channel of **creation and inference**. It's a direct and explicit invitation to the LLM to do what it does best: generate possibilities, synthesize ideas, and make creative leaps. It's the only channel where you are asking your partner to "think" freely.
+This is the channel of **creation and inference**. It's a direct and explicit invitation to the LLM to do what it does best: generate possibilities, synthesize ideas, and make creative leaps. It's the only channel where you are asking the LLM to "think" freely.
 
 ```indra
 # An invitation to create a name.
@@ -57,7 +57,7 @@ set: &context.character.name: <generate a fantasy character name>
 set: &context.sentiment: <analyze the sentiment of "&user.latest">
 ```
 
-This channel provides a safe and bounded space for creativity. It's where you turn to your partner and say, "I don't know the answer. Let's discover it together."
+This channel provides a safe and bounded space for creativity. It's where you turn to the LLM and say, "I don't know the answer. Let's discover it together."
 
 ## 4. The Template Channel: `<<|...|>>` — The Attention of Composition
 
@@ -86,9 +86,9 @@ This channel separates the messy, iterative process of thinking from the clear, 
 This is a special channel that modifies the flow of time. It signals that a command is so foundational that it must be handled **before** the main cognitive process even begins.
 
 ```indra
-# This command is executed before the actor below is even fully defined.
+# Static import: This command is executed before the actor below is even fully defined.
 # It ensures the foundational tools are available from the very start.
->>read_file: '../prism/base.in'<<
+>>read_file: '../prism/base.in' use @some_component<<
 
 actor @my_actor:
   # This actor can now confidently use components from base.in.
@@ -96,6 +96,33 @@ actor @my_actor:
 ```
 
 This channel allows you to establish the necessary environment for a thought process, ensuring that all the required tools and contexts are in place before the work of thinking begins.
+
+### Import Syntax Patterns
+
+The interrupt channel is commonly used with INDRA's import directives to control when and how components are loaded:
+
+**Static Imports (with interrupt channel):**
+```indra
+# Load specific components at preprocessing time
+>>read_file: '../prism/base.in' use @some_component<<
+>>read_file: '../prism/advanced.in' use @analyzer, @synthesizer<<
+
+# Load entire file at preprocessing time
+>>read_file: '../prism/everything.in'<<
+```
+
+**Dynamic Imports (without interrupt channel):**
+```indra
+# Load components at runtime
+read_file: '../prism/strategies/creative.in' use @creative_explorer
+read_file: '../prism/dynamic.in'
+```
+
+**When to use each:**
+- **Static imports (`>>...<<`)**: Use for foundational components that must be available before your actors are defined. These are loaded during preprocessing.
+- **Dynamic imports**: Use for components that are loaded conditionally at runtime, such as strategy modules in adaptive systems.
+
+The interrupt channel ensures that static imports happen before any actor definition or execution begins, creating a stable foundation for your cognitive architecture.
 
 ---
 **Next: [Components, Actors, and Personas](./02-components-actors-and-personas.md)**

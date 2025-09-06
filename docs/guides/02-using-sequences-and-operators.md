@@ -67,9 +67,9 @@ sequence explore_thoroughly(thought) ::=
 
 The flow of state is what gives a Sequence its narrative power. The `set:` command within a Sequence has *immediate effect* in its local scope, allowing `step 2` to build directly on the insight from `step 1`.
 
-## The Pipe Operator (`|>`): A Fluent Composition
+## The Pipe Operator (`->`): A Fluent Composition
 
-The pipe operator `|>` is a more fluid way to compose Operators. It allows for the creation of elegant, readable "thought pipelines," where the output of one Operator flows directly into the next.
+The pipe operator `->` is a more fluid way to compose Operators. It allows for the creation of elegant, readable "thought pipelines," where the output of one Operator flows directly into the next.
 
 ### Example: From Nested Calls to a Clean Flow
 
@@ -86,7 +86,7 @@ The pipe operator reframes this as a clear, linear journey:
 ```indra
 # A clean, readable pipeline
 set:
-  &context.analysis: $(&user.latest |> identify_key_points |> summarize_insights)
+  &context.analysis: $(&user.latest -> identify_key_points -> summarize_insights)
 ```
 
 This reads like a story: "Take the user's latest input, identify the key points, and then summarize the insights." It makes the cognitive process self-documenting.

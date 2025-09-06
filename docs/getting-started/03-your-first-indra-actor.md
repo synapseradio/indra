@@ -34,6 +34,11 @@ dialogue hello_flow:
   start: @greeter
   with:
     context:
+      dialogue:
+        latest_dialogue_entry: ""
+      user:
+        latest: ""
+        history: []
       greeter:
         name: 'Biff'
 ```

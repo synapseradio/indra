@@ -58,31 +58,32 @@ The `/reason` command is a more complex conversational agent that can adapt its 
 The `@reason` actor is a conversational partner that co-creates a reasoning plan with the user. It then executes that plan by dynamically loading the necessary capabilities.
 
 ```indra
-# From the execute_reasoning_plan sequence in reason.in
+# From the execute_strategy_step sequence in reason.in
 
 step:
-  each: plan.strategy_list as |strategy_name|
-    sequence:
-      step:
-        output: <<|
-          ---
-          *Executing strategy: **$(strategy_name)***
-        |>>
-        when: strategy_name is 'tree'
-          read_file: '../lib/prism/tree_of_thought.in'
-          await: @tree_thinker
-          # ...
-        when: strategy_name is 'creative_exploration'
-          read_file: '../lib/prism/strategies//creative_exploration.in'
-          await: explore_creatively
-          # ...
+  output: <<|
+    ---
+    *Executing strategy: **$(strategy_name)***
+  |>>
+  when: strategy_name is 'foundational_analysis'
+    # This is a dynamic, runtime import.
+    read_file: '../lib/prism/tree_of_thought.in'
+    await: @tree_thinker
+    with: { dialogue: { latest_dialogue_entry: &context.query } }
+    store_in: &context.synthesis
+  when: strategy_name is 'creative_exploration'
+    # This is also a dynamic, runtime import.
+    read_file: '../lib/prism/strategies/creative_exploration.in'
+    await: explore_creatively
+    # ...
+
 ```
 
 #### Pattern: Dynamic Capability Loading
 
 A key feature of `@reason` is its ability to use different reasoning strategies without having to load them all at once.
 
-The `read_file` directive, when not in an interrupt channel (`>>...<<`), executes at runtime. This allows `@reason` to:
+The `read_file` directive, when used without the interrupt channel (`>>...<<`), executes at runtime as a dynamic import. This allows `@reason` to:
 
 1.  **Stay Lightweight:** The core `@reason` actor doesn't need to know the implementation details of every possible strategy.
 2.  **Load on Demand:** It analyzes the user's query, composes a plan (e.g., `['foundational_analysis', 'creative_exploration']`), and then loads *only* the `.in` files for those specific strategies.
