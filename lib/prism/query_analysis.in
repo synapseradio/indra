@@ -1,4 +1,4 @@
-# INDRA v5.0: PRISM Module - Query Analysis
+# INDRA v5.1: PRISM Module - Query Analysis
 # Provides a reusable, conversational component for understanding and clarifying user queries.
 
 >>read_file: './base.in'<<

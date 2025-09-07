@@ -1,4 +1,4 @@
-# INDRA v5.0: PRISM Module - Graph of Thought
+# INDRA v5.1: PRISM Module - Graph of Thought
 # This module provides components for a non-linear, exploratory reasoning
 # process. Unlike the hierarchical Tree of Thought, Graph of Thought is
 # about discovering and weaving together emergent, interconnected insights.

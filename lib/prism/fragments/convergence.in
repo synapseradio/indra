@@ -1,4 +1,4 @@
-# INDRA v5.0: PRISM Fragment - Convergence
+# INDRA v5.1: PRISM Fragment - Convergence
 # This module provides a set of primitives for narrowing a problem space
 # by identifying and unifying similar concepts. It is the natural complement
 # to the `divergence.in` module, focusing on synthesis and the discovery

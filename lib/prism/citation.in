@@ -1,4 +1,4 @@
-# INDRA v5.0: PRISM Module - Citation Pipeline
+# INDRA v5.1: PRISM Module - Citation Pipeline
 # This module provides a complete, reusable pipeline for gathering,
 # validating, and formatting evidence for factual claims. It is designed
 # to be invoked by any actor or sequence that needs to ground its

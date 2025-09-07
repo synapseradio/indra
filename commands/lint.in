@@ -1,4 +1,4 @@
-# INDRA v5.0 Command: lint (v3, Investigative Scribe)
+# INDRA v5.1 Command: lint (v3, Investigative Scribe)
 # A performative, Socratic partner for ensuring INDRA code quality.
 
 >>read_file: '../lib/prism/thinking_primitives.in' use wonder_about<<
