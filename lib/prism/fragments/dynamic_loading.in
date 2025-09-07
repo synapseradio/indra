@@ -1,0 +1,143 @@
+# INDRA v5.1: Fragment - Dynamic Loading
+# Provides reusable operators for clean, selective dynamic file loading
+# following the instruction signal pattern established in coordinate_intent.in
+
+# ═
+# CORE LOADING OPERATORS
+# Clean, declarative patterns for dynamic file loading
+# ═
+
+operator load_strategy(strategy_name, base_path) ::= <<|
+  emit: signal 'instruction' {
+    instruction: "read_file: '~(base_path)~/~(strategy_name)~.in'"
+  }
+|>>
+
+operator load_fragment(fragment_name) ::= <<|
+  emit: signal 'instruction' {
+    instruction: "read_file: '../fragments/~(fragment_name)~.in'"
+  }
+|>>
+
+operator load_fragments(fragment_list) ::= <<|
+  each: fragment_name in fragment_list
+    emit: signal 'instruction' {
+      instruction: "read_file: '../fragments/~(fragment_name)~.in'"
+    }
+|>>
+
+# ═
+# STRATEGY-SPECIFIC LOADERS
+# Specialized operators for common loading patterns
+# ═
+
+operator load_and_execute_strategy(strategy_name, context) ::= <<|
+  ~(<
+    Based on strategy_name '~(strategy_name)~', determine the appropriate file to load and execution pattern.
+    
+    Strategy mappings:
+    - 'foundational_analysis': load '../lib/prism/tree_of_thought.in', await @tree_thinker
+    - 'multi-perspective': load '../lib/prism/multi_perspective.in', await multi_perspective_dialogue
+    - 'gather_evidence': use citation_pipeline (already loaded)
+    - 'creative_exploration': load '../lib/prism/strategies/creative_exploration.in', await explore_creatively
+    - 'strategic_prioritization': load '../lib/prism/strategies/strategic_prioritization.in', await prioritize_strategically
+    - 'critical_challenge': load fragments 'critique.in' and 'debiasing.in', await systematic_debiasing
+    - 'synthesis': load fragment 'convergence.in', await synthesize_convergence
+    
+    Return the appropriate loading instruction and execution call.
+  >)~
+|>>
+
+operator load_capability_set(capability_set_name) ::= <<|
+  ~(<
+    Based on capability_set_name '~(capability_set_name)~', determine which fragments to load.
+    
+    Available capability sets:
+    - 'reasoning': ['critique', 'debiasing', 'specificity']
+    - 'creative': ['expansion', 'reframing', 'divergence']
+    - 'strategic': ['focus', 'prioritization', 'decision']
+    - 'analytical': ['debiasing', 'critique', 'specificity']
+    - 'evaluative': ['critique', 'sufficiency', 'compare']
+    
+    Return as array of fragment names to load.
+  >)~
+  
+  set: fragments_to_load: ~(resolve_capability_set(capability_set_name))~
+  each: fragment_name in fragments_to_load
+    emit: signal 'instruction' {
+      instruction: "read_file: '../fragments/~(fragment_name)~.in'"
+    }
+|>>
+
+# ═
+# LOADING SEQUENCES
+# Complete loading workflows for complex scenarios
+# ═
+
+sequence dynamic_strategy_loader(strategy_name, context_data) ::=
+  step:
+    output: <<|
+      Loading strategy: ~(strategy_name)~
+    |>>
+    
+  step:
+    when: strategy_name is 'foundational_analysis'
+      emit: signal 'instruction' {
+        instruction: "read_file: '../lib/prism/tree_of_thought.in'"
+      }
+    when: strategy_name is 'multi-perspective'  
+      emit: signal 'instruction' {
+        instruction: "read_file: '../lib/prism/multi_perspective.in'"
+      }
+    when: strategy_name is 'creative_exploration'
+      emit: signal 'instruction' {
+        instruction: "read_file: '../lib/prism/strategies/creative_exploration.in'"
+      }
+    when: strategy_name is 'strategic_prioritization'
+      emit: signal 'instruction' {
+        instruction: "read_file: '../lib/prism/strategies/strategic_prioritization.in'"
+      }
+    when: strategy_name is 'critical_challenge'
+      emit: signal 'instruction' {
+        instruction: "read_file: '../lib/prism/fragments/critique.in'"
+      }
+      emit: signal 'instruction' {
+        instruction: "read_file: '../lib/prism/fragments/debiasing.in'"
+      }
+    when: strategy_name is 'synthesis'
+      emit: signal 'instruction' {
+        instruction: "read_file: '../lib/prism/fragments/convergence.in'"
+      }
+    
+  step:
+    return: {
+      strategy: strategy_name,
+      status: "loaded",
+      context: context_data
+    }
+
+# ═
+# BEST PRACTICES DOCUMENTATION
+# ═
+
+# DYNAMIC LOADING PRINCIPLES:
+#
+# 1. Use 'instruction' signal for all dynamic loading
+#    - Declarative and clean
+#    - Selective loading only when needed
+#    - Maintains separation of concerns
+#
+# 2. Avoid verbose conditional chains
+#    - Replace multiple when: blocks with operators
+#    - Use mapping patterns instead of repetitive code
+#    - Keep loading logic centralized
+#
+# 3. Signal discipline
+#    - Only emit signals when actually loading
+#    - Group related loads together
+#    - Document loading patterns clearly
+#
+# 4. Reusable patterns
+#    - Create operators for common loading scenarios
+#    - Use sequences for complex loading workflows
+#    - Make loading logic composable
