@@ -142,7 +142,7 @@ sequence coordinate_intent_with_resonance(primary_intent, conversation_context) 
       Loading fragments: ~(&context.intent_coordination.needed_fragments)~
     |>>
     each: fragment_name in &context.intent_coordination.needed_fragments
-      emit: signal 'capability_needed' {
+      emit: signal 'instruction' {
         instruction: "read_file: '../fragments/~(fragment_name)~.in'"
       }
       set: 

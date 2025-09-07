@@ -528,7 +528,7 @@ REFERENCE_SPECIFICATION:
       purpose: Allows an actor to request a system-level action from the interpreter (metaprogramming) or to broadcast a significant event for observability.
       semantics: This is a non-terminating action. The actor's execution continues immediately after you have handled the signal.
       example: |
-        emit: signal 'capability_needed' {
+        emit: signal 'instruction' {
           instruction: "read_file: '../fragments/critique.in'"
         }
 
