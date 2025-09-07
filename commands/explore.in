@@ -82,10 +82,15 @@ actor @explore:
         }
         store_in: &context.tree_result
         
-        # Return the result to the user
-        say:
-          to: @user
-          what: &context.tree_result
+        # Emit the result as a system-wide signal
+        emit: signal 'synthesis_complete' {
+          source: '@explore',
+          result: &context.tree_result
+        }
+        
+        # Since emit is non-terminating, we still need to end the turn.
+        # A simple return is appropriate here as the actor's job is done.
+        return: 'done'
 
 dialogue explore_flow:
   start: @explore
