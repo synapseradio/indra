@@ -1,4 +1,4 @@
-# INDRA v5.0 Command: research
+# INDRA v5.1 Command: research
 # A collaborative, performative, and evidence-grounded research partner.
 
 >>read_file: '../lib/prism/epistemic.in' use perform_epistemic_check<<

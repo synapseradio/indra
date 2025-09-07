@@ -1,4 +1,4 @@
-# INDRA v5.0 Command: ponder
+# INDRA v5.1 Command: ponder
 # A performative, collaborative partner for creative exploration.
 
 >>read_file: '../lib/prism/thinking_primitives.in'<<

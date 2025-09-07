@@ -1,4 +1,4 @@
-# INDRA v5.0: Strategy - Intent Coordination
+# INDRA v5.1: Strategy - Intent Coordination
 # Maintains conversational alignment by dynamically loading cognitive fragments
 # based on dialogue needs, preventing context rot in extended conversations.
 #

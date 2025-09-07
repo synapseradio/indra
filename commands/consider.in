@@ -1,4 +1,4 @@
-# INDRA v5.0 Command: consider 
+# INDRA v5.1 Command: consider 
 # A performative symphony of analysis in a single pass.
 
 >>read_file: '../lib/prism/query_analysis.in' use understand_query,

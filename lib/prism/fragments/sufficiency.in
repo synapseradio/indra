@@ -1,4 +1,4 @@
-# INDRA v5.0: PRISM Fragment - Sufficiency
+# INDRA v5.1: PRISM Fragment - Sufficiency
 # This module provides primitives for meta-cognition, specifically for
 # an actor to assess whether it has enough information to proceed with a
 # given task or question. It is the foundation for intellectual honesty

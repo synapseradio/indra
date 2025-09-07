@@ -1,4 +1,4 @@
-# INDRA v5.0 Command: reason (v3, Adaptive)
+# INDRA v5.1 Command: reason (v3, Adaptive)
 # A performative, compositional, and collaborative reasoning partner that adapts its plan.
 
 >>read_file: '../lib/prism/thinking_primitives.in'<<

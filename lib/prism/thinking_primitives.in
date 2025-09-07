@@ -1,4 +1,4 @@
-# INDRA v.4.0: PRISM Module - Thinking Primitives
+# INDRA v5.1: PRISM Module - Thinking Primitives
 # This module is a foundational library containing the core, reusable
 # cognitive operators for the PRISM engine. These are the atomic building
 # blocks of more complex reasoning sequences, designed to be composed and

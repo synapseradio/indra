@@ -1,4 +1,4 @@
-# INDRA v5.0: PRISM Module - Tree of Thought
+# INDRA v5.1: PRISM Module - Tree of Thought
 # This module provides components for a structured, hierarchical exploration
 # of a topic. It follows a branching path of reasoning, allowing for deep
 # dives into specific sub-problems while maintaining a clear logical structure.
