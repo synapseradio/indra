@@ -170,47 +170,47 @@ dialogue inquiry_session:
   with: {
     context: {
       dialogue: {
-        latest_dialogue_entry: ""
+        latest_dialogue_entry: ''
       },
       user: {
-        latest: "",
+        latest: '',
         history: []
       },
-      query: "",
-      query_breakdown: "",
+      query: '',
+      query_breakdown: '',
       inquiry: {
-        phase: "ready",
-        original_question: "",
-        parsed_question: "",
-        assumptions: "",
-        chosen_direction: "",
+        phase: 'ready',
+        original_question: '',
+        parsed_question: '',
+        assumptions: '',
+        chosen_direction: '',
         relevant_domains: [],
-        cross_domain_insights: "",
-        challenges: ""
+        cross_domain_insights: '',
+        challenges: ''
       },
       reason: {
         understanding_confirmed: false,
-        user_confirmation: ""
+        user_confirmation: ''
       },
       citation: {
         similarity_score: 0.0,
         search_history: [],
         raw_results: [],
         evidence_pool: [],
-        filtered_results: [],
-        formatted: "",
+        filtered_results: '',
+        formatted: '',
         validated: false
       },
       sufficiency: {
-        check: "",
+        check: '',
         is_sufficient: false,
         gaps: [],
-        user_guidance: ""
+        user_guidance: ''
       },
       epistemic: {
         sufficiency_report: {},
         convergence_report: {},
-        divergence_report": {}
+        divergence_report: {}
       }
     }
   }

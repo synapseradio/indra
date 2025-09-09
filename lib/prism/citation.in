@@ -8,6 +8,19 @@
 >>read_file: './base.in'<<
 
 # ═
+# AUTO-CITATION DETECTION OPERATORS
+# ═
+
+# Detect factual claims that need citation support
+operator detect_factual_claims(content) ::= <<|
+  I'm scanning this content for claims that might need evidence...
+  
+  ~(<Looking at "~(content)~", identify any factual claims, statistics, 
+     historical references, or assertions that would benefit from citations.
+     Return an array of specific claims needing evidence, or empty array if none.>)~
+|>>
+
+# ═
 # SECTION 1: CITATION SEQUENCE & OPERATORS
 # ═
 
@@ -71,6 +84,7 @@ sequence citation_pipeline(claim) ::=
         &context.citation.raw_results -> filter_for_primary_sources
       )
       &context.citation.formatted: &context.citation.filtered_results -> format_citations
+      &context.citation.inline_formatted: &context.citation.filtered_results -> format_inline_citations
       &context.citation.validated: true
 
 # ═
@@ -105,14 +119,21 @@ Filter ~(results)~ to only include items that have both 'title' and 'url' fields
 Return filtered array with valid citations only.
 >
 
-# Format validated citations into markdown links
+# Format validated citations with immediate URL brackets
 operator format_citation_links(results) ::= <<|
-  ~(each: results as |result, index| {
-    <<|~(index + 1). [~(result.title)](~(result.url))~|>>
+  ~(each: results as |result| {
+    <<|[~(result.url)~]|>>
   })
 |>>
 
-# Composite operator to validate then format citations
+# Format citations inline with visible URLs
+operator format_inline_citations(results) ::= <<|
+  ~(each: results as |result| {
+    <<| [~(result.url)~]|>>
+  })
+|>>
+
+# Composite operator to validate then format citations with visible URLs
 operator format_citations(results) ::= results -> validate_citation_fields -> format_citation_links
 
 # Individual assessment operators
@@ -188,3 +209,46 @@ Return limited array.
 
 # Composite operator for selecting relevant citations
 operator select_relevant_evidence(pool, query, max_items) ::= pool -> filter_by_relevance(query: query) -> ensure_diversity -> limit_items(max: max_items)
+
+# Format a single citation for inline use
+operator format_single_citation(result) ::= '[~(result.url)~]'
+
+# Insert citations directly after relevant statements
+operator insert_inline_citations(content, citations) ::= <<|
+  ~(content)~ ~(citations -> format_inline_citations)~
+|>>
+
+# ═
+# SIGNAL-BASED CITATION ENFORCEMENT
+# ═
+
+# Signal handler for runtime citation enforcement
+sequence handle_citation_signal() ::=
+  step:
+    output: <<|
+      *[Citation enforcement activated - all factual assertions will now require evidence]*
+    |>>
+    set:
+      &context.citation.enforcement_active: true
+      &context.citation.auto_detect: true
+  step:
+    return: { 
+      status: 'citation_enforcement_enabled',
+      message: 'Citation pipeline will be invoked for all factual assertions'
+    }
+
+# Auto-detection wrapper for any content generation
+sequence auto_cite_if_needed(content) ::=
+  step:
+    when: &context.citation.enforcement_active is true
+      set:
+        &context.citation.detected_claims: ~(detect_factual_claims(content: content))~
+      when: has_content(&context.citation.detected_claims) is 'true'
+        each: &context.citation.detected_claims as |claim|
+          await: citation_pipeline(claim: claim)
+        return: {
+          content: content,
+          citations: &context.citation.formatted
+        }
+    otherwise:
+      return: { content: content }

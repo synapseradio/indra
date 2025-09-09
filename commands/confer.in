@@ -153,12 +153,13 @@ actor @confer:
               when: &context.confer.dialogue_state is 'stagnant'
                 output: "The panel seems to be in broad agreement. To ensure we're not missing anything, I'd like to introduce a contrarian perspective."
                 as: @contrarian_voice
-                await: consider_opposite_view(current_position: &context.confer.transcript)
-                store_in: &context.confer.moderator_question
+                set: &context.confer.moderator_question: ~(consider_opposite_view(current_position: &context.confer.transcript))~
 
               when: &context.confer.dialogue_state is 'healthy_tension'
-                await: analyze_and_guide(transcript: &context.confer.transcript)
-                store_in: &context.confer.moderator_question
+                set: &context.confer.moderator_question: ~(<
+                  As the moderator, review the transcript: "~(&context.confer.transcript)~".
+                  The dialogue has healthy tension. Ask a question that builds on the existing momentum and deepens the inquiry.
+                >)~
 
               output: <<|
                 ---
@@ -204,14 +205,14 @@ dialogue confer_flow:
   with: {
     context: {
       dialogue: {
-        latest_dialogue_entry: ""
+        latest_dialogue_entry: ''
       },
       user: {
-        latest: "",
+        latest: '',
         history: []
       },
-      query: "",
-      query_breakdown: "",
+      query: '',
+      query_breakdown: '',
       reasoning: {
         config: {
           perspectives: []
@@ -219,29 +220,29 @@ dialogue confer_flow:
       },
       reason: {
         understanding_confirmed: false,
-        user_confirmation: ""
+        user_confirmation: ''
       },
       confer: {
-        phase: "ready",
+        phase: 'ready',
         transcript: [],
-        latest_statement: "",
-        dialogue_state: "healthy_tension",
-        moderator_question: "",
-        user_guidance: ""
+        latest_statement: '',
+        dialogue_state: 'healthy_tension',
+        moderator_question: '',
+        user_guidance: ''
       },
       citation: {
         similarity_score: 0.0,
         search_history: [],
         raw_results: [],
         evidence_pool: [],
-        filtered_results: [],
-        formatted: "",
+        filtered_results: '',
+        formatted: '',
         validated: false
       },
       convergence: {
         themes: [],
         supporting_ideas: [],
-        distilled_principles": {}
+        distilled_principles: {}
       },
       divergence: {
         themes: [],
@@ -250,16 +251,16 @@ dialogue confer_flow:
       },
       epistemic: {
         hypotheses: {},
-        distinction: "",
+        distinction: '',
         consequences_A: {},
         consequences_B: {},
-        user_question: "",
-        user_guidance: ""
+        user_question: '',
+        user_guidance: ''
       },
-      deliberate_analysis: "",
-      opposite_view: "",
-      bias_check: "",
+      deliberate_analysis: '',
+      opposite_view: '',
+      bias_check: '',
       failure_modes: [],
-      prioritized_risks": []
+      prioritized_risks: []
     }
   }
