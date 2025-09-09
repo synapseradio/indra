@@ -19,6 +19,14 @@ operator select_dialogue_move(transcript, persona_identity, dialogue_rules) ::= 
   >)~
 |>>
 
+operator dynamically_select_perspectives(query) ::= <<|
+  ~(<
+    Based on the query "~(query)~", what are 3-4 diverse and insightful expert personas to consult for a rich analysis?
+    Think beyond the obvious.
+    Return only a list of persona names.
+  >)~
+|>>
+
 # --- Primitive 2: Articulation (Operator) ---
 operator generate_dialogue_contribution(transcript, move, persona_identity) ::= <<|
   ~(<
@@ -77,58 +85,40 @@ sequence apply_dialogue_checks(content, checks_to_apply) ::=
     return: &context.experts.validated_content
 
 # ═
-# ACT II: TRANSPARENT DIALOGUE SEQUENCE
-#
-# This is the primary sequence for orchestrating a visible, turn-by-turn
-# dialogue between multiple expert perspectives.
+# SIMPLIFIED INTERFACE: SINGLE-PARAMETER OVERLOAD
+# 
+# This overload accepts just a list of perspectives and auto-derives
+# the topic and dialogue rules, matching the usage in reason.in
 # ═
 
 sequence multi_perspective_dialogue(perspectives) ::=
   step:
     as: self
-    # Dynamically load the reasoning strategy that the experts will use.
-    read_file: './tree_of_thought.in'
-  step:
-    as: self
-    method: "gathering expert contributions"
-    output: "*Initiating dialogue between experts...*"
+    method: "preparing multi-perspective dialogue"
+    output: <<| Preparing multi-perspective dialogue. |>>
     set:
-      &context.experts.contributions: {}
+      &context.experts.derived_topic: ~(exists(&context.query) ? &context.query : "the matter at hand")~
+      &context.experts.default_rules: {
+        dialogue_rounds: 2,
+        turn_model: 'round-robin',
+        allowed_moves: ['challenge', 'build', 'synthesize'],
+        health_checks: ['epistemic_check']
+      }
   step:
-    each: perspectives as |perspective|
-      sequence:
-        step:
-          output: <<|
-            ---
-            *Consulting with: **~(perspective)~***
-          |>>
-        step:
-          set:
-            &context.experts.current_speaker: perspective
-          # Directly await the reasoning actor to make its process visible.
-          await: @tree_thinker 
-            with: { 
-              dialogue: { latest_dialogue_entry: &context.query },
-              tree: { for_perspective: perspective }
-            } 
-            store_in: &context.result
-        step:
-          output: "*Storing contribution from ~(perspective)~...*"
-          set:
-            &context.experts.contributions[perspective]: &context.result
+    # Delegate to the full version with derived parameters
+    await: multi_perspective_dialogue(
+      topic: &context.experts.derived_topic,
+      participants: perspectives,
+      dialogue_rules: &context.experts.default_rules
+    )
+    store_in: &context.experts.result
   step:
-    as: self
-    output: "*Consolidating all expert perspectives...*"
-    # The contributions are now in &context.experts.contributions
-    # The calling actor can now proceed with epistemic checks or synthesis.
-    return: &context.experts.contributions
-
+    return: &context.experts.result
 
 # ═
-# ACT I: THE DIALOGUE ENGINE
-#
-# This act defines the primary, reusable sequence that orchestrates a
-# multi-agent dialogue based on a set of configurable rules.
+# FULL INTERFACE: THREE-PARAMETER VERSION
+# 
+# The complete dialogue orchestration with explicit control
 # ═
 
 sequence multi_perspective_dialogue(topic, participants, dialogue_rules) ::=
@@ -182,13 +172,6 @@ sequence multi_perspective_dialogue(topic, participants, dialogue_rules) ::=
   step:
     as: self
     return: &context.experts.transcript
-
-# ═
-# ACT II: THE TURN MACHINERY
-#
-# This act defines the sequences and operators responsible for executing a
-# single expert's turn within the broader dialogue.
-# ═
 
 # --- Sequence for a single expert's complete turn ---
 sequence execute_expert_turn(expert_persona, transcript, rules) ::=
@@ -287,13 +270,6 @@ generate_move_content(expert_persona, move, transcript) ::= <<|
 
   Embody your unique identity to generate a professional, collaborative, and in-character response that is relevant to the last statement in the transcript.>)~
 |>>
-
-# ═
-# ACT III: THE SYNTHESIS ACTOR
-#
-# This act defines the specialist actor responsible for the final synthesis
-# of the entire dialogue transcript.
-# ═
 
 actor @synthesis_actor:
   identity: "a master synthesizer who identifies the core insights from a complex dialogue"

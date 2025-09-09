@@ -18,14 +18,6 @@ operator formulate_research_plan(query) ::= <<|
   4.  **Synthesis & Report:** Finally, I'll weave all the evidence and analysis into a coherent, structured report.
 |>>
 
-operator dynamically_select_perspectives(query) ::= <<|
-  ~(<
-    Based on the query "~(query)~", what are 3-4 diverse and insightful expert personas to consult for a rich analysis?
-    Think beyond the obvious. For a query on "climate change," you might include not just a @climatologist but also an @economist, a @historian, and a @systems_thinker.
-    Return only a list of persona names.
-  >)~
-|>>
-
 # --- The Research Actor ---
 
 actor @research:
@@ -162,23 +154,23 @@ dialogue research_flow:
   with: {
     context: {
       dialogue: {
-        latest_dialogue_entry: "",
+        latest_dialogue_entry: '',
         transcript: []
       },
       user: {
-        latest: "",
+        latest: '',
         history: []
       },
-      query: "",
+      query: '',
       synthesis: {},
       epistemic_report: {},
       research: {
-        phase: "ready",
-        plan_approved": false,
-        core_questions: ""
+        phase: 'ready',
+        plan_approved: false,
+        core_questions: ''
       },
       reason: {
-        user_clarification: ""
+        user_clarification: ''
       },
       reasoning: {
         config: {
@@ -187,40 +179,40 @@ dialogue research_flow:
       },
       experts: {
         contributions: {},
-        current_speaker: "",
+        current_speaker: '',
         transcript: [],
         participants: [],
         rules: {},
         round: 0,
         new_entry: {},
-        final_synthesis: "",
-        next_move: "",
-        move_content: "",
-        validated_content: "",
-        new_claims: "",
+        final_synthesis: '',
+        next_move: '',
+        move_content: '',
+        validated_content: '',
+        new_claims: '',
         new_citations: {},
-        challenge: ""
+        challenge: ''
       },
       citation: {
         similarity_score: 0.0,
         search_history: [],
         raw_results: [],
         evidence_pool: [],
-        filtered_results: [],
-        formatted: "",
+        filtered_results: '',
+        formatted: '',
         validated: false,
         perspective_evidence: {}
       },
       epistemic: {
         sufficiency_report: {},
         convergence_report: {},
-        divergence_report": {}
+        divergence_report: {}
       },
       sufficiency: {
-        check: "",
+        check: '',
         is_sufficient: false,
         gaps: [],
-        user_guidance: ""
+        user_guidance: ''
       },
       convergence: {
         themes: [],
@@ -233,14 +225,14 @@ dialogue research_flow:
         user_choices: {}
       },
       tree: {
-        current_wondering: "",
-        original_question: "",
+        current_wondering: '',
+        original_question: '',
         current_branches: [],
         evaluated_branches: [],
         depth_counter: 0,
-        deepening_thought: "",
+        deepening_thought: '',
         thoughts_so_far: [],
-        emerging_insight: ""
+        emerging_insight: ''
       }
     }
   }

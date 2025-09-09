@@ -122,7 +122,7 @@ dialogue ponder_flow:
         history: []
       },
       user: {
-        latest: "",
+        latest: '',
         history: []
       },
       ponder: {
@@ -136,9 +136,9 @@ dialogue ponder_flow:
         search_history: [],
         raw_results: [],
         evidence_pool: [],
-        filtered_results: [],
-        formatted: "",
-        validated": false
+        filtered_results: '',
+        formatted: '',
+        validated: false
       }
     }
   }

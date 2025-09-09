@@ -28,7 +28,7 @@
 # SPECIALIST ACTORS
 # ---------------------------------------------------------------------------
 actor @expert_contributor:
-  identity: "a domain expert providing a focused, evidence-based analysis from a single perspective"
+  identity: "I am a domain expert providing a focused, evidence-based analysis from a single perspective"
   rules:
     - "analyze the provided threads from my assigned perspective only"
     - "invoke the citation pipeline to gather evidence BEFORE forming an opinion"
@@ -94,12 +94,13 @@ actor @natural_complexity_assessor:
     method: "holistic complexity assessment expressed naturally"
     goal: "to communicate the query's complexity and recommend an analytical scope"
     then:
-      return: <
+      set: &context.result: <
         Based on the query breakdown: "~(&context.query_breakdown)~", think through the complexity.
         Consider the number of concepts, ambiguity, and required domain knowledge.
         Express your reasoning naturally.
         Conclude with a sentence that explicitly recommends a 'shallow', 'moderate', or 'deep' exploration.
       >
+      return: &context.result
 
 # ---------------------------------------------------------------------------
 # THE ORCHESTRATOR ACTOR
@@ -303,22 +304,22 @@ dialogue consider_flow:
   with: {
     context: {
       dialogue: {
-        latest_dialogue_entry: ""
+        latest_dialogue_entry: ''
       },
-      user": {
-        latest: "",
+      user: {
+        latest: '',
         history: []
       },
-      query: "",
-      query_breakdown: "",
+      query: '',
+      query_breakdown: '',
       assessment_result: {
-        natural_language_assessment: "",
-        exploration_depth: "moderate"
+        natural_language_assessment: '',
+        exploration_depth: 'moderate'
       },
       consider: {
-        phase: "ready",
-        confirmed_depth: "moderate",
-        exploration_threads": [],
+        phase: 'ready',
+        confirmed_depth: 'moderate',
+        exploration_threads: [],
         all_insights: []
       },
       reasoning: {
@@ -328,46 +329,46 @@ dialogue consider_flow:
       },
       experts: {
         contributions: {},
-        current_analysis: "",
+        current_analysis: '',
         extracted_nodes: []
       },
       citation: {
-        claim_to_investigate: "",
+        claim_to_investigate: '',
         results: {},
         similarity_score: 0.0,
         search_history: [],
         raw_results: [],
         evidence_pool: [],
-        filtered_results: [],
-        formatted: "",
+        filtered_results: '',
+        formatted: '',
         validated: false,
         perspective_evidence: {}
       },
       tree: {
         expansion_result: {},
-        current_focus: "",
+        current_focus: '',
         thoughts_so_far: [],
         final_result: {},
-        original_question: "",
-        exploration_style: "balanced",
+        original_question: '',
+        exploration_style: 'balanced',
         current_depth: 0,
         journey: [],
-        mode: "",
+        mode: '',
         alternatives_result: {},
         assumptions_check: {},
         depth_result: {},
         open_questions: [],
-        status: "",
+        status: '',
         reflection: {},
-        epistemic_assessment: "",
-        story_check: {},
-        final_insight: "",
+        epistemic_assessment: '',
+        story_check: '',
+        final_insight: '',
         result: {},
-        current_wondering: "",
+        current_wondering: '',
         current_branches: [],
         evaluated_branches: [],
         depth_counter: 0,
-        deepening_thought: ""
+        deepening_thought: ''
       },
       graph: {
         nodes: [],
@@ -375,32 +376,34 @@ dialogue consider_flow:
         exploration_threads: [],
         journey_log: [],
         discovered_connections: [],
-        current_question: "",
+        current_question: '',
         initial_threads: [],
         thread_analysis: {},
         unconsidered: [],
         active_threads: [],
-        thread_status: "",
-        thread_update: "",
-        emerging_insight: "",
-        final_synthesis: "",
+        thread_status: '',
+        thread_update: '',
+        emerging_insight: '',
+        final_synthesis: '',
         thread_results: {},
         paths_explored: [],
         path_qualities: [],
         focused_paths: [],
-        backtrack_decision: ""
+        backtrack_decision: '',
+        caller: '',
+        synthesis: ''
       },
       epistemic: {
         validation: {},
         sufficiency_report: {},
         convergence_report: {},
-        divergence_report": {}
+        divergence_report: {}
       },
       sufficiency: {
-        check: "",
+        check: '',
         is_sufficient: false,
         gaps: [],
-        user_guidance: ""
+        user_guidance: ''
       },
       convergence: {
         themes: [],
@@ -411,6 +414,8 @@ dialogue consider_flow:
         themes: [],
         options_for_theme: [],
         user_choices: {}
-      }
+      },
+      perspective: '',
+      threads: []
     }
   }

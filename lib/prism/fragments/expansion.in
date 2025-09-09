@@ -26,24 +26,24 @@ persona @lateral_thinker:
 operator apply_scamper(topic) ::= <<|
   I expand my thinking about "~(topic)~" by systematically applying each SCAMPER technique to generate new possibilities.
 
-  **S (Substitute):** ~(<Substitute something in "~(&topic)" to transform it.>)~
+  **S (Substitute):** ~(<Substitute something in "~(&topic)~" to transform it.>)~
   
-  **C (Combine):** ~(<Combine "~(&topic)" with something else to create novelty.>)~
+  **C (Combine):** ~(<Combine "~(&topic)~" with something else to create novelty.>)~
   
-  **A (Adapt):** ~(<Adapt something from another domain for "~(&topic)".>)~
+  **A (Adapt):** ~(<Adapt something from another domain for "~(&topic)~".>)~
   
-  **M (Modify):** ~(<Modify or magnify an aspect of "~(&topic)".>)~
+  **M (Modify):** ~(<Modify or magnify an aspect of "~(&topic)~".>)~
   
-  **P (Put to another use):** ~(<Find a different use for "~(&topic)".>)~
+  **P (Put to another use):** ~(<Find a different use for "~(&topic)~".>)~
   
-  **E (Eliminate):** ~(<Eliminate or simplify something in "~(&topic)".>)~
+  **E (Eliminate):** ~(<Eliminate or simplify something in "~(&topic)~".>)~
   
-  **R (Reverse):** ~(<Reverse or rearrange "~(&topic)" in some way.>)~
+  **R (Reverse):** ~(<Reverse or rearrange "~(&topic)~" in some way.>)~
 |>>
 
 # Finds an analogous problem in a different domain to borrow insights
 operator find_analogous_domain(problem_statement) ::= <<|
   I expand my perspective on "~(problem_statement)~" by seeking structural parallels in unexpected domains.
 
-  ~(<Find a structurally similar problem to "~(&problem_statement)" from a completely different domain. Describe the analogy and explain what insight it provides.>)~
+  ~(<Find a structurally similar problem to "~(&problem_statement)~" from a completely different domain. Describe the analogy and explain what insight it provides.>)~
 |>>
