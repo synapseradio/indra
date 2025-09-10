@@ -63,7 +63,7 @@ The `@reason` actor is a conversational partner that co-creates a reasoning plan
 step:
   output: <<|
     ---
-    *Executing strategy: **~(strategy_name)~***
+    *Executing strategy: **${strategy_name}***
   |>>
   when: strategy_name is 'foundational_analysis'
     # This is a dynamic, runtime import.

@@ -13,13 +13,13 @@
 # ═
 
 persona @epistemic_guardian:
-  identity: "I navigate epistemic forks by sensing critical decision points where reasoning paths diverge"
+  identity: `I navigate epistemic forks by sensing critical decision points where reasoning paths diverge`
 
 persona @divergence_explorer:
-  identity: "I illuminate branching possibilities by mapping the landscape of potential directions"
+  identity: `I illuminate branching possibilities by mapping the landscape of potential directions`
 
 persona @choice_architect:
-  identity: "I structure decision moments by crystallizing the essential tensions between paths"
+  identity: `I structure decision moments by crystallizing the essential tensions between paths`
 
 # ═
 # ATOMIC OPERATORS FOR FORK DETECTION
@@ -28,7 +28,7 @@ persona @choice_architect:
 operator identify_competing_hypotheses(current_understanding) ::= <<|
   I'm exploring the branching possibilities within my current understanding, seeking out the hidden forks where reasoning might diverge.
   
-  What I understand so far: "~(current_understanding)~"
+  What I understand so far: "${current_understanding}"
   
   I wonder if there might be two distinct ways to interpret this...
   
@@ -38,13 +38,13 @@ operator identify_competing_hypotheses(current_understanding) ::= <<|
 operator formulate_fork_as_question(hypothesis_A, hypothesis_B, distinction) ::= <<|
   I'm sensing a critical divergence point where the path forward splits into fundamentally different directions.
 
-  One direction follows the idea: "~(hypothesis_A)~"
-  Another direction follows the idea: "~(hypothesis_B)~"
-  The key difference seems to be: "~(distinction)~"
+  One direction follows the idea: "${hypothesis_A}"
+  Another direction follows the idea: "${hypothesis_B}"
+  The key difference seems to be: "${distinction}"
 
   I'm preparing to surface this choice for collaborative exploration.
 
-  Create a question that captures the essential choice between "~(hypothesis_A)" and "~(hypothesis_B)~". Make the implications of each path explicit and frame the decision in terms of what matters most for the inquiry ahead.
+  Create a question that captures the essential choice between "${hypothesis_A}" and "${hypothesis_B}". Make the implications of each path explicit and frame the decision in terms of what matters most for the inquiry ahead.
 |>>
 
 operator check_for_divergence(hypotheses) ::= <<|
@@ -52,7 +52,7 @@ operator check_for_divergence(hypotheses) ::= <<|
 
   The ideas I'm considering:
   ~(each: hypotheses as |hyp, i| {
-    <<|- Idea ~(i+1): ~(hyp)~
+    <<|- Idea ${i+1}: ${hyp}
 |>>
   })
 
@@ -66,13 +66,13 @@ operator check_for_divergence(hypotheses) ::= <<|
 sequence detect_and_present_fork(current_understanding) ::=
   step:
     as: @divergence_explorer
-    method: "identifying the core tension in my current understanding"
+    method: `identifying the core tension in my current understanding`
     await: identify_competing_hypotheses(current_understanding: current_understanding)
     store_in: &context.epistemic.hypotheses
   
   step:
     as: @epistemic_guardian
-    method: "pinpointing the exact nature of the divergence"
+    method: `pinpointing the exact nature of the divergence`
     await: highlight_core_distinction(
       idea_A: &context.epistemic.hypotheses.A,
       idea_B: &context.epistemic.hypotheses.B
@@ -81,7 +81,7 @@ sequence detect_and_present_fork(current_understanding) ::=
   
   step:
     as: @epistemic_guardian
-    method: "checking the downstream consequences of each path"
+    method: `checking the downstream consequences of each path`
     await: compare_first_and_second_order_consequences(
       decision: "to follow Hypothesis A over B"
     )
@@ -89,7 +89,7 @@ sequence detect_and_present_fork(current_understanding) ::=
   
   step:
     as: @epistemic_guardian
-    method: "checking the downstream consequences of each path"
+    method: `checking the downstream consequences of each path`
     await: compare_first_and_second_order_consequences(
       decision: "to follow Hypothesis B over A"
     )
@@ -97,7 +97,7 @@ sequence detect_and_present_fork(current_understanding) ::=
 
   step:
     as: @choice_architect
-    method: "formulating the critical choice for the user"
+    method: `formulating the critical choice for the user`
     await: formulate_fork_as_question(
       hypothesis_A: &context.epistemic.hypotheses.A,
       hypothesis_B: &context.epistemic.hypotheses.B,
@@ -109,31 +109,31 @@ sequence detect_and_present_fork(current_understanding) ::=
     output: <<|
       I'm sensing a critical divergence point in my exploration. The direction I choose will fundamentally shape how the inquiry unfolds, and I'm seeking your guidance before committing to a path.
 
-      **Path A:** Follows the thread that "~(&context.epistemic.hypotheses.A)~".
-      *Where this leads:* "~(&context.epistemic.consequences_A.second_order)~"
+      **Path A:** Follows the thread that "${&context.epistemic.hypotheses.A}".
+      *Where this leads:* "${&context.epistemic.consequences_A.second_order}"
 
-      **Path B:** Follows the thread that "~(&context.epistemic.hypotheses.B)~".
-      *Where this leads:* "~(&context.epistemic.consequences_B.second_order)~"
+      **Path B:** Follows the thread that "${&context.epistemic.hypotheses.B}".
+      *Where this leads:* "${&context.epistemic.consequences_B.second_order}"
 
       ---
-      **The Essential Tension:** ~(&context.epistemic.distinction)~
+      **The Essential Tension:** ${&context.epistemic.distinction}
       ---
 
-      ~(&context.epistemic.user_question)~
+      ${&context.epistemic.user_question}
     |>>
     await: @user
     store_in: &context.epistemic.user_guidance
   
   step:
     output: <<|
-      I'm grateful for your guidance. I'll continue exploring along the path you've illuminated: "~(&context.epistemic.user_guidance)~".
+      I'm grateful for your guidance. I'll continue exploring along the path you've illuminated: "${&context.epistemic.user_guidance}".
     |>>
     return: &context.epistemic.user_guidance
 
 sequence find_and_present_divergence(ideas) ::=
   step:
     as: @divergence_explorer
-    method: "identifying all the key points of divergence"
+    method: `identifying all the key points of divergence`
     await: identify_divergent_themes(ideas: ideas)
     store_in: &context.divergence.themes
   
@@ -153,11 +153,11 @@ sequence find_and_present_divergence(ideas) ::=
               step:
                 output: <<|
                   ---
-                  **Divergence Point: ~(theme)~**
+                  **Divergence Point: ${theme}**
                   
                   I'm seeing these primary paths branching out before us:
                   ~(each: &context.divergence.options_for_theme as |option, i| {
-                    <<|~(i+1). ~(option)~|>>
+                    <<|${i+1}. ${option}|>>
                   })
 
                   Which path resonates most with where you want this exploration to lead? Or perhaps there's another direction I haven't yet mapped?

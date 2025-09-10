@@ -18,9 +18,9 @@
 sequence perform_epistemic_check(ideas) ::=
   step:
     as: @epistemic_guardian
-    method: "assessing whether I have enough information to form a sound judgment"
+    method: `assessing whether I have enough information to form a sound judgment`
     await: check_sufficiency_and_inquire(
-      question: "Do these ideas form a complete picture?",
+      question: `Do these ideas form a complete picture?`,
       information: ideas
     )
     store_in: &context.epistemic.sufficiency_report
@@ -36,13 +36,13 @@ sequence perform_epistemic_check(ideas) ::=
 
   step:
     as: @epistemic_guardian
-    method: "identifying all points of convergence to synthesize the ideas"
+    method: `identifying all points of convergence to synthesize the ideas`
     await: synthesize_convergence(ideas: ideas)
     store_in: &context.epistemic.convergence_report
 
   step:
     as: @epistemic_guardian
-    method: "identifying all points of divergence that require user guidance"
+    method: `identifying all points of divergence that require user guidance`
     await: find_and_present_divergence(ideas: ideas)
     store_in: &context.epistemic.divergence_report
 

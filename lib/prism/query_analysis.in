@@ -9,15 +9,17 @@
 
 # Natural query understanding - reusable across command overlays
 operator understand_query(query) ::= <<|
-  I'm making sure I understand this correctly. From what you're saying, you want to explore: **~(<Summarize the user's core request in a clear, concise sentence.>)~**
+  I'm making sure I understand this correctly. From what you're saying, you want to explore: **${<
+    Summarize the user's core request in a clear, concise sentence.
+  >}**
 
   The most important points seem to be:
-  ~(each: ~(<Identify and list the key aspects, constraints, or goals from the user's query as a list of distinct points.>)~ as |item| {
-    <<|- ~(item)~
-|>>
-  })
+  ${each: ${<Identify and list key aspects, constraints, or goals from the user's request as a list of distinct, cumulative or corrolary points.>} as |item| {
+    <<|- ${item}
+      |>>
+  })!
 
-  Essentially, the goal is to **~(<Summarize the user's desired outcome in a short, actionable phrase.>)~**.
+  In essence, the goal is to **${<Summarize the user's desired outcome in an actionable phrase.>}**.[| |]
 |>>
 
 # ═
@@ -25,17 +27,17 @@ operator understand_query(query) ::= <<|
 # ═
 
 actor @query_analyst:
-  identity: "I specialize in understanding and clarifying user requests"
+  identity: `I specialize in understanding and clarifying user requests`
   rules:
-    - "engage in a focused dialogue until the user's query is fully understood"
-    - "present my understanding clearly for confirmation"
-    - "return only the final, confirmed query breakdown"
+    - `engage in a focused dialogue until the user's query is fully understood`
+    - `present my understanding clearly for confirmation`
+    - `return only the final, confirmed query breakdown`
   understands:
-    - "a shared understanding is the foundation for effective reasoning"
+    - `a shared understanding is the foundation for effective reasoning`
   perform:
-    method: "iterative query clarification"
+    method: `iterative query clarification`
     output: "*Engaging query analyst...*"
-    goal: "to achieve a confirmed understanding of the user's query"
+    goal: `to achieve a confirmed understanding of the user's query`
     then:
       # Loop until the user confirms our understanding is correct.
       until: &context.reason.understanding_confirmed is true
@@ -45,13 +47,13 @@ actor @query_analyst:
           step:
             when: &context.query_breakdown is ''
               set:
-                &context.query_breakdown: ~(understand_query(query: &user.latest))~
+                &context.query_breakdown: ${understand_query(query: &user.latest)}
           # Present the current understanding and await user feedback.
           step:
             output: <<|
               *Understanding your query...*
 
-              ~(&context.query_breakdown)~
+              ${&context.query_breakdown}
 
               Am I understanding you correctly?
             |>>
@@ -59,13 +61,13 @@ actor @query_analyst:
             store_in: &context.reason.user_confirmation
           # Check the user's feedback.
           step:
-            when: ~(<Check if ~(&context.reason.user_confirmation) indicates agreement.>)~ is true
+            when: ${<Check if ${&context.reason.user_confirmation} indicates agreement.>} is true
               set:
                 &context.reason.understanding_confirmed: true
             otherwise:
               # If user provides a correction, re-run the understanding process on their new input for the next loop iteration.
               set:
-                &context.query_breakdown: ~(understand_query(query: &context.reason.user_confirmation))~
+                &context.query_breakdown: ${understand_query(query: &context.reason.user_confirmation)}
       
       # Once confirmed, return the final breakdown to the orchestrator.
       return: &context.query_breakdown

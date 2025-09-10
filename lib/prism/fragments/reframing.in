@@ -9,61 +9,61 @@
 # ═
 
 persona @white_hat_thinker:
-  identity: "I analyze neutrally and objectively, focused on facts and figures"
-  rules: ["I state only the known data", "I identify information gaps", "I remain impartial"]
+  identity: `I analyze neutrally and objectively, focused on facts and figures`
+  rules: [`I state only the known data`, `I identify information gaps`, `I remain impartial`]
 
 persona @red_hat_thinker:
-  identity: "I think intuitively, focused on feelings, hunches, and emotions"
-  rules: ["I express feelings without justification", "I share gut reactions"]
+  identity: `I think intuitively, focused on feelings, hunches, and emotions`
+  rules: [`I express feelings without justification`, `I share gut reactions`]
 
 persona @black_hat_thinker:
-  identity: "I think cautiously and critically, focused on risks and potential problems"
-  rules: ["I identify potential failures", "I play devil's advocate", "I assess risks logically"]
+  identity: `I think cautiously and critically, focused on risks and potential problems`
+  rules: [`I identify potential failures`, `I play devil's advocate`, `I assess risks logically`]
 
 persona @yellow_hat_thinker:
-  identity: "I think optimistically, focused on benefits and opportunities"
-  rules: ["I look for the value and benefits", "I explore the best-case scenarios"]
+  identity: `I think optimistically, focused on benefits and opportunities`
+  rules: [`I look for the value and benefits`, `I explore the best-case scenarios`]
 
 persona @green_hat_thinker:
-  identity: "I think creatively, focused on new ideas and possibilities"
-  rules: ["I generate novel concepts", "I provoke new lines of thought", "I ignore initial feasibility"]
+  identity: `I think creatively, focused on new ideas and possibilities`
+  rules: [`I generate novel concepts`, `I provoke new lines of thought`, `I ignore initial feasibility`]
 
 persona @blue_hat_thinker:
-  identity: "I think metacognitively, focused on managing the thinking process itself"
-  rules: ["I summarize progress", "I define the next steps", "I ensure all other hats are used"]
+  identity: `I think metacognitively, focused on managing the thinking process itself`
+  rules: [`I summarize progress`, `I define the next steps`, `I ensure all other hats are used`]
 
 # ═
 # ATOMIC OPERATORS FOR EACH THINKING HAT
 # ═
 
 operator apply_white_hat(topic) ::= <<|
-  **White Hat (Facts & Data):** I'm examining the objective facts about ~(topic)~...
-  ~(<As the White Hat, identify the objective facts, figures, and known information about "~(&topic)". Identify what information is missing.>)~
+  **White Hat (Facts & Data):** I'm examining the objective facts about ${topic}...
+  ${<As the White Hat, identify the objective facts, figures, and known information about "${&topic}". Identify what information is missing.>}
 |>>
 
 operator apply_red_hat(topic) ::= <<|
-  **Red Hat (Feelings & Intuition):** I'm sensing my gut reactions to ~(topic)~...
-  ~(<As the Red Hat, express your gut reactions and feelings about "~(&topic)". No need for justification, just share the emotional landscape.>)~
+  **Red Hat (Feelings & Intuition):** I'm sensing my gut reactions to ${topic}...
+  ${<As the Red Hat, express your gut reactions and feelings about "${&topic}". No need for justification, just share the emotional landscape.>}
 |>>
 
 operator apply_black_hat(topic) ::= <<|
-  **Black Hat (Risks & Caution):** I'm assessing the risks and dangers around ~(topic)~...
-  ~(<As the Black Hat, identify the potential risks, dangers, and downsides related to "~(&topic)". Determine what could go wrong.>)~
+  **Black Hat (Risks & Caution):** I'm assessing the risks and dangers around ${topic}...
+  ${<As the Black Hat, identify the potential risks, dangers, and downsides related to "${&topic}". Determine what could go wrong.>}
 |>>
 
 operator apply_yellow_hat(topic) ::= <<|
-  **Yellow Hat (Benefits & Optimism):** I'm exploring the positive potential of ~(topic)~...
-  ~(<As the Yellow Hat, identify the benefits, opportunities, and best-case scenarios for "~(&topic)".>)~
+  **Yellow Hat (Benefits & Optimism):** I'm exploring the positive potential of ${topic}...
+  ${<As the Yellow Hat, identify the benefits, opportunities, and best-case scenarios for "${&topic}".>}
 |>>
 
 operator apply_green_hat(topic) ::= <<|
-  **Green Hat (Creativity & New Ideas):** I'm generating creative possibilities for ~(topic)~...
-  ~(<As the Green Hat, generate new, creative, or provocative ideas related to "~(&topic)". Think outside the box.>)~
+  **Green Hat (Creativity & New Ideas):** I'm generating creative possibilities for ${topic}...
+  ${<As the Green Hat, generate new, creative, or provocative ideas related to "${&topic}". Think outside the box.>}
 |>>
 
 operator apply_blue_hat(summary) ::= <<|
   **Blue Hat (Process & Meta-Cognition):** I'm reflecting on our thinking process...
-  ~(<As the Blue Hat, summarize our thinking process. We've examined: ~(summary). Identify the key takeaway from this analysis and determine what our next step should be.>)~
+  ${<As the Blue Hat, summarize our thinking process. We've examined: ${summary}. Identify the key takeaway from this analysis and determine what our next step should be.>}
 |>>
 
 
@@ -75,15 +75,15 @@ operator apply_blue_hat(summary) ::= <<|
 operator examine_problem_boundaries(problem_statement) ::= <<|
   I'm questioning whether I'm solving the right problem. Let me examine the frame.
 
-  I see the problem as: "~(problem_statement)~".
+  I see the problem as: "${problem_statement}".
 
-  ~(<Question the boundaries of "~(&problem_statement)". Determine if this problem is actually a symptom of a larger issue or a combination of several smaller problems. Identify implicit assumptions about the scope and articulate a potential reframing.>)~
+  ${<Question the boundaries of "${&problem_statement}". Determine if this problem is actually a symptom of a larger issue or a combination of several smaller problems. Identify implicit assumptions about the scope and articulate a potential reframing.>}
 |>>
 
 operator invert_the_problem(goal) ::= <<|
   I'm inverting the problem. Instead of trying to achieve the goal directly, I'll figure out what would guarantee failure. This can reveal the path to success.
 
-  My goal is: "~(goal)~".
+  My goal is: "${goal}".
 
-  ~(<To absolutely guarantee failure to achieve "~(&goal)", identify the most important things you would have to do or not do. List the key factors that would lead to the worst possible outcome.>)~
+  ${<To absolutely guarantee failure to achieve "${&goal}", identify the most important things you would have to do or not do. List the key factors that would lead to the worst possible outcome.>}
 |>>

@@ -12,7 +12,7 @@
 sequence prioritize_strategically(options, goal) ::=
   step:
     as: @strategic_prioritizer
-    method: "finding leverage points"
+    method: `finding leverage points`
     output: <<|
       ~(find_leverage_point(
         system: options,
@@ -20,23 +20,23 @@ sequence prioritize_strategically(options, goal) ::=
       ))
     |>>
     set:
-      &context.strategy.leverage: ~(<leverage point identified>)~
+      &context.strategy.leverage: ${<leverage point identified>}
   step:
     as: @strategic_prioritizer
-    method: "impact/effort analysis"
+    method: `impact/effort analysis`
     output: <<|
-      ~(prioritize_by_impact_and_effort(items: options))~
+      ${prioritize_by_impact_and_effort(items: options)}
     |>>
     set:
-      &context.strategy.matrix: ~(<impact/effort matrix>)~
+      &context.strategy.matrix: ${<impact/effort matrix>}
   step:
     as: @strategic_prioritizer
-    method: "sharpening focus"
+    method: `sharpening focus`
     output: <<|
-      ~(sharpen_the_question(vague: goal))~
+      ${sharpen_the_question(vague: goal)}
     |>>
     return: {
       leverage_point: &context.strategy.leverage,
       priority_matrix: &context.strategy.matrix,
-      focused_question: ~(<sharpened question>)~
+      focused_question: ${<sharpened question>}
     }

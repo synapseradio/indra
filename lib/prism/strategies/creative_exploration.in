@@ -18,27 +18,27 @@ sequence explore_creatively(thought, context) ::=
     |>>
   step:
     as: @lateral_thinker
-    method: "finding analogies in unexpected domains"
+    method: `finding analogies in unexpected domains`
     output: <<|
       I wonder if there's an analogous situation elsewhere...
 
-      ~(find_analogous_domain(problem: thought))~
+      ${find_analogous_domain(problem: thought)}
     |>>
     set:
-      &context.creative.analogy: ~(<the analogous domain and insights>)~
+      &context.creative.analogy: ${<the analogous domain and insights>}
   step:
     as: @lateral_thinker
-    method: "applying SCAMPER for creative variations"
+    method: `applying SCAMPER for creative variations`
     output: <<|
       Now, let me try some SCAMPER techniques...
 
-      ~(apply_scamper(concept: thought))~
+      ${apply_scamper(concept: thought)}
     |>>
     set:
-      &context.creative.scamper_variations: ~(<the SCAMPER variations>)~
+      &context.creative.scamper_variations: ${<the SCAMPER variations>}
   step:
     as: @insight_distiller
-    method: "distilling creative insights"
+    method: `distilling creative insights`
     output: <<|
       Does this spark any new insights?
 
@@ -50,5 +50,5 @@ sequence explore_creatively(thought, context) ::=
       original: thought,
       analogy: &context.creative.analogy,
       variations: &context.creative.scamper_variations,
-      insights: ~(<convergent themes identified>)~
+      insights: ${<convergent themes identified>}
     }

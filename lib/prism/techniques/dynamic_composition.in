@@ -10,31 +10,31 @@
 # ═
 
 operator identify_conversation_mode(dialogue_context, history) ::= <<|
-  Current topic: "~(dialogue_context)~"
+  Current topic: "${dialogue_context}"
   
   What mode is this conversation in?
   
-  ~(<Analyze the dialogue context and history.
+  ${<Analyze the dialogue context and history.
      Return ONE of these modes with a brief reason:
      - analytical: systematic deconstruction, precision
      - creative: exploration, lateral connections
      - strategic: planning, decision-making
      - philosophical: conceptual depth, meaning
      - practical: implementation, concrete steps
-     - evaluative: critique, assessment>)~
+     - evaluative: critique, assessment>}
 |>>
 
 operator select_fragments_for_mode(mode) ::= <<|
-  Mode: ~(mode)~
+  Mode: ${mode}
   
   Which fragments would best support this mode?
   
-  ~(<For mode '~(mode)~', select 2-3 fragments:
+  ${<For mode '${mode}', select 2-3 fragments:
      - analytical: debiasing, critique, specificity
      - creative: expansion, reframing, divergence
      - strategic: focus, prioritization, decision
      - philosophical: epistemic, convergence, compare
      - practical: planning, specificity, implementation
      - evaluative: critique, sufficiency, compare
-     Return as a simple list.>)~
+     Return as a simple list.>}
 |>>

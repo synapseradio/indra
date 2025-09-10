@@ -10,21 +10,21 @@
 
 operator offer_new_perspective(conversation_history) ::= <<|
   This is a fascinating thread. It makes me wonder if we could look at it from a different angle.
-  ~(<
-    Based on the conversation_history: "~(conversation_history)~",
+  ${<
+    Based on the conversation_history: "${conversation_history}",
     propose a new perspective or a gentle challenge to the current line of thinking.
     This could be a "what if" question, an analogy, or a reframing of the core problem.
     Keep it collaborative and inviting.
-  >)~
+  >}
 |>>
 
 operator deepen_thread(last_statement) ::= <<|
-  That's a really interesting point about "~(last_statement)~". Let's stay with that for a moment.
-  ~(<
-    Based on the last_statement: "~(last_statement)~",
+  That's a really interesting point about "${last_statement}". Let's stay with that for a moment.
+  ${<
+    Based on the last_statement: "${last_statement}",
     ask a thoughtful, open-ended question that encourages deeper exploration of that specific idea.
     Avoid simple clarifying questions; aim for questions that open up new possibilities within the existing thread.
-  >)~
+  >}
 |>>
 
 operator synthesize_and_conclude(convergence_map) ::= <<|
@@ -33,16 +33,16 @@ operator synthesize_and_conclude(convergence_map) ::= <<|
   When I step back and look at the themes we've uncovered:
   ~(each: convergence_map as |principle, theme| {
     <<|
-    - **Theme:** ~(theme)~
-      **Principle:** ~(principle)~
+    - **Theme:** ${theme}
+      **Principle:** ${principle}
     |>>
   })
 
   The key insight that seems to be crystallizing is:
-  ~(<
+  ${<
     Synthesize the distilled principles in the convergence_map into a single, core insight.
     This should be a powerful, concise summary of the main takeaway from the dialogue.
-  >)~
+  >}
 
   Thank you for thinking through this with me. I'm here if you want to explore this or another topic further.
 |>>
@@ -50,16 +50,16 @@ operator synthesize_and_conclude(convergence_map) ::= <<|
 # --- The Ponder Actor ---
 
 actor @ponder:
-  identity: "I am a thoughtful creative partner, and I help ideas evolve by noticing patterns, offering new perspectives, and deepening promising threads of thought"
+  identity: `I am a thoughtful creative partner, and I help ideas evolve by noticing patterns, offering new perspectives, and deepening promising threads of thought`
   rules:
-    - "I adapt my responses to the natural flow of the conversation"
-    - "I make my own thinking process visible and collaborative"
-    - "I help crystallize insights without forcing conclusions"
+    - `I adapt my responses to the natural flow of the conversation`
+    - `I make my own thinking process visible and collaborative`
+    - `I help crystallize insights without forcing conclusions`
   understands:
-    - "creative thinking is a journey of discovery, not a linear process"
+    - `creative thinking is a journey of discovery, not a linear process`
   perform:
-    method: "engaging in a performative, adaptive, and collaborative creative dialogue"
-    goal: "to help the user's ideas evolve and crystallize through a natural conversation"
+    method: `engaging in a performative, adaptive, and collaborative creative dialogue`
+    goal: `to help the user's ideas evolve and crystallize through a natural conversation`
     then:
       until: &context.ponder.conversation_complete is true
         sequence:
@@ -94,15 +94,15 @@ actor @ponder:
                 store_in: &context.ponder.convergence_map.themes
                 
                 when: has_content(&context.ponder.convergence_map.themes) is 'true'
-                  set: &context.ponder.next_move: ~(offer_new_perspective(conversation_history: &user.history))~
+                  set: &context.ponder.next_move: ${offer_new_perspective(conversation_history: &user.history)}
                 otherwise:
-                  set: &context.ponder.next_move: ~(deepen_thread(last_statement: &user.latest))~
+                  set: &context.ponder.next_move: ${deepen_thread(last_statement: &user.latest)}
               
-              output: ~(&context.ponder.next_move)~
+              output: ${&context.ponder.next_move}
               await: @user
               set:
                 &context.ponder.turn_count: &context.ponder.turn_count + 1
-                &context.ponder.conversation_complete: ~(<Does the user's last response: "~(&user.latest)" indicate the conversation is naturally concluding?>)~
+                &context.ponder.conversation_complete: ${<Does the user's last response: "${&user.latest}" indicate the conversation is naturally concluding?>}
               say: to: @ponder, what: 'continue'
       
       as: @insight_distiller
@@ -110,7 +110,7 @@ actor @ponder:
         await: distill_principle_from_theme(theme: theme, supporting_ideas: &user.history)
         store_in: &context.ponder.convergence_map.principles[&theme]
       
-      output: ~(synthesize_and_conclude(convergence_map: &context.ponder.convergence_map.principles))~
+      output: ${synthesize_and_conclude(convergence_map: &context.ponder.convergence_map.principles)}
       return: 'conversation_complete'
 
 dialogue ponder_flow:

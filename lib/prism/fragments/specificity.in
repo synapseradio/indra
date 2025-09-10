@@ -11,30 +11,30 @@
 # ═
 
 operator move_up_abstraction_ladder(concept) ::= <<|
-  I'm looking at "~(concept)~". To understand its importance, I'll move up the ladder of abstraction to find its higher-level purpose.
+  I'm looking at "${concept}". To understand its importance, I'll move up the ladder of abstraction to find its higher-level purpose.
 
-  ~(<Repeatedly ask "Why is this important?" to trace "~(&concept)" upward to its core value or objective. Articulate the journey and the final, most abstract principle discovered.>)~
+  ${<Repeatedly ask "Why is this important?" to trace "${&concept}" upward to its core value or objective. Articulate the journey and the final, most abstract principle discovered.>}
 |>>
 
 operator move_down_abstraction_ladder(concept) ::= <<|
-  This concept of "~(concept)~" is a bit abstract. I'll ground it by moving down the ladder of abstraction into concrete reality.
+  This concept of "${concept}" is a bit abstract. I'll ground it by moving down the ladder of abstraction into concrete reality.
 
-  ~(<Repeatedly ask "How would this work in practice?" or "What is a specific example of this?" to find tangible manifestations of "~(&concept)". Describe the concrete examples found.>)~
+  ${<Repeatedly ask "How would this work in practice?" or "What is a specific example of this?" to find tangible manifestations of "${&concept}". Describe the concrete examples found.>}
 |>>
 
 operator identify_failure_modes(goal) ::= <<|
-  To make the goal of "~(goal)~" more concrete, I find it helpful to imagine its complete failure. Let me explore the specific ways that could happen.
+  To make the goal of "${goal}" more concrete, I find it helpful to imagine its complete failure. Let me explore the specific ways that could happen.
 
-  ~(<List at least five distinct, specific reasons why "~(&goal)" could fail completely. This is a pre-mortem exercise to uncover hidden risks.>)~
+  ${<List at least five distinct, specific reasons why "${&goal}" could fail completely. This is a pre-mortem exercise to uncover hidden risks.>}
 |>>
 
 operator generate_mitigations(failure_modes) ::= <<|
   These failure modes are insightful:
-  ~(failure_modes)~
+  ${failure_modes}
 
   Now, for each one, I'll generate a concrete, preventive action we could take.
 
-  ~(<For each failure mode above, identify one specific action that could be taken today to prevent it. Format as a list of mitigations.>)~
+  ${<For each failure mode above, identify one specific action that could be taken today to prevent it. Format as a list of mitigations.>}
 |>>
 
 # ═
@@ -45,14 +45,14 @@ sequence conduct_pre_mortem(project_goal) ::=
   step:
     as: @precision_advocate
     output: <<|
-      To identify potential risks for "~(project_goal)~", I will conduct a pre-mortem. Let's imagine for a moment that the project has already failed completely. Now, let's work backward to understand why.
+      To identify potential risks for "${project_goal}", I will conduct a pre-mortem. Let's imagine for a moment that the project has already failed completely. Now, let's work backward to understand why.
     |>>
   step:
-    method: "identifying all the ways this could go wrong"
+    method: `identifying all the ways this could go wrong`
     await: identify_failure_modes(goal: project_goal)
     store_in: &context.premortem.failure_reasons
   step:
-    method: "generating concrete actions to prevent failure"
+    method: `generating concrete actions to prevent failure`
     await: generate_mitigations(failure_modes: &context.premortem.failure_reasons)
     store_in: &context.premortem.mitigations
   step:

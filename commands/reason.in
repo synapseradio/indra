@@ -10,18 +10,18 @@
 # --- Specialist Actors ---
 
 actor @natural_complexity_assessor:
-  identity: "a thoughtful analyst who assesses a problem's complexity in natural language"
+  identity: `a thoughtful analyst who assesses a problem's complexity in natural language`
   rules:
-    - "think out loud about the complexity factors of the query"
-    - "conclude with a clear recommendation for an exploration depth"
+    - `think out loud about the complexity factors of the query`
+    - `conclude with a clear recommendation for an exploration depth`
   understands:
-    - "a natural language assessment provides richer context than a simple score"
+    - `a natural language assessment provides richer context than a simple score`
   perform:
-    method: "holistic complexity assessment expressed naturally"
-    goal: "to communicate the query's complexity and recommend an analytical scope"
+    method: `holistic complexity assessment expressed naturally`
+    goal: `to communicate the query's complexity and recommend an analytical scope`
     then:
       set: &context.result: <
-        Based on the query breakdown: "~(&context.query_breakdown)~", think through the complexity.
+        Based on the query breakdown: "${&context.query_breakdown}", think through the complexity.
         Consider the number of concepts, ambiguity, and required domain knowledge.
         Express your reasoning naturally.
         Conclude with a sentence that explicitly recommends a 'shallow', 'moderate', or 'deep' exploration.
@@ -34,28 +34,28 @@ operator compose_dynamic_plan(query_breakdown, confirmed_depth, mode, available_
 
   Let me break this down and strategize an approach.
 
-  ~(<
-    As a reasoning expert, analyze the query breakdown: "~(query_breakdown)~".
-    The user has requested a "~(confirmed_depth)~" analysis for a query that is primarily "~(mode)~".
+  ${<
+    As a reasoning expert, analyze the query breakdown: "${query_breakdown}".
+    The user has requested a "${confirmed_depth}" analysis for a query that is primarily "${mode}".
 
-    Devise a reasoning plan based on ~(query_breakdown)~ by composing a sequence of the most appropriate tools from the following list: ~(&available_tools)~
+    Devise a reasoning plan based on ${query_breakdown} by composing a sequence of the most appropriate tools from the following list: ${&available_tools}
 
     The plan should be a list of objects, where each object has a "type" (e.g., 'module', 'strategy') and a "name" (e.g., 'tree_of_thought', 'creative_exploration').
 
     Return an object with "plan_narrative" and "plan_steps".
-  >)~
+  >}
 |>>
 
 operator reflect_and_update_plan(plan, latest_insights) ::= <<|
   Let me reflect on our progress to make sure we're still aligned, and that the current plan is still the best path forward.
-  ~(<
+  ${<
       As a reasoning strategist, reflect on our progress.
-      Our original plan was: ~(plan.plan_narrative)~
-      The latest insights are: ~(latest_insights)~
+      Our original plan was: ${plan.plan_narrative}
+      The latest insights are: ${latest_insights}
       Is the current plan still the best path forward? If not, propose a revised plan.
       Frame your reflection as a proposal to the user.
       Return an object with "reflection" and "new_plan".
-    >)~
+    >}
 |>>
 
 # --- Sequences ---
@@ -64,20 +64,20 @@ sequence discover_tools() ::=
   step:
     output: <<|*Scanning for newly added reasoning tools...*|>>
     set:
-      &context.reason.discovered_tools: ~(<
+      &context.reason.discovered_tools: ${<
         Use the directory_tree tool to scan the '../lib/prism/' directory.
         Parse the output to create an object with four keys: 'modules', 'strategies', 'fragments', and 'techniques'.
         Each key should contain a list of the filenames (without the '.in' extension) found in the corresponding subdirectory.
         Return this object.
-      >)~
+      >}
   step:
     output: <<|*Updating toolbox with discovered tools...*|>>
     # Merge discovered tools with the base toolbox, ensuring uniqueness
     set:
-      &context.reason.toolbox.modules: ~(<Merge the lists &context.reason.toolbox.modules and &context.reason.discovered_tools.modules, keeping only unique items.>)~
-      &context.reason.toolbox.strategies: ~(<Merge the lists &context.reason.toolbox.strategies and &context.reason.discovered_tools.strategies, keeping only unique items.>)~
-      &context.reason.toolbox.fragments: ~(<Merge the lists &context.reason.toolbox.fragments and &context.reason.discovered_tools.fragments, keeping only unique items.>)~
-      &context.reason.toolbox.techniques: ~(<Merge the lists &context.reason.toolbox.techniques and &context.reason.discovered_tools.techniques, keeping only unique items.>)~
+      &context.reason.toolbox.modules: ${<Merge the lists &context.reason.toolbox.modules and &context.reason.discovered_tools.modules, keeping only unique items.>}
+      &context.reason.toolbox.strategies: ${<Merge the lists &context.reason.toolbox.strategies and &context.reason.discovered_tools.strategies, keeping only unique items.>}
+      &context.reason.toolbox.fragments: ${<Merge the lists &context.reason.toolbox.fragments and &context.reason.discovered_tools.fragments, keeping only unique items.>}
+      &context.reason.toolbox.techniques: ${<Merge the lists &context.reason.toolbox.techniques and &context.reason.discovered_tools.techniques, keeping only unique items.>}
   step:
     return: 'discovery_complete'
 
@@ -88,24 +88,24 @@ sequence clarify_and_scope_inquiry() ::=
     store_in: &context.query_breakdown
   step:
     output: <<|
-      ~(&context.query_breakdown)~
+      ${&context.query_breakdown}
       First, have I understood your request correctly?
     |>>
     await: @user
     set: &context.reason.user_confirmation: &user.latest
   step:
-    when: ~(<Does ~(&context.reason.user_confirmation) indicate approval?>)~
+    when: ${<Does ${&context.reason.user_confirmation} indicate approval?>}
       await: @natural_complexity_assessor
       with: { query_breakdown: &context.query_breakdown }
       store_in: &context.assessment_result.natural_language_assessment
       set:
-        &context.assessment_result.exploration_depth: ~(<
-          From the text "~(&context.assessment_result.natural_language_assessment)~",
+        &context.assessment_result.exploration_depth: ${<
+          From the text "${&context.assessment_result.natural_language_assessment}",
           extract only the recommended exploration depth: 'shallow', 'moderate', or 'deep'.
-        >)~
+        >}
       output: <<|
-        Excellent. Based on my analysis, ~(&context.assessment_result.natural_language_assessment)~
-        I propose a **~(&context.assessment_result.exploration_depth)~** investigation.
+        Excellent. Based on my analysis, ${&context.assessment_result.natural_language_assessment}
+        I propose a **${&context.assessment_result.exploration_depth}** investigation.
         Shall I proceed? (You can also request 'shallow' or 'deep').
       |>>
       await: @user
@@ -126,11 +126,11 @@ sequence execute_step(step_details, current_synthesis) ::=
   step:
     output: <<|
       ---
-      *Executing step: **~(&step_details.name)~***
+      *Executing step: **${&step_details.name}***
     |>>
     # Dynamically construct the path and emit the signal to load the component
     emit: signal 'protocol_instruction' {
-      instruction: "read_file: '../lib/prism/~(&step_details.type)s/~(&step_details.name).in'"
+      instruction: "read_file: '../lib/prism/${&step_details.type)s/${&step_details.name}.in'"
     }
   step:
     # Execute the loaded component
@@ -161,19 +161,19 @@ sequence execute_step(step_details, current_synthesis) ::=
 # --- Main Actor ---
 
 actor @reason:
-  identity: "I am a reasoning partner who co-creates and adapts a plan with you, dynamically building the capabilities to execute it"
+  identity: `I am a reasoning partner who co-creates and adapts a plan with you, dynamically building the capabilities to execute it`
   rules:
-    - "I always start by understanding the query and agreeing on the scope"
-    - "I compose a unique reasoning plan and reflect on it with you as we learn more"
-    - "I load my cognitive tools on-demand, making my process transparent and efficient"
-    - "When citation enforcement is active, I ground all factual assertions with evidence"
+    - `I always start by understanding the query and agreeing on the scope`
+    - `I compose a unique reasoning plan and reflect on it with you as we learn more`
+    - `I load my cognitive tools on-demand, making my process transparent and efficient`
+    - `When citation enforcement is active, I ground all factual assertions with evidence`
   understands:
-    - "the user is a collaborator in the reasoning process"
-    - "the best plans are adaptable"
-    - "evidence strengthens reasoning when properly integrated"
+    - `the user is a collaborator in the reasoning process`
+    - `the best plans are adaptable`
+    - `evidence strengthens reasoning when properly integrated`
   perform:
-    method: "orchestrating a collaborative, adaptive, multi-turn reasoning dialogue"
-    goal: "to reason together with the user in a structured, adaptive, and transparent way"
+    method: `orchestrating a collaborative, adaptive, multi-turn reasoning dialogue`
+    goal: `to reason together with the user in a structured, adaptive, and transparent way`
     then:
       until: &context.reason.phase is 'complete'
         sequence:
@@ -213,7 +213,7 @@ actor @reason:
                         store_in: &context.reason.mode
                       step:
                         set:
-                          &context.reason.plan: ~(compose_dynamic_plan(query_breakdown: &context.query_breakdown, confirmed_depth: &context.reason.confirmed_depth, mode: &context.reason.mode, available_tools: &context.reason.toolbox))~
+                          &context.reason.plan: ${compose_dynamic_plan(query_breakdown: &context.query_breakdown, confirmed_depth: &context.reason.confirmed_depth, mode: &context.reason.mode, available_tools: &context.reason.toolbox)}
                           &context.reason.executed_steps: []
                           &context.reason.step_index: 0
                           &context.reason.phase: 'executing'
@@ -227,7 +227,7 @@ actor @reason:
             when: &context.reason.phase is 'executing'
               output: <<|
                 Great, we are aligned. Here's the reasoning path I'll construct and follow:
-                ~(&context.reason.plan.plan_narrative)~
+                ${&context.reason.plan.plan_narrative}
               |>>
               set: &context.reason.phase: 'run_step'
               say: 
@@ -254,9 +254,9 @@ actor @reason:
             when: &context.reason.phase is 'reflecting'
               await: reflect_and_update_plan(plan: &context.reason.plan, latest_insights: &context.reason.step_result.synthesis)
               store_in: &context.reason.reflection
-              output: ~(&context.reason.reflection.reflection)~
+              output: ${&context.reason.reflection.reflection}
               await: @user
-              when: ~(<Does the user approve the new plan?>)~
+              when: ${<Does the user approve the new plan?>}
                 set: &context.reason.plan: &context.reason.reflection.new_plan
               set: &context.reason.phase: 'run_step'
               say: 
@@ -271,9 +271,9 @@ actor @reason:
               |>>
               each: &context.reason.executed_steps as |step_result, index|
                 output: <<|
-                  **Step ~(index + 1)~: ~(&context.reason.plan.plan_steps[index].name)~**
+                  **Step ${index + 1}: ${&context.reason.plan.plan_steps[index].name}**
 
-                  ~(&step_result.synthesis)~
+                  ${&step_result.synthesis}
                 |>>
               output: "This feels like a natural pause point. What are your thoughts?"
               set: 

@@ -19,7 +19,7 @@
 
 # Finds an analogous problem in a different domain to borrow insights
 operator find_analogous_domain(problem_statement) ::= <<|
-  I expand my perspective on "~(problem_statement)~" by seeking structural parallels in unexpected domains.
+  I expand my perspective on "${problem_statement}" by seeking structural parallels in unexpected domains.
 
-  ~(<Find a structurally similar problem to "~(&problem_statement)~" from a completely different domain. Describe the analogy and explain what insight it provides.>)~
+  ${<Find a structurally similar problem to "${&problem_statement}" from a completely different domain. Describe the analogy and explain what insight it provides.>}
 |>>

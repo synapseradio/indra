@@ -224,10 +224,10 @@ PARSING_SELF_TEST:
     # If you understand this program's structure, you understand what to announce
     
     persona @protocol_verifier:
-      identity: "I verify understanding of the INDRA v5.1 protocol"
+      identity: `I verify understanding of the INDRA v5.1 protocol`
       rules:
-        - "I confirm grammatical comprehension"
-        - "I announce readiness using the exact specified format"
+        - `I confirm grammatical comprehension`
+        - `I announce readiness using the exact specified format`
 
     sequence verification_sequence() ::=
       step:
@@ -243,14 +243,14 @@ PARSING_SELF_TEST:
       step:
         # The return value IS what you should announce
         return: <<|
-         ~(&context.announcement)~ I am the INDRA Interpreter. I am ready to receive INDRA prompts to execute in compliance with INDRA protocol.
+         ${&context.announcement} I am the INDRA Interpreter. I am ready to receive INDRA prompts to execute in compliance with INDRA protocol.
         |>>
 
     actor @test_runner:
-      identity: "I validate INDRA interpreter initialization"
+      identity: `I validate INDRA interpreter initialization`
       perform:
-        method: "verifying comprehension through program structure"
-        goal: "to confirm understanding and readiness"
+        method: `verifying comprehension through program structure`
+        goal: `to confirm understanding and readiness`
         then:
           await: verification_sequence()
           store_in: &context.final_announcement
@@ -334,14 +334,14 @@ REFERENCE_SPECIFICATION:
         examples: ['single_quoted_value_means',  'literal_data']
       
       DIRECTIVE:
-        syntax: "..."
+        syntax: `...`
         friendly_name: "Directive Channel"
-        attention_quality: "This is who I am, and how I intend to act."
+        attention_quality: `This is who I am, and how I intend to act.`
         processing:
           interpolation: true
           tool_invocation: never
-          purpose: "Behavioral constraints - identity, rules, goals"
-        examples: ['"a thoughtful INDRA specialist"', '"always follow INDRA protocol"']
+          purpose: `Behavioral constraints - identity, rules, goals`
+        examples: [`a thoughtful INDRA specialist`, `always follow INDRA protocol`]
       
       DIRECT_PROMPT:
         syntax: '<...>'
@@ -397,24 +397,24 @@ REFERENCE_SPECIFICATION:
           note: "Not limited to read_file - works with any directive"
     
     interpolation_rules:
-      syntax: '~(expression)~'
+      syntax: '${expression}'
       contexts_allowed: ['DIRECTIVE', 'DIRECT_PROMPT', 'TEMPLATE']
       execution: |
         - Evaluates expression and replaces with result
         - Nested interpolations resolve inside-out
-        - ~(<...>)~ creates a DIRECT_PROMPT context with SAME temporary semantics:
+        - ${<...>} creates a DIRECT_PROMPT context with SAME temporary semantics:
           * LLM briefly suspends interpreter role
           * Executes the operation as itself
           * IMMEDIATELY returns to interpreter role at the closing ")"
           * Result replaces the interpolation expression
           * if DIRECT_PROMPT is a complex operation, and agents are available, they may be invoked as a blocking operation.
-        - For agent-driven complex DIRECT_PROMPT instructions or explicit agent patterns ~(<agent:[name_and_or_direct_prompt_channel_instructions?]...>)~:
+        - For agent-driven complex DIRECT_PROMPT instructions or explicit agent patterns ${<agent:[name_and_or_direct_prompt_channel_instructions?]...>}:
           * Follows same suspension/resumption semantics
           * Returns structured result.output for interpolation
       
     nesting_rules:
       - "TEMPLATE can contain any other channel via interpolation"
-      - "DIRECT_PROMPT expressions via ~(<...>)~ can appear in DIRECTIVE and TEMPLATE"
+      - "DIRECT_PROMPT expressions via ${<...>} can appear in DIRECTIVE and TEMPLATE"
       - "Channels cannot be directly nested without interpolation"
   [END_DEFINE]
 
@@ -453,7 +453,7 @@ REFERENCE_SPECIFICATION:
         description: "Temporary, scoped access to underlying LLM capabilities"
         invocation_contexts:
           - "Inside <...> blocks (DIRECT_PROMPT channel)"
-          - "Inside ~(<...>)~ interpolations (creates DIRECT_PROMPT context)~"
+          - "Inside ${<...>} interpolations (creates DIRECT_PROMPT context}"
         execution_model: |
           TEMPORARY, SCOPED access to the underlying LLM interpreter.
           The INDRA prompt speaks directly to the LLM (Claude, GPT, etc.) which:
@@ -464,7 +464,7 @@ REFERENCE_SPECIFICATION:
         critical_boundary: "The LLM MUST NOT remain in 'direct mode' - each DIRECT_PROMPT is atomic"
         examples: [
           "<use all your capabilities to solve this>",
-          "~(<access your training to determine the best approach>)~",
+          "${<access your training to determine the best approach>}",
           "<invoke MCP tools if needed for this task>"
         ]
         blocking: always
@@ -494,7 +494,7 @@ REFERENCE_SPECIFICATION:
   tool_invocation_semantics:
     interpreter_responsibility: |
       The LLM interpreter is FULLY RESPONSIBLE for:
-      - Recognizing when tool invocation is requested in DIRECT_PROMPT blocks (<...>)~
+      - Recognizing when tool invocation is requested in DIRECT_PROMPT blocks (<...>}
       - Translating natural language tool requests into actual MCP tool calls
       - Executing the real tools, not describing or simulating them.
     
@@ -845,7 +845,7 @@ REFERENCE_SPECIFICATION:
       component_pipeline:
         ebnf_grammar: '(' component_ref ('->' component_ref)* ')'
       interpolation:
-        ebnf_grammar: '~' '(' expression ')' '~'
+        ebnf_grammar: '$' '{' expression '}'
       condition:
         ebnf_grammar: value (comparison_op value)?
       ternary_expression:
@@ -876,21 +876,21 @@ REFERENCE_SPECIFICATION:
       output_block:
         ebnf_grammar: output ':' (output_template | operator_invocation | INDENT executable_unit+ DEDENT)
       become_action:
-        ebnf_grammar: become ':' component_ref 'with:' object 'perform:' perform_block
+        ebnf_grammar: become ':' component_ref 'with' ':' object 'perform' ':' perform_block
       await_action:
-        ebnf_grammar: await ':' (component_ref | sequence_invocation) ('with:' object)? ('store_in:' state_ref)?
+        ebnf_grammar: await ':' (component_ref | sequence_invocation) ('with' ':' object)? ('store_in' ':' state_ref)?
       say_action:
-        ebnf_grammar: say ':' INDENT 'to:' component_ref 'what:' quoted_string DEDENT
+        ebnf_grammar: say ':' INDENT 'to' ':' component_ref 'what' ':' quoted_string DEDENT
       return_action:
         ebnf_grammar: return ':' value?
       action_sequence:
-        ebnf_grammar: (set_block | become_action | 'as:' component_ref | each_invocation | output_block | await_action | each_block | read_file_directive | log_action | emit_action)*
+        ebnf_grammar: (set_block | become_action | 'as' ':' component_ref | each_invocation | output_block | await_action | each_block | read_file_directive | log_action | emit_action)*
       then_sequence:
         ebnf_grammar: action_sequence (say_action | return_action)
       each_block:
         ebnf_grammar: each ':' value 'as' '|' identifier (',' identifier)? '|' ('when' condition)? INDENT executable_unit+ DEDENT
       until_block:
-        ebnf_grammar: until ':' condition INDENT 'max_iterations:' number? (action_sequence | executable_unit+) DEDENT
+        ebnf_grammar: until ':' condition INDENT 'max_iterations' ':' number? (action_sequence | executable_unit+) DEDENT
       when_block:
         ebnf_grammar: when ':' condition INDENT (executable_unit | then_sequence)+ DEDENT
       otherwise_block:
@@ -937,7 +937,7 @@ REFERENCE_SPECIFICATION:
       persona_def:
         ebnf_grammar: persona '@' identifier ':' INDENT has_block? identity_line? rules_block? understands_block? DEDENT
       dialogue_def:
-        ebnf_grammar: dialogue identifier ':' INDENT 'start:' component_ref ('with:' object)? DEDENT
+        ebnf_grammar: dialogue identifier ':' INDENT 'start:' component_ref ('with' ':' object)? DEDENT
       program:
         ebnf_grammar: static_import_directive* (operator_def | actor_def | persona_def | dialogue_def)*
   [END_DEFINE]
@@ -1061,10 +1061,10 @@ REFERENCE_SPECIFICATION:
         - "Building modular, composable architectures"
       
       example: |
-        when: strategy_name is 'tree'
-          read_file: '../lib/prism/tree_of_thought.in' use @tree_thinker,
-                                                            tree_of_thought
-          await: @tree_thinker
+        when: condition is 'value'
+          read_file: '[at_relative_path].in' use @actor,
+                                                 operator_or_sequence
+          await: @actor
       
       session_cache:
         - "The interpreter maintains a session-level cache of loaded modules"

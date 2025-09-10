@@ -23,21 +23,21 @@ read_file: './some_dynamic_module.in'
 
 Using the literal channel removes ambiguity. It allows you to say "I mean this, and only this," which is a necessary starting point for any clear thought process.
 
-## 2. The Directive Channel: `"..."` — The Attention of Intention
+## 2. The Directive Channel: `` `...` `` — The Attention of Intention
 
-* **Syntax:** Double quotes (`"..."`)
-* **Quality of Attention:** "This is who I am, and this is how I intend to act."
+* **Syntax:** Backticks (`` `...` ``)
+* **Quality of Attention:** `This is who I am, and this is how I intend to act.`
 
 This channel is for shaping **identity and purpose**. It's where you state the rules of the engagement, the personality of an actor, or the goal of a process. It's the voice of the choreographer setting the intention for the dance.
 
 ```indra
 actor @guardian:
   # A statement of identity.
-  identity: "a stoic guardian of the northern gate"
+  identity: `a stoic guardian of the northern gate`
   
   # A statement of behavioral intention.
   rules:
-    - "always speak in calm, measured tones"
+    - `always speak in calm, measured tones`
 ```
 
 This channel allows a cognitive process to have a persistent character and direction, freeing you from having to restate your intention with every single request.
@@ -69,10 +69,10 @@ This channel is for **presenting the final, composed thought**. It's where you t
 ```indra
 perform:
   output: <<|
-    Welcome, ~(&user.name)~.
+    Welcome, ${&user.name}.
     
-    Based on our exploration of ~(&context.topic)~, the key insight seems to be:
-    > ~(&context.synthesis.main_idea)~
+    Based on our exploration of ${&context.topic}, the key insight seems to be:
+    > ${&context.synthesis.main_idea}
   |>>
 ```
 
