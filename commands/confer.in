@@ -3,15 +3,12 @@
 
 # --- Imports ---
 >>read_file: '../lib/prism/query_analysis.in' use @query_analyst<<
->>read_file: '../lib/prism/citation.in' use citation_pipeline<<
+>>read_file: '../lib/prism/modules/citation.in' use citation_pipeline<<
 >>read_file: '../lib/prism/fragments/divergence.in' use find_and_present_divergence<<
->>read_file: '../lib/prism/fragments/debiasing.in' use consider_opposite_view,
-                                                              @contrarian_voice<<
+>>read_file: '../lib/prism/fragments/debiasing.in' use consider_opposite_view<<
+>>read_file: '../lib/prism/personas/intellectual_courage.in' use @contrarian_voice<<
 >>read_file: '../lib/prism/thinking_primitives.in' use connect_dots<<
->>read_file: '../lib/prism/multi_perspective.in' use dynamically_select_perspectives<<
-
-
-
+>>read_file: '../lib/prism/modules/multi_perspective.in' use dynamically_select_perspectives<<
 
 # ---------------------------------------------------------------------------
 # PERSONAS

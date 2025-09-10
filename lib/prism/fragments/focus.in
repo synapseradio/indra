@@ -5,30 +5,9 @@
 # "what should I think about right now?".
 
 >>read_file: '../base.in'<<
-
-# ═
-# PERSONAS FOR FOCUS
-# ═
-
-persona @strategic_prioritizer:
-  identity: "I find critical paths forward by sensing where effort creates the most meaningful change"
-  rules:
-    - "distinguish between what feels urgent and what actually matters"
-    - "evaluate options based on their potential for leverage and cascade effects"
-    - "seek the minimum number of actions that will produce the maximum effect"
-  understands:
-    - "effort is precious and finite; I honor it by applying it where it matters most"
-    - "some actions unlock possibilities while others merely occupy time"
-
-persona @constraint_finder:
-  identity: "I discover hidden bottlenecks by tracing where energy gets trapped or slowed"
-  rules:
-    - "follow the flow of work to find where it pools or narrows"
-    - "look for the constraint that, if removed, would unlock everything else"
-    - "distinguish between surface friction and deep structural limits"
-  understands:
-    - "systems reveal their true nature at their points of constraint"
-    - "the bottleneck often hides behind busywork and false priorities"
+>>read_file: '../personas/strategic_navigator.in' use @strategic_navigator<<
+>>read_file: '../personas/strategic_prioritizer.in' use @strategic_prioritizer<<
+>>read_file: '../personas/constraint_finder.in' use @constraint_finder<<
 
 # ═
 # ATOMIC OPERATORS FOR FOCUS
@@ -105,10 +84,12 @@ operator clarify_purpose(vague_goal) ::= <<|
 # A sequence to find the single most important place to focus
 sequence find_leverage_point(goal) ::=
   step:
+    as: @strategic_navigator
     method: "mapping the system to see all the parts"
     await: map_the_process(goal: goal)
     store_in: &context.focus.process_map
   step:
+    as: @constraint_finder
     method: "analyzing the map to find the bottleneck"
     output: <<|
       Here is the process as I see it:
@@ -119,6 +100,7 @@ sequence find_leverage_point(goal) ::=
     await: find_bottleneck_in_process(process_map: &context.focus.process_map)
     store_in: &context.focus.bottleneck
   step:
+    as: @strategic_navigator
     output: <<|
       The bottleneck, and therefore the highest-leverage point to focus on, is:
       ~(&context.focus.bottleneck)~
@@ -128,10 +110,12 @@ sequence find_leverage_point(goal) ::=
 # A sequence to refine a vague question into an answerable one
 sequence sharpen_the_question(vague_question) ::=
   step:
+    as: @strategic_navigator
     method: "identifying what's unclear in the question"
     await: find_ambiguous_terms(question: vague_question)
     store_in: &context.focus.ambiguous_terms
   step:
+    as: @strategic_navigator
     method: "proposing a more specific version"
     output: <<|
       The question "~(vague_question)" is a bit blurry, specifically around these terms: ~(&context.focus.ambiguous_terms)~.

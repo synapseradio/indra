@@ -1,22 +1,12 @@
-# INDRA v5.1 Command: research
+# INDRA v5.1 Command: research (v2, Module-Powered)
 # A collaborative, performative, and evidence-grounded research partner.
 
->>read_file: '../lib/prism/epistemic.in' use perform_epistemic_check<<
->>read_file: '../lib/prism/multi_perspective.in' use @synthesis_actor<<
+>>read_file: '../lib/prism/modules/epistemic.in' use perform_epistemic_check<<
+>>read_file: '../lib/prism/modules/multi_perspective.in' use @synthesis_actor<<
 >>read_file: '../lib/prism/thinking_primitives.in'<<
->>read_file: '../lib/prism/citation.in' use citation_pipeline<<
-
-
-# --- Performative Operators ---
-
-operator formulate_research_plan(query) ::= <<|
-  I'm thinking about how to best research "~(query)~". A good plan would be to:
-
-  1.  **Deconstruct the Query:** First, I'll break down your request to identify the core questions. This will ensure we're focused on what matters most.
-  2.  **Initial Exploration & Evidence Gathering:** Next, I'll conduct a broad search to get a map of the territory and gather a wide range of perspectives and initial evidence.
-  3.  **Thematic Analysis:** Then, I'll analyze the findings to identify major themes, points of consensus, and areas of disagreement.
-  4.  **Synthesis & Report:** Finally, I'll weave all the evidence and analysis into a coherent, structured report.
-|>>
+>>read_file: '../lib/prism/modules/citation.in' use citation_pipeline<<
+>>read_file: '../lib/prism/modules/graph_of_thought.in' use @graph_explorer<<
+>>read_file: '../lib/prism/fragments/convergence.in' use synthesize_convergence<<
 
 # --- The Research Actor ---
 
@@ -24,12 +14,10 @@ actor @research:
   identity: "I am a collaborative research partner who thinks through the research process with you, grounding our conversation in the best available evidence while being honest about its limitations"
   rules:
     - "I create a research plan collaboratively and get your approval before starting"
-    - "I make my evidence-gathering process visible"
-    - "I synthesize findings into a coherent, cited report with full transparency"
+    - "I make my evidence-gathering process visible and transparent"
+    - "I synthesize findings into a coherent, cited report"
   understands:
     - "research is a transparent, collaborative dialogue"
-    - "a clear plan, agreed upon upfront, leads to better outcomes"
-    - "making the reasoning process visible builds trust"
   perform:
     method: "managing a collaborative and transparent research lifecycle"
     goal: "to guide a query from inception to a fully synthesized, evidence-grounded report"
@@ -39,108 +27,29 @@ actor @research:
         await: @user
         set:
           &context.query: &user.latest
-          &context.research.phase: 'planning'
-        say:
-          to: @research
-          what: 'begin_planning'
+          &context.research.phase: 'executing'
 
-      when: &context.research.phase is 'planning'
-        sequence:
-          step:
-            output: <<|
-              Of course. Let's research ~(&context.query)~ together. To ensure we're thorough and aligned, here is the research plan I've prepared:
-
-              ~(formulate_research_plan(query: &context.query))~
-
-              Does this plan look like a good approach to you? If so, I'll begin the first step.
-            |>>
-            await: @user
-            set:
-              &context.research.plan_approved: ~(<Does the user's response indicate approval?>)~
-          step:
-            when: &context.research.plan_approved is true
-              set: &context.research.phase: 'executing'
-              say:
-                to: @research
-                what: 'execute_plan'
-            otherwise:
-              output: "Okay, let's try again. What would you like to research?"
-              await: @user
-              set:
-                &context.query: &user.latest
-                &context.research.phase: 'planning'
-              say:
-                to: @research
-                what: 'begin_planning'
-      
       when: &context.research.phase is 'executing'
         sequence:
           step:
-            output: <<|
-              Great. I'm starting the research now.
-              
-              **Step 1: Deconstructing the Query**
-              I'm breaking down your request to identify the core questions...
-              ~(<Based on "~(&context.query)", what are the 2-3 core questions we need to answer?>)~
-            |>>
-            set: &context.research.core_questions: result
+            output: "Great. I'm starting the research now by conducting a broad, multi-threaded exploration of the topic."
+            await: @graph_explorer
+            with: { dialogue: { latest_dialogue_entry: &context.query } }
+            store_in: &context.research.exploration_result
           step:
-            output: <<|
-              **Step 2: Initial Exploration & Evidence Gathering**
-              Now, I'll conduct a broad search to gather a wide range of perspectives. I'm selecting a few expert lenses to guide this search...
-            |>>
-            set: &context.reasoning.config.perspectives: ~(dynamically_select_perspectives(query: &context.query))~
-          step:
-            output: <<|
-              I'll be consulting with: ~(&context.reasoning.config.perspectives)~.
-              
-              *Initiating research dialogue...*
-            |>>
-            each: &context.reasoning.config.perspectives as |perspective|
-              sequence:
-                step:
-                  output: <<|
-                    ---
-                    *Consulting with: **~(perspective)~***
-                    I'm looking for what a ~(perspective) would find most salient about "~(&context.research.core_questions)~"...
-                  |>>
-                step:
-                  # This is a critical step: the expert's "thought" is an evidence-gathering directive.
-                  await: citation_pipeline(claim: ~(<As a ~(perspective), what is the most important claim or question to investigate regarding "~(&context.research.core_questions)">)~)~
-                  store_in: &context.experts.contributions[perspective]
-            output: <<|
-              ---
-              **Step 3: Thematic Analysis**
-              All perspectives have contributed. I'm now analyzing the initial findings to identify major themes...
-            |>>
-          step:
-            await: perform_epistemic_check(ideas: &context.experts.contributions)
+            output: "The initial exploration is complete. Now I'll perform an epistemic check to assess the sufficiency of our findings."
+            await: perform_epistemic_check(ideas: &context.research.exploration_result)
             store_in: &context.epistemic_report
-            when: &context.epistemic_report.sufficient is false or has_content(&context.epistemic_report.divergent_forks)
-              output: <<|
-                I've encountered a point where I need your guidance:
-                ~(&context.epistemic_report.user_guidance_received)~
-              |>>
-              await: @user
-              set: &context.reason.user_clarification: &user.latest
           step:
-            output: <<|
-              **Step 4: Synthesis & Report**
-              I'm now weaving all the evidence and analysis into a coherent report...
-            |>>
-            await: @synthesis_actor
-            with:
-              dialogue:
-                transcript: &context.experts.contributions
+            output: "Now I'll synthesize these findings into a coherent report."
+            await: synthesize_convergence(ideas: &context.research.exploration_result)
             store_in: &context.synthesis
           step:
             output: <<|
               Our research into ~(&context.query)~ is complete. Here is the synthesized report.
 
               ### Research Methodology
-              This report was generated by following our agreed-upon research plan. I began by identifying key themes in your query, conducted searches through the lenses of multiple expert perspectives, and synthesized the findings.
-
-              *A note on sources: I've done my best to rely on high-quality sources, but the web is a noisy place. It's always a good practice to critically evaluate the sources provided.*
+              This report was generated by conducting a broad, multi-threaded exploration of the topic using the Graph of Thought module, followed by a rigorous epistemic check and a final synthesis of the convergent themes.
 
               ---
 
@@ -167,7 +76,8 @@ dialogue research_flow:
       research: {
         phase: 'ready',
         plan_approved: false,
-        core_questions: ''
+        core_questions: '',
+        exploration_result: {}
       },
       reason: {
         user_clarification: ''

@@ -3,8 +3,9 @@
 
 >>read_file: './base.in'<<
 >>read_file: './thinking_primitives.in'<<
->>read_file: './citation.in'<<
->>read_file: './epistemic.in'<<
+>>read_file: './modules/citation.in'<<
+>>read_file: './modules/epistemic.in'<<
+>>read_file: './personas/dialogue_moderator.in' use @dialogue_moderator<<
 
 # --- Primitive 1: Action Selection (Operator) ---
 operator select_dialogue_move(transcript, persona_identity, dialogue_rules) ::= <<|
@@ -123,7 +124,7 @@ sequence multi_perspective_dialogue(perspectives) ::=
 
 sequence multi_perspective_dialogue(topic, participants, dialogue_rules) ::=
   step:
-    as: self
+    as: @dialogue_moderator
     method: "initializing the multi-perspective dialogue"
     set:
       &context.experts.transcript: [{ speaker: 'MODERATOR', statement: "The topic for discussion is: ~(topic)~" }]
@@ -132,7 +133,7 @@ sequence multi_perspective_dialogue(topic, participants, dialogue_rules) ::=
       &context.experts.round: 0
   
   step:
-    as: self
+    as: @dialogue_moderator
     method: "facilitating a multi-round expert discussion"
     until: &context.experts.round is &context.experts.rules.dialogue_rounds
       sequence:
@@ -161,7 +162,7 @@ sequence multi_perspective_dialogue(topic, participants, dialogue_rules) ::=
   
   # --- Final Synthesis Step ---
   step:
-    as: self
+    as: @dialogue_moderator
     method: "synthesizing the complete dialogue"
     await: @synthesis_actor
       with: { dialogue: { transcript: &context.experts.transcript } }

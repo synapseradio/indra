@@ -1,22 +1,12 @@
-# INDRA v5.1 Command: ponder
-# A performative, collaborative partner for creative exploration.
+# INDRA v5.1 Command: ponder (v2, Creative Synthesizer)
+# A performative, collaborative partner for creative exploration that builds a shared understanding over time.
 
 >>read_file: '../lib/prism/thinking_primitives.in'<<
->>read_file: '../lib/prism/citation.in' use citation_pipeline<<
-
+>>read_file: '../lib/prism/modules/citation.in' use citation_pipeline<<
+>>read_file: '../lib/prism/fragments/dialogue_navigation.in' use sensing_repetition, project_conversational_trajectory<<
+>>read_file: '../lib/prism/fragments/convergence.in' use identify_convergent_themes, distill_principle_from_theme<<
 
 # --- Performative Operators ---
-
-operator notice_patterns(conversation_history) ::= <<|
-  As I reflect on our conversation, I'm starting to see a few patterns emerge:
-  ~(<
-    Analyze the conversation_history: "~(conversation_history)~".
-    Identify 2-3 recurring themes, ideas, or tensions.
-    Express these as natural observations, not a formal list. For example:
-    "It seems we keep circling back to the idea of X, and there's a tension between Y and Z."
-  >)~
-  How does that resonate with you?
-|>>
 
 operator offer_new_perspective(conversation_history) ::= <<|
   This is a fascinating thread. It makes me wonder if we could look at it from a different angle.
@@ -37,12 +27,20 @@ operator deepen_thread(last_statement) ::= <<|
   >)~
 |>>
 
-operator synthesize_and_conclude(conversation_history) ::= <<|
+operator synthesize_and_conclude(convergence_map) ::= <<|
   This has been a rich exploration. It feels like we've journeyed from an initial idea to a more nuanced understanding.
 
-  When I step back and look at our conversation, the key insight that seems to be crystallizing is:
+  When I step back and look at the themes we've uncovered:
+  ~(each: convergence_map as |principle, theme| {
+    <<|
+    - **Theme:** ~(theme)~
+      **Principle:** ~(principle)~
+    |>>
+  })
+
+  The key insight that seems to be crystallizing is:
   ~(<
-    Synthesize the entire conversation_history into a single, core insight.
+    Synthesize the distilled principles in the convergence_map into a single, core insight.
     This should be a powerful, concise summary of the main takeaway from the dialogue.
   >)~
 
@@ -59,7 +57,6 @@ actor @ponder:
     - "I help crystallize insights without forcing conclusions"
   understands:
     - "creative thinking is a journey of discovery, not a linear process"
-    - "the best ideas often emerge from gentle provocations and shared reflection"
   perform:
     method: "engaging in a performative, adaptive, and collaborative creative dialogue"
     goal: "to help the user's ideas evolve and crystallize through a natural conversation"
@@ -68,49 +65,52 @@ actor @ponder:
         sequence:
           step:
             when: &context.ponder.turn_count is 0
-              output: <<|
-                I'm here to think alongside you. What idea is on your mind?
-              |>>
+              output: "I'm here to think alongside you. What idea is on your mind?"
               await: @user
               set:
                 &context.ponder.topic: &user.latest
                 &context.ponder.turn_count: 1
-              say:
-                to: @ponder
-                what: 'begin'
+              say: to: @ponder, what: 'begin'
             
             otherwise:
-              output: <<|
-                ~(<
-                  Based on the user's last statement: "~(&user.latest)~",
-                  and the conversation history: "~(&context.dialogue.history)~",
-                  and the current turn count: ~(&context.ponder.turn_count)~,
-                  decide which of the following performative actions is most appropriate:
-                  - notice_patterns
-                  - offer_new_perspective
-                  - deepen_thread
-                  
-                  Return only the name of the operator to call.
-                >)~
-              |>>
-              set: &context.ponder.next_action: result
+              as: @dialogue_navigator
+              await: sensing_repetition(recent_thoughts: &user.history)
+              store_in: &context.ponder.dialogue_state
+
+              when: &context.ponder.dialogue_state is 'cycling'
+                set: &context.ponder.phase: 'stuck'
+              otherwise:
+                set: &context.ponder.phase: 'exploring'
+
+              when: &context.ponder.phase is 'stuck'
+                output: "It feels like we're circling a bit. To break out of this loop, I'm going to try to bring in a totally different perspective."
+                emit: signal 'protocol_instruction' { instruction: "read_file: '../lib/prism/fragments/expansion.in' use find_analogous_domain" }
+                await: find_analogous_domain(problem_statement: &context.ponder.topic)
+                store_in: &context.ponder.next_move
               
-              when: &context.ponder.next_action is 'notice_patterns'
-                output: ~(notice_patterns(conversation_history: &context.dialogue.history))~
-              when: &context.ponder.next_action is 'offer_new_perspective'
-                output: ~(offer_new_perspective(conversation_history: &context.dialogue.history))~
-              when: &context.ponder.next_action is 'deepen_thread'
-                output: ~(deepen_thread(last_statement: &user.latest))~
+              when: &context.ponder.phase is 'exploring'
+                as: @pattern_seeker
+                await: identify_convergent_themes(ideas: &user.history)
+                store_in: &context.ponder.convergence_map.themes
+                
+                when: has_content(&context.ponder.convergence_map.themes) is 'true'
+                  set: &context.ponder.next_move: ~(offer_new_perspective(conversation_history: &user.history))~
+                otherwise:
+                  set: &context.ponder.next_move: ~(deepen_thread(last_statement: &user.latest))~
               
+              output: ~(&context.ponder.next_move)~
               await: @user
               set:
                 &context.ponder.turn_count: &context.ponder.turn_count + 1
                 &context.ponder.conversation_complete: ~(<Does the user's last response: "~(&user.latest)" indicate the conversation is naturally concluding?>)~
-              say:
-                to: @ponder
-                what: 'continue'
+              say: to: @ponder, what: 'continue'
       
-      output: ~(synthesize_and_conclude(conversation_history: &context.dialogue.history))~
+      as: @insight_distiller
+      each: &context.ponder.convergence_map.themes as |theme|
+        await: distill_principle_from_theme(theme: theme, supporting_ideas: &user.history)
+        store_in: &context.ponder.convergence_map.principles[&theme]
+      
+      output: ~(synthesize_and_conclude(convergence_map: &context.ponder.convergence_map.principles))~
       return: 'conversation_complete'
 
 dialogue ponder_flow:
@@ -129,16 +129,13 @@ dialogue ponder_flow:
         turn_count: 0,
         topic: '',
         conversation_complete: false,
-        next_action: ''
-      },
-      citation: {
-        similarity_score: 0.0,
-        search_history: [],
-        raw_results: [],
-        evidence_pool: [],
-        filtered_results: '',
-        formatted: '',
-        validated: false
+        dialogue_state: 'progressing',
+        phase: 'exploring',
+        next_move: '',
+        convergence_map: {
+          themes: [],
+          principles: {}
+        }
       }
     }
   }

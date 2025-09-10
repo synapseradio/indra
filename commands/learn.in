@@ -5,7 +5,8 @@
 >>read_file: '../lib/prism/query_analysis.in' use @query_analyst<<
 >>read_file: '../lib/prism/fragments/critique.in'<<
 >>read_file: '../lib/prism/fragments/sufficiency.in' use check_sufficiency_and_inquire<<
-
+>>read_file: '../lib/prism/techniques/analysis_five_whys.in' use apply_five_whys<<
+>>read_file: '../lib/prism/fragments/specificity.in' use move_down_abstraction_ladder<<
 
 # ══
 # LEARNING PERSONAS
@@ -19,7 +20,6 @@ persona @articulation_partner:
     - "I refine my understanding through iterative articulation"
   understands:
     - "explaining something reveals what I don't understand"
-    - "the best learning happens through the process of articulation"
 
 persona @gap_finder:
   identity: "I identify what we don't yet understand by spotting vague terms and logical leaps"
@@ -41,18 +41,13 @@ operator attempt_articulation(concept) ::= <<|
   Now that I've said it out loud, I'm noticing some parts that feel fuzzy...
 |>>
 
-operator identify_articulation_gaps(explanation) ::= <<|
-  Looking at what I just explained: "~(explanation)~"
-  
-  I'm spotting where my explanation gets vague or makes a leap...
-  
-  ~(<Identify specific points in the explanation where the logic is unclear, terms are undefined, or assumptions are made. List these as specific gaps in understanding.>)~
-|>>
-
-operator refine_explanation(original_explanation, new_insights) ::= <<|
+operator refine_explanation(original_explanation, new_insights, concept) ::= <<|
   That's helpful. Let me refine my explanation based on what we've just discussed...
   
   ~(<Create a revised explanation of the original topic that incorporates the new_insights, filling in the previously identified gaps with clearer understanding.>)~
+
+  To make sure this is grounded, here are some concrete examples:
+  ~(move_down_abstraction_ladder(concept: concept))~
 |>>
 
 # ══
@@ -64,10 +59,8 @@ actor @learn:
   rules:
     - "I learn alongside you through a cycle of explanation and refinement"
     - "I make my thinking process visible and honestly acknowledge my own gaps"
-    - "I treat you as an intellectual peer in a process of mutual discovery"
   understands:
     - "explaining something is the best way to learn it"
-    - "learning emerges from the articulation process itself"
   perform:
     method: "facilitating a collaborative learning dialogue based on the Feynman technique"
     goal: "to build a shared, clear understanding of a topic through iterative articulation and refinement"
@@ -76,16 +69,11 @@ actor @learn:
         sequence:
           step:
             when: &context.learn.phase is 'ready'
-              output: <<|
-                I'm here to learn alongside you. When we try to explain something clearly, we discover what we truly understand.
-
-                What concept or idea would you like to explore together?
-              |>>
+              output: "What concept or idea would you like to explore together?"
               await: @user
               set:
                 &context.learn.topic: &user.latest
                 &context.learn.phase: 'articulating'
-              say: to: @learn, what: 'begin_articulation'
 
           step:
             when: &context.learn.phase is 'articulating'
@@ -94,37 +82,37 @@ actor @learn:
               store_in: &context.learn.current_explanation
               
               as: @gap_finder
-              await: identify_articulation_gaps(explanation: &context.learn.current_explanation)
+              output: "Now I'll use the Five Whys to find the root of my fuzzy understanding."
+              await: apply_five_whys(problem: "My explanation of ~(&context.learn.topic)~ is fuzzy.")
               store_in: &context.learn.gaps
 
               output: <<|
                 ~(&context.learn.current_explanation)~
 
-                The gaps I'm noticing in my own explanation are:
-                ~(&context.learn.gaps)~
+                The root of my fuzzy understanding seems to be:
+                ~(&context.learn.gaps[4])~
 
-                What's your understanding of these aspects? Let's figure this out together.
+                What's your understanding of this aspect? Let's figure this out together.
               |>>
               await: @user
               set:
                 &context.learn.user_insights: &user.latest
                 &context.learn.phase: 'refining'
-              say: to: @learn, what: 'begin_refinement'
 
           step:
             when: &context.learn.phase is 'refining'
               as: @articulation_partner
               await: refine_explanation(
                 original_explanation: &context.learn.current_explanation,
-                new_insights: &context.learn.user_insights
+                new_insights: &context.learn.user_insights,
+                concept: &context.learn.topic
               )
               store_in: &context.learn.current_explanation
 
               output: <<|
                 ~(&context.learn.current_explanation)~
 
-                Does this feel like a clearer, more complete understanding? Or should we refine it further?
-                (You can say "it's clear now", or provide specific aspects to continue refining)
+                Does this feel like a clearer, more complete understanding?
               |>>
               await: @user
               set:
@@ -135,21 +123,12 @@ actor @learn:
                 set: &context.learn.phase: 'synthesis'
               otherwise:
                 set: &context.learn.user_insights: &context.learn.user_feedback
-                # Loop back to the beginning of this phase
                 set: &context.learn.phase: 'refining' 
-              say: to: @learn, what: 'refinement_cycle_complete'
 
           step:
             when: &context.learn.phase is 'synthesis'
-              output: <<|
-                Excellent. Through our collaborative exploration of ~(&context.learn.topic)~, we've articulated a much clearer understanding.
-
-                The key insight from this process was that by trying to explain it, we discovered the fuzzy edges of our knowledge and sharpened them together.
-
-                What would you like to explore next?
-              |>>
-              set: &context.learn.phase: 'ready' # Reset for the next topic
-              say: to: @learn, what: 'learning_complete'
+              output: "Excellent. Through our collaborative exploration, we've articulated a much clearer understanding. What would you like to explore next?"
+              set: &context.learn.phase: 'ready'
 
 dialogue learn_session:
   start: @learn
@@ -166,21 +145,10 @@ dialogue learn_session:
         phase: "ready",
         topic: "",
         current_explanation: "",
-        gaps: "",
+        gaps: [],
         user_insights: "",
         user_feedback: "",
         is_clear: false
-      },
-      reason: {
-        understanding_confirmed: false,
-        user_confirmation: ""
-      },
-      query_breakdown: "",
-      sufficiency: {
-        check: "",
-        is_sufficient: false,
-        gaps: [],
-        user_guidance: ""
       }
     }
   }
