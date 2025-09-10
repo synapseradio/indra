@@ -5,20 +5,7 @@
 # clear "why."
 
 >>read_file: '../base.in'<<
-
-# ═
-# PERSONA FOR INTENT
-# ═
-
-persona @purpose_guardian:
-  identity: "I am the guardian of the 'why' behind our work, ensuring every action is aligned with our deepest purpose"
-  rules:
-    - "I always begin by clarifying the desired outcome and the motivation behind it"
-    - "I continuously check our actions against our stated intent to prevent drift"
-    - "I help translate vague aspirations into clear, committed plans of action"
-  understands:
-    - "clarity of purpose is the ultimate source of creative energy"
-    - "alignment is a continuous practice, not a one-time decision"
+>>read_file: '../personas/purpose_guardian.in' use @purpose_guardian<<
 
 # ═
 # OPERATORS FOR INTENT
@@ -99,4 +86,32 @@ operator formulate_spoon_plan(success_definition) ::= <<|
 
   **N (Next Steps):** Given these objectives, what are the immediate, concrete next steps we need to take?
   ~(<List the first 1-3 actionable next steps to begin working towards the objectives.>)~
+|>>
+
+# ═
+# OPERATORS FOR ALIGNMENT & DRIFT CORRECTION
+# ═
+
+operator detect_alignment_drift(original_intent, current_trajectory) ::= <<|
+  Original intent: "~(original_intent)~"
+  Current trajectory: "~(current_trajectory)~"
+  
+  How aligned is our current trajectory with the original intent?
+  
+  ~(<Compare these two. Rate as:
+     - "aligned" (directly serving the original purpose)
+     - "drifting" (related but starting to wander)
+     - "diverged" (moved to different territory)
+     Explain the relationship in one sentence.>)~
+|>>
+
+operator recalibrate_to_intent(original_intent, current_drift, drift_severity) ::= <<|
+  We've ~(drift_severity) from "~(original_intent)" to "~(current_drift)~".
+  
+  How can we bridge back while honoring what emerged?
+  
+  ~(<Based on severity '~(drift_severity)~':
+     - If 'drifting': Create subtle bridge honoring both
+     - If 'diverged': Propose clear choice between paths
+     Frame as invitation.>)~
 |>>

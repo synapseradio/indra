@@ -1,0 +1,221 @@
+# INDRA v5.1: PRISM Module - Graph of Thought
+# This module provides components for a non-linear, exploratory reasoning
+# process. It discovers and weaves together emergent, interconnected insights.
+
+>>read_file: './base.in'<<
+>>read_file: './thinking_primitives.in'<<
+>>read_file: './personas/exploration_guide.in' use @exploration_guide<<
+>>read_file: './personas/insight_weaver.in' use @insight_weaver<<
+>>read_file: './personas/reflection_keeper.in' use @reflection_keeper<<
+>>read_file: './personas/resonance_detector.in' use @resonance_detector<<
+>>read_file: './personas/path_navigator.in' use @path_navigator<<
+
+# ═
+# NARRATIVE OPERATORS - Text Transformations for Exploration
+# ═
+
+operator analyze_continuation_potential(thought) ::= <<|
+  I'm examining this thought: "~(thought)~" to see if it has more to offer...
+  ~(<Analyze the thought "~(thought)~":
+    
+    1. What specific aspects remain unexplored?
+    2. Are there logical next steps or extensions?
+    3. Would further exploration yield diminishing returns?
+    
+    Provide concrete analysis of continuation viability.>)~
+|>>
+
+operator evaluate_thread_potential(thread) ::= <<|
+  I'm assessing whether this thread has more room to grow: "~(thread)~"
+  ~(<Evaluate exploration thread:
+    "~(thread)~"
+    
+    1. Unexplored branches: [identify specific sub-topics]
+    2. Conceptual depth available: [shallow/moderate/deep]
+    3. Connection potential to other threads: [list possibilities]
+    
+    Assessment: Concrete evaluation with specific next steps.>)~
+|>>
+
+operator weaving_connections(thread1, thread2) ::= <<|
+  I'm exploring how these threads might connect: "~(thread1)" and "~(thread2)~"
+  ~(<Look at these two threads:
+    Thread 1: ~(thread1)~
+    Thread 2: ~(thread2)~
+    
+    What connections do you identify?
+    How might they inform each other?
+    What emerges from holding both?
+    Express the relationship you discover.>)~
+|>>
+
+# ═
+# EXPLORATION SEQUENCES - Conversational Flows Through Ideas
+# ═
+
+sequence explore_multiple_threads(question) ::=
+  step:
+    as: @exploration_guide
+    method: "beginning multi-threaded exploration"
+    output: <<|
+      I'm going to explore the question "~(question)~" from multiple angles, sensing where the most promising paths emerge.
+    |>>
+    set:
+      &context.graph.journey_log: ['Started exploring: ~(question)~']
+      &context.graph.current_question: question
+  step:
+    as: @exploration_guide
+    method: "opening multiple threads"
+    output: <<|
+      My first wondering is:
+      ~(wonder_about(
+        current_focus: &context.graph.current_question,
+        context: "just beginning"
+      ))
+    |>>
+    set:
+      &context.graph.initial_threads: ~(<Extract the 2-3 exploration threads from the output above. 
+        Format as array of objects: [
+          { summary: "thread description", status: "pending", depth: 0, history: [], latest: "thread description" },
+          ...
+        ]>)~
+      &context.graph.exploration_threads: &context.graph.initial_threads
+      &context.graph.journey_log: &context.graph.journey_log + ['Opened initial threads of exploration']
+
+sequence analyze_and_select_threads() ::=
+  step:
+    as: @resonance_detector
+    method: "feeling which threads of thought feel most promising"
+    output: <<|
+      Now that I have a few starting threads, I'm going to pause and feel into them. Which directions feel most promising?
+
+      ~(each: &context.graph.exploration_threads as |thread| {
+        <<|
+        When I consider the thread of "~(thread.summary)~", my sense is:
+        > ~(evaluate_thread_potential(thread: thread.summary))~
+        |>>
+      })
+    |>>
+    set:
+      &context.graph.thread_analysis: ~(<Extract the thread evaluations above as structured assessments with specific potential indicators for each thread.>)~
+  step:
+    as: @exploration_guide
+    method: "selecting high-potential threads"
+    output: <<|
+      Based on that reflection, I'll focus our energy on these threads for now:
+      
+      ~(<Based on the thread analysis above, select 2-3 threads with highest exploration potential. For each selected thread, provide specific justification citing the analysis.>)~
+    |>>
+    set:
+      &context.graph.active_threads: ~(<Based on the analysis above, select 2-3 threads for deep exploration. Format as array with full thread objects from initial_threads.>)~
+      &context.graph.journey_log: &context.graph.journey_log + ['Selected high-potential threads based on analytical assessment']
+
+sequence explore_thread_deeper(thread) ::=
+  step:
+    as: @reflection_keeper
+    method: "checking if this thread still has energy"
+    output: <<|
+      Before going deeper on "~(thread.summary)~", let me check if this path is still generative or if we're starting to go in circles.
+      
+      My sense of its remaining potential is:
+      > ~(analyze_continuation_potential(thought: thread.latest))~
+    |>>
+    set:
+      &context.graph.thread_status: ~(<Based on the analysis above, determine if this thread should continue or conclude. Output exactly 'continue' or 'conclude'.>)~
+  step:
+    as: @exploration_guide
+    method: "following the thread deeper"
+    output: <<|
+      ~(&context.graph.thread_status is 'continue' ? {
+        <<|
+        This thread still has energy. Following it further leads me to wonder...
+        
+        ~(wonder_about(
+          current_focus: thread.latest,
+          context: thread.history
+        ))
+        |>>
+      } else {
+        <<|
+        This thread feels complete for now. The key insight I'm taking from it is:
+        
+        > ~(<Summarize the specific insights gained from this thread exploration in 1-2 sentences.>)~
+        |>>
+      })
+    |>>
+    set:
+      &context.graph.thread_update: ~(<Extract the specific exploration results or conclusions from the step above.>)~
+
+sequence discover_connections() ::=
+  step:
+    as: @insight_weaver
+    method: "sensing connections between threads"
+    output: <<|
+      Now that I've explored a few threads, I'll step back and see how they might speak to each other.
+      
+      ~(each: &context.graph.exploration_threads as |thread1, index1| {
+        each: &context.graph.exploration_threads as |thread2, index2| {
+          when: index2 > index1 {
+            <<|
+            ~(weaving_connections(
+              thread1: thread1.summary,
+              thread2: thread2.summary
+            ))
+            |>>
+          }
+        }
+      })
+      
+      The larger pattern I'm sensing across all these threads is...
+      ~(<What larger understanding emerges from these connections? Provide 2-3 sentences describing the overarching pattern.>)~
+    |>>
+    set:
+      &context.graph.discovered_connections: &context.graph.discovered_connections + [~(<Extract the specific connections found in the analysis above.>)~]
+      &context.graph.emerging_insight: ~(<Extract the larger pattern or understanding described above.>)~
+
+# ═
+# MAIN ORCHESTRATOR - The Graph Explorer
+# ═
+
+actor @graph_explorer:
+  identity: "I think through complex questions by exploring multiple interconnected threads, like wandering through a garden of ideas"
+  rules:
+    - "I let connections emerge naturally rather than forcing them"
+    - "I trust the process of following curiosity through multiple paths"
+    - "I make the entire journey of exploration visible and engaging"
+  understands:
+    - "the richest insights often come from unexpected connections"
+  perform:
+    method: "orchestrating a multi-threaded, emergent exploration"
+    goal: "to explore complex questions through interconnected thinking"
+    then:
+      await: explore_multiple_threads(question: &dialogue.latest_dialogue_entry)
+      await: analyze_and_select_threads()
+      
+      each: &context.graph.active_threads as |thread|
+        await: explore_thread_deeper(thread: thread)
+        # In a real scenario, you'd update the thread state here
+      
+      await: discover_connections()
+      
+      as: @insight_weaver
+      output: <<|
+        After exploring these different paths, here is the synthesis of what has emerged:
+
+        **The Journey of Our Inquiry**
+        ~(<Narrate the exploration journey from &context.graph.journey_log in a natural, engaging way.>)~
+
+        **Key Insights That Emerged**
+        ~(each: &context.graph.exploration_threads as |thread| {
+          <<|
+          • From exploring "~(thread.summary)~", I discovered: ~(thread.key_insight ? thread.key_insight : "(still emerging)")~
+          |>>
+        })
+
+        **The Connections That Weave It Together**
+        ~(<Describe the connections discovered in a narrative way, not as a list but as a flowing understanding.>)~
+
+        **Synthesized Understanding**
+        ~(&context.graph.emerging_insight)~
+      |>>
+      return: &context.graph.emerging_insight

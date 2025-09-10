@@ -6,6 +6,7 @@
 # CRITICAL: IF THIS FILE IS LOADED, ONLINE RESEARCH MUST BE CONDUCTED WITH CITATIONS. CITATIONS MUST RESOLVE TO REAL URLs AND CANNOT EXIST WITHOUT RESEARCH VIA WEB SEARCH TOOLS.
 
 >>read_file: './base.in'<<
+>>read_file: './personas/evidence_gatherer.in' use @evidence_gatherer<<
 
 # ═
 # AUTO-CITATION DETECTION OPERATORS
@@ -27,7 +28,7 @@ operator detect_factual_claims(content) ::= <<|
 # Reusable sequence to gather, validate, and format citations for a claim.
 sequence citation_pipeline(claim) ::=
   step:
-    as: self
+    as: @evidence_gatherer
     method: "checking search overlap"
     output: <<|
       *Analyzing if "~(claim)~" requires new evidence beyond our pool...*
@@ -42,7 +43,7 @@ sequence citation_pipeline(claim) ::=
         0.0
       )
   step:
-    as: self
+    as: @evidence_gatherer
     when: &context.citation.similarity_score less_than 0.7
     method: "evidence gathering via tool invocation"
     output: <<|
@@ -55,7 +56,7 @@ sequence citation_pipeline(claim) ::=
       &context.citation.search_history: &context.citation.search_history + [claim]
       &context.citation.search_attempted: true
   step:
-    as: self
+    as: @evidence_gatherer
     when: &context.citation.similarity_score less_than 0.7
     method: "merging into evidence pool"
     output: <<|
@@ -67,7 +68,7 @@ sequence citation_pipeline(claim) ::=
         existing: &context.citation.evidence_pool
       ))
   step:
-    as: self
+    as: @evidence_gatherer
     method: "selecting relevant evidence from pool"
     output: <<|
       *Selecting most relevant evidence from pool of ~(

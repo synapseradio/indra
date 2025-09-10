@@ -3,10 +3,11 @@
 
 >>read_file: '../lib/prism/query_analysis.in' use @query_analyst<<
 >>read_file: '../lib/prism/fragments/critique.in' use uncover_assumptions<<
->>read_file: '../lib/prism/fragments/debiasing.in' use @contrarian_voice<<
+>>read_file: '../lib/prism/fragments/debiasing.in' use consider_opposite_view<<
+>>read_file: '../lib/prism/personas/intellectual_courage.in' use @contrarian_voice<<
 >>read_file: '../lib/prism/multi_perspective.in' use dynamically_select_perspectives<<
->>read_file: '../lib/prism/citation.in' use citation_pipeline<<
->>read_file: '../lib/prism/epistemic.in' use perform_epistemic_check<<
+>>read_file: '../lib/prism/modules/citation.in' use citation_pipeline<<
+>>read_file: '../lib/prism/modules/epistemic.in' use perform_epistemic_check<<
 >>read_file: '../lib/prism/fragments/reframing.in'<<
 >>read_file: '../lib/prism/fragments/sufficiency.in' use check_sufficiency_and_inquire<<
 

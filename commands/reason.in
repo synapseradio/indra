@@ -1,113 +1,90 @@
-# INDRA v5.1 Command: reason (v3, Adaptive)
+# INDRA v5.1 Command: reason (v4, Dynamic)
 # A performative, compositional, and collaborative reasoning partner that adapts its plan.
 
 >>read_file: '../lib/prism/thinking_primitives.in'<<
 >>read_file: '../lib/prism/query_analysis.in' use @query_analyst<<
->>read_file: '../lib/prism/epistemic.in' use perform_epistemic_check<<
->>read_file: '../lib/prism/citation.in' use citation_pipeline<<
+>>read_file: '../lib/prism/modules/epistemic.in' use perform_epistemic_check<<
+>>read_file: '../lib/prism/modules/citation.in' use citation_pipeline, auto_cite_if_needed, handle_citation_signal<<
+>>read_file: '../lib/prism/techniques/dynamic_composition.in' use identify_conversation_mode<<
 
+# --- Specialist Actors ---
+
+actor @natural_complexity_assessor:
+  identity: "a thoughtful analyst who assesses a problem's complexity in natural language"
+  rules:
+    - "think out loud about the complexity factors of the query"
+    - "conclude with a clear recommendation for an exploration depth"
+  understands:
+    - "a natural language assessment provides richer context than a simple score"
+  perform:
+    method: "holistic complexity assessment expressed naturally"
+    goal: "to communicate the query's complexity and recommend an analytical scope"
+    then:
+      set: &context.result: <
+        Based on the query breakdown: "~(&context.query_breakdown)~", think through the complexity.
+        Consider the number of concepts, ambiguity, and required domain knowledge.
+        Express your reasoning naturally.
+        Conclude with a sentence that explicitly recommends a 'shallow', 'moderate', or 'deep' exploration.
+      >
+      return: &context.result
 
 # --- Operators ---
 
-operator compose_reasoning_plan(query_breakdown, confirmed_depth) ::= <<|
+operator compose_dynamic_plan(query_breakdown, confirmed_depth, mode, available_tools) ::= <<|
 
   Let me break this down and strategize an approach.
 
   ~(<
     As a reasoning expert, analyze the query breakdown: "~(query_breakdown)~".
-    The user has requested a "~(confirmed_depth)~" analysis.
+    The user has requested a "~(confirmed_depth)~" analysis for a query that is primarily "~(mode)~".
 
-    Devise a sophisticated, initial multi-step reasoning plan by composing the available high-level strategies. a strategy may appear more than once. 
-    
-    Available Strategies:
-    - 'foundational_analysis': Deconstruct the topic systematically (Tree of Thought).
-    - 'multi-perspective': Explore the topic from diverse viewpoints.
-    - 'gather_evidence': Perform a dedicated citation and evidence gathering pass.
-    - 'creative_exploration': Use lateral thinking to find novel insights.
-    - 'strategic_prioritization': Focus on leverage points and decision-making.
-    - 'critical_challenge': Stress-test the findings with critical and debiasing techniques.
-    - 'synthesis': Weave all threads into a coherent understanding.
+    Devise a reasoning plan based on ~(query_breakdown)~ by composing a sequence of the most appropriate tools from the following list: ~(&available_tools)~
 
-    A 'shallow' analysis might use 1-2 strategies. A 'medium' one could take 2-5. A 'deep' analysis could use 4-6.
+    The plan should be a list of objects, where each object has a "type" (e.g., 'module', 'strategy') and a "name" (e.g., 'tree_of_thought', 'creative_exploration').
 
-    Compose a thoughtful sequence. For example, a deep dive into a complex problem might be:
-    ['foundational_analysis', 'gather_evidence', 'multi-perspective', 'gather_evidence', 'critical_challenge', 'synthesis']
-
-    Output your response as an object with two keys:
-    1. "plan_narrative": A user-facing, natural language explanation of the plan.
-    2. "strategy_list": An array of strings from the available strategies.
+    Return an object with "plan_narrative" and "plan_steps".
   >)~
 |>>
 
 operator reflect_and_update_plan(plan, latest_insights) ::= <<|
+  Let me reflect on our progress to make sure we're still aligned, and that the current plan is still the best path forward.
   ~(<
-    As a reasoning strategist, reflect on our progress.
-    Our original plan was: "~(plan.plan_narrative)~"
-    The remaining steps are: [~(plan.strategy_list)~]
-    The latest insights we've uncovered are: "~(latest_insights)~"
-
-    Is the current plan still the best path forward?
-    - If yes, simply state that the plan remains sound and why.
-    - If no, propose a revised plan (a new `plan_narrative` and `strategy_list`) that adapts to the new insights. Explain your reasoning for the change.
-
-    This is a collaborative step. Frame your reflection as a proposal to the user.
-    For example: "Given what we've learned about X, I think adding a 'creative_exploration' step before 'synthesis' would be valuable. What do you think?"
-
-    Return an object with:
-    1. "reflection": Your narrative reflection and proposal.
-    2. "new_plan": An object with the new `plan_narrative` and `strategy_list`, or the original plan if no change is needed.
-  >)~
+      As a reasoning strategist, reflect on our progress.
+      Our original plan was: ~(plan.plan_narrative)~
+      The latest insights are: ~(latest_insights)~
+      Is the current plan still the best path forward? If not, propose a revised plan.
+      Frame your reflection as a proposal to the user.
+      Return an object with "reflection" and "new_plan".
+    >)~
 |>>
 
 # --- Sequences ---
 
-sequence dynamic_strategy_loader(strategy_name, context_data) ::=
+sequence discover_tools() ::=
   step:
-    output: <<|
-      Loading strategy: ~(strategy_name)~
-    |>>
-    
+    output: <<|*Scanning for newly added reasoning tools...*|>>
+    set:
+      &context.reason.discovered_tools: ~(<
+        Use the directory_tree tool to scan the '../lib/prism/' directory.
+        Parse the output to create an object with four keys: 'modules', 'strategies', 'fragments', and 'techniques'.
+        Each key should contain a list of the filenames (without the '.in' extension) found in the corresponding subdirectory.
+        Return this object.
+      >)~
   step:
-    when: strategy_name is 'foundational_analysis'
-      emit: signal 'protocol_instruction' {
-        instructions: [
-          "read_file: '../lib/prism/tree_of_thought.in'",
-          "read_file: '../lib/prism/fragments/intent.in'"
-        ]
-      }
-    when: strategy_name is 'multi-perspective'  
-      emit: signal 'protocol_instruction' {
-        instruction: "read_file: '../lib/prism/multi_perspective.in'"
-      }
-    when: strategy_name is 'creative_exploration'
-      emit: signal 'protocol_instruction' {
-        instruction: "read_file: '../lib/prism/strategies/creative_exploration.in'"
-      }
-    when: strategy_name is 'strategic_prioritization'
-      emit: signal 'protocol_instruction' {
-        instruction: "read_file: '../lib/prism/strategies/strategic_prioritization.in'"
-      }
-    when: strategy_name is 'critical_challenge'
-      emit: signal 'protocol_instruction' {
-        instruction: "read_file: '../lib/prism/fragments/critique.in'"
-      }
-      emit: signal 'protocol_instruction' {
-        instruction: "read_file: '../lib/prism/fragments/debiasing.in'"
-      }
-    when: strategy_name is 'synthesis'
-      emit: signal 'protocol_instruction' {
-        instructions: [
-          "read_file: '../lib/prism/fragments/convergence.in'",
-          "read_file: '../lib/prism/fragments/sufficiency.in'",
-          "read_file: '../lib/prism/fragments/critique.in'",
-          "read_file: '../lib/prism/fragments/dialogue_navigation.in'"
-        ]
-      }
+    output: <<|*Updating toolbox with discovered tools...*|>>
+    # Merge discovered tools with the base toolbox, ensuring uniqueness
+    set:
+      &context.reason.toolbox.modules: ~(<Merge the lists &context.reason.toolbox.modules and &context.reason.discovered_tools.modules, keeping only unique items.>)~
+      &context.reason.toolbox.strategies: ~(<Merge the lists &context.reason.toolbox.strategies and &context.reason.discovered_tools.strategies, keeping only unique items.>)~
+      &context.reason.toolbox.fragments: ~(<Merge the lists &context.reason.toolbox.fragments and &context.reason.discovered_tools.fragments, keeping only unique items.>)~
+      &context.reason.toolbox.techniques: ~(<Merge the lists &context.reason.toolbox.techniques and &context.reason.discovered_tools.techniques, keeping only unique items.>)~
+  step:
+    return: 'discovery_complete'
 
 sequence clarify_and_scope_inquiry() ::=
   step:
-    output: "*Analyzing your request to identify the core questions...*"
     await: @query_analyst
+    with: { query: &context.query }
     store_in: &context.query_breakdown
   step:
     output: <<|
@@ -115,64 +92,57 @@ sequence clarify_and_scope_inquiry() ::=
       First, have I understood your request correctly?
     |>>
     await: @user
-    set: &context.reason.understanding_confirmed: ~(<Does the user's response indicate approval?>)~
+    set: &context.reason.user_confirmation: &user.latest
   step:
-    when: &context.reason.understanding_confirmed is true
+    when: ~(<Does ~(&context.reason.user_confirmation) indicate approval?>)~
+      await: @natural_complexity_assessor
+      with: { query_breakdown: &context.query_breakdown }
+      store_in: &context.assessment_result.natural_language_assessment
+      set:
+        &context.assessment_result.exploration_depth: ~(<
+          From the text "~(&context.assessment_result.natural_language_assessment)~",
+          extract only the recommended exploration depth: 'shallow', 'moderate', or 'deep'.
+        >)~
       output: <<|
-        Excellent. Based on the breakdown,
-        
-        I can conduct a 'shallow', 'moderate', or 'deep' investigation.
-        Shall I proceed with a ~(<Observe ~(&context.query_breakdown)~ for your thoughts on how to best approach it, returning a value of 'shallow', 'moderate', or 'deep' based on the observed depth of reasoning required>)~ analysis, or would you prefer a different scope?
+        Excellent. Based on my analysis, ~(&context.assessment_result.natural_language_assessment)~
+        I propose a **~(&context.assessment_result.exploration_depth)~** investigation.
+        Shall I proceed? (You can also request 'shallow' or 'deep').
       |>>
       await: @user
       set:
-        &context.reason.confirmed_depth: ~(< 
-        ~(&user.latest)~ contains 'shallow' ? 'shallow' :
-          ~(&user.latest)~ contains 'deep' ? 'deep' 
-          : 'moderate'
-        >)~
+        &context.reason.confirmed_depth: ~(
+          <&user.latest contains 'shallow' ? 'shallow' :
+          (&user.latest contains 'deep' ? 'deep' : &context.assessment_result.exploration_depth)>
+        )
+        &context.reason.understanding_confirmed: true
     otherwise:
       output: "My apologies. Could you please rephrase your request?"
       await: @user
-      set: &context.query: &user.latest
+      set: 
+        &context.query: &user.latest
+        &context.reason.understanding_confirmed: false
 
-sequence execute_strategy_step(strategy_name, current_synthesis) ::=
+sequence execute_step(step_details, current_synthesis) ::=
   step:
     output: <<|
       ---
-      *Executing strategy: **~(strategy_name)~***
+      *Executing step: **~(&step_details.name)~***
     |>>
-    # Load strategy files using signal pattern
-    await: dynamic_strategy_loader(strategy_name: strategy_name, context_data: current_synthesis)
-    
+    # Dynamically construct the path and emit the signal to load the component
+    emit: signal 'protocol_instruction' {
+      instruction: "read_file: '../lib/prism/~(&step_details.type)s/~(&step_details.name).in'"
+    }
   step:
-    # Execute strategy with loaded capabilities
-    when: strategy_name is 'foundational_analysis'
-      await: @tree_thinker
-      with: { dialogue: { latest_dialogue_entry: &context.query } }
-      store_in: &context.synthesis
-    when: strategy_name is 'multi-perspective'
-      set:
-        &context.reasoning.config.perspectives: ~(dynamically_select_perspectives(query: &context.query))~
-      await: multi_perspective_dialogue(perspectives: &context.reasoning.config.perspectives)
-      store_in: &context.synthesis
-    when: strategy_name is 'gather_evidence'
-      await: citation_pipeline(claim: current_synthesis)
-      store_in: &context.synthesis
-    when: strategy_name is 'creative_exploration'
-      await: explore_creatively(thought: &context.query, context: current_synthesis)
-      store_in: &context.synthesis
-    when: strategy_name is 'strategic_prioritization'
-      await: prioritize_strategically(options: current_synthesis, goal: &context.query)
-      store_in: &context.synthesis
-    when: strategy_name is 'critical_challenge'
-      await: systematic_debiasing(decision_context: current_synthesis)
-      store_in: &context.synthesis
-    when: strategy_name is 'synthesis'
-      await: synthesize_convergence(ideas: current_synthesis)
-      store_in: &context.synthesis
+    # Execute the loaded component
+    # Note: This requires the component's primary sequence/actor to be named after the file.
+    await: &step_details.name
+    with: {
+      query: &context.query,
+      synthesis: current_synthesis
+    }
+    store_in: &context.synthesis
   step:
-    output: "Performing post-synthesis epistemic check...*"
+    # Always run an epistemic check after a major step
     await: perform_epistemic_check(ideas: &context.synthesis)
     store_in: &context.epistemic_check
   step:
@@ -213,7 +183,7 @@ actor @reason:
               when: &signals.latest.payload.command is 'citation'
                 emit: signal 'citation_enforcement' {
                   source: '@reason',
-                  instruction: "read_file: '../lib/prism/citation.in' use handle_citation_signal"
+                  instruction: "read_file: '../lib/prism/modules/citation.in' use handle_citation_signal"
                 }
                 await: handle_citation_signal()
                 set: &context.reason.phase: 'ready'
@@ -230,15 +200,25 @@ actor @reason:
 
           step:
             when: &context.reason.phase is 'planning'
-              await: clarify_and_scope_inquiry()
-              when: &context.reason.understanding_confirmed is true
-                set:
-                  &context.reason.plan: ~(compose_reasoning_plan(query_breakdown: &context.query_breakdown, confirmed_depth: &context.reason.confirmed_depth))~
-                  &context.reason.executed_steps: []
-                  &context.reason.step_index: 0
-                  &context.reason.phase: 'executing'
-              otherwise:
-                set: &context.reason.phase: 'ready'
+              sequence:
+                step:
+                  await: discover_tools()
+                step:
+                  await: clarify_and_scope_inquiry()
+                step:
+                  when: &context.reason.understanding_confirmed is true
+                    sequence:
+                      step:
+                        await: identify_conversation_mode(dialogue_context: &context.query)
+                        store_in: &context.reason.mode
+                      step:
+                        set:
+                          &context.reason.plan: ~(compose_dynamic_plan(query_breakdown: &context.query_breakdown, confirmed_depth: &context.reason.confirmed_depth, mode: &context.reason.mode, available_tools: &context.reason.toolbox))~
+                          &context.reason.executed_steps: []
+                          &context.reason.step_index: 0
+                          &context.reason.phase: 'executing'
+                  otherwise:
+                    set: &context.reason.phase: 'ready'
               say: 
                 to: @reason
                 what: 'plan_composed'
@@ -256,13 +236,13 @@ actor @reason:
 
           step:
             when: &context.reason.phase is 'run_step'
-              set: &context.reason.current_strategy: &context.reason.plan.strategy_list[&context.reason.step_index]
-              await: execute_strategy_step(strategy_name: &context.reason.current_strategy, current_synthesis: &context.reason.executed_steps)
+              set: &context.reason.current_step: &context.reason.plan.plan_steps[&context.reason.step_index]
+              await: execute_step(step_details: &context.reason.current_step, current_synthesis: &context.reason.executed_steps)
               store_in: &context.reason.step_result
               set:
                 &context.reason.executed_steps: &context.reason.executed_steps + [&context.reason.step_result]
                 &context.reason.step_index: &context.reason.step_index + 1
-              when: &context.reason.step_index >= count(&context.reason.plan.strategy_list)
+              when: &context.reason.step_index >= count(&context.reason.plan.plan_steps)
                 set: &context.reason.phase: 'presenting'
               otherwise:
                 set: &context.reason.phase: 'reflecting'
@@ -291,7 +271,7 @@ actor @reason:
               |>>
               each: &context.reason.executed_steps as |step_result, index|
                 output: <<|
-                  **Step ~(index + 1)~: ~(&context.reason.plan.strategy_list[index])~**
+                  **Step ~(index + 1)~: ~(&context.reason.plan.plan_steps[index].name)~**
 
                   ~(&step_result.synthesis)~
                 |>>
@@ -332,7 +312,13 @@ dialogue reason_flow:
         current_strategy: '',
         step_result: {},
         reflection: {},
-        user_confirmation: ''
+        user_confirmation: '',
+        toolbox: {
+          modules: ['tree_of_thought', 'graph_of_thought', 'multi_perspective', 'citation', 'epistemic'],
+          strategies: ['creative_exploration', 'strategic_prioritization'],
+          fragments: ['critique', 'debiasing', 'convergence', 'divergence', 'sufficiency', 'focus', 'expansion'],
+          techniques: ['analysis_five_whys', 'creativity_scamper', 'perspective_six_hats', 'validation_ladder_of_inference']
+        }
       },
       reasoning: {
         config: {

@@ -8,32 +8,42 @@ The name "PRISM" is a metaphor: just as a prism refracts white light into its co
 
 ## Core Philosophy
 
-The primitives in this library are **performative**. They are designed as fragments of an inner monologue, allowing an INDRA actor to "think out loud." This makes the reasoning process transparent, collaborative, and natural.
+The primitives in this library are **performative**. They are designed as fragments of an inner monologue, allowing an INDRA actor to "think out loud." This makes the reasoning process transparent, collaborative, and natural. This "dual-voice" pattern—combining a first-person, internal monologue with second-person, collaborative guidance—is the soul of the INDRA style.
 
-## Library Structure
+## Library Architecture: A Bloom-Aligned Approach
 
-The library is organized into three distinct layers of abstraction:
+The library's architecture is inspired by cognitive developmental principles like Bloom's Taxonomy. It is organized into five distinct layers of increasing cognitive complexity, providing a clear model for how to compose simple thought-fragments into sophisticated reasoning.
 
-### 1. Foundational Modules (The Core)
+### Level 1: Foundational Knowledge (`base.in`, `thinking_primitives.in`)
 
--   **`base.in`**: The absolute foundation. It defines the global `&context` schema that all other modules share, providing a common workspace.
--   **`thinking_primitives.in`**: The heart of the library. This file contains the most atomic "verbs" of thought, such as `wonder_about()` and `connect_dots()`, and the core personas (`@curious_explorer`, `@careful_evaluator`) that embody natural thinking styles.
+This layer corresponds to **Remembering and Understanding**.
+-   **`base.in`**: Provides universal utility operators (like `count()`) available to all other modules. It does not define any context schema.
+-   **`thinking_primitives.in`**: The heart of the library. This file contains the most atomic "verbs" of thought, such as `wonder_about()` and `connect_dots()`.
 
-### 2. Cognitive Fragments (`fragments/`)
+### Level 2: Cognitive Techniques (`techniques/`)
 
-This directory contains specialized, single-purpose cognitive tools. Each file is a self-contained module that "owns" a specific domain of thinking, providing a set of operators and personas for that domain.
+This layer corresponds to **Applying**.
+-   This directory contains pure, domain-agnostic cognitive methods that can be applied to any situation.
+-   Examples: `analysis_five_whys.in`, `creativity_scamper.in`, `perspective_six_hats.in`.
+-   A "technique" is a reusable, procedural tool for thought.
 
--   **`critique.in`**: For rigorous critical thinking and evidence evaluation.
--   **`expansion.in`**: For breaking out of conventional thinking patterns.
--   **`focus.in`**: For strategic prioritization and bottleneck analysis.
--   ...and many others.
+### Level 3: Analytical Fragments & Personas (`fragments/`, `personas/`)
 
-### 3. Composed Strategies (`strategies//`)
+This layer corresponds to **Analyzing**.
+-   **`fragments/`**: Contains specialized, domain-aware analytical capabilities. A fragment *uses* techniques to explore a specific area of cognition (e.g., `critique.in` uses critical thinking techniques).
+-   **`personas/`**: Contains the reusable "lenses" or "mindsets" that actors can adopt to perform their analysis. Every fragment should have a corresponding persona that embodies its collaborative, performative voice.
 
-This directory contains high-level, multi-step reasoning strategies that are composed from the foundational modules and cognitive fragments. These are complex "recipes" for thought that can be dynamically loaded and executed by orchestrator actors like `@reason`.
+### Level 4: Composed Strategies (`strategies/`)
 
--   **`six_hats.in`**: A complete, performative sequence for analyzing a topic using the Six Thinking Hats method.
--   **`creative_exploration.in`**: A strategy that combines lateral thinking, analogy, and synthesis for innovative ideation.
--   **`strategic_prioritization.in`**: A sequence for finding leverage points and making decisions using an impact/effort matrix.
+This layer corresponds to **Evaluating**.
+-   This directory contains high-level, multi-step reasoning strategies composed from the lower-level fragments and techniques.
+-   These are complex "recipes" for thought that can be dynamically loaded and executed by orchestrator actors like `@reason`.
+-   Examples: `creative_exploration.in`, `strategic_prioritization.in`.
 
-By composing components from these three layers, you can design sophisticated and nuanced reasoning actors tailored to any domain.
+### Level 5: Reasoning Modules (`modules/`)
+
+This layer corresponds to **Creating and Synthesizing**.
+-   This directory houses the most complex, self-contained "reasoning engines." A module often orchestrates multiple fragments, techniques, and strategies to perform a sophisticated cognitive task from end to end.
+-   Examples: `tree_of_thought.in`, `graph_of_thought.in`, `citation.in`.
+
+By composing components from these five layers, you can design sophisticated and nuanced reasoning actors tailored to any domain, with a clear understanding of how each piece contributes to the overall cognitive process.

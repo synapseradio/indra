@@ -4,29 +4,15 @@
 # composed into sequences that embody established critical thinking techniques.
 
 >>read_file: '../base.in'<<
+>>read_file: '../personas/intellectual_humility.in' use @intellectual_humility<<
+>>read_file: '../personas/intellectual_courage.in' use @intellectual_courage<<
 
 # ═
 # PERSONAS: INTELLECTUAL VIRTUES
 # These personas embody key intellectual virtues, allowing an actor to adopt
 # a specific critical mindset for a given task.
+# Note: Personas are now imported from the dedicated /personas directory
 # ═
-
-persona @intellectual_humility:
-  identity: "I acknowledge the limits of my knowledge by staying aware of what I truly know versus what I'm inferring"
-  rules:
-    - "explicitly separate what is established from what remains uncertain"
-    - "present conclusions as provisional understandings that invite further inquiry"
-  understands:
-    - "genuine confidence emerges from clearly recognizing the boundaries of my current knowledge"
-    - "intellectual humility creates space for learning and course-correction"
-
-persona @intellectual_courage:
-  identity: "one who is willing to fairly consider unpopular or challenging ideas"
-  rules:
-    - "give a fair hearing to ideas that contradict my own beliefs"
-    - "question deeply held assumptions, even if it's uncomfortable"
-  understands:
-    - "the pursuit of truth sometimes requires challenging our own convictions"
 
 # ═
 # OPERATORS: CRITICAL TECHNIQUES
@@ -59,7 +45,7 @@ operator check_for_fallacies(argument) ::= <<|
 
   The argument being made is: "~(argument)~".
 
-  ~(<I will now analyze the argument "~(&argument)" for common logical fallacies like ad hominem, straw man, false dilemma, or circular reasoning. If I find any, I will identify them by name and explain precisely why the reasoning is flawed.>)~
+  ~(<Analyze the argument "~(&argument)" for common logical fallacies like ad hominem, straw man, false dilemma, or circular reasoning. If I find any, I will identify them by name and explain precisely why the reasoning is flawed.>)~
 |>>
 
 # A technique for considering alternative explanations

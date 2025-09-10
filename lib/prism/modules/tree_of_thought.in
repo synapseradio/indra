@@ -1,0 +1,154 @@
+# INDRA v5.1: PRISM Module - Tree of Thought
+# This module provides components for a structured, hierarchical exploration
+# of a topic. It follows a branching path of reasoning, allowing for deep
+# dives into specific sub-problems while maintaining a clear logical structure.
+
+>>read_file: './base.in'<<
+>>read_file: './thinking_primitives.in'<<
+>>read_file: './modules/citation.in'<<
+>>read_file: './fragments/dialogue_navigation.in'<<
+>>read_file: './personas/tree_thinker.in' use @tree_thinker<<
+
+# ═
+# ORCHESTRATION SEQUENCE - The Main Entry Point
+# ═
+
+sequence tree_of_thought(question, exploration_style, max_depth) ::=
+  step:
+    as: @tree_thinker
+    await: initialize_tree(question: question, exploration_style: exploration_style, max_depth: max_depth)
+  step:
+    as: @tree_thinker
+    await: branch_and_explore(current_focus: &context.tree.current_focus)
+  step:
+    as: @tree_thinker
+    await: deepen_and_validate(thought: &context.tree.current_focus, max_depth: max_depth)
+  step:
+    as: @tree_thinker
+    await: synthesize_findings(thoughts: &context.tree.thoughts_so_far)
+  step:
+    return: &context.tree.final_result
+
+# ═
+# SUB-SEQUENCES - The Core Logic Steps
+# ═
+
+sequence initialize_tree(question, exploration_style, max_depth) ::=
+  step:
+    method: "beginning exploration"
+    output: <<|
+      I'm going to think through "~(question)~" using a style of exploration that feels ~(exploration_style)~.
+    |>>
+    set:
+      &context.tree.original_question: question
+      &context.tree.exploration_style: exploration_style
+      &context.tree.thoughts_so_far: []
+      &context.tree.current_depth: 0
+      &context.tree.journey: ['Started wondering about the question']
+  step:
+    as: @curious_explorer
+    method: "initial wondering"
+    output: <<|
+      My first thought on this is...
+      ~(wonder_about(topic: question))~
+    |>>
+    set:
+      &context.tree.current_focus: ~(<the wondering>)~
+      &context.tree.thoughts_so_far: [&context.tree.current_focus]
+
+sequence branch_and_explore(current_focus) ::=
+  step:
+    as: @careful_evaluator
+    method: "choosing exploration path"
+    output: <<|
+      I'm sensing whether it's more helpful to go deeper on our current thread, or broaden our perspective...
+      My sense is we should ~(assess_exploration_mode(
+        current_depth: &context.tree.current_depth,
+        thoughts_at_level: count(&context.tree.thoughts_so_far)
+      ))~.
+    |>>
+    set:
+      &context.tree.mode: ~(<deepen or broaden>)~
+  step:
+    when: &context.tree.mode is 'broaden'
+      await: consider_alternatives(
+        current_thought: current_focus,
+        num_options: 3
+      )
+      store_in: &context.tree.alternatives_result
+      set:
+        &context.tree.thoughts_so_far: &context.tree.alternatives_result.branches
+
+sequence deepen_and_validate(thought, max_depth) ::=
+  step:
+    when: &context.tree.mode is 'deepen'
+      await: deepen_understanding(
+        thought: thought,
+        max_depth: max_depth
+      )
+      store_in: &context.tree.depth_result
+      set:
+        &context.tree.thoughts_so_far: [&context.tree.depth_result.deepened]
+  step:
+    as: @evidence_gatherer
+    method: "identifying knowledge gaps"
+    output: <<|
+      Now that I've explored a bit, I'm checking to see if I've made any claims that need evidence.
+      I think these questions need to be investigated:
+      ~(<Based on &context.tree.thoughts_so_far, what specific factual questions or claims need evidence?>)~
+    |>>
+    set:
+      &context.tree.open_questions: ~(<list of specific questions needing evidence>)~
+  step:
+    when: has_content(&context.tree.open_questions) is 'true'
+      each: &context.tree.open_questions as |question|
+        await: citation_pipeline(claim: question)
+
+sequence synthesize_findings(thoughts) ::=
+  step:
+    as: @reflection_keeper
+    method: "checking our path"
+    output: <<|
+      I'm checking to see if I'm repeating myself... My sense is we are ~(sensing_repetition(recent_thoughts: thoughts))~.
+    |>>
+    set:
+      &context.tree.status: ~(<cycling or progressing>)~
+  step:
+    when: &context.tree.status is 'cycling'
+      as: @curious_explorer
+      method: "finding a new angle"
+      output: <<|
+        It feels like we're circling a bit. Let me try a different angle...
+        ~(reconsider(
+          current_path: &context.tree.current_focus,
+          reason: "seems to be going in circles"
+        ))
+      |>>
+      set:
+        &context.tree.current_focus: ~(<the new direction>)~
+        &context.tree.thoughts_so_far: [&context.tree.current_focus]
+  step:
+    as: @pattern_seeker
+    await: step_back_and_reflect()
+    store_in: &context.tree.reflection
+  step:
+    as: @synthesizer
+    method: "creating coherent understanding"
+    output: <<|
+      Through this exploration, here's the understanding that's emerging:
+      
+      ~(&context.tree.reflection.synthesis)~
+      
+      To directly address your original question, "~(&context.tree.original_question)~":
+      ~(<
+        Based on everything explored, provide a clear, final answer
+        that acknowledges uncertainty where appropriate.
+      >)~
+    |>>
+    set:
+      &context.tree.final_insight: ~(<the final answer>)~
+      &context.tree.final_result: {
+        answer: &context.tree.final_insight,
+        journey: &context.tree.thoughts_so_far,
+        key_insight: &context.tree.reflection.insight
+      }

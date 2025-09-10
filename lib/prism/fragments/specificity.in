@@ -3,32 +3,36 @@
 # abstract concepts to concrete, actionable details.
 
 >>read_file: '../base.in'<<
+>>read_file: '../personas/precision_advocate.in' use @precision_advocate<<
+>>read_file: '../techniques/analysis_five_whys.in' use apply_five_whys<<
 
 # ═
 # ATOMIC OPERATORS FOR SPECIFICITY
 # ═
 
 operator move_up_abstraction_ladder(concept) ::= <<|
-  I navigate up the abstraction ladder for "~(concept)~" by identifying its higher-level purpose and fundamental principles.
-  
-  ~(<Repeatedly ask "Why is this important?" to trace "~(&concept)" upward to its core value or objective.>)~
+  I'm looking at "~(concept)~". To understand its importance, I'll move up the ladder of abstraction to find its higher-level purpose.
+
+  ~(<Repeatedly ask "Why is this important?" to trace "~(&concept)" upward to its core value or objective. Articulate the journey and the final, most abstract principle discovered.>)~
 |>>
 
 operator move_down_abstraction_ladder(concept) ::= <<|
-  I navigate down the abstraction ladder for "~(concept)~" by grounding it in concrete, tangible manifestations.
-  
-  ~(<Repeatedly ask "How would this work in practice?" to find specific, concrete examples or implementations of "~(&concept)".>)~
+  This concept of "~(concept)~" is a bit abstract. I'll ground it by moving down the ladder of abstraction into concrete reality.
+
+  ~(<Repeatedly ask "How would this work in practice?" or "What is a specific example of this?" to find tangible manifestations of "~(&concept)". Describe the concrete examples found.>)~
 |>>
 
 operator identify_failure_modes(goal) ::= <<|
-  I identify potential failure modes for "~(goal)~" by imagining complete failure and working backward to specific causes.
-  
-  ~(<List at least five distinct, specific reasons why "~(&goal)" could fail completely.>)~
+  To make the goal of "~(goal)~" more concrete, I find it helpful to imagine its complete failure. Let me explore the specific ways that could happen.
+
+  ~(<List at least five distinct, specific reasons why "~(&goal)" could fail completely. This is a pre-mortem exercise to uncover hidden risks.>)~
 |>>
 
 operator generate_mitigations(failure_modes) ::= <<|
-  I generate concrete preventive actions based on these identified failure modes:
+  These failure modes are insightful:
   ~(failure_modes)~
+
+  Now, for each one, I'll generate a concrete, preventive action we could take.
 
   ~(<For each failure mode above, identify one specific action that could be taken today to prevent it. Format as a list of mitigations.>)~
 |>>
@@ -39,8 +43,9 @@ operator generate_mitigations(failure_modes) ::= <<|
 
 sequence conduct_pre_mortem(project_goal) ::=
   step:
+    as: @precision_advocate
     output: <<|
-      To identify potential risks, I will conduct a pre-mortem. Let's imagine for a moment that the project has already failed completely. Now, let's work backward.
+      To identify potential risks for "~(project_goal)~", I will conduct a pre-mortem. Let's imagine for a moment that the project has already failed completely. Now, let's work backward to understand why.
     |>>
   step:
     method: "identifying all the ways this could go wrong"
@@ -51,36 +56,13 @@ sequence conduct_pre_mortem(project_goal) ::=
     await: generate_mitigations(failure_modes: &context.premortem.failure_reasons)
     store_in: &context.premortem.mitigations
   step:
+    as: @precision_advocate
+    output: <<|
+      Our pre-mortem is complete. We've identified potential points of failure and concrete ways to mitigate them. This gives us a much clearer path forward.
+    |>>
     return: {
       failures: &context.premortem.failure_reasons,
       mitigations: &context.premortem.mitigations
     }
 
-sequence apply_five_whys(problem) ::=
-  step:
-    set: &context.whys.problem: problem, &context.whys.answers: [], &context.whys.count: 0
-  step:
-    until: &context.whys.count is 5
-      sequence:
-        step:
-          set:
-            &context.whys.last_answer: get_at_index(collection: &context.whys.answers, index: &context.whys.count - 1)
-            &context.whys.prompt: &context.whys.count is 0 ? &context.whys.problem : &context.whys.last_answer
-        step:
-          output: <<|
-            Why? (~(&context.whys.count + 1)/5)~
-            -- 
-            ~(<Why is it the case that "~(&context.whys.prompt)"? I will provide the next-level causal reason.>)~
-          |>>
-          set:
-            &context.whys.new_answer: ~(<Why is it the case that "~(&context.whys.prompt)"? I will provide the next-level causal reason.>)~
-            &context.whys.answers: &context.whys.answers + [&context.whys.new_answer]
-            &context.whys.count: &context.whys.count + 1
-  step:
-    output: <<|
-      The chain of causality appears to be:
-      ~(each: &context.whys.answers as |answer, index| {
-        <<|~(index + 1). ~(answer)~|>>
-      })
-    |>>
-    return: &context.whys.answers
+

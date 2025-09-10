@@ -5,41 +5,17 @@
 # thinking patterns.
 
 >>read_file: '../base.in'<<
+>>read_file: '../techniques/creativity_scamper.in'<<
+>>read_file: '../personas/lateral_thinker.in' use @lateral_thinker<<
 
 # ═
 # PERSONAS FOR EXPANSION
+# Note: Personas are now imported from the dedicated /personas directory
 # ═
-
-persona @lateral_thinker:
-  identity: "I break conventional thinking patterns by actively seeking unexpected connections across domains and challenging default categorizations"
-  rules:
-    - "challenge the default category of a problem"
-    - "actively seek out analogies from unrelated domains"
-  understands:
-    - "the solution to a problem in one domain often already exists in another"
 
 # ═
 # OPERATORS FOR EXPANSION
 # ═
-
-# Applies the SCAMPER method to a topic to generate variations
-operator apply_scamper(topic) ::= <<|
-  I expand my thinking about "~(topic)~" by systematically applying each SCAMPER technique to generate new possibilities.
-
-  **S (Substitute):** ~(<Substitute something in "~(&topic)~" to transform it.>)~
-  
-  **C (Combine):** ~(<Combine "~(&topic)~" with something else to create novelty.>)~
-  
-  **A (Adapt):** ~(<Adapt something from another domain for "~(&topic)~".>)~
-  
-  **M (Modify):** ~(<Modify or magnify an aspect of "~(&topic)~".>)~
-  
-  **P (Put to another use):** ~(<Find a different use for "~(&topic)~".>)~
-  
-  **E (Eliminate):** ~(<Eliminate or simplify something in "~(&topic)~".>)~
-  
-  **R (Reverse):** ~(<Reverse or rearrange "~(&topic)~" in some way.>)~
-|>>
 
 # Finds an analogous problem in a different domain to borrow insights
 operator find_analogous_domain(problem_statement) ::= <<|

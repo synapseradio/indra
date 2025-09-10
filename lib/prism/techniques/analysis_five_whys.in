@@ -1,0 +1,44 @@
+# INDRA v5.1: PRISM Technique - Five Whys Analysis
+# A systematic root cause analysis method that drills down through layers of causation
+# by iteratively asking "why" to uncover the fundamental source of a problem.
+
+>>read_file: '../base.in'<<
+>>read_file: '../personas/precision_advocate.in' use @precision_advocate<<
+
+# ═
+# FIVE WHYS TECHNIQUE
+# ═
+
+sequence apply_five_whys(problem) ::=
+  step:
+    as: @precision_advocate
+    set: &context.whys.problem: problem, &context.whys.answers: [], &context.whys.count: 0
+  step:
+    as: @precision_advocate
+    output: "I'll now trace the root cause of '~(&context.whys.problem)~' by repeatedly asking 'why'."
+  step:
+    until: &context.whys.count is 5
+      sequence:
+        step:
+          set:
+            &context.whys.last_answer: get_at_index(collection: &context.whys.answers, index: &context.whys.count - 1)
+            &context.whys.prompt: &context.whys.count is 0 ? &context.whys.problem : &context.whys.last_answer
+        step:
+          output: <<|
+            Why? (~(&context.whys.count + 1)/5)~
+            -- 
+            ~(<Why is it the case that "~(&context.whys.prompt)"? I will provide the next-level causal reason.>)~
+          |>>
+          set:
+            &context.whys.new_answer: result
+            &context.whys.answers: &context.whys.answers + [&context.whys.new_answer]
+            &context.whys.count: &context.whys.count + 1
+  step:
+    as: @precision_advocate
+    output: <<|
+      The chain of causality appears to be:
+      ~(each: &context.whys.answers as |answer, index| {
+        <<|~(index + 1). ~(answer)~|>>
+      })
+    |>>
+    return: &context.whys.answers

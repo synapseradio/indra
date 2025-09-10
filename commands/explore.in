@@ -2,7 +2,7 @@
 # Provides natural Tree of Thought exploration and reasoning.
 
 # --- Imports ---
->>read_file: '../lib/prism/tree_of_thought.in' use @tree_thinker,
+>>read_file: '../lib/prism/modules/tree_of_thought.in' use @tree_thinker,
                                                      tree_of_thought<<
 >>read_file: '../lib/prism/thinking_primitives.in' use wonder_about,
                                                           assess_exploration_mode,
@@ -12,7 +12,7 @@
                                                           reconsider,
                                                           step_back_and_reflect,
                                                           @curious_explorer<<
->>read_file: '../lib/prism/citation.in' use citation_pipeline<<
+>>read_file: '../lib/prism/modules/citation.in' use citation_pipeline<<
 
 # --- Entry Point actor ---
 

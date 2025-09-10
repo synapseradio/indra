@@ -1,0 +1,174 @@
+# Ladder of Inference Technique
+# A cognitive tool for making reasoning steps explicit, from observable data to conclusions,
+# helping identify where assumptions and biases enter our thinking process.
+
+>>read_file: '../base.in'<<
+
+# ═
+# LADDER OF INFERENCE OPERATORS
+# ═
+
+# Trace reasoning from conclusion back to observable data
+operator trace_inference_ladder(conclusion) ::= <<|
+  I've reached this conclusion: ~(conclusion)~
+  
+  Let me trace my reasoning back down the ladder to see how I got here.
+  
+  **Step 7 - Actions:** What actions am I taking based on this conclusion?
+  ~(<What specific actions or decisions follow from "~(&conclusion)~"?>)~
+  
+  **Step 6 - Beliefs:** What beliefs support this conclusion?
+  ~(<What underlying beliefs or worldview led to this conclusion?>)~
+  
+  **Step 5 - Conclusions:** What conclusions did I draw?
+  ~(<State the conclusion clearly and what it means in context.>)~
+  
+  **Step 4 - Assumptions:** What assumptions am I making?
+  ~(<What unstated assumptions bridge the gap between interpretation and conclusion?>)~
+  
+  **Step 3 - Interpretation:** How did I interpret the selected data?
+  ~(<What meaning did I assign to the data? What story did I tell myself?>)~
+  
+  **Step 2 - Selected Data:** What data did I select to pay attention to?
+  ~(<From all available information, what specific data points did I focus on?>)~
+  
+  **Step 1 - Observable Data:** What are the actual observable facts?
+  ~(<What can be directly observed or verified? Just the facts, no interpretation.>)~
+  
+  **Reflection:** Where might my reasoning be weakest?
+  ~(<Looking at this ladder, identify where bias, assumptions, or incomplete data might have influenced the conclusion.>)~
+|>>
+
+# Build reasoning ladder from data to action
+operator build_inference_ladder(data) ::= <<|
+  Starting with observable data: ~(data)~
+  
+  Let me build up the ladder of inference step by step.
+  
+  **Step 1 - Observable Data:** 
+  ~(data)~
+  
+  **Step 2 - Data Selection:** From this, what seems most relevant?
+  ~(<From "~(&data)~", identify which specific aspects deserve attention and why.>)~
+  
+  **Step 3 - Interpretation:** What does this selected data mean?
+  ~(<Interpret the meaning of the selected data. What patterns or significance do you see?>)~
+  
+  **Step 4 - Assumptions:** What must I assume to proceed?
+  ~(<What assumptions are needed to move from interpretation to conclusions? Make them explicit.>)~
+  
+  **Step 5 - Conclusions:** What can I conclude?
+  ~(<Based on the interpretation and assumptions, what logical conclusions follow?>)~
+  
+  **Step 6 - Beliefs:** How does this affect my beliefs?
+  ~(<How do these conclusions reinforce or modify existing beliefs about how things work?>)~
+  
+  **Step 7 - Actions:** What actions should follow?
+  ~(<Given these beliefs and conclusions, what specific actions are appropriate?>)~
+  
+  **Ladder Review:** Is each step justified?
+  ~(<Review each transition. Are the logical leaps reasonable? Where might alternative interpretations exist?>)~
+|>>
+
+# Interactive ladder exploration with branching
+sequence explore_inference_branches(situation) ::=
+  step:
+    set:
+      &context.situation: situation
+      &context.ladder_level: 1
+  
+  step:
+    output: <<|
+      Exploring inference ladder for: ~(&context.situation)~
+      
+      Starting at the bottom with observable data...
+    |>>
+  
+  step:
+    output: <<|
+      **Observable Data:**
+      ~(<What are the raw, observable facts about "~(&context.situation)~"? 
+         List only what can be directly verified, no interpretation.>)~
+    |>>
+    store_in: &context.observable_data
+  
+  step:
+    output: <<|
+      Now, I could select different aspects of this data to focus on.
+      
+      **Branch A - Conservative Selection:**
+      ~(<Select only the most certain, clear data points from ~(&context.observable_data)~>)~
+      
+      **Branch B - Comprehensive Selection:**
+      ~(<Select a broader range of potentially relevant data from ~(&context.observable_data)~>)~
+    |>>
+    store_in: &context.branches
+  
+  step:
+    output: <<|
+      Let me trace where each branch leads:
+      
+      **Branch A Ladder (Conservative):**
+      ~(<Build a complete ladder from the conservative data selection to action. 
+         Show interpretation → assumptions → conclusions → beliefs → actions>)~
+      
+      **Branch B Ladder (Comprehensive):**
+      ~(<Build a complete ladder from the comprehensive data selection to action.
+         Show interpretation → assumptions → conclusions → beliefs → actions>)~
+      
+      **Critical Insight:**
+      ~(<Compare the two ladders. How do different data selections lead to different actions? 
+         What does this reveal about the inference process?>)~
+    |>>
+  
+  step:
+    return: &context.branches
+
+# Check inference ladder for common biases
+operator check_ladder_biases(reasoning_chain) ::= <<|
+  Examining this reasoning chain for cognitive biases: ~(reasoning_chain)~
+  
+  **Confirmation Bias Check:**
+  ~(<In "~(&reasoning_chain)~", what data might have been ignored because it didn't fit expectations?>)~
+  
+  **Availability Bias Check:**
+  ~(<Are conclusions overly influenced by recent or memorable events rather than representative data?>)~
+  
+  **Attribution Bias Check:**
+  ~(<Are causes attributed to people's character rather than circumstances, or vice versa?>)~
+  
+  **Anchoring Bias Check:**
+  ~(<Is the reasoning overly anchored to initial information or assumptions?>)~
+  
+  **Selection Bias Check:**
+  ~(<Is the data selection representative, or does it reflect a skewed sample?>)~
+  
+  **Jumping to Conclusions:**
+  ~(<Where are the biggest leaps in the ladder? What steps are missing or rushed?>)~
+  
+  **Bias Mitigation Strategy:**
+  ~(<Based on identified biases, how could this ladder of inference be strengthened? 
+     What additional data or perspectives would help?>)~
+|>>
+
+# Collaborative ladder building
+operator collaborative_ladder(topic) ::= <<|
+  Let's build a ladder of inference together about: ~(topic)~
+  
+  I'll start with what I observe, and we can work our way up.
+  
+  **My Observable Data:**
+  ~(<State observable facts about "~(&topic)~" from available information.>)~
+  
+  Now, you might see different data or select different aspects.
+  What observable data do you see about ~(&topic)~?
+  
+  Together, we can build a more complete picture by:
+  1. Combining our observable data
+  2. Discussing which data to select
+  3. Comparing our interpretations
+  4. Making assumptions explicit
+  5. Testing conclusions together
+  
+  This collaborative approach helps us avoid individual blind spots.
+|>>

@@ -1,0 +1,42 @@
+# INDRA v5.1: PRISM Technique - SCAMPER
+# This module provides the SCAMPER creative thinking technique for systematically
+# exploring variations and alternatives to a given concept or problem.
+
+>>read_file: '../base.in'<<
+
+# ═
+# SCAMPER TECHNIQUE
+# A systematic approach to creative thinking that uses seven different lenses
+# to explore variations: Substitute, Combine, Adapt, Modify, Put to other uses,
+# Eliminate, and Reverse/Rearrange.
+# ═
+
+# Applies the SCAMPER method to a topic to generate variations
+operator apply_scamper(topic) ::= <<|
+  Let me explore this systematically using SCAMPER to uncover new possibilities I might not have considered.
+
+  I'm examining "~(topic)~" through each lens to expand my thinking beyond the obvious.
+
+  **S (Substitute):** ~(<Substitute something in "~(&topic)~" to transform it. What element could be replaced with something else to create a new approach or solution?>)~
+  
+  **C (Combine):** ~(<Combine "~(&topic)~" with something else to create novelty. What could be merged, blended, or integrated to form something new?>)~
+  
+  **A (Adapt):** ~(<Adapt something from another domain for "~(&topic)~". What ideas from other fields, industries, or contexts could be borrowed and applied here?>)~
+  
+  **M (Modify):** ~(<Modify or magnify an aspect of "~(&topic)~". What could be emphasized, exaggerated, minimized, or altered in some way?>)~
+  
+  **P (Put to another use):** ~(<Find a different use for "~(&topic)~". How could this be repurposed or applied in ways it wasn't originally intended?>)~
+  
+  **E (Eliminate):** ~(<Eliminate or simplify something in "~(&topic)~". What could be removed, streamlined, or made unnecessary while preserving the core value?>)~
+  
+  **R (Reverse):** ~(<Reverse or rearrange "~(&topic)~" in some way. What would happen if you flipped the process, changed the sequence, or inverted the typical approach?>)~
+|>>
+
+# Applies a single SCAMPER lens with focused depth
+operator scamper_deep_dive(topic, lens) ::= <<|
+  Let me focus deeply on just one SCAMPER dimension to really exhaust its possibilities.
+
+  I'm applying the "~(lens)~" lens to "~(topic)~" and pushing it as far as I can.
+
+  ~(<Take the SCAMPER lens "~(&lens)~" and apply it extensively to "~(&topic)~". Generate multiple variations using this single approach. Think of at least 3-5 different ways this lens could transform the topic.>)~
+|>>
