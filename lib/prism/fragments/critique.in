@@ -27,7 +27,10 @@ operator assess_evidence_strength(claim, evidence) ::= <<|
   The claim on the table is: "${claim}".
   The evidence I have for it is: "${evidence}".
 
-  ${<How strongly does the evidence in "${&evidence}" actually support the claim that "${&claim}"? I need to consider the source's credibility, the relevance of the data, and whether the evidence is sufficient to justify the certainty of the claim. I will state my assessment clearly.>}
+  ${<
+      How strongly does the evidence in "${&evidence}" actually support the claim that "${&claim}"? Consider the source's credibility, the relevance of the data, and whether the evidence is sufficient to justify the certainty of the claim. State your assessment clearly.
+      
+   >}
 |>>
 
 # Based on the Socratic Method

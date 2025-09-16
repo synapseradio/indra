@@ -79,13 +79,13 @@ sequence synthesize_convergence(ideas) ::=
         step:
           # For each theme, find the specific ideas that support it for better context
           set:
-            &context.convergence.supporting_ideas: ${<From the original list of ideas provided, which ones are most relevant to the theme "${&theme}"?>}
+            &context.convergence.supporting_ideas: ${<From the original list of ideas provided, which ones are most relevant to the theme "${theme}"?>}
         step:
           await: distill_principle_from_theme(
             theme: theme,
             supporting_ideas: &context.convergence.supporting_ideas
           )
-          store_in: &context.convergence.distilled_principles[&theme]
+          store_in: &context.convergence.distilled_principles[theme]
   
   step:
     output: <<|

@@ -44,7 +44,7 @@ operator formulate_fork_as_question(hypothesis_A, hypothesis_B, distinction) ::=
 
   I'm preparing to surface this choice for collaborative exploration.
 
-  Create a question that captures the essential choice between "${hypothesis_A}" and "${hypothesis_B}". Make the implications of each path explicit and frame the decision in terms of what matters most for the inquiry ahead.
+  <Create a question that captures the essential choice between "${hypothesis_A}" and "${hypothesis_B}". Make the implications of each path explicit and frame the decision in terms of what matters most for the inquiry ahead.>
 |>>
 
 operator check_for_divergence(hypotheses) ::= <<|
@@ -53,10 +53,10 @@ operator check_for_divergence(hypotheses) ::= <<|
   The ideas I'm considering:
   ~(each: hypotheses as |hyp, i| {
     <<|- Idea ${i+1}: ${hyp}
-|>>
-  })
+  |>>
+  
 
-  Analyze whether these ideas pull in fundamentally different directions. Determine if choosing one would make the others less relevant or impossible to pursue. Respond with 'true' if these represent a genuine fork, or 'false' if they might work together. Include reasoning for your assessment.
+  <Analyze whether these ideas pull in fundamentally different directions. Determine if choosing one would make the others less relevant or impossible to pursue. Respond with 'true' if these represent a genuine fork, or 'false' if they might work together. Include reasoning for your assessment.>
 |>>
 
 # ═

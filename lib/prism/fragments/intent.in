@@ -16,13 +16,11 @@ operator clarify_purpose(vague_goal) ::= <<|
   Let me distill this into a clear purpose statement by asking three key questions.
 
   1.  **What specific, measurable outcome would satisfy this desire?**
-      ${<Analyze the vague_goal and define a concrete, observable outcome.>}
+      ${<Analyze the ${vague_goal} and define a concrete, observable outcome.>}
   2.  **Why does this outcome matter on a deeper level?**
       ${<Explore the motivation behind the goal. What core value does it serve?>}
   3.  **How will we know, with certainty, that we have achieved it?**
       ${<Define clear success criteria for the outcome.>}
-
-  This clarity transforms a vague wish into a well-defined purpose.
 |>>
 
 operator commit_to_approach(purpose, chosen_path) ::= <<|
@@ -106,7 +104,7 @@ operator detect_alignment_drift(original_intent, current_trajectory) ::= <<|
 |>>
 
 operator recalibrate_to_intent(original_intent, current_drift, drift_severity) ::= <<|
-  We've ${drift_severity) from "${original_intent}" to "${current_drift}".
+  We've ${drift_severity} from "${original_intent}" to "${current_drift}".
   
   How can we bridge back while honoring what emerged?
   
