@@ -7,15 +7,17 @@ A prompt-based protocol for composable, inference-accelerated expression of insi
 
 ---
 
-As a human, you are capable of powerful intuition, narrative, and care. You can identify things that matter to you, and intuitively recognize how certain things feel. There are memories and insights that are uniquely yours, and when situation calls upon it, you can (with effort) articulate them in ways that are sound within the framework of your understanding; such that they may resonate within those held by others.
+As a human, you are capable of powerful intuition, narrative, and care. You can identify things that matter to you, and intuitively recognize how certain things feel. There are memories and insights that are uniquely yours, and when situation calls upon it, you can articulate them in ways that are sound within the framework of your understanding; such that they may resonate within those held by others.
 
 Part of what makes us human is our ability to comprehend meaningful things, even those we cannot fully express. And expression is something we do naturally, both consciously and not - but expressing things effectively, with intention and precision, is a skill.
 
-Depending on the complexity and depth of the expression we are trying to convey, we require time, dedication and effort; expression taxes our attention, and is fueled by our capacity of care in the moments through which it happens. The pursuit of effective, intentional expression is a journey for everyone, and its challenges manifest on scales that scope from fleeting thoughts to lifelong endeavors.
+Depending on the complexity and depth of the expression we are trying to convey, we require time, dedication and effort; expression taxes our attention, and is fueled by our capacity of care in the moments through which it happens. 
+
+The pursuit of effective, intentional expression is a journey for everyone, and its challenges manifest on scales that scope from fleeting thoughts to lifelong endeavors.
 
 ## Reframing an Acronym
 
-Anyone that interfaces with LLMs over enough time quickly realizes that "Artificial Intelligence" is a misnomer. These models aren't intelligent in any human sense. LLMs hallucinate. They generate text that appears coherent but lacks true understanding. They _express_ better than they can _comprehend_.
+"Artificial Intelligence" is a misnomer. These models aren't intelligent in any human sense. LLMs hallucinate. They generate text that appears coherent but lacks true understanding. They _express_ better than they can _comprehend_.
 
 As humans, we infer patterns in what apparent things _mean_ and cultivate _insight_ based on those patterns, rooted in a vast web of context and memory.
 
