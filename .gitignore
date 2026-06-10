@@ -1,2 +1,4 @@
 .DS_Store
 .vscode
+# Thinkies persistence data (local, not committed)
+.thinkies/
