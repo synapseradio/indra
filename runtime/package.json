@@ -1,0 +1,27 @@
+{
+  "name": "indra-runtime",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic TypeScript runtime for INDRA .in programs. XState choreography, Effect substrate, BAML inference.",
+  "scripts": {
+    "generate": "baml-cli generate --from baml_src",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.baml.json --noEmit",
+    "build": "bun run generate && bun run typecheck",
+    "pretest": "bun run generate",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:live": "vitest run --config vitest.live.config.ts"
+  },
+  "dependencies": {
+    "@boundaryml/baml": "0.222.0",
+    "effect": "3.21.3",
+    "xstate": "5.32.0"
+  },
+  "devDependencies": {
+    "@effect/vitest": "0.29.0",
+    "@types/node": "25.9.2",
+    "typescript": "6.0.3",
+    "vitest": "3.2.6"
+  }
+}

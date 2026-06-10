@@ -1,0 +1,5 @@
+baml_client/
+dist/
+node_modules/
+.env
+*.log
