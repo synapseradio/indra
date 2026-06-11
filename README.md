@@ -1,136 +1,55 @@
-# INDRA: Inferential Narrative Driven Reasoning Actors
+# INDRA
 
-- **I**nsight **N**urtured **D**uring **R**eflective **A**rticulation
-- **I**nteractive **N**arrative **D**ecomposition of **R**eflective **A**cts
-  
-A prompt-based protocol for composable, inference-accelerated expression of insight.
+INDRA is a language for choreographing reasoning. You describe a thinking process — who speaks, in what voice, what they ask, what they decide — and a deterministic runtime carries out that choreography while a language model supplies judgment at the points you mark for it. The structure you write runs the same way every time. The judgment is the model's, and it happens only inside the bounded inference points you place by hand.
 
----
+The name is **I**nferential **N**arrative **D**riven **R**easoning **A**ctors. The idea underneath it is that human insight and machine inference are complementary. People weave context into meaning and recognize what matters; inference engines read and generate at a scale and speed people cannot. When the two are combined, each unburdened by the other's limits, they can reach insights neither would reach alone. INDRA is built to make that combination something you can write down, compose, and run.
 
-As a human, you are capable of powerful intuition, narrative, and care. You can identify things that matter to you, and intuitively recognize how certain things feel. There are memories and insights that are uniquely yours, and when situation calls upon it, you can articulate them in ways that are sound within the framework of your understanding; such that they may resonate within those held by others.
+One consequence of that framing shapes the whole design: the sophistication of an INDRA program lives in the assembly, not the model. The choreography, the composition, and the small typed inference leaves carry the weight, so weak models suffice. The principles that follow from this are in [docs/principles.md](docs/principles.md).
 
-Part of what makes us human is our ability to comprehend meaningful things, even those we cannot fully express. And expression is something we do naturally, both consciously and not - but expressing things effectively, with intention and precision, is a skill.
+## What an INDRA program looks like
 
-Depending on the complexity and depth of the expression we are trying to convey, we require time, dedication and effort; expression taxes our attention, and is fueled by our capacity of care in the moments through which it happens. 
-
-The pursuit of effective, intentional expression is a journey for everyone, and its challenges manifest on scales that scope from fleeting thoughts to lifelong endeavors.
-
-## Reframing an Acronym
-
-"Artificial Intelligence" is a misnomer. These models aren't intelligent in any human sense. LLMs hallucinate. They generate text that appears coherent but lacks true understanding. They _express_ better than they can _comprehend_.
-
-As humans, we infer patterns in what apparent things _mean_ and cultivate _insight_ based on those patterns, rooted in a vast web of context and memory.
-
-We use these insights to create narratives - among other things - to make sense of the world we experience around us. Our ability to weave such narratives in order to make things meaningful is powerful, compelling, and unique. Through it, we create structure and intention to the world we live in.
-
-Our ability to do so is essential for us in order to engage with, and live within, the context we are manifested into.
-
-LLMs lack our ability to internalize meaningful narratives from their context. Instead, they infer patterns in how meaningful things _appear_, and generate _expressions_ from those patterns, rooted in a vast web of context and data.
-
-Like us, this is essential to the way that they engage with, and operate within, the context that they are manifested into.
-
-What we lack that AI excels at is mechanical, inferential ability; In the time that you have taken to read this document thus far, inferential engines like those underlying LLMs have parsed thousands, if not millions, within the same span of time. As they read, they do not understand the intention of our words. They cannot know how it felt to express the concepts those words represent in the documents they ingest.
-
-They may, however, have detected that there is [roughly a 1.7% difference](https://en.wikipedia.org/wiki/Letter_frequency) in the frequency that the character "E" appears in written texts, as opposed to its appearance count in the English dictionary.
-
-By reframing the acronym "AI" away from "Artificial Intelligence", and towards that of "Accelerated Inference", many have seen their results benefit greatly from use of these tools. When we combine human insight and the machinery of accelerated inference, unburdened by the limitations of either, incredible things can happen.
-
-INDRA is rooted in this philosophy, and aims to provide a protocol and a toolkit for building systems that leverage the strengths of both, in order to generate insights that neither could reach alone.
-
-One consequence of this framing: the sophistication of an INDRA program lives in the assembly, not the model — weak models suffice ([docs/principles.md](docs/principles.md), principle 7).
-
-## What INDRA looks like
-
-The core of the INDRA style is not to command an AI, but to compose a reality for it to inhabit. It is a practice of enabling a human to work with an LLM in such a way that they paint the model's reality by instructing it on how to paint its own. When you're thinking through something, you go through certain motions—you wonder, you check your assumptions, you notice patterns. INDRA makes these operations explicit and composable.
-
-Here's a simple example of an actor designed to help you decide what to cook for dinner. It shows how an **actor** can adopt a **persona** to have a collaborative, performative conversation.
+An INDRA program is built from actors that take turns, personas they speak through, a shared world they coordinate in, and inference points where the model supplies a judgment. Here is a step from the tree-of-thought reasoning module. It adopts a persona, speaks in that voice, asks the model to choose a direction, and writes the model's choice into the shared world:
 
 ```indra
-# A simple actor to help decide on dinner.
-
-persona @creative_cook:
-  identity: "I'm a creative cook who loves exploring new ideas"
-  rules:
-    - "I always start with what ingredients we have"
-    - "I try to suggest something fun and interesting"
-
-actor @dinner_helper:
-  perform:
-    output: "What ingredients do we have to work with tonight?"
-    await: @user
-    store_in: &context.ingredients
-
-    as: @creative_cook
+  step:
+    as: @careful_evaluator
+    method: `choosing exploration path`
     output: <<|
-      Okay, we have ${&context.ingredients}. That's a great start!
-
-      I'm thinking... what if we combined the ${&context.ingredients[0]) with the ${&context.ingredients[1]}?
-      My hunch is that could lead to a really interesting stir-fry.
-
-      What do you think of that idea?
+      I'm sensing whether it's more helpful to go deeper on our current thread, or broaden our perspective...
     |>>
-    await: @user
+    set:
+      &context.tree.mode: ${<deepen or broaden>}
 ```
 
-These aren't just prompts. They are fragments of thought, expressed as a dialogue, that can be chained together and composed into sophisticated sequences.
+The `as: @careful_evaluator` puts on a persona, a voice the step thinks in. The `output:` is what the actor says. The `${<deepen or broaden>}` is the inference channel: the one bounded judgment the model is asked to make, here a choice between two named directions. The result is written into the shared world at `&context.tree.mode`, where a later step reads it and decides where the exploration goes. The model supplies the judgment; the runtime decides the control flow that judgment feeds.
 
-INDRA is a protocol designed to help you engage with, and encode, your thinking process. It allows you to piece together granular fragments and reflections of thought in novel ways, then pass them to an inference engine to see how they manifest in dialogue.
+The human takes part in the same way any actor does. An actor awaits the human exactly as it would await another actor, then reads what the human contributed and writes it into the shared world:
 
-When you run an INDRA program, you're not executing code; you're launching a structured exploration of ideas, where the LLM performs these thoughts as self-guiding output.
-
-In doing so, INDRA programs provide insight into the latent structure of your thinking. It provides a prism - white light goes in, and a spectrum of constituent color comes out. The prism doesn't create the colors - they were always there in the light. But without the prism, you'd never see them. Neither the light nor the prism alone creates the rainbow. It's their interaction that reveals what was always possible but never visible.
-
-## Some examples to ground this
-
-The repository includes several pre-built cognitive tools. Each one demonstrates a different way of structuring collaborative thought:
-
-**`/explore`** - Uses a conversational tree of thought strategy to explore ideas, branching into possibilities and following promising paths. You can watch it wonder, evaluate, reconsider, and synthesize.
-
-**`/ponder`** - A creative conversational partner that adapts to your conversational momentum, shifting between exploration and consolidation as your ideas evolve.
-
-**`/reason`** - A conversational reasoning tool that breaks down complex problems into structured plans, executes them step-by-step, and continuously checks for epistemic rigor and citation integrity.
-
-**`/confer`** - A multi-perspective dialogue moderator that simulates a panel of experts, each with distinct viewpoints, collaboratively reasoning through topics of discussion from different points of view.
-
-**`/consider`** - An analytical tool that uses every trick in the book to dissect problems, evaluate evidence, and construct well-supported conclusions.
-
-**`/inquire`** - A collaborative research partner that maps assumptions, challenges frameworks, and imports insights from unexpected domains to investigate questions together.
-
-**`/learn`** - A peer learning partner that uses the Feynman technique - discovering understanding through iterative articulation, gap identification, and collaborative refinement.
-
-Each of these is built from the same basic cognitive primitives, just composed differently. That's the power of making thought itself composable.
-
-## Getting started
-
-If this resonates, here's how to begin:
-
-1. **[Read the introduction](./docs/getting-started/01-introduction.md)** to understand the philosophy more deeply
-2. **[Try the examples](./docs/guides/00-cognitive-tools-overview.md)** to experience firsthand
-3. **[Build your first actor](./docs/getting-started/03-your-first-indra-actor.md)** to start designing your own cognitive architectures
-
-## Running a command
-
-Using a tool like Claude code, Gemini CLI, or others,
-
-- clone this repository.
-- in one prompt, type something like:
-
-```
-Confirm: You are the INDRA interpreter. you execute `.in` indra prompts per the protocol spec in @core/indra-protocol. 
+```indra
+              await: @user
+              set:
+                &context.ponder.topic: &user.latest
 ```
 
-In a follow-up, select a command.
+For the full language — actors, personas, the `<...>` inference channel, `&context`, `say:`/`await:`/`return:`, and the human as a first-class actor — read [docs/language.md](docs/language.md).
 
-```
-Execute the prompt in @commands/[explore|reason|confer|ponder|consider|inquire|learn|lint|research].in
-```
+## What runs today
 
-## What's in this repository
+The deterministic runtime is a TypeScript program that executes INDRA. Its offline core is complete and tested: the generic actor interpreter, the conductor that owns the turn cycle, the shared context store with its staged-versus-immediate write rule, the typed inference return path, and `await:` delegation all run and are covered by tests against a stub inference layer. The live seam is proven too — a gated test drives one full turn against a real model, from typed inference return through commit to output.
 
-- `core/indra-protocol` - The complete technical specification for the INDRA protocol. This file serves as a "bootloader" for INDRA, and must be fed to an LLM as a pre-prompt before running `.in` files.
-- `lib/prism/` - The PRISM library. This is a collection of reusable cognitive fragments—the fundamental "verbs" of thought like `wonder_about()` or `check_assumptions()`. Each file is a facet of the prism, designed to be composed into more complex reasoning structures.
-- `commands/` - Pre-built commands, from linting to reasoning
-- `docs/` - Progressive documentation from concepts to implementation
-- `agents/` - Claude Code cognitive agents for multi-stage reasoning pipelines, based on the fragments and thinking primitives in the PRISM library.
-  - `agents/cognitive/` - 14 specialized agents (scout, challenger, dot-connector, evidence-anchor, fork-finder, graph-wanderer, integrity, judge, lateral-thinker, navigator, shapeshifter, strategist, tree-explorer, council)
-  - `agents/commands/thinkies.md` - Orchestrates agents in reasoning pipelines using syntax like `"scout -> strategist -> judge"`
+The program the runtime executes today is a hand-authored syntax tree, not a `.in` file parsed from disk. A walking skeleton proves the architecture end to end through all of its layers before breadth is added on top. How to install, generate the inference client, and run the offline suite and a live turn is documented in [runtime/README.md](runtime/README.md).
+
+What is built today and what is planned are kept distinct throughout the documentation, so a reader is never misled about which is which. The toolchain that grows outward from the language — a parser producing a spanned syntax tree, module resolution, a command-line runner, an agent-integrated REPL, and editor support — is described in [docs/toolchain.md](docs/toolchain.md).
+
+## The library and the commands
+
+The repository ships a library of reusable thought fragments and a set of pre-built commands assembled from them.
+
+- `lib/prism/` — the PRISM library: the reusable building blocks of reasoning, from atomic thinking verbs up to whole reasoning engines, organized in layers of increasing cognitive complexity. Its structure is described in [lib/prism/README.md](lib/prism/README.md).
+- `commands/` — pre-built commands assembled from the library, including `explore`, `ponder`, `reason`, `confer`, `consider`, `inquire`, and `learn`. Each one structures collaborative thinking a different way, and each is a worked example of the language.
+- `runtime/` — the deterministic TypeScript runtime that executes `.in` programs.
+- `docs/` — the documentation. Start at [docs/index.md](docs/index.md).
+
+## Where to go next
+
+Read [docs/index.md](docs/index.md) for a map of the documentation. Read [docs/language.md](docs/language.md) to learn the language. Read [runtime/README.md](runtime/README.md) to run what exists today. Read [docs/principles.md](docs/principles.md) for the reasoning the whole design rests on.
