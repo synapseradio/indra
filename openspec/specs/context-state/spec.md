@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `context-state` capability owns the `&context`, `&user`, and `&signals` namespaces of the INDRA runtime. State is STM-backed so that multiple actors can run in parallel against a shared transactional whiteboard. The capability defines the staged-versus-immediate `set:` semantic, the atomic turn-boundary commit, protection of runtime-owned namespaces, transactional serialization of contending commits, and strict initialization of all referenced context paths before the first turn.
+The `context-state` capability owns the `&context`, `&user`, and `&signals` namespaces of the INDRA runtime. State is STM-backed so that multiple actors can run in parallel against a shared transactional whiteboard. The capability defines the staged-versus-immediate `set:` semantic, the atomic turn-boundary commit, same-path precedence at commit (a staged perform-set wins over a same-turn sequence-set), protection of runtime-owned namespaces, transactional serialization of contending commits, and strict initialization of all referenced context paths before the first turn.
 
 ## Requirements
 
@@ -30,6 +30,16 @@ A `set:` executed inside a `sequence:` block SHALL be applied immediately and SH
 - **WHEN** a sequence sets `&context.x = 1` in step 1 and reads `&context.x` in step 2
 - **THEN** step 2 reads `1`
 
+### Requirement: A staged perform-set wins over a same-turn sequence-set at commit
+
+When a single turn both sequence-sets and perform-stages the same `&context` path, the staged perform-set SHALL win at the turn-boundary commit. The sequence write is intermediate computation; the staged write is the actor's considered end-of-turn intent.
+
+#### Scenario: Same-path collision resolves to the staged value
+
+- **WHEN** a turn sets `&context.x = 1` inside a `sequence:` and stages `&context.x = 2` in its `perform:` block
+- **THEN** subsequent steps within the sequence read `1`
+- **AND** after the turn-boundary commit, `&context.x` is `2`
+
 ### Requirement: Protected namespaces reject program writes
 
 A `set:` targeting `&user` or `&signals` SHALL be rejected with a read-only violation error before any state cell is modified. These namespaces are written only by the runtime.
@@ -45,13 +55,13 @@ When two actors commit mutations to the same `&context` path, the runtime SHALL 
 
 #### Scenario: Two actors contend on the same path across a yield point
 
-- **WHEN** actor A stages a mutation to `&context.counter` and parks at an `await:` inference call, and actor B commits a mutation to `&context.counter` before A resumes
+- **WHEN** actor A stages a mutation to `&context.counter` and suspends at an `await:` inference call, and actor B commits a mutation to `&context.counter` before A resumes
 - **THEN** A's commit retries against B's committed value rather than overwriting it
 - **AND** the final committed state reflects both commits, not a lost update
 
 ### Requirement: Initial context must be fully initialized
 
-Before the first turn, the runtime SHALL trace every `&context` path referenced anywhere in the resolved program and verify the root `dialogue … with:` block initializes each one. If any referenced path is uninitialized, the runtime SHALL halt with a fatal incomplete-initial-state error. There is no global context to inherit from.
+Before the first turn, the runtime SHALL trace every `&context` path referenced anywhere in the resolved program and verify the root `dialogue … with:` block initializes each one. If any referenced path is uninitialized, the runtime SHALL halt with a fatal incomplete-initial-state error. The root `with:` block is the sole source of initial context.
 
 #### Scenario: A referenced but uninitialized path halts execution
 

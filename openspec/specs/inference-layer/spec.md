@@ -1,4 +1,10 @@
-## ADDED Requirements
+# inference-layer
+
+## Purpose
+
+The `inference-layer` capability is the generative surface of the INDRA runtime. Every inference point is a typed function: its output shape is declared rather than parsed from prose, parsing failures retry and then fail the turn before the boundary commit, and the runtime requires no role-resumption assertion. Structured outputs lead with a free-form reasoning field so reasoning tokens precede the typed fields. Personas are `{identity, rules, understands}` data records that inference calls read, never actors. Pure `<...>` calls execute as deterministic host functions, and composition over inference results stays in the protocol language, with the `select` field as the boundary that keeps discarded fields out of program-visible state.
+
+## Requirements
 
 ### Requirement: Every inference returns a typed value
 

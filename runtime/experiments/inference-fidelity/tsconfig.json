@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noPropertyAccessFromIndexSignature": false,
+    "verbatimModuleSyntax": false
+  },
+  "include": ["run.ts", "baml_client"]
+}

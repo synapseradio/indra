@@ -49,13 +49,13 @@ When two actors commit mutations to the same `&context` path, the runtime SHALL 
 
 #### Scenario: Two actors contend on the same path across a yield point
 
-- **WHEN** actor A stages a mutation to `&context.counter` and parks at an `await:` inference call, and actor B commits a mutation to `&context.counter` before A resumes
+- **WHEN** actor A stages a mutation to `&context.counter` and suspends at an `await:` inference call, and actor B commits a mutation to `&context.counter` before A resumes
 - **THEN** A's commit retries against B's committed value rather than overwriting it
 - **AND** the final committed state reflects both commits, not a lost update
 
 ### Requirement: Initial context must be fully initialized
 
-Before the first turn, the runtime SHALL trace every `&context` path referenced anywhere in the resolved program and verify the root `dialogue … with:` block initializes each one. If any referenced path is uninitialized, the runtime SHALL halt with a fatal incomplete-initial-state error. There is no global context to inherit from.
+Before the first turn, the runtime SHALL trace every `&context` path referenced anywhere in the resolved program and verify the root `dialogue … with:` block initializes each one. If any referenced path is uninitialized, the runtime SHALL halt with a fatal incomplete-initial-state error. The root `with:` block is the sole source of initial context.
 
 #### Scenario: A referenced but uninitialized path halts execution
 

@@ -14,7 +14,7 @@ The full reasoning behind this split, and the resolution of every place the prot
 
 The offline core is complete and green. The generic actor interpreter, the conductor turn cycle, the STM-backed context store with staged-versus-immediate `set:` semantics, the typed BAML return path, and `await:` delegation all run and are covered by tests against a stub inference layer.
 
-One edge is wired but not yet exercised: a real model call. The live entrypoint and the live test both exist, but the first end-to-end run against Anthropic is still open work (tasks 5.1 and 5.2 in the change). Everything up to the network boundary is proven; the network hop itself has not been driven yet.
+The live seam is proven too: the gated live test drives one full turn against the real Anthropic model — typed inference return, STM commit, `say:` output, conductor back at idle.
 
 ## Prerequisites
 
@@ -73,7 +73,7 @@ The interactive entrypoint at `src/index.ts` assembles the same system with the 
 ANTHROPIC_API_KEY=sk-... bun run src/index.ts
 ```
 
-The entrypoint runs the walking-skeleton program — a single actor derived from `commands/explore.in`, stripped down to await user input, run one inference, stage one `set:`, and say the typed result. Driving it against a live model is the not-yet-done task 5.2, so treat the first run as the experiment it is.
+The entrypoint runs the walking-skeleton program — a single actor derived from `commands/explore.in`, stripped down to await user input, run one inference, stage one `set:`, and say the typed result.
 
 ## Layout
 
@@ -87,6 +87,8 @@ src/
   xstate/        the conductor machine, the generic INDRA-actor interpreter, the wiring
   baml/          the inference service and its Effect layer
   test/          offline seam and unit tests, plus the gated *.live.test.ts
+experiments/     de-risking experiments with their own BAML projects; each
+                 carries a findings.md (see inference-fidelity/ for 7.3)
 ```
 
 The program the runtime executes is an AST hand-authored in `src/ast/`, not parsed from a `.in` file yet. The skeleton proves execution; parsing is a separate capability that comes later. See the change tasks at `../openspec/changes/extract-deterministic-runtime/tasks.md` for what is done and what remains.

@@ -2,7 +2,7 @@
 
 Today an LLM role-plays the INDRA interpreter: it is asked to be *both* the deterministic virtual machine (parsing, the turn loop, state staging and commit, import resolution, schema validation, signal dispatch) *and* the inference engine. Models are unreliable at the former. The protocol spec itself leans on the model's "working memory" and judgment in places that are supposed to be identical every run (see the design seam log).
 
-Pulling the deterministic machinery out into real code lets the runtime own everything that must behave the same way every time, and frees the model to do only the one thing it is actually good at: the bounded inference inside the `<...>` direct-prompt channel. This is the project's own principle — *determinism serves inhabitation* — expressed as an architecture.
+Pulling the deterministic machinery out into real code lets the runtime own everything that must behave the same way every time, and frees the model to do only the one thing it is actually good at: the bounded inference inside the `<...>` direct-prompt channel. This is the project's own principles — *determinism serves inhabitation* and *weak models suffice* (`docs/principles.md` 1 and 7) — expressed as an architecture.
 
 ## What Changes
 

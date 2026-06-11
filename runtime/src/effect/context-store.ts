@@ -102,8 +102,21 @@ const guardWritable = (
       )
     : Effect.void;
 
-/** Build the store interface over a set of refs. */
-export const storeFromRefs = (refs: StoreRefs): ContextStore => ({
+/**
+ * Build the store interface over a set of refs.
+ *
+ * `onCommitAttempt` instruments the commit loop: the transaction body calls it
+ * on every execution, so attempts minus successful commits equals STM retries.
+ * It fires after the transaction's reads and before its writes — the window a
+ * concurrent commit must land in to invalidate the journal — which is what
+ * lets a test inject a deterministic conflict and observe a real retry. It
+ * must stay cheap and must not touch program state: a retried transaction
+ * calls it again.
+ */
+export const storeFromRefs = (
+  refs: StoreRefs,
+  onCommitAttempt?: () => void,
+): ContextStore => ({
   get: (path) =>
     STM.commit(
       STM.gen(function* () {
@@ -142,6 +155,7 @@ export const storeFromRefs = (refs: StoreRefs): ContextStore => ({
       const world = yield* TRef.get(refs.committed);
       const seq = yield* TRef.get(refs.sequenceOverlay);
       const staged = yield* TRef.get(refs.stagedOverlay);
+      onCommitAttempt?.();
       // sequence first, staged overwrites on same-path collision (S3).
       const next = applyPatch(applyPatch(world, seq), staged);
       yield* TRef.set(refs.committed, next);

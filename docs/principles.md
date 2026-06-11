@@ -40,6 +40,14 @@ Every structured inference declares a free-form reasoning field first, so the mo
 
 Enforced by: design decision D8 and the reasoning-field requirement in the inference-layer spec.
 
+Measured boundary (pilot scale, so a direction rather than a proof): the field earns its place where the declared fields are compressed — summaries, verdicts, ratings — and adds nothing where the shape's own leading fields are already free prose, because the model gets its room natively. See `runtime/experiments/inference-fidelity/findings.md`. The spec requirement stands as written until a fuller measurement says otherwise.
+
+## 7. Weak models suffice
+
+A program assembled by the runtime must be executable by very weak models and still compose into detailed, sophisticated reasoning chains, graphs, trees, and strategies. The sophistication lives in the deterministic assembly — the choreography, the composition, the typed leaves — never in the model. This is a ceiling on leaf design: each inference point must stay small and bounded enough that a fast-tier model executes it well, and a leaf that only a flagship model can carry is a leaf drawn at the wrong size. When a port can choose between one large inference and several small chained ones, the chained shape is the one this principle favors.
+
+Enforced by: the per-`<...>` granularity of the inference layer (one typed function per inference point), corollary C1 (judgment-free work never reaches a model at all), and measured directly by the inference-fidelity pilot, where every typed generation across two fast-tier families parsed on the first attempt (`runtime/experiments/inference-fidelity/findings.md`).
+
 ## Corollaries
 
 A corollary is derivable from the principles and the preamble. It earns a place here because the moment someone needs it is a review, and re-deriving it under review pressure is where mistakes happen. Each corollary names its premises; a corollary whose premises cannot be named is a smuggled principle.

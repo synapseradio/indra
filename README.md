@@ -37,6 +37,8 @@ By reframing the acronym "AI" away from "Artificial Intelligence", and towards t
 
 INDRA is rooted in this philosophy, and aims to provide a protocol and a toolkit for building systems that leverage the strengths of both, in order to generate insights that neither could reach alone.
 
+One consequence of this framing: the sophistication of an INDRA program lives in the assembly, not the model — weak models suffice ([docs/principles.md](docs/principles.md), principle 7).
+
 ## What INDRA looks like
 
 The core of the INDRA style is not to command an AI, but to compose a reality for it to inhabit. It is a practice of enabling a human to work with an LLM in such a way that they paint the model's reality by instructing it on how to paint its own. When you're thinking through something, you go through certain motions—you wonder, you check your assumptions, you notice patterns. INDRA makes these operations explicit and composable.

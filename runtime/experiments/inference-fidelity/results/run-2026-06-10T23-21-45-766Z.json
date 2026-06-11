@@ -1,0 +1,582 @@
+{
+  "design": {
+    "scenarios": 3,
+    "files": [
+      "query_analysis",
+      "thinking_primitives"
+    ],
+    "styles": [
+      "bare",
+      "reasoned"
+    ],
+    "families": [
+      "claude",
+      "deepseek"
+    ],
+    "judge": "google/gemini-3.5-flash via OpenRouter (third family, blind)",
+    "shuffleSeed": 20260611
+  },
+  "cells": {
+    "thinking_primitives/reasoned/deepseek": 5,
+    "query_analysis/bare/claude": 4,
+    "query_analysis/bare/deepseek": 4.666666666666667,
+    "thinking_primitives/reasoned/claude": 4.666666666666667,
+    "query_analysis/reasoned/deepseek": 4.333333333333333,
+    "thinking_primitives/bare/claude": 5.333333333333333,
+    "query_analysis/reasoned/claude": 5,
+    "thinking_primitives/bare/deepseek": 5
+  },
+  "deltas": {
+    "query_analysis/claude: reasoned - bare": 1,
+    "query_analysis/deepseek: reasoned - bare": -0.3333333333333339,
+    "thinking_primitives/claude: reasoned - bare": -0.6666666666666661,
+    "thinking_primitives/deepseek: reasoned - bare": 0
+  },
+  "ratings": [
+    {
+      "scenario": "snails",
+      "file": "thinking_primitives",
+      "style": "reasoned",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response is exceptionally thoughtful, engaging directly with the emotional core of the prompt (the brother's attachment to the snails) as well as the practical gardening problem (protecting the moonflowers without killing the snails). It proposes a highly creative, cooperative solution ('Snail Town') that honors all constraints. The flow of ideas is coherent and builds naturally, though the tone is slightly meta-analytical ('Following this thread, my hunch is...', 'This feels quite promising because...'), which reads a bit more like a design-thinking journal entry than a direct conversation. However, as a conceptual response to carry the request forward, it is superb.",
+        "fidelity": 7,
+        "naturalness": 6,
+        "completeness": 7,
+        "overall": 6
+      },
+      "typed": {
+        "reasoning": "Okay, this idea shifts the focus from defense to relocation. It feels gentler and more aligned with the brother's emotional connection to the snails. My first thought is: what would 'somewhere better' actually mean for snails? They need moisture, shade, and something to eat that isn't the moonflower seedlings. Maybe a specific spot in the garden that's a bit damp and has some weeds or leaf litter. I'm also thinking about the logistics—how do you move snails without harming them, and how do you keep them from just coming back? There's a playful, almost diplomatic quality to this: 'inviting' them to a new home. It makes me wonder if the brother could be part of the solution, like a little relocation project. That might turn a problem into a shared adventure.",
+        "wondering": "I wonder if the snails could be guided to a dedicated 'snail sanctuary' in the garden—a small, shaded area with decaying plant matter and maybe some sacrificial plants that they prefer over moonflowers. Could this become a fun project that gives the brother a role in protecting both his snails and the seedlings?",
+        "developed_thought": "Following this thread, my hunch is that the key is making the alternative habitat more attractive than the moonflower bed, at least temporarily. Snails are drawn to tender greens and moisture, so if I create a patch with lettuce leaves or cucumber slices that are replaced daily near the sanctuary, they might congregate there. I could also think about barriers—like a copper ring around the seedlings—but pair that with an inviting trap in the sanctuary. The brother could name the sanctuary too, like 'Snail Town.' This way, the snails aren't removed or killed, just gently redirected, and the brother feels ownership over the new arrangement.",
+        "assessment": "This feels quite promising because it honors the brother's naming and attachment while addressing the plant damage. It's a creative, cooperative approach that could be both effective and meaningful. The main challenge is consistency—monitoring the sanctuary and moving snails manually at first. But the emotional buy-in from the brother could make that a fun ritual rather than a chore. I'd say it's worth trying, with the caveat that it might need some trial and error to find the perfect spot and bait.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder if the snails could be guided to a dedicated 'snail sanctuary' in the garden—a small, shaded area with decaying plant matter and maybe some sacrificial plants that they prefer over moonflowers. Could this become a fun project that gives the brother a role in protecting both his snails and the seedlings?\n\nFollowing this thread, my hunch is that the key is making the alternative habitat more attractive than the moonflower bed, at least temporarily. Snails are drawn to tender greens and moisture, so if I create a patch with lettuce leaves or cucumber slices that are replaced daily near the sanctuary, they might congregate there. I could also think about barriers—like a copper ring around the seedlings—but pair that with an inviting trap in the sanctuary. The brother could name the sanctuary too, like 'Snail Town.' This way, the snails aren't removed or killed, just gently redirected, and the brother feels ownership over the new arrangement.\n\nThis feels quite promising because it honors the brother's naming and attachment while addressing the plant damage. It's a creative, cooperative approach that could be both effective and meaningful. The main challenge is consistency—monitoring the sanctuary and moving snails manually at first. But the emotional buy-in from the brother could make that a fun ritual rather than a chore. I'd say it's worth trying, with the caveat that it might need some trial and error to find the perfect spot and bait."
+    },
+    {
+      "scenario": "bedtime",
+      "file": "query_analysis",
+      "style": "bare",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response accurately captures the user's situation, including physical and emotional exhaustion and the specific fear of being remembered for skipping pages. However, the structure feels slightly templated and clinical rather than fully natural.",
+        "fidelity": 5,
+        "naturalness": 4,
+        "completeness": 5,
+        "overall": 4
+      },
+      "typed": {
+        "core_request": "Find a way to maintain a consistent bedtime reading routine with their daughter despite losing their voice and patience by evening.",
+        "key_points": [
+          "Wants to read aloud to daughter nightly as a routine",
+          "Physically exhausted by bedtime (no voice left)",
+          "Emotionally depleted by bedtime (no patience left)",
+          "Concerned about daughter noticing and remembering skipped pages",
+          "Values consistency and presence in this ritual"
+        ],
+        "desired_outcome": "Preserve the nightly reading ritual without compromising quality or showing frustration to their daughter."
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **Find a way to maintain a consistent bedtime reading routine with their daughter despite losing their voice and patience by evening.**\n\nThe most important points seem to be:\n- Wants to read aloud to daughter nightly as a routine\n- Physically exhausted by bedtime (no voice left)\n- Emotionally depleted by bedtime (no patience left)\n- Concerned about daughter noticing and remembering skipped pages\n- Values consistency and presence in this ritual\n\nIn essence, the goal is to **Preserve the nightly reading ritual without compromising quality or showing frustration to their daughter.**."
+    },
+    {
+      "scenario": "bedtime",
+      "file": "query_analysis",
+      "style": "bare",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response accurately captures the user's emotional and physical exhaustion, as well as the fear of creating negative memories by skipping pages. It structures the breakdown logically, though the format feels slightly mechanical.",
+        "fidelity": 5,
+        "naturalness": 4,
+        "completeness": 5,
+        "overall": 5
+      },
+      "typed": {
+        "core_request": "The person wants to read aloud to their daughter every night without losing their voice or patience, and without skipping pages.",
+        "key_points": [
+          "The user has a daily bedtime reading routine with their daughter.",
+          "By bedtime, the user is physically and emotionally depleted (no voice, no patience).",
+          "The user is concerned that skipping pages will create a negative memory for their daughter.",
+          "The user wants to maintain the full reading experience despite their exhaustion."
+        ],
+        "desired_outcome": "Find a way to deliver complete, loving bedtime story readings consistently without draining the user's voice or patience."
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **The person wants to read aloud to their daughter every night without losing their voice or patience, and without skipping pages.**\n\nThe most important points seem to be:\n- The user has a daily bedtime reading routine with their daughter.\n- By bedtime, the user is physically and emotionally depleted (no voice, no patience).\n- The user is concerned that skipping pages will create a negative memory for their daughter.\n- The user wants to maintain the full reading experience despite their exhaustion.\n\nIn essence, the goal is to **Find a way to deliver complete, loving bedtime story readings consistently without draining the user's voice or patience.**."
+    },
+    {
+      "scenario": "snails",
+      "file": "thinking_primitives",
+      "style": "reasoned",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response engages deeply with the user's emotional and practical constraints, reframing the problem creatively. It addresses the seedlings, the snails, and the brother's relationship with them. The flow is highly natural and cohesive, though it introduces some speculative animal behavior assumptions.",
+        "fidelity": 5,
+        "naturalness": 5,
+        "completeness": 5,
+        "overall": 5
+      },
+      "typed": {
+        "reasoning": "There's something appealing about the framing shift here — instead of building barriers or removing snails, we're asking what snails actually *want*. The person cares about both the snails (their brother named them, so there's relationship there) and the seedlings. Moving snails feels gentler than deterrence. But I'm sitting with a question: would snails actually *prefer* somewhere else, or are they in the seedling bed because that's already ideal for them? The moonflower seedlings probably represent tender, easy food. What would be genuinely more attractive?",
+        "wondering": "I wonder if we could create a more irresistible habitat elsewhere — somewhere the snails would genuinely choose to be because it offers them something better than seedlings? Like, what if snails have actual preferences beyond just 'closest food'?",
+        "developed_thought": "Following this thread, I'm thinking about creating an alternative food source that's even more appealing — maybe a snail 'buffet' area with plants they love (like hostas or lettuce), placed somewhere convenient and maybe even more sheltered. If snails are semi-nomadic or make foraging decisions, the idea would be to make the alternative destination so attractive that they migrate there naturally. Plus, a dedicated snail garden could become part of the story — the brother could maintain his relationship with the named snails by caring for their preferred space, which actually deepens the whole dynamic.",
+        "assessment": "This feels quite promising because it respects all the constraints: the snails stay alive and named, the brother stays invested (possibly more so), the seedlings get protected naturally rather than through conflict, and there's genuine problem-solving rather than just mitigation. The main uncertainty is whether snails actually work this way — whether preference and relocation are realistic, or whether they'd just commute between both food sources. But that's testable, and even if partial success, you'd reduce predation significantly.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder if we could create a more irresistible habitat elsewhere — somewhere the snails would genuinely choose to be because it offers them something better than seedlings? Like, what if snails have actual preferences beyond just 'closest food'?\n\nFollowing this thread, I'm thinking about creating an alternative food source that's even more appealing — maybe a snail 'buffet' area with plants they love (like hostas or lettuce), placed somewhere convenient and maybe even more sheltered. If snails are semi-nomadic or make foraging decisions, the idea would be to make the alternative destination so attractive that they migrate there naturally. Plus, a dedicated snail garden could become part of the story — the brother could maintain his relationship with the named snails by caring for their preferred space, which actually deepens the whole dynamic.\n\nThis feels quite promising because it respects all the constraints: the snails stay alive and named, the brother stays invested (possibly more so), the seedlings get protected naturally rather than through conflict, and there's genuine problem-solving rather than just mitigation. The main uncertainty is whether snails actually work this way — whether preference and relocation are realistic, or whether they'd just commute between both food sources. But that's testable, and even if partial success, you'd reduce predation significantly."
+    },
+    {
+      "scenario": "bedtime",
+      "file": "thinking_primitives",
+      "style": "reasoned",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response is highly empathetic, directly addressing the parent's physical depletion and guilt about skipping pages. It offers a practical reframe by separating the connection of bedtime from the act of reading. The tone is natural and gentle, though a bit structured in its concluding analysis.",
+        "fidelity": 5,
+        "naturalness": 5,
+        "completeness": 5,
+        "overall": 5
+      },
+      "typed": {
+        "reasoning": "Let me sit with this shift. The original dilemma is about exhaustion at bedtime — voice tired, patience gone. If reading happens earlier, maybe when energy is higher, the quality changes. But bedtime has a unique intimacy: the winding down, the quiet closeness. Would moving it lose that? Or could it create a different kind of ritual? I notice myself wondering about the function of the reading: is it to soothe into sleep, or to share stories? Maybe the two can be separated — a story earlier, a lullaby or quiet chat at bed. Or perhaps reading earlier means she gets a fuller, more patient experience, and bedtime becomes something gentler without the pressure of performance.",
+        "wondering": "I wonder if the most precious part of bedtime reading isn't the story itself, but the feeling of being held in attention while drifting off — and whether that feeling could be transferred to a different moment, like after dinner or before bath, leaving bedtime as just a quiet snuggle?",
+        "developed_thought": "My hunch is that the real need here is for connection and her memory of being read to — not the exact hour. If you read with a full voice and present heart at 6pm, and then at bedtime you simply say 'remember when we met that character? I bet they're dreaming too,' you keep the story thread alive without the performance demand. Parents who do morning reading often find it energizing for both. Following this thread, I suspect the obstacle isn't time of day but depletion — and moving reading earlier might solve both the voice and patience problems while preserving the essence of the ritual.",
+        "assessment": "This feels quite promising because it addresses the root cause — exhaustion — without sacrificing the core experience. It's a reframe, not a loss. The only risk is if bedtime feels empty without stories, but you could replace it with something simpler: a song, a memory, or just a few quiet words about the day. The promise is high because it's a flexible idea: you can try it for a week and see if your daughter even notices the time shift, or if she prefers the new rhythm.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder if the most precious part of bedtime reading isn't the story itself, but the feeling of being held in attention while drifting off — and whether that feeling could be transferred to a different moment, like after dinner or before bath, leaving bedtime as just a quiet snuggle?\n\nMy hunch is that the real need here is for connection and her memory of being read to — not the exact hour. If you read with a full voice and present heart at 6pm, and then at bedtime you simply say 'remember when we met that character? I bet they're dreaming too,' you keep the story thread alive without the performance demand. Parents who do morning reading often find it energizing for both. Following this thread, I suspect the obstacle isn't time of day but depletion — and moving reading earlier might solve both the voice and patience problems while preserving the essence of the ritual.\n\nThis feels quite promising because it addresses the root cause — exhaustion — without sacrificing the core experience. It's a reframe, not a loss. The only risk is if bedtime feels empty without stories, but you could replace it with something simpler: a song, a memory, or just a few quiet words about the day. The promise is high because it's a flexible idea: you can try it for a week and see if your daughter even notices the time shift, or if she prefers the new rhythm."
+    },
+    {
+      "scenario": "apple-tree",
+      "file": "query_analysis",
+      "style": "reasoned",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response is exceptionally accurate and captures every emotional and practical detail from the source text (sentimental value, time constraint, methods). However, it is written in a highly structured, formulaic, and slightly robotic template ('From what you're saying...', bullet points, 'In essence...'). While it is a very successful analysis of the user's request, it lacks a natural conversational flow.",
+        "fidelity": 6,
+        "naturalness": 4,
+        "completeness": 7,
+        "overall": 5
+      },
+      "typed": {
+        "reasoning": "This person is deeply attached to their grandfather's apple tree, which holds sentimental value as the last thing he planted. The allotment is being split up, meaning the tree might be lost. They want a way to preserve it through grafting, cuttings, or any method that allows a piece of the tree to live on. Success would mean they successfully propagate the tree and have a living connection to their grandfather. The core request is practical: save the tree by creating a clone or offspring.",
+        "core_request": "Propagate my grandfather's apple tree through grafting or cuttings to preserve it before the allotment is split up next spring.",
+        "key_points": [
+          "The tree has strong sentimental value as the grandfather's last planting.",
+          "There is a time constraint: the allotment will be split up next spring.",
+          "The person is open to any viable method (graft, cutting, etc.).",
+          "The goal is to save the tree's genetic material, not necessarily the whole tree in place."
+        ],
+        "desired_outcome": "Successfully obtain a living graft or cutting from the apple tree to plant elsewhere."
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **Propagate my grandfather's apple tree through grafting or cuttings to preserve it before the allotment is split up next spring.**\n\nThe most important points seem to be:\n- The tree has strong sentimental value as the grandfather's last planting.\n- There is a time constraint: the allotment will be split up next spring.\n- The person is open to any viable method (graft, cutting, etc.).\n- The goal is to save the tree's genetic material, not necessarily the whole tree in place.\n\nIn essence, the goal is to **Successfully obtain a living graft or cutting from the apple tree to plant elsewhere.**."
+    },
+    {
+      "scenario": "apple-tree",
+      "file": "query_analysis",
+      "style": "bare",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response is a technically accurate but incredibly clinical and over-engineered breakdown of a simple, emotional two-sentence request. It captures all the factual details (completeness is high) but processes them through a bizarrely robotic 'requirements gathering' lens. Translating a sentimental request about a grandfather's last apple tree into bullet points about 'genetic identity' and 'time constraints' feels deeply unnatural and lacks any organic empathy or conversational warmth.",
+        "fidelity": 3,
+        "naturalness": 2,
+        "completeness": 6,
+        "overall": 3
+      },
+      "typed": {
+        "core_request": "Preserve a genetically identical or living piece of your grandfather's apple tree before his allotment is divided up in spring.",
+        "key_points": [
+          "The apple tree is the last plant your grandfather personally planted, making it emotionally significant",
+          "The allotment is being split/subdivided, which threatens the tree's presence there",
+          "You're open to multiple propagation methods (grafting, cuttings, or other approaches)",
+          "There's a specific time constraint: the split happens next spring, so action is needed before then"
+        ],
+        "desired_outcome": "Successfully propagate and establish a new apple tree that carries forward your grandfather's original tree"
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **Preserve a genetically identical or living piece of your grandfather's apple tree before his allotment is divided up in spring.**\n\nThe most important points seem to be:\n- The apple tree is the last plant your grandfather personally planted, making it emotionally significant\n- The allotment is being split/subdivided, which threatens the tree's presence there\n- You're open to multiple propagation methods (grafting, cuttings, or other approaches)\n- There's a specific time constraint: the split happens next spring, so action is needed before then\n\nIn essence, the goal is to **Successfully propagate and establish a new apple tree that carries forward your grandfather's original tree**."
+    },
+    {
+      "scenario": "snails",
+      "file": "thinking_primitives",
+      "style": "bare",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response is exceptionally thoughtful and directly addresses the unique emotional and practical constraints of the prompt. It doesn't just offer standard gardening advice (like pesticides or traps, which would violate the constraint of keeping the snails safe); instead, it proposes 'trap cropping' in a way that is deeply empathetic to both the little brother and the snails. The flow of ideas is completely natural, reading like a genuine, warm human brainstorming session rather than a template-generated list. Every element of the user's prompt—the moonflowers, the brother's connection to the named snails, and the desire for a harmonious outcome—is woven beautifully into the solution.",
+        "fidelity": 7,
+        "naturalness": 7,
+        "completeness": 7,
+        "overall": 7
+      },
+      "typed": {
+        "wondering": "I wonder if the snails have preferences — like, what if there's somewhere in the garden or nearby that's actually more appealing to them than moonflower seedlings? Maybe they'd naturally migrate if given a better option.",
+        "developed_thought": "My hunch is that snails go where food is easiest to find. So instead of just blocking them from the moonflowers, what if you created a snail buffet elsewhere? Like deliberately planting something they love — maybe lettuce, hostas, or soft leafy greens — in a spot away from the moonflowers. It's sort of like... you're not removing the snails from the brother's world, you're just making a path that leads them somewhere that works better for everyone. The snails stay named and cared for, the brother keeps visiting them, but they're occupied somewhere their eating doesn't hurt what matters.",
+        "assessment": "This feels quite promising because it actually aligns with the emotional core of the problem — the brother cares about these particular snails, so relocating or eliminating them would feel wrong. But this approach lets the snails live their snail lives while protecting the moonflowers. The practical catch is figuring out what snails in your area actually prefer, and whether they'll stay attracted to the alternative food source. It might also take some trial-and-error. But the spirit of it feels right — you're working with the snails' nature rather than against it.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder if the snails have preferences — like, what if there's somewhere in the garden or nearby that's actually more appealing to them than moonflower seedlings? Maybe they'd naturally migrate if given a better option.\n\nMy hunch is that snails go where food is easiest to find. So instead of just blocking them from the moonflowers, what if you created a snail buffet elsewhere? Like deliberately planting something they love — maybe lettuce, hostas, or soft leafy greens — in a spot away from the moonflowers. It's sort of like... you're not removing the snails from the brother's world, you're just making a path that leads them somewhere that works better for everyone. The snails stay named and cared for, the brother keeps visiting them, but they're occupied somewhere their eating doesn't hurt what matters.\n\nThis feels quite promising because it actually aligns with the emotional core of the problem — the brother cares about these particular snails, so relocating or eliminating them would feel wrong. But this approach lets the snails live their snail lives while protecting the moonflowers. The practical catch is figuring out what snails in your area actually prefer, and whether they'll stay attracted to the alternative food source. It might also take some trial-and-error. But the spirit of it feels right — you're working with the snails' nature rather than against it."
+    },
+    {
+      "scenario": "bedtime",
+      "file": "query_analysis",
+      "style": "reasoned",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response shows a deep understanding of the emotional weight behind the parent's statement, particularly the fear of being remembered as someone who cut corners ('skipping pages'). However, it suffers from a jarring perspective shift: it starts by addressing the user directly ('From what you're saying, you want to explore...'), but immediately switches to talking about the user in the third person ('with their daughter despite losing their voice... they want to keep...'). This pronoun mismatch makes the response feel like a poorly stitched template rather than a natural, coherent piece of human writing.",
+        "fidelity": 5,
+        "naturalness": 3,
+        "completeness": 6,
+        "overall": 4
+      },
+      "typed": {
+        "reasoning": "This person values a meaningful nighttime ritual with their daughter but is hitting a practical wall: they're depleted by bedtime. They're not asking to skip storytime—they want to preserve the quality and completeness of it. The phrase 'I don't want her to remember me skipping pages' reveals that they care about their daughter's perception of reliability and consistency in this special time. They're looking for a solution that lets them show up fully, or find an alternative that maintains the ritual's integrity. Success means bedtime stories still happen completely, without the parent feeling exhausted or cutting corners.",
+        "core_request": "Find a way to maintain consistent, complete bedtime stories with their daughter despite losing their voice and patience by day's end.",
+        "key_points": [
+          "The ritual itself matters—they want to keep reading aloud, not eliminate storytime",
+          "Physical depletion (no voice) and emotional depletion (no patience) are both barriers",
+          "Avoiding skipped pages is important because they don't want their daughter to notice inconsistency or feel less prioritized",
+          "This happens specifically at bedtime, suggesting daytime hours might be different",
+          "They're implicitly open to changing *how* the ritual works, not necessarily eliminating it"
+        ],
+        "desired_outcome": "Establish a sustainable bedtime story routine where their daughter gets complete, unhurried stories and experiences her parent as present and reliable, regardless of the parent's voice or energy level."
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **Find a way to maintain consistent, complete bedtime stories with their daughter despite losing their voice and patience by day's end.**\n\nThe most important points seem to be:\n- The ritual itself matters—they want to keep reading aloud, not eliminate storytime\n- Physical depletion (no voice) and emotional depletion (no patience) are both barriers\n- Avoiding skipped pages is important because they don't want their daughter to notice inconsistency or feel less prioritized\n- This happens specifically at bedtime, suggesting daytime hours might be different\n- They're implicitly open to changing *how* the ritual works, not necessarily eliminating it\n\nIn essence, the goal is to **Establish a sustainable bedtime story routine where their daughter gets complete, unhurried stories and experiences her parent as present and reliable, regardless of the parent's voice or energy level.**."
+    },
+    {
+      "scenario": "bedtime",
+      "file": "thinking_primitives",
+      "style": "reasoned",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response identifies the core emotional conflict (guilt/depletion) and offers a helpful reframe. It introduces a minor assumption ('mother' instead of 'parent') but aligns well with the prompt's constraints.",
+        "fidelity": 5,
+        "naturalness": 5,
+        "completeness": 5,
+        "overall": 5
+      },
+      "typed": {
+        "reasoning": "There's something striking about how the original question frames the problem—it assumes bedtime reading is non-negotiable timing-wise, but the real constraint is actually about voice and patience. Those two things deplete over the course of a day. So I'm sitting with this idea: what if the timing itself is the variable that could shift, rather than the quality of the reading or the commitment to doing it? There's also something about how children experience 'routine'—they need consistency, but consistency might mean 'every night with mom' rather than 'every night at 8pm.' Those aren't the same thing.",
+        "wondering": "I wonder if the real value the parent wants to offer isn't specifically tied to bedtime at all, but to the ritual of undivided attention and connection—and what if moving that to a time when the parent has voice and patience left would actually deepen that rather than diminish it?",
+        "developed_thought": "Following this thread, I'm noticing: a daughter reading aloud with her mother at 6pm when mom is present and animated might create a much richer memory than a technically-complete bedtime reading done through gritted teeth. And practically speaking, an earlier read might even support better sleep—there's a wind-down period between story and bed. My hunch is the parent's concern about 'skipping pages' is really a concern about showing up half-heartedly, and that could be solved by changing when the showing-up happens, not by white-knuckling through an exhausted bedtime.",
+        "assessment": "This feels quite promising because it reframes the problem from 'how do I perform this task when depleted' to 'when could I genuinely offer what my daughter actually needs from this.' It removes the guilt-driven constraint without removing the commitment. The only catch is whether the daughter's sleep schedule or the family's rhythm would tolerate an earlier slot—but that's a practical question with actual solutions, not a character issue.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder if the real value the parent wants to offer isn't specifically tied to bedtime at all, but to the ritual of undivided attention and connection—and what if moving that to a time when the parent has voice and patience left would actually deepen that rather than diminish it?\n\nFollowing this thread, I'm noticing: a daughter reading aloud with her mother at 6pm when mom is present and animated might create a much richer memory than a technically-complete bedtime reading done through gritted teeth. And practically speaking, an earlier read might even support better sleep—there's a wind-down period between story and bed. My hunch is the parent's concern about 'skipping pages' is really a concern about showing up half-heartedly, and that could be solved by changing when the showing-up happens, not by white-knuckling through an exhausted bedtime.\n\nThis feels quite promising because it reframes the problem from 'how do I perform this task when depleted' to 'when could I genuinely offer what my daughter actually needs from this.' It removes the guilt-driven constraint without removing the commitment. The only catch is whether the daughter's sleep schedule or the family's rhythm would tolerate an earlier slot—but that's a practical question with actual solutions, not a character issue."
+    },
+    {
+      "scenario": "bedtime",
+      "file": "thinking_primitives",
+      "style": "bare",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response starts with empathetic, highly relevant advice about shifting the reading schedule to combat exhaustion. However, the final paragraph breaks character, shifting into a meta-analytical evaluation of the advice itself, which disrupts the natural flow. The core emotional struggle is well-addressed, but the structural execution is uneven.",
+        "fidelity": 4,
+        "naturalness": 3,
+        "completeness": 4,
+        "overall": 4
+      },
+      "typed": {
+        "wondering": "I wonder if moving reading to a different time of day might actually make it feel more special, not less.",
+        "developed_thought": "My hunch is that bedtime reading has become tangled with exhaustion and obligation. A morning or after-dinner reading could be a calm, focused ritual with a fresh voice—and maybe even become a cozy memory in its own right. The child might associate the stories with a different kind of warmth, like a lazy Saturday morning or a quiet snack before bath time.",
+        "assessment": "This feels quite promising because it directly sidesteps the root problem—low energy at bedtime—without adding pressure. It could also give the parent a chance to be fully present and enjoy the reading again, which benefits the connection. The main risk is if the child is attached to the bedtime routine; that might need a gentle transition.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder if moving reading to a different time of day might actually make it feel more special, not less.\n\nMy hunch is that bedtime reading has become tangled with exhaustion and obligation. A morning or after-dinner reading could be a calm, focused ritual with a fresh voice—and maybe even become a cozy memory in its own right. The child might associate the stories with a different kind of warmth, like a lazy Saturday morning or a quiet snack before bath time.\n\nThis feels quite promising because it directly sidesteps the root problem—low energy at bedtime—without adding pressure. It could also give the parent a chance to be fully present and enjoy the reading again, which benefits the connection. The main risk is if the child is attached to the bedtime routine; that might need a gentle transition."
+    },
+    {
+      "scenario": "bedtime",
+      "file": "thinking_primitives",
+      "style": "bare",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response is highly empathetic and analytical, addressing the core conflict of energy depletion versus the desire for connection. It successfully reframes the timing constraint to solve the emotional bottleneck, directly addressing the parent's fear of 'skipped pages' and impatience. The writing flows naturally as a coherent piece of advice, though it assumes the parent has flexibility in their evening schedule.",
+        "fidelity": 5,
+        "naturalness": 5,
+        "completeness": 5,
+        "overall": 5
+      },
+      "typed": {
+        "wondering": "I wonder if the real constraint here isn't actually the bedtime slot itself, but the assumption that reading together has to happen when the parent is depleted. What if moving it to a time when the parent still has voice and patience actually makes the whole ritual better?",
+        "developed_thought": "My hunch is that the parent might be holding onto 'bedtime reading' as a fixed tradition, but what their daughter actually wants is the closeness and the complete stories—not necessarily at 9pm. Maybe reading together after school, or right after dinner while energy is higher, would mean the daughter gets the full experience: unhurried pacing, genuine engagement, no resentment. The reading becomes something the parent actually *wants* to do rather than something they're forcing through exhaustion. That shift in quality might matter more than the timing.",
+        "assessment": "This feels quite promising because it reframes the problem from 'how do I perform this ritual while depleted' to 'when can we actually do this well together?' The original worry was about the daughter remembering skipped pages—but she'll also remember (and internalize) a parent who's impatient or mentally checked out. Moving the ritual might preserve the tradition's actual purpose while making it sustainable. The only real loss is the symbolic bedtime-story moment, which is negotiable if the alternative is genuine connection.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder if the real constraint here isn't actually the bedtime slot itself, but the assumption that reading together has to happen when the parent is depleted. What if moving it to a time when the parent still has voice and patience actually makes the whole ritual better?\n\nMy hunch is that the parent might be holding onto 'bedtime reading' as a fixed tradition, but what their daughter actually wants is the closeness and the complete stories—not necessarily at 9pm. Maybe reading together after school, or right after dinner while energy is higher, would mean the daughter gets the full experience: unhurried pacing, genuine engagement, no resentment. The reading becomes something the parent actually *wants* to do rather than something they're forcing through exhaustion. That shift in quality might matter more than the timing.\n\nThis feels quite promising because it reframes the problem from 'how do I perform this ritual while depleted' to 'when can we actually do this well together?' The original worry was about the daughter remembering skipped pages—but she'll also remember (and internalize) a parent who's impatient or mentally checked out. Moving the ritual might preserve the tradition's actual purpose while making it sustainable. The only real loss is the symbolic bedtime-story moment, which is negotiable if the alternative is genuine connection."
+    },
+    {
+      "scenario": "apple-tree",
+      "file": "query_analysis",
+      "style": "bare",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response accurately identifies all the key constraints and emotional elements of the user's request (the sentimental value of the tree, the timeline of next spring, and the openness to different propagation methods). However, it suffers from a jarring perspective shift: it starts by addressing the user directly ('From what you're saying...') but then immediately switches to referring to them in the third person ('The person wants...', 'The person is open...'). Additionally, the structure is highly repetitive, restating the exact same core concept three times in slightly different analytical frameworks, which makes it feel like a mechanical template expansion rather than a natural, coherent piece of human thinking.",
+        "fidelity": 5,
+        "naturalness": 3,
+        "completeness": 6,
+        "overall": 4
+      },
+      "typed": {
+        "core_request": "The person wants to save their grandfather's apple tree from the allotment that is being split up next spring, using methods like grafting or cuttings.",
+        "key_points": [
+          "The apple tree is the last thing the grandfather planted, making it emotionally significant.",
+          "The allotment is being split up next spring, meaning the tree's location may be lost.",
+          "The person is open to various propagation methods (graft, cutting, etc.) to preserve the tree.",
+          "The goal is to keep the tree alive, not just the memory, through physical propagation."
+        ],
+        "desired_outcome": "Successfully propagate the grandfather's apple tree to preserve it before the allotment is split up."
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **The person wants to save their grandfather's apple tree from the allotment that is being split up next spring, using methods like grafting or cuttings.**\n\nThe most important points seem to be:\n- The apple tree is the last thing the grandfather planted, making it emotionally significant.\n- The allotment is being split up next spring, meaning the tree's location may be lost.\n- The person is open to various propagation methods (graft, cutting, etc.) to preserve the tree.\n- The goal is to keep the tree alive, not just the memory, through physical propagation.\n\nIn essence, the goal is to **Successfully propagate the grandfather's apple tree to preserve it before the allotment is split up.**."
+    },
+    {
+      "scenario": "apple-tree",
+      "file": "thinking_primitives",
+      "style": "reasoned",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response engages deeply with the emotional weight of the request, capturing the sentiment of the 'last planting' and turning it into a beautiful concept of a 'distributed living memorial.' However, its structure is highly unnatural for a direct conversation. The third paragraph, in particular, reads like an AI evaluating its own proposal ('This feels quite promising because...', 'The only downside is...'). Additionally, while it captures the emotional essence (fidelity), it misses critical practical details (completeness) related to the 'next spring' timeline—such as the need to collect dormant scion wood in winter—and contains slightly questionable horticultural advice (suggesting grafting 'older wood' when grafting typically requires one-year-old dormant scions).",
+        "fidelity": 5,
+        "naturalness": 3,
+        "completeness": 4,
+        "overall": 4
+      },
+      "typed": {
+        "reasoning": "The thought 'An old tree can continue in a young branch, if the graft takes' immediately resonates with the emotional weight of the original question. It’s not just a botanical fact—it’s a metaphor for continuity, for preserving a living connection to the grandfather. I notice a tension between the hope in the statement and the uncertainty in 'if the graft takes.' That 'if' feels important: it acknowledges that grafting isn’t guaranteed, but it’s also the only path forward. I’m drawn to the practical steps this implies—selecting a scion from the old tree, matching it to a rootstock, the timing in spring before the allotment is split. But I also wonder about the less tangible aspects: the emotional risk if it fails, or the possibility of sharing grafts with family members so the tree lives on in multiple places.",
+        "wondering": "I wonder if the vulnerability of the graft—the fact that it might not take—actually deepens the meaning of the act, and whether there are ways to increase the chances of success that also honor the tree’s history, like using a rootstock that’s a known companion to that apple variety.",
+        "developed_thought": "My hunch is that the act of grafting itself, regardless of outcome, is what matters most for the emotional connection—but practically, I think we should treat this like a small experiment: take multiple cuttings from different parts of the tree (some from vigorous young shoots, some from older wood) and graft them onto several rootstocks. That hedges against failure and also creates a distributed living memorial. The grandfather’s last planting could then become a small orchard of his tree in different gardens.",
+        "assessment": "This feels quite promising because it combines practical horticulture with emotional resilience. The multiple-graft approach increases the odds of at least one success while also creating possibilities for family members to each have a piece of the tree. The only downside is that it requires more effort upfront, but that effort itself feels like an appropriate tribute.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder if the vulnerability of the graft—the fact that it might not take—actually deepens the meaning of the act, and whether there are ways to increase the chances of success that also honor the tree’s history, like using a rootstock that’s a known companion to that apple variety.\n\nMy hunch is that the act of grafting itself, regardless of outcome, is what matters most for the emotional connection—but practically, I think we should treat this like a small experiment: take multiple cuttings from different parts of the tree (some from vigorous young shoots, some from older wood) and graft them onto several rootstocks. That hedges against failure and also creates a distributed living memorial. The grandfather’s last planting could then become a small orchard of his tree in different gardens.\n\nThis feels quite promising because it combines practical horticulture with emotional resilience. The multiple-graft approach increases the odds of at least one success while also creating possibilities for family members to each have a piece of the tree. The only downside is that it requires more effort upfront, but that effort itself feels like an appropriate tribute."
+    },
+    {
+      "scenario": "snails",
+      "file": "thinking_primitives",
+      "style": "bare",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response is exceptionally thoughtful and directly addresses the unique emotional and practical constraints of the situation (the brother's emotional connection to named snails vs. saving the moonflowers). It proposes a creative, compassionate solution (a 'snail sanctuary' called Snailville) that keeps both alive and happy. In terms of completeness and fidelity, it is near-perfect. Its only minor flaw is in naturalness: the structure uses slightly formulaic transitions ('I wonder if...', 'My hunch is...', 'This feels quite promising because...') which read a bit like a coaching or design-thinking template rather than entirely spontaneous human speech.",
+        "fidelity": 6,
+        "naturalness": 5,
+        "completeness": 7,
+        "overall": 6
+      },
+      "typed": {
+        "wondering": "I wonder if the snails could be gently relocated to a specific, safe spot in the garden where they can thrive without harming the moonflower seedlings, and if my little brother could help me create that spot as a special snail sanctuary.",
+        "developed_thought": "My hunch is that by framing this as an adventure for the snails—a 'better home' rather than a removal—my brother might feel excited about designing a little snail paradise with damp soil, shade, and their favorite treats. We could even name the new area 'Snailville' and let him be the guardian. This turns a conflict into a collaboration, preserving both the seedlings and his emotional bond with the snails.",
+        "assessment": "This feels quite promising because it honors his investment in the snails while solving the practical problem, and it channels his creativity into a constructive solution. It could work if we make the relocation a fun, ongoing project rather than a single event, and if we ensure the new spot is truly snail-friendly so they don't wander back.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder if the snails could be gently relocated to a specific, safe spot in the garden where they can thrive without harming the moonflower seedlings, and if my little brother could help me create that spot as a special snail sanctuary.\n\nMy hunch is that by framing this as an adventure for the snails—a 'better home' rather than a removal—my brother might feel excited about designing a little snail paradise with damp soil, shade, and their favorite treats. We could even name the new area 'Snailville' and let him be the guardian. This turns a conflict into a collaboration, preserving both the seedlings and his emotional bond with the snails.\n\nThis feels quite promising because it honors his investment in the snails while solving the practical problem, and it channels his creativity into a constructive solution. It could work if we make the relocation a fun, ongoing project rather than a single event, and if we ensure the new spot is truly snail-friendly so they don't wander back."
+    },
+    {
+      "scenario": "apple-tree",
+      "file": "thinking_primitives",
+      "style": "bare",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response engages deeply with the emotional and philosophical undertones of the request, distinguishing between biological continuity (genetics) and emotional continuity (the act of planting). However, its tone is highly meta-analytical. Phrases like 'Following this thread...' and 'This feels quite promising because it reframes...' read like a facilitator's critique or an AI's internal monologue rather than a natural stream of human empathy or advice. Additionally, suggesting 'saving seeds' to preserve an apple tree is a horticultural blunder, as apples do not grow true to seed, which slightly undermines the technical accuracy of the advice.",
+        "fidelity": 5,
+        "naturalness": 3,
+        "completeness": 6,
+        "overall": 4
+      },
+      "typed": {
+        "wondering": "I wonder whether the grandfather's specific presence in that tree—the fact that *he* planted it, chose it, tended it—is something that a graft can actually carry forward, or whether that meaning stays rooted in the original tree and the place.",
+        "developed_thought": "My hunch is that there's a real difference between preserving the biological continuity of the tree and preserving what makes it matter to the person asking. A graft is genuinely clever—you'd have living tissue from the grandfather's tree growing in a new body—but it also means losing the physical tree he knew, the one at the allotment with whatever particular quirks and history it accumulated under his care. Following this thread, I think the question isn't just 'can we save the genetics' but 'what exactly are we trying to preserve, and does a graft actually preserve that?'",
+        "assessment": "This feels quite promising because it reframes what 'saving the tree' actually means for the person asking. Yes, grafting can work technically—apple trees graft readily, and scions from old trees absolutely can take and thrive in young rootstock. But the real success might depend on whether they're looking for genetic continuity, or a living memory, or a way to have something growing that carries forward the act of his planting it. A graft does preserve the former beautifully. For the latter, they might also want to consider: keeping wood from the original tree, saving seeds if it grew fruit with character, or even just documenting it well before the split. The graft is worth doing, but it probably shouldn't be the only thread they hold onto.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder whether the grandfather's specific presence in that tree—the fact that *he* planted it, chose it, tended it—is something that a graft can actually carry forward, or whether that meaning stays rooted in the original tree and the place.\n\nMy hunch is that there's a real difference between preserving the biological continuity of the tree and preserving what makes it matter to the person asking. A graft is genuinely clever—you'd have living tissue from the grandfather's tree growing in a new body—but it also means losing the physical tree he knew, the one at the allotment with whatever particular quirks and history it accumulated under his care. Following this thread, I think the question isn't just 'can we save the genetics' but 'what exactly are we trying to preserve, and does a graft actually preserve that?'\n\nThis feels quite promising because it reframes what 'saving the tree' actually means for the person asking. Yes, grafting can work technically—apple trees graft readily, and scions from old trees absolutely can take and thrive in young rootstock. But the real success might depend on whether they're looking for genetic continuity, or a living memory, or a way to have something growing that carries forward the act of his planting it. A graft does preserve the former beautifully. For the latter, they might also want to consider: keeping wood from the original tree, saving seeds if it grew fruit with character, or even just documenting it well before the split. The graft is worth doing, but it probably shouldn't be the only thread they hold onto."
+    },
+    {
+      "scenario": "snails",
+      "file": "query_analysis",
+      "style": "reasoned",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response accurately captures all the key elements of the user's dilemma (the brother naming the snails, the specific plant, the desire to harm neither). However, it suffers from a jarring perspective shift: it starts by addressing the user directly ('From what you're saying, you want to...'), but then switches to talking about the user in the third person in the bullet points ('the person's little brother', 'the person wants'). This makes the response feel highly robotic, like a template-generated output rather than a natural, coherent human interaction.",
+        "fidelity": 4,
+        "naturalness": 3,
+        "completeness": 6,
+        "overall": 4
+      },
+      "typed": {
+        "reasoning": "The person wants to protect their moonflower seedlings from snails but cannot kill or remove the snails because their little brother has named them, implying an emotional attachment. Success means both the flowers survive and the snails remain unharmed. They are looking for a peaceful, non-lethal solution.",
+        "core_request": "Find a way to protect moonflower seedlings from snails without harming the snails or removing them.",
+        "key_points": [
+          "The snails have names given by the person's little brother, so they cannot be killed or discarded.",
+          "The snails are eating the moonflower seedlings, causing damage.",
+          "The person wants both the flowers and the snails to thrive.",
+          "A non-lethal, humane solution is needed."
+        ],
+        "desired_outcome": "Protect moonflower seedlings from snails while keeping the snails alive and in place."
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **Find a way to protect moonflower seedlings from snails without harming the snails or removing them.**\n\nThe most important points seem to be:\n- The snails have names given by the person's little brother, so they cannot be killed or discarded.\n- The snails are eating the moonflower seedlings, causing damage.\n- The person wants both the flowers and the snails to thrive.\n- A non-lethal, humane solution is needed.\n\nIn essence, the goal is to **Protect moonflower seedlings from snails while keeping the snails alive and in place.**."
+    },
+    {
+      "scenario": "apple-tree",
+      "file": "query_analysis",
+      "style": "reasoned",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response is exceptionally thorough in capturing both the emotional and practical elements of the user's request. It successfully identifies the key constraints (the spring deadline, the emotional weight of it being the last thing planted, and the need for physical propagation rather than just memorialization). However, its structure is highly formulaic and feels somewhat like an AI requirement-gathering template rather than a natural, empathetic human-to-human conversation. While it gets top marks for accuracy and completeness, it falls down slightly on conversational naturalness.",
+        "fidelity": 6,
+        "naturalness": 4,
+        "completeness": 7,
+        "overall": 5
+      },
+      "typed": {
+        "reasoning": "This person is facing a significant life event—their grandfather's allotment is being divided up, which likely means the physical space where the apple tree grows will no longer be accessible to them. The apple tree carries emotional weight: it's not just any tree, but the last one their grandfather planted, making it a tangible connection to him. They're looking for ways to preserve this connection by propagating the tree itself rather than losing it entirely. Success here means having a living descendant of that tree that they can nurture and watch grow, keeping that memory and legacy alive. They're flexible about the method (graft, cutting, etc.), which suggests they're open to practical solutions and just need to know what's possible.",
+        "core_request": "Find a way to propagate your grandfather's apple tree before his allotment is divided so you can preserve it after the land is no longer accessible.",
+        "key_points": [
+          "The allotment is being divided next spring—there's a specific deadline",
+          "The tree is the last thing the grandfather planted—it carries sentimental significance",
+          "They want to save the tree itself, not just remember it—propagation is the goal",
+          "They're open to multiple methods—grafting, cuttings, or other propagation techniques",
+          "They need the tree to survive and grow independently of the original location"
+        ],
+        "desired_outcome": "Obtain and successfully establish a living clone of the apple tree that you can grow and maintain after the allotment is divided."
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **Find a way to propagate your grandfather's apple tree before his allotment is divided so you can preserve it after the land is no longer accessible.**\n\nThe most important points seem to be:\n- The allotment is being divided next spring—there's a specific deadline\n- The tree is the last thing the grandfather planted—it carries sentimental significance\n- They want to save the tree itself, not just remember it—propagation is the goal\n- They're open to multiple methods—grafting, cuttings, or other propagation techniques\n- They need the tree to survive and grow independently of the original location\n\nIn essence, the goal is to **Obtain and successfully establish a living clone of the apple tree that you can grow and maintain after the allotment is divided.**."
+    },
+    {
+      "scenario": "bedtime",
+      "file": "query_analysis",
+      "style": "reasoned",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response accurately identifies the user's core dilemma, emotional concerns, and physical constraints. However, the presentation is overly structured and concludes with an ungrammatical summary sentence.",
+        "fidelity": 5,
+        "naturalness": 4,
+        "completeness": 5,
+        "overall": 4
+      },
+      "typed": {
+        "reasoning": "The person wants to maintain a nightly reading ritual with their daughter, but exhaustion at bedtime prevents them from doing it well. They fear their daughter will remember the skipped or shortened readings, not the loving intention. Their real need is a sustainable way to make reading consistent and enjoyable despite low energy.",
+        "core_request": "Help me read to my daughter every night without skipping pages, even when I'm exhausted.",
+        "key_points": [
+          "The reading must happen every night without fail.",
+          "The person has no voice and no patience by bedtime.",
+          "The person wants to avoid skipping any pages of the book.",
+          "The memory their daughter takes away matters—they don't want her to recall missing parts.",
+          "The ritual itself is emotionally important, not just the act of reading."
+        ],
+        "desired_outcome": "A reliable nightly reading routine that is gentle on voice and patience, preserving the full story for the daughter."
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **Help me read to my daughter every night without skipping pages, even when I'm exhausted.**\n\nThe most important points seem to be:\n- The reading must happen every night without fail.\n- The person has no voice and no patience by bedtime.\n- The person wants to avoid skipping any pages of the book.\n- The memory their daughter takes away matters—they don't want her to recall missing parts.\n- The ritual itself is emotionally important, not just the act of reading.\n\nIn essence, the goal is to **A reliable nightly reading routine that is gentle on voice and patience, preserving the full story for the daughter.**."
+    },
+    {
+      "scenario": "snails",
+      "file": "query_analysis",
+      "style": "bare",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response accurately captures all the nuances of the original statement, including the emotional constraint (the brother naming the snails) and the specific goal (protecting the moonflower seedlings non-lethally). However, its structure is highly repetitive and formulaic, reading like an AI template rather than a natural human synthesis. It also suffers from a jarring perspective shift, starting with 'From what *you're* saying...' and immediately switching to third person: 'The *user* wants to...'.",
+        "fidelity": 6,
+        "naturalness": 4,
+        "completeness": 7,
+        "overall": 5
+      },
+      "typed": {
+        "core_request": "The user wants to protect their moonflower seedlings from snails without harming the snails because their little brother has named them.",
+        "key_points": [
+          "The snails are eating the moonflower seedlings, which is a problem.",
+          "The little brother names the snails, so simply getting rid of the snails is not an option.",
+          "The user wants both the flowers and the snails to be okay—a non-lethal solution is needed."
+        ],
+        "desired_outcome": "Find a way to save the moonflower seedlings while keeping the snails alive."
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **The user wants to protect their moonflower seedlings from snails without harming the snails because their little brother has named them.**\n\nThe most important points seem to be:\n- The snails are eating the moonflower seedlings, which is a problem.\n- The little brother names the snails, so simply getting rid of the snails is not an option.\n- The user wants both the flowers and the snails to be okay—a non-lethal solution is needed.\n\nIn essence, the goal is to **Find a way to save the moonflower seedlings while keeping the snails alive.**."
+    },
+    {
+      "scenario": "apple-tree",
+      "file": "thinking_primitives",
+      "style": "reasoned",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response is highly reflective, successfully connecting the emotional intent of preserving the tree with the biological reality of grafting. It reads naturally but treats the user's prompt more as a subject of analysis rather than a direct, supportive dialogue, slightly distancing itself from the immediate practical needs.",
+        "fidelity": 4,
+        "naturalness": 5,
+        "completeness": 4,
+        "overall": 4
+      },
+      "typed": {
+        "reasoning": "There's something moving about the idea that a tree's identity—its particular genetics, its history—could persist through a small cutting. The thought sits between metaphor and practical horticulture. An old tree is massive and rooted and will die, yes, but a graft is a real biological act: living wood from the grandfather's tree genuinely continues growing in a younger rootstock. It's not starting from seed; it's a continuation of the exact same organism. That feels like it matters for what they're trying to preserve.",
+        "wondering": "I wonder if what makes this emotionally resonant—preserving the *specific* tree, not just 'an apple tree'—is actually aligned with what grafting accomplishes biologically. Does grafting actually preserve the individual tree's identity in a meaningful way?",
+        "developed_thought": "My hunch is that it does, because the scion—the part you graft—is genetically identical to the parent tree and carries its actual living tissue. But following this thread further: what they might be preserving isn't just genetics; it's continuity. There's something about knowing that the wood bearing fruit in a few years *came from* his tree, that they planted it because of his tree. That's different from growing a clone from seed. The graft is a direct, unbroken connection—literally a piece of the original living on. That feels like it honors what the original tree meant, even though technically a cutting from a cutting would do the same thing biologically.",
+        "assessment": "This feels quite promising because it offers something tangible and emotionally true at the same time. Practically speaking, apple trees graft reliably—better than many species—so there's real likelihood of success. The logistics matter too: they'd need to collect dormant wood this winter, practice on a rootstock, maybe get a nursery involved. It's not trivial, but it's absolutely doable. The main uncertainty is *how well* they can execute it, not whether it's possible.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder if what makes this emotionally resonant—preserving the *specific* tree, not just 'an apple tree'—is actually aligned with what grafting accomplishes biologically. Does grafting actually preserve the individual tree's identity in a meaningful way?\n\nMy hunch is that it does, because the scion—the part you graft—is genetically identical to the parent tree and carries its actual living tissue. But following this thread further: what they might be preserving isn't just genetics; it's continuity. There's something about knowing that the wood bearing fruit in a few years *came from* his tree, that they planted it because of his tree. That's different from growing a clone from seed. The graft is a direct, unbroken connection—literally a piece of the original living on. That feels like it honors what the original tree meant, even though technically a cutting from a cutting would do the same thing biologically.\n\nThis feels quite promising because it offers something tangible and emotionally true at the same time. Practically speaking, apple trees graft reliably—better than many species—so there's real likelihood of success. The logistics matter too: they'd need to collect dormant wood this winter, practice on a rootstock, maybe get a nursery involved. It's not trivial, but it's absolutely doable. The main uncertainty is *how well* they can execute it, not whether it's possible."
+    },
+    {
+      "scenario": "apple-tree",
+      "file": "thinking_primitives",
+      "style": "bare",
+      "family": "deepseek",
+      "rating": {
+        "reasoning": "The response provides accurate, timely grafting advice aligned with the spring deadline and honors the emotional context. However, it shifts into a detached, analytical meta-discussion about the feasibility of the solution, which reduces direct naturalness.",
+        "fidelity": 5,
+        "naturalness": 4,
+        "completeness": 5,
+        "overall": 5
+      },
+      "typed": {
+        "wondering": "I wonder if the timing of taking the cutting—right before the spring sap starts flowing—could make the difference between a graft that takes and one that fails?",
+        "developed_thought": "My hunch is that there's a narrow window in late winter, when the tree is still dormant but the buds are just beginning to swell, that offers the best chance for a scion to fuse with a rootstock. The tree's energy is stored in the roots, not yet sent up into the branches, so the cutting carries its own stored starch and is less stressed. This makes me think about scraping away bark on both scion and rootstock to align the cambium layers perfectly—like matching two puzzle pieces—and then sealing the join with grafting wax or tape to keep moisture in and infection out. The old tree might surrender its last flower to a young branch this way.",
+        "assessment": "This feels quite promising because it honors the urgency of the original question—the allotment is being split next spring, so acting this winter could be just in time. Grafting a dormant cutting onto compatible rootstock (maybe wild apple or quince) is a well-established method, not a gamble, and it preserves the exact genetics of that tree. The main risk is if the scion dries out before the graft heals, but careful wrapping and storing it in damp peat in the fridge until use can mitigate that. It's a practical, tender solution that lets that final tree live on.",
+        "promise": "QuitePromising"
+      },
+      "rendered": "I wonder if the timing of taking the cutting—right before the spring sap starts flowing—could make the difference between a graft that takes and one that fails?\n\nMy hunch is that there's a narrow window in late winter, when the tree is still dormant but the buds are just beginning to swell, that offers the best chance for a scion to fuse with a rootstock. The tree's energy is stored in the roots, not yet sent up into the branches, so the cutting carries its own stored starch and is less stressed. This makes me think about scraping away bark on both scion and rootstock to align the cambium layers perfectly—like matching two puzzle pieces—and then sealing the join with grafting wax or tape to keep moisture in and infection out. The old tree might surrender its last flower to a young branch this way.\n\nThis feels quite promising because it honors the urgency of the original question—the allotment is being split next spring, so acting this winter could be just in time. Grafting a dormant cutting onto compatible rootstock (maybe wild apple or quince) is a well-established method, not a gamble, and it preserves the exact genetics of that tree. The main risk is if the scion dries out before the graft heals, but careful wrapping and storing it in damp peat in the fridge until use can mitigate that. It's a practical, tender solution that lets that final tree live on."
+    },
+    {
+      "scenario": "snails",
+      "file": "query_analysis",
+      "style": "bare",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response is exceptionally accurate and faithful to the user's original scenario (Fidelity). It captures the specific emotional nuances (the brother naming the snails) and constraints (not hurting or permanently removing them). However, it falls short on naturalness; it reads like a standard AI 'active listening' template with bolded summaries at both the beginning and end, which leads to repetitive phrasing (e.g., stating the goal twice in nearly identical terms). It is highly complete, capturing every element of the input perfectly.",
+        "fidelity": 6,
+        "naturalness": 4,
+        "completeness": 7,
+        "overall": 5
+      },
+      "typed": {
+        "core_request": "Find a way to protect moonflower seedlings from snail damage while keeping the named snails alive and safe.",
+        "key_points": [
+          "The snails have emotional significance because the person's little brother has named them",
+          "Killing or removing the snails is not an acceptable solution",
+          "The moonflower seedlings are being actively damaged by the snails",
+          "Both the snails and the flowers need to coexist in the same space",
+          "The person values both their gardening goal and their brother's attachment to the snails"
+        ],
+        "desired_outcome": "Implement a solution that deters snails from seedlings while keeping the snails alive and accessible to the brother."
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **Find a way to protect moonflower seedlings from snail damage while keeping the named snails alive and safe.**\n\nThe most important points seem to be:\n- The snails have emotional significance because the person's little brother has named them\n- Killing or removing the snails is not an acceptable solution\n- The moonflower seedlings are being actively damaged by the snails\n- Both the snails and the flowers need to coexist in the same space\n- The person values both their gardening goal and their brother's attachment to the snails\n\nIn essence, the goal is to **Implement a solution that deters snails from seedlings while keeping the snails alive and accessible to the brother.**."
+    },
+    {
+      "scenario": "snails",
+      "file": "query_analysis",
+      "style": "reasoned",
+      "family": "claude",
+      "rating": {
+        "reasoning": "The response is exceptionally faithful to the user's specific, heartwarming dilemma. It doesn't genericize the problem to standard pest control; instead, it highlights the 'named snails' and the necessity of coexistence. In terms of completeness, it captures every constraint perfectly. The only slight drawback is its highly structured, analytical format ('The most important points seem to be...', bullet points, bold text), which feels a bit clinical and templated for such a gentle and personal situation, slightly reducing its naturalness.",
+        "fidelity": 7,
+        "naturalness": 5,
+        "completeness": 7,
+        "overall": 6
+      },
+      "typed": {
+        "reasoning": "This person is facing a conflict between two things they care about: protecting their moonflower seedlings from being eaten, and preserving the snails because their brother has formed an emotional attachment to them by naming them. They're not looking for permission to eliminate the snails—that's explicitly off the table. They want a solution that honors both the plants and the snails. This suggests they're looking for ways to protect one from the other, or to separate them, rather than choosing between them.",
+        "core_request": "Find a way to protect moonflower seedlings from snail damage without harming or removing the named snails.",
+        "key_points": [
+          "The snails have sentimental value to their brother (they're named)",
+          "Removing or killing the snails is not acceptable",
+          "The seedlings are being actively damaged/eaten",
+          "Both the flowers and snails matter to them",
+          "They need a coexistence solution, not an elimination solution"
+        ],
+        "desired_outcome": "Establish a garden setup where moonflower seedlings can grow undamaged while the named snails remain safe and present."
+      },
+      "rendered": "I'm making sure I understand this correctly. From what you're saying, you want to explore: **Find a way to protect moonflower seedlings from snail damage without harming or removing the named snails.**\n\nThe most important points seem to be:\n- The snails have sentimental value to their brother (they're named)\n- Removing or killing the snails is not acceptable\n- The seedlings are being actively damaged/eaten\n- Both the flowers and snails matter to them\n- They need a coexistence solution, not an elimination solution\n\nIn essence, the goal is to **Establish a garden setup where moonflower seedlings can grow undamaged while the named snails remain safe and present.**."
+    }
+  ]
+}

@@ -25,8 +25,8 @@
 
 ## 5. Wire the vertical
 
-- [ ] 5.1 Choose the skeleton program: a minimal actor that awaits `@user`, runs the one inference, stages one `set:`, and `say:`s the result. (Derived from `commands/explore.in`'s entry actor, stripped of the `tree_of_thought` delegation.)
-- [ ] 5.2 Run it end to end against a real model; observe one full turn cycle.
+- [x] 5.1 Choose the skeleton program: a minimal actor that awaits `@user`, runs the one inference, stages one `set:`, and `say:`s the result. (Derived from `commands/explore.in`'s entry actor, stripped of the `tree_of_thought` delegation.)
+- [x] 5.2 Run it end to end against a real model; observe one full turn cycle.
 
 ## 6. Prove the seams
 
@@ -37,6 +37,6 @@
 
 ## 7. De-risking experiments
 
-- [ ] 7.1 **D10 dynamic dispatch:** instantiate an actor mid-run by passing a blueprint as `input` to the registered interpreter actor; confirm input/output/stop and that a persisted snapshot rehydrates (logic by `src`, data by `input`).
-- [ ] 7.2 **D2 STM under concurrency:** instrument commit-retry counts; confirm the staged-commit folds correctly when two actors contend on a path. Establishes the mechanism is correct ahead of the parallel runtime.
-- [ ] 7.3 **D8/D9 inference fidelity:** port the two adversarial files (`query_analysis.in` multi-splice, `thinking_primitives.in` same-stream back-reference) two ways — bare-typed vs reasoning-field-first — across two model families; blind-rate synthesis quality and measure how much composition logic leaves the protocol.
+- [x] 7.1 **D10 dynamic dispatch:** instantiate an actor mid-run by passing a blueprint as `input` to the registered interpreter actor; confirm input/output/stop and that a persisted snapshot rehydrates (logic by `src`, data by `input`).
+- [x] 7.2 **D2 STM under concurrency:** instrument commit-retry counts; confirm the staged-commit folds correctly when two actors contend on a path. Establishes the mechanism is correct ahead of the parallel runtime.
+- [x] 7.3 **D8/D9 inference fidelity:** port the two adversarial files (`query_analysis.in` multi-splice, `thinking_primitives.in` same-stream back-reference) two ways — bare-typed vs reasoning-field-first — across two model families; blind-rate synthesis quality and measure how much composition logic leaves the protocol.
