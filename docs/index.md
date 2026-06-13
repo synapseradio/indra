@@ -16,6 +16,7 @@ The documentation divides along a clear seam: what the language is, how the runt
 - **[The architecture](./architecture.md)** — how the runtime executes the language. The three-layer split that owns choreography, substrate, and inference; the reserved namespaces and the rules that protect them; how genuine inference is told apart from pure computation; and how a turn is carried out.
 - **[The toolchain](./toolchain.md)** — where the project is headed. The pipeline that grows outward from the language core: a parser producing a spanned syntax tree, module resolution, a command-line runner, an agent-integrated REPL where the human acquires the turn baton, and editor support. This is also where INDRA constructs compile into generated inference functions.
 - **[The principles](./principles.md)** — the reasoning the whole design rests on. Each principle states what it protects and where it is enforced, so a change that strains against one can be recognized before it lands.
+- **The specifications (`../openspec/specs/`)** — the normative contract the runtime is held to. Each capability's spec opens with a purpose that names what it protects, then states requirements with scenarios a test can verify. Beneath the specs, the change records in `../openspec/changes/` and its archive keep the design reasoning, the alternatives considered, and the research behind each decision — so every requirement has a findable why.
 
 ## What runs today versus what is planned
 
@@ -28,5 +29,6 @@ The documentation keeps current capability and planned capability distinct every
 - `lib/prism/` — the PRISM library of reusable reasoning fragments. See [lib/prism/README.md](../lib/prism/README.md).
 - `commands/` — pre-built commands assembled from the library; each is a worked example of the language.
 - `runtime/` — the deterministic TypeScript runtime. See [runtime/README.md](../runtime/README.md).
+- `openspec/` — the normative specifications and the change records behind them.
 - `docs/` — this documentation.
 - `docs/legacy/` — archived documentation from the prompt-era protocol, kept for reference. It does not describe the current project.
