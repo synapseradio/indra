@@ -91,4 +91,6 @@ experiments/     de-risking experiments with their own BAML projects; each
                  carries a findings.md (see inference-fidelity/ for 7.3)
 ```
 
+For how these directories fit together — the boundaries between them, the contracts they hold each other to, and the seams where the runtime is built to grow — see [ARCHITECTURE.md](./ARCHITECTURE.md).
+
 The program the runtime executes is an AST hand-authored in `src/ast/`, not parsed from a `.in` file yet. The skeleton proves execution; parsing is a separate capability that comes later. See the change tasks at `../openspec/changes/extract-deterministic-runtime/tasks.md` for what is done and what remains.
