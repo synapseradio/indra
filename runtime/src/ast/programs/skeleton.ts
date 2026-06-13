@@ -2,7 +2,7 @@ import type { ActorDef, Program } from "../types.ts";
 
 /**
  * The walking-skeleton program: `@explore`'s entry actor, derived from
- * commands/explore.in with the `tree_of_thought` delegation stripped out.
+ * legacy/commands/explore.in with the `tree_of_thought` delegation stripped out.
  *
  * It proves execution, not parsing — this is the AST the EBNF parser will one
  * day emit, hand-authored for now (task 1.2). The turn it drives is the

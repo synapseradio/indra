@@ -41,14 +41,17 @@ The program the runtime executes today is a hand-authored syntax tree, not a `.i
 
 What is built today and what is planned are kept distinct throughout the documentation, so a reader is never misled about which is which. The toolchain that grows outward from the language — a parser producing a spanned syntax tree, module resolution, a command-line runner, an agent-integrated REPL, and editor support — is described in [docs/toolchain.md](docs/toolchain.md).
 
-## The library and the commands
+## The legacy corpus
 
-The repository ships a library of reusable thought fragments and a set of pre-built commands assembled from them.
+Before the deterministic runtime existed, an INDRA program was written for a model that role-played the interpreter itself. That prompt-era source is preserved under `legacy/` as reference material. None of it is executed by the runtime, and the PRISM library it describes is not yet implemented.
 
-- `lib/prism/` — the PRISM library: the reusable building blocks of reasoning, from atomic thinking verbs up to whole reasoning engines, organized in layers of increasing cognitive complexity. Its structure is described in [lib/prism/README.md](lib/prism/README.md).
-- `commands/` — pre-built commands assembled from the library, including `explore`, `ponder`, `reason`, `confer`, `consider`, `inquire`, and `learn`. Each one structures collaborative thinking a different way, and each is a worked example of the language.
-- `runtime/` — the deterministic TypeScript runtime that executes `.in` programs.
-- `docs/` — the documentation. Start at [docs/index.md](docs/index.md).
+- `legacy/lib/prism/` — the PRISM library as it was authored for the prompt-era model: the building blocks of reasoning, from atomic thinking verbs up to whole reasoning engines, organized in layers of increasing cognitive complexity. Its structure is described in [legacy/lib/prism/README.md](legacy/lib/prism/README.md).
+- `legacy/commands/` — programs assembled from that library, including `explore`, `ponder`, `reason`, `confer`, `consider`, `inquire`, and `learn`. Each one structures collaborative thinking a different way, and each is a worked example of the language.
+- `legacy/core/` — the INDRA protocol the prompt-era model followed.
+- `legacy/thinkies/` — the agent definitions from that era.
+- `legacy/docs/` — the original documentation written for the prompt-era model.
+
+The live system lives apart from all of this: `runtime/` is the deterministic TypeScript runtime, and `docs/` is the documentation. Start at [docs/index.md](docs/index.md).
 
 ## Where to go next
 

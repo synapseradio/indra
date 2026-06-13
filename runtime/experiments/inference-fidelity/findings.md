@@ -4,7 +4,7 @@
 
 The two adversarial files were ported and run two ways each, across two fast-tier model families, with a third-family judge rating blind.
 
-- **Files.** `lib/prism/query_analysis.in` (multi-splice: one prose template with three `<...>` inferences woven in) and `lib/prism/thinking_primitives.in` (same-stream back-reference: a later capture refers to prose generated earlier in the same output).
+- **Files.** `legacy/lib/prism/query_analysis.in` (multi-splice: one prose template with three `<...>` inferences woven in) and `legacy/lib/prism/thinking_primitives.in` (same-stream back-reference: a later capture refers to prose generated earlier in the same output).
 - **Port styles.** Bare-typed (just the typed slots) versus reasoning-field-first (a free-form `reasoning` field declared before the typed fields, per D8).
 - **Families.** Claude Haiku 4.5 and DeepSeek (the API resolves `deepseek-chat` to `deepseek-v4-flash`). Fast tiers are deliberate: they are the models principle 7 ("weak models suffice", `docs/principles.md`) says these leaves must work on.
 - **Judge.** `google/gemini-3.5-flash` via OpenRouter — from neither contestant family. It saw only the person's words and one rendered response, shuffled (seed 20260611) and anonymized. Discarded fields (`reasoning`, the promise enum) were never rendered, so conditions are indistinguishable by shape.

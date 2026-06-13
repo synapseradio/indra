@@ -73,7 +73,7 @@ The interactive entrypoint at `src/index.ts` assembles the same system with the 
 ANTHROPIC_API_KEY=sk-... bun run src/index.ts
 ```
 
-The entrypoint runs the walking-skeleton program — a single actor derived from `commands/explore.in`, stripped down to await user input, run one inference, stage one `set:`, and say the typed result.
+The entrypoint runs the walking-skeleton program — a single actor derived from `legacy/commands/explore.in`, stripped down to await user input, run one inference, stage one `set:`, and say the typed result.
 
 ## Layout
 

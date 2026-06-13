@@ -4,7 +4,7 @@ INDRA is a language for choreographing reasoning. You describe a thinking proces
 
 ## Start here
 
-If you are new to INDRA, read the [language guide](./language.md). It covers actors, personas, the `<...>` inference channel, the shared `&context` world, the `say:`/`await:`/`return:` control transfers, and the human as a first-class actor addressed as `@user`. Every construct is shown with an example drawn from a real program in `commands/` or `lib/prism/`.
+If you are new to INDRA, read the [language guide](./language.md). It covers actors, personas, the `<...>` inference channel, the shared `&context` world, the `say:`/`await:`/`return:` control transfers, and the human as a first-class actor addressed as `@user`. Every construct is shown with an example drawn from a real program in `legacy/commands/` or `legacy/lib/prism/`.
 
 To run what exists today, follow [runtime/README.md](../runtime/README.md). It explains how to install dependencies, generate the inference client, run the offline test suite, and drive a real turn against a model.
 
@@ -26,9 +26,7 @@ The documentation keeps current capability and planned capability distinct every
 
 ## The repository
 
-- `lib/prism/` — the PRISM library of reusable reasoning fragments. See [lib/prism/README.md](../lib/prism/README.md).
-- `commands/` — pre-built commands assembled from the library; each is a worked example of the language.
 - `runtime/` — the deterministic TypeScript runtime. See [runtime/README.md](../runtime/README.md).
 - `openspec/` — the normative specifications and the change records behind them.
 - `docs/` — this documentation.
-- `docs/legacy/` — archived documentation from the prompt-era protocol, kept for reference. It does not describe the current project.
+- `legacy/` — the prompt-era source, kept for reference and not part of the current system: the PRISM library (`legacy/lib/prism/`, see [its README](../legacy/lib/prism/README.md)), the commands assembled from it (`legacy/commands/`), the protocol (`legacy/core/`), the agent definitions (`legacy/thinkies/`), and the original documentation (`legacy/docs/`). The PRISM library it describes is not yet implemented.

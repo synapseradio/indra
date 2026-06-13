@@ -1,4 +1,4 @@
-// Port of lib/prism/query_analysis.in — the multi-splice adversarial case.
+// Port of legacy/lib/prism/query_analysis.in — the multi-splice adversarial case.
 //
 // The source's `understand_query` operator is ONE prose template with THREE
 // `<...>` inferences spliced into it: a core-request sentence, a list of key

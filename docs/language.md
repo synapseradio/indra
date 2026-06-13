@@ -4,7 +4,7 @@ INDRA is a language for choreographing reasoning. You write down the shape of a 
 
 This document describes the language surface: the constructs you write in a `.in` file and what they mean. For how the runtime executes them, see the [architecture](./architecture.md). For where the toolchain is headed, see the [toolchain](./toolchain.md). For the philosophy underneath the design, see [principles.md](./principles.md).
 
-Every construct shown here is drawn from a real file under `commands/` or `lib/prism/`. Where a construct is defined in the language but not yet carried out by the runtime, the text says so plainly.
+Every construct shown here is drawn from a real file under `legacy/commands/` or `legacy/lib/prism/`. Where a construct is defined in the language but not yet carried out by the runtime, the text says so plainly.
 
 ## Actors
 
@@ -218,4 +218,4 @@ dialogue explore_flow:
 
 An import inlines a file and, with a `use` clause, binds only the named symbols from it. The `dialogue` block names the actor that takes the first turn and the initial contents of the shared world. From there the choreography runs: actors take turns, write to `&context`, consult the model at the inference points, and transfer control until the dialogue settles.
 
-The library these commands draw from is organized as layers of increasing cognitive complexity, from atomic thinking verbs up to whole reasoning engines. Its structure is described in [lib/prism/README.md](../lib/prism/README.md), and the commands that assemble it are the worked examples to read next.
+The library these commands draw from is organized as layers of increasing cognitive complexity, from atomic thinking verbs up to whole reasoning engines. Its structure is described in [legacy/lib/prism/README.md](../legacy/lib/prism/README.md), and the commands that assemble it are the worked examples to read next.

@@ -1,4 +1,4 @@
-// Port of lib/prism/thinking_primitives.in — the same-stream back-reference
+// Port of legacy/lib/prism/thinking_primitives.in — the same-stream back-reference
 // adversarial case.
 //
 // The source's `explore_possibility` sequence generates a wondering, then a

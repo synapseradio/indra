@@ -10,7 +10,7 @@ That split is what `runtime/` owns: the deterministic execution of an INDRA prog
 
 ## The concepts
 
-**The program is data.** The runtime executes a `Program`: an entry actor id, an initial world, and a table of actor definitions (`src/ast/types.ts`). Every type in that file is plain, serializable JSON-shaped data — no functions, no class instances. The one program that exists is hand-authored in `src/ast/programs/skeleton.ts`, a single `@explore` actor derived from `commands/explore.in`. The AST is the shape a parser will one day emit, authored by hand until then.
+**The program is data.** The runtime executes a `Program`: an entry actor id, an initial world, and a table of actor definitions (`src/ast/types.ts`). Every type in that file is plain, serializable JSON-shaped data — no functions, no class instances. The one program that exists is hand-authored in `src/ast/programs/skeleton.ts`, a single `@explore` actor derived from `legacy/commands/explore.in`. The AST is the shape a parser will one day emit, authored by hand until then.
 
 **Actors and turns.** An actor is a definition, not a hand-written machine. It carries persona data (`identity`, `rules`, `understands`) and a `perform` block holding its turn logic: a `method`, a `goal`, and an ordered list of branches, each with an optional `when:` guard, a list of `set:` statements, and a terminator. A turn is one dispatch of that logic to completion: the first branch whose guard passes runs its sets in order, then its terminator decides what happens next — `say:` emits text and yields, `await:` delegates to another actor, `return:` finishes with a value (`src/effect/turn.ts`).
 
