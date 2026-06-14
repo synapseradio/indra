@@ -101,9 +101,9 @@ construct it has no semantics for mid-resume — exactly the failure the load-ti
 exists to prevent, but after restore. This is the persisted-snapshot analog of Temporal's core
 hazard: a workflow is non-deterministic when "its execution does not match its previously recorded
 history," and the canonical trigger is "a code change happened that took a different path"
-(https://medium.com/@sanhdoan/understanding-non-determinism-in-temporal-io-why-it-matters-how-to-avoid-it-3d397d8a5793).
+(<https://medium.com/@sanhdoan/understanding-non-determinism-in-temporal-io-why-it-matters-how-to-avoid-it-3d397d8a5793>).
 Temporal's answer is Worker Versioning — pin a workflow to a worker revision so old code runs old
-paths (https://docs.temporal.io/develop/go/versioning) — which is precisely the capability-vs-version
+paths (<https://docs.temporal.io/develop/go/versioning>) — which is precisely the capability-vs-version
 distinction this spec already draws but does not carry into rehydration. **Rank 3 because the spec
 explicitly separates capability from version (IR7) and then drops capability from the rehydration
 checklist, so the gap is a one-line omission with a mid-resume crash behind it.** Recommend:
@@ -131,7 +131,7 @@ precision; the project's own thesis ("deterministic assembly") makes a silent nu
 guard literal a determinism bug. RFC 8785, the canonicalization standard, has to *define* number
 serialization via ECMAScript/IEEE-754 and *forbid* NaN and Infinity precisely because naive
 round-tripping is not stable
-(https://www.rfc-editor.org/info/rfc8785/). Two Programs that differ only in object key order
+(<https://www.rfc-editor.org/info/rfc8785/>). Two Programs that differ only in object key order
 serialize to different byte strings but should presumably be "equivalent" — yet the spec's
 round-trip scenario compares the *parsed value*, not bytes, leaving "equivalent" to mean structural
 equality, which then contradicts the byte-identity a snapshot hash or a `===` on serialized form
@@ -157,10 +157,10 @@ arrays, and **string-keyed objects**" (`specs/program-ir/spec.md:20`). `__proto_
 string key, so the schema accepts it. The spec says nothing about reserved keys.
 
 **What goes wrong:** `JSON.parse` "treats any key … as an arbitrary string, including `__proto__`"
-(https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/Prototype_pollution), and a parser or
+(<https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/Prototype_pollution>), and a parser or
 a downstream deep-merge that writes parsed keys onto a host object can pollute `Object.prototype`
 (the JSON5 CVE-2022-46175 is the canonical instance,
-https://github.com/json5/json5/security/advisories/GHSA-9c47-m6qq-7p4h). Whether INDRA is reachable
+<https://github.com/json5/json5/security/advisories/GHSA-9c47-m6qq-7p4h>). Whether INDRA is reachable
 depends on how the `&context` world is stored and read: if cells are looked up by `obj[segment]` on
 a plain object, a `&context.__proto__.x` read or a `set:` with a `__proto__` segment could traverse
 or pollute the prototype chain rather than data. The runtime stores the world as `Json`
@@ -231,9 +231,9 @@ bounded blast radius (one extra check).** Recommend: add `entry ∈ actors` to c
 
 - **Lone surrogates in string leaves.** A Program string containing an unpaired UTF-16 surrogate
   (U+D800–U+DFFF) round-trips through `JSON.stringify` as an escaped `\ud800` under ES2019 well-formed
-  stringify (https://2ality.com/2019/01/well-formed-stringify.html), but the *parsed* string still
+  stringify (<https://2ality.com/2019/01/well-formed-stringify.html>), but the *parsed* string still
   holds a lone surrogate, and downstream consumers (an API request body, a hash) can reject it — this
-  has bitten real tooling (https://github.com/anthropics/claude-code/issues/44230). The round-trip
+  has bitten real tooling (<https://github.com/anthropics/claude-code/issues/44230>). The round-trip
   "unchanged" scenario (`specs/program-ir/spec.md:27`) would pass (the string is preserved) yet a
   later boundary fails. Same root as case 4: "survives a round trip" is necessary but not sufficient
   for "is transmissible." Low rank because it needs a hostile/garbled producer.
@@ -279,8 +279,8 @@ bounded blast radius (one extra check).** Recommend: add `entry ∈ actors` to c
 
 ## Sources
 
-- XState v5 persisted-snapshot / stale-actor pitfalls: https://github.com/statelyai/xstate/discussions/4226 ; https://github.com/statelyai/xstate/issues/5178 ; https://stately.ai/blog/2023-10-02-persisting-state
-- Temporal determinism and worker versioning: https://medium.com/@sanhdoan/understanding-non-determinism-in-temporal-io-why-it-matters-how-to-avoid-it-3d397d8a5793 ; https://docs.temporal.io/develop/go/versioning ; https://docs.temporal.io/workflow-definition
-- JSON canonicalization (RFC 8785, number/`-0`/NaN handling): https://www.rfc-editor.org/info/rfc8785/ ; https://datatracker.ietf.org/doc/rfc8785/
-- Prototype pollution via `__proto__` in parsed JSON: https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/Prototype_pollution ; https://github.com/json5/json5/security/advisories/GHSA-9c47-m6qq-7p4h (CVE-2022-46175)
-- Lone surrogates through `JSON.stringify`: https://2ality.com/2019/01/well-formed-stringify.html ; https://github.com/anthropics/claude-code/issues/44230
+- XState v5 persisted-snapshot / stale-actor pitfalls: <https://github.com/statelyai/xstate/discussions/4226> ; <https://github.com/statelyai/xstate/issues/5178> ; <https://stately.ai/blog/2023-10-02-persisting-state>
+- Temporal determinism and worker versioning: <https://medium.com/@sanhdoan/understanding-non-determinism-in-temporal-io-why-it-matters-how-to-avoid-it-3d397d8a5793> ; <https://docs.temporal.io/develop/go/versioning> ; <https://docs.temporal.io/workflow-definition>
+- JSON canonicalization (RFC 8785, number/`-0`/NaN handling): <https://www.rfc-editor.org/info/rfc8785/> ; <https://datatracker.ietf.org/doc/rfc8785/>
+- Prototype pollution via `__proto__` in parsed JSON: <https://developer.mozilla.org/en-US/docs/Web/Security/Attacks/Prototype_pollution> ; <https://github.com/json5/json5/security/advisories/GHSA-9c47-m6qq-7p4h> (CVE-2022-46175)
+- Lone surrogates through `JSON.stringify`: <https://2ality.com/2019/01/well-formed-stringify.html> ; <https://github.com/anthropics/claude-code/issues/44230>

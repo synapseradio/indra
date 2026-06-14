@@ -19,6 +19,7 @@ The first delivered change is a **walking skeleton**: the thinnest end-to-end ve
 ## Capabilities
 
 ### New Capabilities
+
 - `interpreter-runtime`: the deterministic execution engine — conductor, turn loop, terminating actions, delegation call stack, control flow.
 - `context-state`: the `&context`/`&user`/`&signals` namespaces, STM-backed, with the staged-vs-immediate `set:` semantic and atomic turn-boundary commit.
 - `module-resolution`: static and dynamic import resolution and strict initial-context schema validation.

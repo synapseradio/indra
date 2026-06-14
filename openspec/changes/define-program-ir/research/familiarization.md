@@ -28,6 +28,7 @@ Five "What Changes" bullets (`proposal.md:7-11`): IR document format with extens
 **Migration Plan** (`design.md:131-142`): six steps, additive until step 6. (1) schema + reference type; (2) broaden validation, rewire `validating`; (3) registry contract + inference dispatch; (4) versioning + rehydration; (5) extension policy; (6) namespace finalization (the one breaking step, sequenced last). Rollback: steps 1–5 revert cleanly; step 6 isolated.
 
 **Open Questions** (verbatim, `design.md:146-149`):
+
 - "`&dialogue` final disposition (IR8, S15). Recommendation is removal, but it edits the live user-input ingestion path (`runtime/src/effect/turn.ts:211-222`), so it needs explicit confirmation: remove entirely, or redirect the `latest_dialogue_entry` write to `&user` before dropping the namespace. Decide before step 6."
 - "Schema-versus-type single source (IR1). Derive the TypeScript type from the schema (schema normative) or keep hand-written types as documentation guarded by a parity test. Direction is \"derive\"; the open part is how much of the `types.ts` JSDoc moves into schema annotations versus staying as prose on the derived type."
 - "When a migrator becomes necessary (IR6). Validate-and-reject is correct while one version exists. The trigger for building a migrator — a version transition with live persisted snapshots that must survive an upgrade — is not yet on the roadmap; name it when persistence of long-lived sessions lands."

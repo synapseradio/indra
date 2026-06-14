@@ -6,14 +6,16 @@ This design extracts the deterministic apparatus into real code so the model is 
 
 ## Goals / Non-Goals
 
-**Goals:**
+### Goals
+
 - Move every deterministic mechanism (control flow, state, IO, validation, parsing) out of the model and into a runtime that behaves identically every run.
 - Preserve INDRA's observable semantics: the five channels, the turn-based execution model, the staged-vs-immediate `set:` rule, the delegation call stack, and the protected namespaces.
 - Support **parallel actors** over a shared transactional `&context`.
 - Reduce the LLM's role to typed, bounded inference calls (one per `<...>`) — bounded enough that weak models suffice (`docs/principles.md` principle 7).
 - Deliver a walking skeleton first: one command, end to end, through all three layers.
 
-**Non-Goals:**
+### Non-Goals
+
 - Full parity with the prompt interpreter in the first change. The skeleton proves the architecture; breadth follows.
 - Re-authoring the `.in` library. Existing `lib/prism/` and `commands/` files are the runtime's input.
 - Changing the protocol's surface language. Where the spec is ambiguous we resolve it (seam log), but we do not redesign the syntax.
@@ -33,10 +35,11 @@ Their argument is grounded in LLM recall ("Lost in the Middle": middle-of-contex
 ## Decisions
 
 ### D1 — Three-layer ownership
+
 XState owns choreography, Effect owns substrate, BAML owns inference. The boundaries are non-overlapping:
 
 | INDRA mechanism | Owner | Becomes |
-|---|---|---|
+ --- | --- | --- | --- | ---
 | turn loop, actors, `say`/`await`/`return` | XState | conductor + child actors; `await`→`invoke`+`onDone`, `return`→final-state `output`, `say`→idle + `PASS_CONTROL` |
 | `when:`/`otherwise:` | XState | guards on ordered transitions |
 | signals / `*commands` | XState | events on the conductor, handled at turn boundary |
@@ -48,6 +51,7 @@ XState owns choreography, Effect owns substrate, BAML owns inference. The bounda
 **Invariant:** the world lives exclusively in Effect. XState context holds only control-flow/phase data. Two sources of state truth would drift; this boundary is a stated rule, not a convention.
 
 ### D2 — Concurrency is BEAM-shaped, state is STM
+
 Each actor is internally sequential: a turn is one message handled to completion. Many actors run in parallel. Signals are delivered to a mailbox and observed at turn boundaries, never as mid-turn preemption — the same discipline BEAM uses for exit/monitor signals at receive points. This is what makes turn-boundary signal handling compatible with parallelism.
 
 Pure BEAM is share-nothing; INDRA has a shared `&context` whiteboard (`docs/protocol/04`). We supply that one missing piece with **Effect STM**: actors share a transactional world, and conflicting commits to the same `&context` path serialize with automatic retry.
@@ -59,31 +63,36 @@ Pure BEAM is share-nothing; INDRA has a shared `&context` whiteboard (`docs/prot
 **Measured finding (de-risk 7.2).** The "narrow contention surface" above is in fact zero at the transaction level on the current runtime: effect 3.21.3 evaluates an STM body synchronously and atomically within one isolate, treats a journal invalidated mid-body as an impossible state (its sync commit path throws a BUG invariant — `internal/stm/core.ts`, `tryCommitSync`), and activates its retry/wake machinery only for `STM.retry` suspensions. Journal-conflict retries therefore cannot occur today, and the correctness load is carried entirely by `commitTurn` reading the committed world inside its own transaction and folding onto whatever is latest — proven under interleaved same-object and same-leaf contention in `derisk-stm-contention.test.ts`. The commit loop is instrumented (`storeFromRefs` takes an `onCommitAttempt` hook; attempts minus commits equals retries), measured today at one attempt per commit, and is the meter to re-read when the parallel runtime makes commits genuinely simultaneous.
 
 ### D3 — Staged-vs-immediate needs an overlay *on top of* STM
+
 STM alone does not produce the staging semantic, because a `perform`-level `set:` must be invisible *even to the acting actor* during its own turn, whereas STM transaction-local writes are visible to later reads in the same transaction. Therefore:
 
-```
+```text
 per turn:  open STM transaction
            ├─ reads          → consistent snapshot of committed &context
            ├─ sequence-set   → transaction-local write (immediate, this turn)
            ├─ perform-set    → staging overlay, NOT in the tx read-view
            └─ turn boundary  → fold overlay into the tx, commit atomically
                                conflict on a shared path → STM retries the commit
-```
+```text
 
 The conductor owns the commit step, so "visible next turn" is literally true: the commit happens between turn N settling and turn N+1 dispatching. (XState v5 guards read pre-assign context, so a staged write cannot leak into a same-turn `when:` guard even by accident — the framework's evaluation order enforces the rule for free.)
 
 **The transaction boundary must exclude the LLM call.** Effect STM forbids arbitrary effects inside a transaction by type (`STM<A,E,R>` is distinct from `Effect`), precisely because a transaction can retry, and a retried LLM call would re-fire — billing N times, producing N different completions. Our turn anatomy keeps the inference *outside* the transaction by construction: `method:`/`goal:`/`then:` (the LLM work) complete and produce plain values first; only the staged writes are folded and committed at the turn boundary. The transaction is the commit, never the inference. This is the same discipline Haskell/Effect force — compute effects outside, commit pure writes inside — and it is verified-correct against the documented design. The one implementation-level caveat to honor: a `sequence`-scoped *immediate* `set:` must not be implemented as a `TRef` write that sits in the same transaction as a later LLM-triggering effect. Immediate sequence writes are their own committed step, not part of a transaction that spans an `await:`.
 
 ### D4 — The result-capture contract becomes BAML's typed return
+
 The protocol's SOP_02 wraps every `<...>` excursion as `{result, next_state_assertion}` parsed from free text. In the runtime this contract is replaced by a BAML function's typed return value; the "resume interpreter role" assertion is unnecessary because the runtime never left its role. Output shapes map directly: boolean gates → `bool`, ratings → `enum`, structured answers → `class`, lists → `T[]`. BAML's `{{ ctx.output_format }}` replaces every hand-written "respond with 'true' or 'false'" instruction.
 
 ### D5 — Personas are data, not actors
+
 A persona has no `perform:` block, so it never drives a turn. It is a `{ identity, rules, understands }` record rendered into a reusable system-role `template_string` (static personas) or passed as a `class Persona` input (runtime-selected personas). "Adopting" a persona via `as:` selects which record the inference call reads; no actor lifecycle is involved.
 
 ### D6 — Walking skeleton is the first deliverable
+
 The thinnest vertical that still exercises all three layers: one command receives user input, runs one real BAML inference, stages one `set:`, commits at the turn boundary, and produces output via a terminating action. It validates the seams (especially D3 and D4) against reality before any breadth. Scoped in `tasks.md`.
 
 ### D7 — The LLM steers routing through typed data
+
 The runtime owns control flow; "barred from routing" is too absolute. INDRA already works this way: the LLM writes a typed value into context (`&context.tree.mode: ${<deepen or broaden>}`) and a deterministic `when:` guard routes on it (`lib/prism/modules/tree_of_thought.in`). The model influences direction only through data; the runtime decides transitions.
 
 INDRA's actual dispatch is closed and static: every `component_ref` is a literal `@id` (`core/indra-protocol:807-808`); there is no computed-name syntax (`${...}` interpolates values, never component names); and `become:` — the one parameterized-instantiation construct — is unused across `lib/prism/` and `commands/`. So parity needs only static dispatch, and there is no existing dynamic-dispatch capability to preserve.
@@ -91,16 +100,19 @@ INDRA's actual dispatch is closed and static: every `component_ref` is a literal
 The data may also *name* a target the runtime then instantiates. That is a deliberate extension, not a preservation requirement, and its mechanism belongs to D10: static `await:`, parameterized `become:`, and open instantiation collapse into one `spawn`.
 
 ### D8 — Typed inference leads with a reasoning field
+
 A bare typed output risks the format-restriction reasoning degradation Tam et al. (EMNLP 2024) measured. Mitigation: every inference `class` declares a free-form `reasoning` string field first, emitted before the typed fields, so the model produces chain-of-thought tokens before committing the typed value. `{{ ctx.output_format }}` plus declaration-order emission makes this native in BAML. The degradation largely disappears with this field (dottxt reproduction); residual model-dependence (Castillo) is measured by the de-risking experiment, not assumed.
 
 **Measured finding (de-risk 7.3, pilot scale).** The reasoning field's value is shape-dependent and family-dependent: it lifted blind-rated quality where the declared fields are compressed summaries (query_analysis on Haiku, +1.00 overall, fidelity 4.67 → 6.00) and was neutral to slightly negative where the shape's own leading fields are free prose (thinking_primitives), with DeepSeek flat in every condition. Separately, every one of 24 typed generations across two fast-tier families parsed on the first attempt — the typed contract is not a flagship-only tax, which is the result the weak-model goal needed. Pilot numbers (n=3 per cell) show direction, not significance; details in `runtime/experiments/inference-fidelity/findings.md`. The reasoning-first spec requirement stands until a fuller measurement justifies a per-shape rule.
 
 ### D9 — Inference and composition are separate layers; pure-function `<...>` are not inference
+
 "Translate every `<...>` into a typed function" is wrong twice. First, `base.in` defines pure functions (`count`, `has_content`, `get_first`) as `<...>` calls — asking an LLM to count a list. These are not inference and become host-language pure functions, never BAML calls; mechanical translation would encode a latency/cost/nondeterminism bug as a typed contract. Second, `${<...>}` — an inference spliced into a prose template, sometimes back-referencing a generation earlier in the same stream (`query_analysis.in`, `thinking_primitives.in`) — is composition, not one inference, and has no BAML primitive. Recipe: each genuine inference becomes a typed function (per-operator, absorbing independent multi-slot templates into one class); splicing and back-referencing live in a composition layer above the functions. Risk: if that layer degrades to hand-written host code, INDRA stops being a language; keeping composition expressible in the protocol is the boundary that keeps it one.
 
 **Measured finding (de-risk 7.3, pilot scale).** The two adversarial ports priced the leakage concretely. Multi-splice (query_analysis) absorbs cleanly into one class with low leakage — template, `each:` loop, and `until:` loop all remain protocol-expressible, provided the runtime renders protocol templates rather than host ones. Same-stream back-reference (thinking_primitives) is where the real choice lives: a single-call port collapses the sequence's three persona-voiced steps into one prompt, moving step sequencing, both back-references, and the per-step `as:` persona switching out of the protocol; the chained-calls alternative keeps composition protocol-visible and yields smaller leaves (favored by the weak-model goal) at the cost of same-stream coherence. That decision belongs to the composition seam. The judge data also localized the quality cost: naturalness was the weakest dimension for the slot-template port in every cell, so the composition seam, not the model, looks like the binding constraint on output warmth. Details in `runtime/experiments/inference-fidelity/findings.md`.
 
 ### D10 — INDRA actors are interpreted by one generic registered actor, parameterized by AST data
+
 XState v5 `spawn(logicValue, { input, systemId })` accepts inline actor logic built at runtime (verified, stately.ai/docs/spawn), so an actor can be created mid-run from data. The one hard limit is persistence: inline runtime-built logic cannot auto-rehydrate, because restore resolves children by a `src` string and the builder function does not re-run (stately.ai/docs/persistence; xstate#4226, #4171).
 
 Resolution, which removes the limit and unifies dispatch: do not compile each INDRA actor to a distinct XState machine. Register ONE generic "INDRA-actor interpreter" in `setup({actors})`, and treat each INDRA actor definition — its identity/rules/understands/perform AST — as serializable `input`. Then static `await: @name`, parameterized `become: @persona`, and any future open target are the same operation: `spawn('indraActor', { input: blueprint, systemId: name })`. The variation is data and the logic is a fixed registered `src`, so durable execution and rehydration work. This is also the natural shape: an INDRA actor is a generic interpreter parameterized by its definition, and the statechart structure lives in the parsed program rather than in N hand-authored machines.
@@ -108,6 +120,7 @@ Resolution, which removes the limit and unifies dispatch: do not compile each IN
 Tradeoff: less of XState's per-actor static typing and per-actor visualization, since all INDRA actors share one generic logic. The conductor and the fixed turn-loop skeleton remain real statecharts; only the per-INDRA-actor behavior is data-parameterized.
 
 ### D11 — Bootloader end state is a split, and its rewrite is the last seam
+
 `core/indra-protocol` currently serves two roles at once: it is the semantic authority for INDRA and the activation prompt for the legacy LLM-inhabited runtime. The end state splits them. The semantics migrate to `openspec/specs/` as the single source of truth — the capability deltas in this change are that migration's first installment — and `core/indra-protocol` later shrinks to a thin legacy activation shim that points at the specs rather than restating them. The rewrite of the bootloader itself is deliberately the **last** seam, ordered after spec capture, the expression evaluator, and the parser, because each of those produces the verified material the shim will reference. Until then the bootloader stays as-is: it remains evidence of intent (per the seam-log stance), and rewriting it before the specs are settled would just create a second drifting copy.
 
 ## Seam log — curation decisions across disharmonious sources

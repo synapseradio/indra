@@ -34,16 +34,16 @@ These name an artifact and the decision or requirement they concern. Some I can 
 
 ## Sources
 
-- https://docs.wasmtime.dev/api/wasmtime/struct.Module.html
-- https://docs.wasmtime.dev/examples-fast-instantiation.html
-- https://github.com/bytecodealliance/wasmtime/issues/7536
-- https://wasmedge.org/docs/embed/c/host_function/
-- https://www.secondstate.io/articles/extend-webassembly/
-- https://docs.temporal.io/develop/go/activities/dynamic-activity
-- https://github.com/PaulJPhilp/EffectPatterns/blob/main/content/published/patterns/schema/getting-started/schema-vs-zod.mdx
-- https://news.ycombinator.com/item?id=41791316
-- https://typescript-eslint.io/rules/switch-exhaustiveness-check/
-- https://dev.to/babak/exhaustive-type-checking-with-typescript-4l3f
-- https://medium.com/@w.xy020203/exhaustive-compile-time-matching-in-typescript-just-like-in-rust-0ba453f1f816
-- https://protobuf.dev/best-practices/dos-donts/
-- https://yokota.blog/2021/08/26/understanding-protobuf-compatibility/
+- <https://docs.wasmtime.dev/api/wasmtime/struct.Module.html>
+- <https://docs.wasmtime.dev/examples-fast-instantiation.html>
+- <https://github.com/bytecodealliance/wasmtime/issues/7536>
+- <https://wasmedge.org/docs/embed/c/host_function/>
+- <https://www.secondstate.io/articles/extend-webassembly/>
+- <https://docs.temporal.io/develop/go/activities/dynamic-activity>
+- <https://github.com/PaulJPhilp/EffectPatterns/blob/main/content/published/patterns/schema/getting-started/schema-vs-zod.mdx>
+- <https://news.ycombinator.com/item?id=41791316>
+- <https://typescript-eslint.io/rules/switch-exhaustiveness-check/>
+- <https://dev.to/babak/exhaustive-type-checking-with-typescript-4l3f>
+- <https://medium.com/@w.xy020203/exhaustive-compile-time-matching-in-typescript-just-like-in-rust-0ba453f1f816>
+- <https://protobuf.dev/best-practices/dos-donts/>
+- <https://yokota.blog/2021/08/26/understanding-protobuf-compatibility/>
