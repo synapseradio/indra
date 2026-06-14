@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.src.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "dist/tsconfig.build.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "../contracts/tsconfig.build.json"
+    }
+  ]
+}

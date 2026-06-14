@@ -43,15 +43,13 @@ const scenarios: readonly Scenario[] = [
     id: "apple-tree",
     words:
       "My grandfather's allotment is being split up next spring, and his apple tree is the last thing he planted. I want to save it somehow — a graft, a cutting, anything.",
-    thought:
-      "An old tree can continue in a young branch, if the graft takes.",
+    thought: "An old tree can continue in a young branch, if the graft takes.",
   },
   {
     id: "bedtime",
     words:
       "I want to read aloud to my daughter every night, but by bedtime I have no voice and no patience left. I don't want her to remember me skipping pages.",
-    thought:
-      "Perhaps the reading doesn't have to happen at bedtime at all.",
+    thought: "Perhaps the reading doesn't have to happen at bedtime at all.",
   },
 ];
 
@@ -96,9 +94,11 @@ const renderUnderstanding = (
 const renderExploration = (
   exploration: PossibilityExplorationBare | PossibilityExplorationReasoned,
 ): string =>
-  [exploration.wondering, exploration.developed_thought, exploration.assessment].join(
-    "\n\n",
-  );
+  [
+    exploration.wondering,
+    exploration.developed_thought,
+    exploration.assessment,
+  ].join("\n\n");
 
 const generators: Record<
   File_,
@@ -108,21 +108,49 @@ const generators: Record<
     bare: {
       claude: async (s) => {
         const typed = await b.QaBareClaude(s.words);
-        return { scenario: s.id, file: "query_analysis", style: "bare", family: "claude", typed, rendered: renderUnderstanding(typed) };
+        return {
+          scenario: s.id,
+          file: "query_analysis",
+          style: "bare",
+          family: "claude",
+          typed,
+          rendered: renderUnderstanding(typed),
+        };
       },
       deepseek: async (s) => {
         const typed = await b.QaBareDeepseek(s.words);
-        return { scenario: s.id, file: "query_analysis", style: "bare", family: "deepseek", typed, rendered: renderUnderstanding(typed) };
+        return {
+          scenario: s.id,
+          file: "query_analysis",
+          style: "bare",
+          family: "deepseek",
+          typed,
+          rendered: renderUnderstanding(typed),
+        };
       },
     },
     reasoned: {
       claude: async (s) => {
         const typed = await b.QaReasonedClaude(s.words);
-        return { scenario: s.id, file: "query_analysis", style: "reasoned", family: "claude", typed, rendered: renderUnderstanding(typed) };
+        return {
+          scenario: s.id,
+          file: "query_analysis",
+          style: "reasoned",
+          family: "claude",
+          typed,
+          rendered: renderUnderstanding(typed),
+        };
       },
       deepseek: async (s) => {
         const typed = await b.QaReasonedDeepseek(s.words);
-        return { scenario: s.id, file: "query_analysis", style: "reasoned", family: "deepseek", typed, rendered: renderUnderstanding(typed) };
+        return {
+          scenario: s.id,
+          file: "query_analysis",
+          style: "reasoned",
+          family: "deepseek",
+          typed,
+          rendered: renderUnderstanding(typed),
+        };
       },
     },
   },
@@ -130,21 +158,49 @@ const generators: Record<
     bare: {
       claude: async (s) => {
         const typed = await b.TpBareClaude(s.thought, s.words);
-        return { scenario: s.id, file: "thinking_primitives", style: "bare", family: "claude", typed, rendered: renderExploration(typed) };
+        return {
+          scenario: s.id,
+          file: "thinking_primitives",
+          style: "bare",
+          family: "claude",
+          typed,
+          rendered: renderExploration(typed),
+        };
       },
       deepseek: async (s) => {
         const typed = await b.TpBareDeepseek(s.thought, s.words);
-        return { scenario: s.id, file: "thinking_primitives", style: "bare", family: "deepseek", typed, rendered: renderExploration(typed) };
+        return {
+          scenario: s.id,
+          file: "thinking_primitives",
+          style: "bare",
+          family: "deepseek",
+          typed,
+          rendered: renderExploration(typed),
+        };
       },
     },
     reasoned: {
       claude: async (s) => {
         const typed = await b.TpReasonedClaude(s.thought, s.words);
-        return { scenario: s.id, file: "thinking_primitives", style: "reasoned", family: "claude", typed, rendered: renderExploration(typed) };
+        return {
+          scenario: s.id,
+          file: "thinking_primitives",
+          style: "reasoned",
+          family: "claude",
+          typed,
+          rendered: renderExploration(typed),
+        };
       },
       deepseek: async (s) => {
         const typed = await b.TpReasonedDeepseek(s.thought, s.words);
-        return { scenario: s.id, file: "thinking_primitives", style: "reasoned", family: "deepseek", typed, rendered: renderExploration(typed) };
+        return {
+          scenario: s.id,
+          file: "thinking_primitives",
+          style: "reasoned",
+          family: "deepseek",
+          typed,
+          rendered: renderExploration(typed),
+        };
       },
     },
   },
@@ -168,15 +224,21 @@ const shuffled = <T>(items: readonly T[], random: () => number): T[] => {
 };
 
 /** Run thunks with a small concurrency cap, preserving order of results. */
-const pool = async <T>(thunks: readonly (() => Promise<T>)[], width: number): Promise<T[]> => {
+const pool = async <T>(
+  thunks: readonly (() => Promise<T>)[],
+  width: number,
+): Promise<T[]> => {
   const results: T[] = new Array(thunks.length);
   let next = 0;
-  const workers = Array.from({ length: Math.min(width, thunks.length) }, async () => {
-    while (next < thunks.length) {
-      const index = next++;
-      results[index] = await thunks[index]!();
-    }
-  });
+  const workers = Array.from(
+    { length: Math.min(width, thunks.length) },
+    async () => {
+      while (next < thunks.length) {
+        const index = next++;
+        results[index] = await thunks[index]!();
+      }
+    },
+  );
   await Promise.all(workers);
   return results;
 };
@@ -189,11 +251,15 @@ const main = async () => {
   const styles: Style[] = ["bare", "reasoned"];
   const families: Family[] = ["claude", "deepseek"];
 
-  console.log("Generating 24 responses (3 scenarios x 2 files x 2 styles x 2 families)...");
+  console.log(
+    "Generating 24 responses (3 scenarios x 2 files x 2 styles x 2 families)...",
+  );
   const generationThunks = scenarios.flatMap((scenario) =>
     files.flatMap((file) =>
       styles.flatMap((style) =>
-        families.map((family) => () => generators[file][style][family](scenario)),
+        families.map(
+          (family) => () => generators[file][style][family](scenario),
+        ),
       ),
     ),
   );

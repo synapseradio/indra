@@ -1,0 +1,17 @@
+{
+  "name": "@indra/configs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./vitest": {
+      "bun": "./vitest/index.ts",
+      "import": "./vitest/index.ts",
+      "default": "./vitest/index.ts"
+    }
+  },
+  "devDependencies": {
+    "vite-tsconfig-paths": "catalog:tooling",
+    "vitest": "catalog:tooling"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  // Comments are kept in the workspace's JSONC configs (tsconfigs, this file),
+  // so Biome must parse JSON-with-comments to lint and format them.
+  "$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!**/dist", "!**/baml_client", "!legacy", "!**/*.md"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 80
+  },
+  "linter": {
+    "enabled": true,
+    // Library-agnostic test rules (noFocusedTests and the like). Vitest in the
+    // dependency tree activates this domain; declaring it makes the intent explicit.
+    "domains": {
+      "test": "recommended"
+    },
+    "rules": {
+      "recommended": true,
+      // Each entry below only sets `fix`, never `level`, so a rule keeps its
+      // recommended severity. Promoting an unsafe-but-syntactic fix to "safe"
+      // lets `lint:fix` apply it without `lint:fix:unsafe`. The dangerous ones
+      // (noNonNullAssertion, useOptionalChain, noUselessTernary) are left alone
+      // because their fixes change runtime semantics.
+      "correctness": {
+        // Removes unused imports; side-effect imports do not trigger this rule.
+        "noUnusedImports": { "fix": "safe" },
+        // Prefixes unused bindings with `_` rather than deleting them.
+        "noUnusedVariables": { "fix": "safe" }
+      },
+      "complexity": {
+        // a["b"] -> a.b for static string keys; purely syntactic.
+        "useLiteralKeys": { "fix": "safe" }
+      },
+      "style": {
+        // "a" + b -> `a${b}`; Biome's own docs use this as the promotion example.
+        "useTemplate": { "fix": "safe" },
+        // Array<T> <-> T[]; purely syntactic.
+        "useConsistentArrayType": { "fix": "safe" },
+        // Guard: ! -> ?. changes semantics, so never let any fix run apply it.
+        "noNonNullAssertion": { "fix": "none" }
+      },
+      "suspicious": {
+        // `then` is a normative keyword in INDRA's program IR: a PerformBlock is
+        // `{ method, goal, then: [...branches] }`. These objects are AST data,
+        // never JS-awaited (INDRA's await is a terminator kind), so the thenable
+        // confusion this rule guards against cannot arise here.
+        "noThenProperty": "off"
+      }
+    }
+  },
+  // Assist actions (import sorting and the like) are safe code fixes applied by
+  // `biome check --write`. Lint fixes themselves are not a config toggle: safe
+  // fixes apply with `--write`, the rest with `--write --unsafe` (see the
+  // lint:fix / lint:fix:unsafe scripts). Per-rule autofix is tuned with a
+  // rule's `fix` field when a specific rule needs it.
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "recommended": true
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "json": {
+    "parser": {
+      "allowComments": true
+    }
+  }
+}

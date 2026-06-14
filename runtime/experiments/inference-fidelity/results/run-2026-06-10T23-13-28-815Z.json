@@ -1,18 +1,9 @@
 {
   "design": {
     "scenarios": 3,
-    "files": [
-      "query_analysis",
-      "thinking_primitives"
-    ],
-    "styles": [
-      "bare",
-      "reasoned"
-    ],
-    "families": [
-      "claude",
-      "deepseek"
-    ],
+    "files": ["query_analysis", "thinking_primitives"],
+    "styles": ["bare", "reasoned"],
+    "families": ["claude", "deepseek"],
     "judge": "google/gemini-3.5-flash via OpenRouter (third family, blind)",
     "shuffleSeed": 20260611
   },

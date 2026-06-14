@@ -1,4 +1,0 @@
-# bun is the package manager for this project. Tests run under vitest
-# (see vitest.config.ts and the `test` script in package.json), not `bun test`.
-[install]
-exact = true

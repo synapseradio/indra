@@ -1,0 +1,20 @@
+{
+  // The generated BAML client is a separate, referenced project so the core's
+  // src build resolves its declarations instead of pulling the generated source
+  // under the src rootDir. Its strict flags are relaxed to what generated code
+  // needs, mirroring the original tsconfig.baml.json. This file lives at the
+  // package root (not inside baml_client/) so `baml-cli generate` never wipes it.
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "baml_client",
+    "outDir": "dist/baml_client",
+    "tsBuildInfoFile": "dist/tsconfig.baml_client.tsbuildinfo",
+    "emitDeclarationOnly": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": false,
+    "verbatimModuleSyntax": false
+  },
+  "include": ["baml_client"]
+}

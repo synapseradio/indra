@@ -1,0 +1,4 @@
+# bun is the package manager for this workspace. Tests run under vitest
+# (see vitest.workspace.ts and each package's `test` script), not `bun test`.
+[install]
+exact = true

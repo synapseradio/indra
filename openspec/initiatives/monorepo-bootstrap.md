@@ -39,16 +39,16 @@ background for this framing lives in [docs/architecture.md](../../docs/architect
 conversation saved in [notes/hearsay-challenge.txt](../../notes/hearsay-challenge.txt).
 
 The monorepo is that stance made physical. The deterministic contract at the center of the system
-becomes the package at the center of the dependency graph.
+is the package at the center of the dependency graph.
 
 ## Where the system stands now
 
 The repository is one git repo holding several kinds of thing, and only one of them is built as a
 TypeScript package:
 
-- `runtime/` — the one TypeScript package. The executor: an Effect substrate for state and IO, an
-  XState layer for choreography, a BAML seam for inference, and a hand-authored AST it runs. This
-  is the dense piece the chunking is meant to relieve.
+- `runtime/` — the one TypeScript package. The executor: a world store and turn evaluator built on
+  Effect, an XState layer for choreography, a BAML seam for inference, and a hand-authored AST it
+  runs. This is the dense piece the chunking is meant to relieve.
 - `legacy/commands/`, `legacy/lib/prism/`, `legacy/core/` — the prompt-era INDRA `.in` sources:
   programs, library modules, and the protocol, authored for the model that role-played the
   interpreter. They are kept under `legacy/` as reference; they are not TypeScript, and the runtime
@@ -60,68 +60,148 @@ So the monorepo already has five or six natural packages latent in it, and only 
 been written. Bootstrapping is less about inventing structure than about surfacing the structure
 that is already there.
 
-## A hypothesis, not a plan: the hourglass
+## The natural joints
 
-One plausible shape is an hourglass, with a deterministic contract at the waist. Front-ends compile
-*to* it; the runtime executes *from* it; neither side knows the other exists.
+The runtime couples at a small set of joints, each re-verifiable against the tree by an import-graph
+trace of `runtime/src`:
 
+- **The AST is the clean contract.** `runtime/src/ast/types.ts` imports nothing from the runtime
+  and has 20+ importers. It is the artifact every front-end compiles to.
+- **The error taxonomy is shared vocabulary, not substrate.** `runtime/src/effect/errors.ts`
+  imports only effect's `Data` and is imported across the executor (`baml/inference.ts`,
+  `baml/inference.layer.ts`, `effect/initial-state.ts`, `effect/context-store.ts`,
+  `effect/turn.ts`); no test imports it. It belongs with the contract, not the executor.
+- **`effect/` is a world store and a turn evaluator, not a substrate.** It holds five different
+  kinds of thing: a world store (`path.ts`, `context-store.ts`, `context-store.layer.ts`), the turn
+  evaluator (`turn.ts` — the active operational semantics, the opposite of a passive base), a
+  validation pass (`initial-state.ts`), the error taxonomy (`errors.ts`), and assembly glue
+  (`runtime.ts`). The word "substrate" misdescribes it.
+- **`effect/` has no edge to `xstate/`.** The dependency runs one way, `xstate → effect`, crossing
+  through a single bridge module (`runtime/src/xstate/leaves.ts`). The core/choreography split is a
+  clean cut, not an untangling. Its shared contract (`TurnOutcome`, the events, the leaf signatures)
+  is **provisional** — the unbuilt `say:`-routing and `await:`-resume seams will reshape it.
+- **The inference port and adapter are separable.** `runtime/src/baml/inference.ts` (the `Inference`
+  tag, interface, and stub) is type-only and widely consumed; `inference.layer.ts` (the live layer)
+  is the only module that reaches the `@boundaryml/baml` binding, and it does so transitively through
+  the generated client.
+- **The inference result type leaks from generated code.** `inference.ts` imports `WelcomeResult`
+  type-only from the generated `baml_client/types.ts`, which is gitignored and produced by
+  `baml-cli generate` (`runtime/baml_src/generators.baml`). The result shape must live in the
+  contract, or the executor cannot typecheck without running the adapter's codegen.
+
+The first chunk is the contract at the root of the graph. It lets a reader hold any one package
+without the rest, and because the AST is already cleanly detached, the contract package precedes
+taming the runtime rather than waiting on it. Promoting the AST to a versioned IR is a larger move
+that builds on the contract once it is its own package.
+
+## The target architecture: the hourglass
+
+The shape is an hourglass with a deterministic contract at the waist. Producers compile *to* it;
+consumers execute *from* it. The contract package imports nothing, so no consumer can reach back
+into a producer, and the inward-only dependency rule the runtime states in a comment
+(`runtime/ARCHITECTURE.md:45`) holds as compiler-enforced structure rather than convention.
+
+```text
+  PRODUCERS (later: eDSL, .in parser)  ──▶  @indra/runtime-contracts  ◀──  CONSUMERS
+                                            IR types · errors ·             core (executor)
+                                            inference shapes ·              choreography
+                                            provisional choreo contract     inference adapter
 ```
-   PRODUCERS  (compile to the contract)
-     eDSL  ·  .in parser  ·  .in sources
-                    │
-                    ▼
-            ┌───────────────┐
-            │   the IR /    │   the contract at the waist:
-            │   Program     │   node forms, the serializability invariant,
-            │   contract    │   a version field, a schema for validation
-            └───────────────┘
-                    │
-                    ▼
-   CONSUMERS  (execute from the contract)
-     validation  ·  runtime executor  ·  inference registry
-```
 
-The appeal is that the dependency rule the runtime currently states in a comment — depend inward,
-toward data — would become a fact the compiler enforces, because the contract package would import
-nothing and the executor could not reach back into a front-end. This is one candidate decomposition.
-It is recorded here as a hypothesis to test against the runtime, not as a decision.
+All packages live under one `runtime` scope:
 
-## Open questions that drive the work
+- **`@indra/runtime-contracts`** — IR/AST types, the error taxonomy, inference result shapes, and
+  the provisional core↔choreography contract. Imports no workspace package; sits at the root of the
+  dependency graph.
+- **`@indra/runtime-core`** — the world store, the turn evaluator, validation, and assembly; owns
+  the `Inference` port. Depends on contracts.
+- **`@indra/runtime-choreography`** — the XState conductor, actor machine, leaves, and events.
+  Depends on core and contracts. Its contract with core is provisional.
+- **`@indra/runtime-inference-baml`** — the live BAML adapter behind the port; the only package
+  carrying the `@boundaryml/baml` binding. Depends on core and contracts.
+- **`@indra/runtime-host`** — the composition root (the renamed entrypoint, not a CLI): the only
+  package that imports a concrete adapter, keeping the others BAML-free. Depends on choreography,
+  inference-baml, and contracts.
 
-These are unresolved, and resolving them is the actual work of this initiative. They are listed
-before any task list on purpose.
+The load-bearing property of this architecture is that the inward-only rule is structural by
+construction: the contract package imports nothing, so nothing can reach behind it. Two facts ground
+that design and are verifiable in the source as it stands — the AST contract imports nothing from
+the runtime, and `effect/` carries no edge to `xstate/`. The package boundaries that turn those
+facts into enforced structure are the deliverable of the laddering changes below; the current
+single-package tree proves the facts but does not yet enforce the boundary.
 
-- **Is the IR the right first chunk?** Undecided, and currently doubted. The runtime is complex
-  enough that the first useful move may be to decompose it *internally* — to understand the
-  boundary between the Effect substrate, the XState choreography, and the inference seam — before
-  any package is extracted at all. Promoting the AST to a versioned IR is a large move; it should
-  not go first merely because it was the first one written down.
-- **What is the smallest chunk that reduces head-load?** The right first cut is the one that lets
-  a reader hold one part without the rest. That is an empirical question about where the runtime's
-  internal coupling actually is, answerable only by reading it.
-- **Does a contract package precede or follow taming the runtime?** The hourglass assumes the
-  contract is extractable cleanly. Whether that is true depends on how entangled the current AST is
-  with the executor that consumes it.
+## The laddering changes
 
-## Relationship to existing changes
+Two changes carry the bootstrap, in dependency order `1 → 2`. Each is one bounded, describable seam,
+and refactor (packaging) stays separate from behavior change (IR hardening).
 
-- `define-program-ir` — a fully drafted change (proposal, design, four spec deltas; no tasks yet)
-  that promotes the AST to a versioned, validated IR. It is a **candidate first extraction, parked**
-  pending the decomposition pass above. Its framing is sound; its position in the sequence is the
-  open question.
-- `runtime-improvements` — an empty change shell. Scope to be determined once the chunk boundaries
-  are clearer.
+- **`bootstrap-workspace-and-contracts`** (deps: none) — stand up the Bun workspace (catalogs, the
+  tsc project-reference graph, rslib, Turbo, Biome); relocate the runtime under
+  `packages/runtime/*`; extract `@indra/runtime-contracts`; split `effect/` → `@indra/runtime-core`
+  and `xstate/` → `@indra/runtime-choreography`; create `@indra/runtime-host`. Its
+  `package-boundaries` capability makes the inward-only rule structural.
+- **`extract-inference-adapter`** (deps: change 1) — move the live adapter, `baml_src/`, and the
+  generated client into `@indra/runtime-inference-baml`; formalize the `Inference` port as a
+  core-owned module; move `WelcomeResult` into `@indra/runtime-contracts` (forced by the
+  result-type leak). It extends `package-boundaries` with the inference-specific invariants.
+
+Beyond the two bootstrap cuts, the ladder continues:
+
+- **`define-program-ir`** — fully drafted, and it builds on the contract package. It hard-depends on
+  `bootstrap-workspace-and-contracts`: the IR types and serializability invariant extend
+  `@indra/runtime-contracts`, and the Effect-Schema validator and load-time checks evolve
+  `@indra/runtime-core`'s existing validation pass.
+- **`own-inference`** — swaps BAML for an Effect-Schema adapter behind the same port; it builds on
+  `extract-inference-adapter`.
+- **Docs** — a central `docs/` page documenting every boundary and contract, retiring the word
+  "substrate" in `runtime/ARCHITECTURE.md` and `docs/architecture.md`, with a ledger entry per cut.
 
 ## The lens: problems solved and problems created
 
 Every cut buys something and costs something. This initiative tracks both, because the cost is
-where the next problem hides. As the decomposition proceeds, each proposed package earns an entry:
-what it makes legible, and what new seam or boundary it introduces. The seed of that ledger is the
-frame above — INDRA solves the blackboard's three failures by refusing opportunistic control, and
-pays for it in flexibility and in the work of authoring structure by hand.
+where the next problem hides. Each proposed package earns an entry: what it makes legible, and what
+new seam or boundary it introduces. The seed of that ledger is the frame above — INDRA solves the
+blackboard's three failures by refusing opportunistic control, and pays for it in flexibility and in
+the work of authoring structure by hand. The cuts below grow the ledger as they land.
+
+- **Contracts extraction** — *solves:* the contract is a real boundary nothing can reach behind, and
+  the inward-only rule is a compiler-enforced fact. *costs:* a shared package every other package
+  depends on, so a change to the contract ripples widest.
+- **Core/choreography split** — *solves:* chunks the executor along its true cognitive joint — the
+  state model versus the turn loop. *costs:* freezes a still-moving contract into a package line
+  (mitigated: the core↔choreography contract is marked provisional, so the package boundary is not
+  read as a frozen contract).
+- **Inference adapter extraction** — *solves:* the deterministic core stops depending on a
+  Rust-backed codegen DSL, and typechecks without running the adapter's codegen. *costs:* the host
+  must wire the concrete adapter, and the result shape must be owned by the contract rather than the
+  generated client.
+
+### Landed: `bootstrap-workspace-and-contracts`
+
+The first cut landed the workspace and the two boundaries it set out to make structural. Each entry
+below rests on the verification gates that close the change, so the claims are checkable rather than
+asserted.
+
+- **Contracts extraction (landed)** — `@indra/runtime-contracts` now sits at the root of the
+  dependency graph and imports no workspace package. Its source carries no `@indra/runtime-*` import,
+  and its manifest depends only on `effect`. The inward-only rule is a compiler-enforced fact rather
+  than a comment now: `tsc -b` is green across the project-reference graph from the repo root. *Cost
+  realized:* every other runtime package depends on contracts, so the widest-rippling change in the
+  workspace is a change to the contract — the price the hourglass waist charges for being the waist.
+- **Core/choreography split (landed)** — `@indra/runtime-core` (the world store, the turn evaluator,
+  validation, and assembly) and `@indra/runtime-choreography` (the XState conductor) are separate
+  packages cut along the verified one-directional joint. The core carries no edge to the
+  choreography, confirmed in both the manifest and the source, and the choreography depends inward on
+  the core. The shared core↔choreography contract — `TurnOutcome`, the events, the leaf signatures —
+  lives in the contract package marked provisional, so the package line is not read as a frozen
+  contract. The offline suite stays green across both packages. *Cost realized:* that provisional
+  contract now spans a package boundary, so the unbuilt `say:`-routing and `await:`-resume seams will
+  reshape a cross-package type rather than an in-package one.
 
 ## Status
 
-Living document. The next step is analysis, not implementation: a decomposition pass over `runtime/`
-to find where its real internal boundaries are, so the first chunk can be chosen by evidence rather
-than by which idea was written down first.
+Living document. `bootstrap-workspace-and-contracts` has landed — the workspace stands, the contract
+package is at the root of the graph, and the core/choreography split holds (see the landed entries
+above). `extract-inference-adapter` is the immediate next cut, and it extends the workspace this
+change created. Each cut grows the ledger with what it actually made legible and what new boundary it
+introduced.

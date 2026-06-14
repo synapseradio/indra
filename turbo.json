@@ -1,0 +1,34 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "tsconfig.base.json",
+    "packages/configs/vitest/**",
+    "scripts/scaffold/manifest.ts"
+  ],
+  "tasks": {
+    "generate": {
+      "inputs": ["baml_src/**"],
+      "outputs": ["baml_client/**"]
+    },
+    "check:types": {
+      "dependsOn": ["^check:types", "generate"],
+      "inputs": ["src/**", "test/**", "tsconfig*.json"],
+      "outputs": ["dist/**"]
+    },
+    "build": {
+      "dependsOn": ["^build", "generate"],
+      "inputs": ["src/**", "rslib.config.ts", "tsconfig*.json"],
+      "outputs": ["dist/**"]
+    },
+    "test": {
+      "dependsOn": ["check:types", "^check:types", "generate", "^generate"],
+      "inputs": ["src/**", "test/**", "tsconfig*.json", "vitest.config.ts"]
+    },
+    "lint": {
+      "inputs": ["src/**", "test/**"]
+    },
+    "lint:docs": {
+      "inputs": ["**/*.md"]
+    }
+  }
+}
