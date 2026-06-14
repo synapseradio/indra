@@ -36,7 +36,18 @@ This is a packaging and toolchain change with no behavior change. It is the firs
 
 **ESM everywhere, `moduleDetection: force`, all tsconfigs JSONC.** `"type": "module"` throughout. Comments are kept in tsconfigs (the `.json` name is retained for tsc and editor discovery) and in `biome.jsonc` (`json.parser.allowComments: true`). Biome does not lint Markdown, so `lint:docs` uses `markdownlint-cli2`.
 
-**Manifest-driven scaffold script.** `scripts/scaffold-monorepo.sh` is idempotent and creates structure plus configs only — no source moves. Its `PACKAGES` manifest (`relpath|name|deps`) is the single edit point. The root `package.json`, `turbo.json`, `biome.jsonc`, and `vitest.*` are authored by setup subagents, not the scaffold.
+**Manifest-driven scaffold CLI.** `scripts/scaffold/` is a Bun TypeScript CLI (`manifest.ts`, `parts.ts`, `index.ts`), idempotent, creating structure plus configs only — no source moves. Each part is a pure function from a package spec to one file, so a part regenerates in isolation and a package scaffold is the composition of every part: `package.json`, the tsconfig trio plus `tsconfig.build.json`, `rslib.config.ts`, `vitest.config.ts`, and `README.md`. Its `PACKAGES` manifest (`relpath|name|deps`) is the single edit point. The root `package.json`, `turbo.json`, and `biome.jsonc` are authored directly, not by the scaffold.
+
+**Per-package vitest config extends a shared `@indra/configs` base.** Each package's `vitest.config.ts` is thin: it imports `baseConfig` from `@indra/configs/vitest` and `mergeConfig`s in only that package's `test.name` and `test.root`. Everything identical workspace-wide — the resolver plugins, the cross-package alias map, and the test settings — lives once in the base config, so the manifest stays the single edit point and no per-package config carries a hand-kept map.
+
+The base config resolves two specifier kinds through the tool whose scoping fits each, a split verified against the installed `vite-tsconfig-paths@6.1.1` source:
+
+- `~/*` means a different `src` in each package, so its resolver must be **include-scoped**. `vite-tsconfig-paths` (with `configNames` covering `tsconfig.src.json` and `tsconfig.test.json`, since the discoverable `tsconfig.json` is a references-only solution file the plugin otherwise skips) applies each package's `~/*` mapping only to that package's own files.
+- `@indra/runtime-*` (and the `@indra/runtime-core/inference-live` subpath) has one meaning workspace-wide and appears inside the loaded source of packages other than the one under test, so its resolver must be **process-global**: a `resolve.alias` map in the base config, built from `PACKAGES`, rewrites the specifier wherever it appears and so resolves the transitive case to source. `tsc` still resolves built `.d.ts` across packages through project references; the alias map is the test runner's concern only.
+
+Turbo orchestrates: `turbo run test` runs each package's `vitest run`, caches per package so a change in one package does not rerun another's tests, and the `test` task declares `dependsOn: ["check:types", "^check:types"]` so type-checking gates tests in every scope. Vite never type-checks.
+
+Alternatives considered and rejected: paths in the aggregate `tsconfig.json` (skipped by the plugin — empty `include`); paths in `tsconfig.src.json` (breaks `tsc -b` with TS6059); `exports` conditions to dist (abandons source-based testing); and a generated per-package alias map duplicated into every config (more output, no benefit over centralizing the identical map in `@indra/configs`).
 
 ## Risks / Trade-offs
 

@@ -23,6 +23,7 @@ The runtime is one dense TypeScript package doing several things at once, and ho
 ### New Capabilities
 
 - `package-boundaries`: the package decomposition of the runtime workspace and the dependency invariants that hold across the cuts — the contract package at the root importing nothing, the core never importing the choreography, an adapter depending inward on the port it implements, and the offline suite free of the BAML binding. This makes the inward-only rule (today a comment, `runtime/ARCHITECTURE.md:45`) a structural contract. Re-homed and extended from the retired `runtime-improvements` change, whose single-runtime-package requirement this plan supersedes by splitting core from choreography now.
+- `package-scaffold`: what the manifest-driven scaffold produces for each package — the generated file set, a base README that names the package, and a thin `vitest.config.ts` that extends the shared `@indra/configs/vitest` base. It also covers how the offline suite resolves modules to source (intra-package `~/*` through tsconfig paths, cross-package `@indra/runtime-*` through the base config's shared alias map) and how turbo orchestrates the suite and gates type-checking before tests.
 
 ### Modified Capabilities
 
@@ -30,7 +31,7 @@ The runtime is one dense TypeScript package doing several things at once, and ho
 
 ## Impact
 
-- **Workspace layout**: a new root `package.json` (Bun workspaces + catalogs), `tsconfig.base.json`, root `tsconfig.json`/`tsconfig.build.json` solution files, `turbo.json`, `biome.jsonc`, `.markdownlint.jsonc`, and `vitest.*`; per-package manifests, `rslib.config.ts`, and tsconfig trios under `packages/runtime/{contracts,core,choreography,inference-baml,host}`.
+- **Workspace layout**: a new root `package.json` (Bun workspaces + catalogs), `tsconfig.base.json`, root `tsconfig.json`/`tsconfig.build.json` solution files, `turbo.json`, `biome.jsonc`, and `.markdownlint.jsonc`; the `@indra/configs` package holding the shared `vitest` base config; per-package manifests, `rslib.config.ts`, `vitest.config.ts`, `README.md`, and tsconfig trios under `packages/runtime/{contracts,core,choreography,inference-baml,host}`.
 - **Source relocation**: `ast/types.ts` + `effect/errors.ts` + the provisional choreography contract → `contracts`; `effect/` → `core`; `xstate/` → `choreography`; the entrypoint → `host`. `skeleton.ts` sits provisionally in `core/src/programs/`.
 - **Imports**: references across the former `effect/` and `xstate/` update to the new package specifiers (`@indra/runtime-*`).
 - **Build and test**: tsc owns typecheck and `.d.ts` only; rslib owns the JS build; Bun runs source in dev via the `bun` export condition. The offline suite stays green.
