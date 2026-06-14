@@ -1,0 +1,20 @@
+{
+  // markdownlint-cli2 behavior: what to lint and what to skip. Rule tuning lives
+  // in .markdownlint.jsonc, which cli2 discovers and merges. Run `lint:docs` to
+  // check and `lint:docs:fix` to apply every fixable rule.
+  "globs": ["**/*.md"],
+  "ignores": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/baml_client/**",
+    // Dot directories hold tool state and generated artifacts (.claude, .opencode,
+    // .pi, .conversation-logs, and the like), not project documentation. cli2
+    // globs dotfiles by default, so they are excluded explicitly here.
+    "**/.*/**",
+    "legacy/**",
+    // The top-level runtime/ tree is the pre-split package being dismantled; its
+    // remaining docs are kept as historical reference, not linted. The new
+    // packages/runtime/* readmes are still covered.
+    "runtime/**"
+  ]
+}

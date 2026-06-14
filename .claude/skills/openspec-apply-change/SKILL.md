@@ -6,14 +6,14 @@ compatibility: Requires openspec CLI.
 metadata:
   author: openspec
   version: "1.0"
-  generatedBy: "1.4.0"
+  generatedBy: "1.4.1"
 ---
 
 Implement tasks from an OpenSpec change.
 
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
-**Steps**
+### Steps
 
 1. **Select the change**
 
@@ -25,9 +25,12 @@ Implement tasks from an OpenSpec change.
    Always announce: "Using change: <name>" and how to override (e.g., `/opsx:apply <other>`).
 
 2. **Check status to understand the schema**
+
    ```bash
    openspec status --change "<name>" --json
-   ```
+
+```text
+
    Parse the JSON to understand:
    - `schemaName`: The workflow being used (e.g., "spec-driven")
    - `planningHome`, `changeRoot`, and `actionContext`: planning scope and edit constraints
@@ -37,7 +40,8 @@ Implement tasks from an OpenSpec change.
 
    ```bash
    openspec instructions apply --change "<name>" --json
-   ```
+
+```text
 
    This returns:
    - `contextFiles`: artifact ID -> array of concrete file paths (varies by schema - could be proposal/specs/design/tasks or spec/tests/implementation/docs)
@@ -45,7 +49,8 @@ Implement tasks from an OpenSpec change.
    - Task list with status
    - Dynamic instruction based on current state
 
-   **Handle states:**
+### Handle states:
+
    - If `state: "blocked"` (missing artifacts): show message, suggest using openspec-continue-change
    - If `state: "all_done"`: congratulate, suggest archive
    - Otherwise: proceed to implementation
@@ -76,7 +81,8 @@ Implement tasks from an OpenSpec change.
    - Mark task complete in the tasks file: `- [ ]` → `- [x]`
    - Continue to next task
 
-   **Pause if:**
+### Pause if:
+
    - Task is unclear → ask for clarification
    - Implementation reveals a design issue → suggest updating artifacts
    - Error or blocker encountered → report and wait for guidance
@@ -90,9 +96,10 @@ Implement tasks from an OpenSpec change.
    - If all done: suggest archive
    - If paused: explain why and wait for guidance
 
-**Output During Implementation**
+### Output During Implementation
 
-```
+```text
+
 ## Implementing: <change-name> (schema: <schema-name>)
 
 Working on task 3/7: <task description>
@@ -102,11 +109,13 @@ Working on task 3/7: <task description>
 Working on task 4/7: <task description>
 [...implementation happening...]
 ✓ Task complete
-```
 
-**Output On Completion**
+```text
 
-```
+### Output On Completion
+
+```text
+
 ## Implementation Complete
 
 **Change:** <change-name>
@@ -119,11 +128,13 @@ Working on task 4/7: <task description>
 ...
 
 All tasks complete! Ready to archive this change.
-```
 
-**Output On Pause (Issue Encountered)**
+```text
 
-```
+### Output On Pause (Issue Encountered)
+
+```text
+
 ## Implementation Paused
 
 **Change:** <change-name>
@@ -133,15 +144,17 @@ All tasks complete! Ready to archive this change.
 ### Issue Encountered
 <description of the issue>
 
-**Options:**
+### Options:
 1. <option 1>
 2. <option 2>
 3. Other approach
 
 What would you like to do?
-```
 
-**Guardrails**
+```text
+
+### Guardrails
+
 - Keep going through tasks until done or blocked
 - Always read context files before starting (from the apply instructions output)
 - If task is ambiguous, pause and ask before implementing
@@ -151,7 +164,7 @@ What would you like to do?
 - Pause on errors, blockers, or unclear requirements - don't guess
 - Use contextFiles from CLI output, don't assume specific file names
 
-**Fluid Workflow Integration**
+### Fluid Workflow Integration
 
 This skill supports the "actions on a change" model:
 

@@ -6,14 +6,14 @@ compatibility: Requires openspec CLI.
 metadata:
   author: openspec
   version: "1.0"
-  generatedBy: "1.4.0"
+  generatedBy: "1.4.1"
 ---
 
 Fast-forward through artifact creation - generate everything needed to start implementation in one go.
 
 **Input**: The user's request should include a change name (kebab-case) OR a description of what they want to build.
 
-**Steps**
+### Steps
 
 1. **If no clear input provided, ask what they want to build**
 
@@ -25,15 +25,21 @@ Fast-forward through artifact creation - generate everything needed to start imp
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
 2. **Create the change directory**
+
    ```bash
    openspec new change "<name>"
-   ```
+
+```text
+
    This creates a scaffolded change in the planning home resolved by the CLI.
 
 3. **Get the artifact build order**
+
    ```bash
    openspec status --change "<name>" --json
-   ```
+
+```text
+
    Parse the JSON to get:
    - `applyRequires`: array of artifact IDs needed before implementation (e.g., `["tasks"]`)
    - `artifacts`: list of all artifacts with their status and dependencies
@@ -47,9 +53,12 @@ Fast-forward through artifact creation - generate everything needed to start imp
 
    a. **For each artifact that is `ready` (dependencies satisfied)**:
       - Get instructions:
+
         ```bash
         openspec instructions <artifact-id> --change "<name>" --json
-        ```
+
+```text
+
       - The instructions JSON includes:
         - `context`: Project background (constraints for you - do NOT include in output)
         - `rules`: Artifact-specific rules (constraints for you - do NOT include in output)
@@ -72,19 +81,22 @@ Fast-forward through artifact creation - generate everything needed to start imp
       - Then continue with creation
 
 5. **Show final status**
+
    ```bash
    openspec status --change "<name>"
-   ```
 
-**Output**
+```text
+
+### Output
 
 After completing all artifacts, summarize:
+
 - Change name and location
 - List of artifacts created with brief descriptions
 - What's ready: "All artifacts created! Ready for implementation."
 - Prompt: "Run `/opsx-apply` or ask me to implement to start working on the tasks."
 
-**Artifact Creation Guidelines**
+### Artifact Creation Guidelines
 
 - Follow the `instruction` field from `openspec instructions` for each artifact type
 - The schema defines what each artifact should contain - follow it
@@ -94,7 +106,8 @@ After completing all artifacts, summarize:
   - Do NOT copy `<context>`, `<rules>`, `<project_context>` blocks into the artifact
   - These guide what you write, but should never appear in the output
 
-**Guardrails**
+### Guardrails
+
 - Create ALL artifacts needed for implementation (as defined by schema's `apply.requires`)
 - Always read dependency artifacts before creating a new one
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum

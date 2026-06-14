@@ -6,14 +6,14 @@ compatibility: Requires openspec CLI.
 metadata:
   author: openspec
   version: "1.0"
-  generatedBy: "1.4.0"
+  generatedBy: "1.4.1"
 ---
 
 Start a new change using the experimental artifact-driven approach.
 
 **Input**: The user's request should include a change name (kebab-case) OR a description of what they want to build.
 
-**Steps**
+### Steps
 
 1. **If no clear input provided, ask what they want to build**
 
@@ -24,49 +24,61 @@ Start a new change using the experimental artifact-driven approach.
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Determine the workflow schema**
+1. **Determine the workflow schema**
 
    Use the default schema (omit `--schema`) unless the user explicitly requests a different workflow.
 
-   **Use a different schema only if the user mentions:**
-   - A specific schema name → use `--schema <name>`
-   - "show workflows" or "what workflows" → run `openspec schemas --json` and let them choose
+### Use a different schema only if the user mentions
+
+- A specific schema name → use `--schema <name>`
+- "show workflows" or "what workflows" → run `openspec schemas --json` and let them choose
 
    **Otherwise**: Omit `--schema` to use the default.
 
-3. **Create the change directory**
+1. **Create the change directory**
+
    ```bash
    openspec new change "<name>"
-   ```
+
+```text
+
    Add `--schema <name>` only if the user requested a specific workflow.
    This creates a scaffolded change in the planning home resolved by the CLI.
 
-4. **Show the artifact status**
+1. **Show the artifact status**
+
    ```bash
    openspec status --change "<name>" --json
-   ```
+
+```text
+
    Use the returned `planningHome`, `changeRoot`, `artifactPaths`, and `nextSteps` instead of assuming repo-local paths.
 
-5. **Get instructions for the first artifact**
+1. **Get instructions for the first artifact**
    The first artifact depends on the schema (e.g., `proposal` for spec-driven).
    Check the status output to find the first artifact with status "ready".
+
    ```bash
    openspec instructions <first-artifact-id> --change "<name>"
-   ```
+
+```text
+
    This outputs the template and context for creating the first artifact.
 
-6. **STOP and wait for user direction**
+1. **STOP and wait for user direction**
 
-**Output**
+### Output
 
 After completing the steps, summarize:
+
 - Change name and location
 - Schema/workflow being used and its artifact sequence
 - Current status (0/N artifacts complete)
 - The template for the first artifact
 - Prompt: "Ready to create the first artifact? Just describe what this change is about and I'll draft it, or ask me to continue."
 
-**Guardrails**
+### Guardrails
+
 - Do NOT create any artifacts yet - just show the instructions
 - Do NOT advance beyond showing the first artifact template
 - If the name is invalid (not kebab-case), ask for a valid name

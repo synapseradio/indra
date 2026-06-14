@@ -6,7 +6,7 @@ compatibility: Requires openspec CLI.
 metadata:
   author: openspec
   version: "1.0"
-  generatedBy: "1.4.0"
+  generatedBy: "1.4.1"
 ---
 
 Sync delta specs from a change to main specs.
@@ -15,7 +15,7 @@ This is an **agent-driven** operation - you will read delta specs and directly e
 
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
-**Steps**
+### Steps
 
 1. **If no change name provided, prompt for selection**
 
@@ -28,9 +28,11 @@ This is an **agent-driven** operation - you will read delta specs and directly e
 2. **Resolve change context**
 
    Run:
+
    ```bash
    openspec status --change "<name>" --json
-   ```
+
+```text
 
    If status reports `actionContext.mode: "workspace-planning"`, explain that workspace spec sync is not supported in this slice and STOP. Do not fall back to repo-local paths or edit linked repos.
 
@@ -56,11 +58,13 @@ This is an **agent-driven** operation - you will read delta specs and directly e
 
    c. **Apply changes intelligently**:
 
-      **ADDED Requirements:**
+### ADDED Requirements:
+
       - If requirement doesn't exist in main spec → add it
       - If requirement already exists → update it to match (treat as implicit MODIFIED)
 
-      **MODIFIED Requirements:**
+### MODIFIED Requirements:
+
       - Find the requirement in main spec
       - Apply the changes - this can be:
         - Adding new scenarios (don't need to copy existing ones)
@@ -68,10 +72,12 @@ This is an **agent-driven** operation - you will read delta specs and directly e
         - Changing the requirement description
       - Preserve scenarios/content not mentioned in the delta
 
-      **REMOVED Requirements:**
+### REMOVED Requirements:
+
       - Remove the entire requirement block from main spec
 
-      **RENAMED Requirements:**
+### RENAMED Requirements:
+
       - Find the FROM requirement, rename to TO
 
    d. **Create new main spec** if capability doesn't exist yet:
@@ -85,7 +91,7 @@ This is an **agent-driven** operation - you will read delta specs and directly e
    - Which capabilities were updated
    - What changes were made (requirements added/modified/removed/renamed)
 
-**Delta Spec Format Reference**
+### Delta Spec Format Reference
 
 ```markdown
 ## ADDED Requirements
@@ -112,18 +118,21 @@ The system SHALL do something new.
 
 - FROM: `### Requirement: Old Name`
 - TO: `### Requirement: New Name`
-```
 
-**Key Principle: Intelligent Merging**
+```text
+
+### Key Principle: Intelligent Merging
 
 Unlike programmatic merging, you can apply **partial updates**:
+
 - To add a scenario, just include that scenario under MODIFIED - don't copy existing scenarios
 - The delta represents *intent*, not a wholesale replacement
 - Use your judgment to merge changes sensibly
 
-**Output On Success**
+### Output On Success
 
-```
+```text
+
 ## Specs Synced: <change-name>
 
 Updated main specs:
@@ -137,9 +146,11 @@ Updated main specs:
 - Added requirement: "Another Feature"
 
 Main specs are now updated. The change remains active - archive when implementation is complete.
-```
 
-**Guardrails**
+```text
+
+### Guardrails
+
 - Read both delta and main specs before making changes
 - Preserve existing content not mentioned in delta
 - If something is unclear, ask for clarification

@@ -37,11 +37,11 @@
   2. Setting &context.pipeline_result via pipeline (@p1 |> @p2):
   - @p1 receives &pipeline.io="start_value", returns "start_value_p1"
   - @p2 receives &pipeline.io="start_value_p1", returns "start_value_p1_p2"
-  3. Executing become: @transformer, returns "transformed_by_become"
-  4. Attempting await: @non_existent_actor - handling gracefully with empty result
-  5. Processing star command simulation: "*test_cmd arg1"
-  6. Awaiting @user input, receiving "*test_cmd arg1"
-  7. Returning: "pipeline: start_value_p1_p2. become: transformed_by_become. error: . user: *test_cmd arg1."
+  1. Executing become: @transformer, returns "transformed_by_become"
+  2. Attempting await: @non_existent_actor - handling gracefully with empty result
+  3. Processing star command simulation: "*test_cmd arg1"
+  4. Awaiting @user input, receiving "*test_cmd arg1"
+  5. Returning: "pipeline: start_value_p1_p2. become: transformed_by_become. error: . user: *test_cmd arg1."
 
   [INDRA: Processing star command handler]
   Setting &context.final_output with star_cmd_arg: "arg1"
@@ -324,7 +324,7 @@
   You're seeking not just a definition but an experiential touchstone for love - something that captures its essence in a way that resonates with lived experience,
   remains memorable, and coheres into a unified understanding.
 
-  2. Systematic Decomposition
+  1. Systematic Decomposition
 
   The query was expanded into the following threads for analysis:
 
@@ -334,20 +334,20 @@
 - The transformative power of love
 - The linguistic challenge of expressing love
 
-  3. Multi-Perspective Analysis
+  1. Multi-Perspective Analysis
 
   The council of 6 experts has contributed their insights.
 
   The perspectives have been woven together to reveal patterns and connections.
 
-  4. Emergent Connections
+  1. Emergent Connections
 
   An exploration of the relationships between expert insights revealed the following patterns:
   Love emerges as a multidimensional phenomenon that operates simultaneously across biological, psychological, cultural, and spiritual domains. Each lens reveals love as
   fundamentally about connection and transformation - whether neural synchronization, ego dissolution, co-regulation, or cultural transmission. The inadequacy of any
   single perspective to fully capture love points to its nature as a primary organizing principle of human experience rather than a simple emotion or state.
 
-  5. Final Synthesis
+  1. Final Synthesis
 
   Convergent Themes:
   Love consistently appears as a force of recognition and reunion - the discovery that we were never as separate as we believed. It manifests as both an ancient
@@ -376,7 +376,7 @@
   We know love not by defining it but by letting it define us - allowing ourselves to be reorganized by its priorities, transformed by its demands, and enlarged by its
   possibilities. Love is how infinity becomes intimate, how the universe becomes personal, how two becomes one while remaining two.
 
-  6. Continuation Options
+  1. Continuation Options
 
   To explore this topic further, you could:
 

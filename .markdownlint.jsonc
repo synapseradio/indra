@@ -1,0 +1,16 @@
+{
+  // Rule configuration, merged by markdownlint-cli2 (and shared with the VS Code
+  // extension). The cli2 behavior — which files to lint and what to ignore —
+  // lives in .markdownlint-cli2.jsonc. Fixable rules are applied by the
+  // lint:docs:fix script (markdownlint-cli2 --fix); the rules disabled below
+  // are stylistic and not autofixable.
+  "default": true,
+  // Prose wraps freely; line length is not a documentation concern here.
+  "MD013": false,
+  // Inline HTML is used deliberately in some docs.
+  "MD033": false,
+  // A document need not open with a top-level heading.
+  "MD041": false,
+  // Repeated headings are fine as long as they sit under different parents.
+  "MD024": { "siblings_only": true }
+}

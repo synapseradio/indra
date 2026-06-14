@@ -6,7 +6,7 @@ compatibility: Requires openspec CLI.
 metadata:
   author: openspec
   version: "1.0"
-  generatedBy: "1.4.0"
+  generatedBy: "1.4.1"
 ---
 
 Archive multiple completed changes in a single operation.
@@ -15,7 +15,7 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
 
 **Input**: None required (prompts for selection)
 
-**Steps**
+### Steps
 
 1. **Get active changes**
 
@@ -54,10 +54,10 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
 
    Build a map of `capability -> [changes that touch it]`:
 
-   ```
+```text
    auth -> [change-a, change-b]  <- CONFLICT (2+ changes)
    api  -> [change-c]            <- OK (only 1 change)
-   ```
+```text
 
    A conflict exists when 2+ selected changes have delta specs for the same capability.
 
@@ -85,26 +85,28 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
 
    Display a table summarizing all changes:
 
-   ```
-   | Change              | Artifacts | Tasks | Specs   | Conflicts | Status |
-   |---------------------|-----------|-------|---------|-----------|--------|
-   | schema-management   | Done      | 5/5   | 2 delta | None      | Ready  |
-   | project-config      | Done      | 3/3   | 1 delta | None      | Ready  |
-   | add-oauth           | Done      | 4/4   | 1 delta | auth (!)  | Ready* |
-   | add-verify-skill    | 1 left    | 2/5   | None    | None      | Warn   |
-   ```
+```text
+| Change | Artifacts | Tasks | Specs | Conflicts | Status |
+ --- | --------------------- | ----------- | ------- | --------- | ----------- | -------- | --- 
+| schema-management | Done | 5/5 | 2 delta | None | Ready |
+| project-config | Done | 3/3 | 1 delta | None | Ready |
+| add-oauth | Done | 4/4 | 1 delta | auth (!) | Ready* |
+| add-verify-skill | 1 left | 2/5 | None | None | Warn |
+```text
 
    For conflicts, show the resolution:
-   ```
+
+```text
    * Conflict resolution:
      - auth spec: Will apply add-oauth then add-jwt (both implemented, chronological order)
-   ```
+```text
 
    For incomplete changes, show warnings:
-   ```
+
+```text
    Warnings:
    - add-verify-skill: 1 incomplete artifact, 3 incomplete tasks
-   ```
+```text
 
 7. **Confirm batch operation**
 
@@ -128,10 +130,11 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
       - Track if sync was done
 
    b. **Perform the archive**:
+
       ```bash
       mkdir -p "<planningHome.changesDir>/archive"
       mv "<changeRoot>" "<planningHome.changesDir>/archive/YYYY-MM-DD-<name>"
-      ```
+```text
 
    c. **Track outcome** for each change:
       - Success: archived successfully
@@ -142,7 +145,7 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
 
    Show final results:
 
-   ```
+```text
    ## Bulk Archive Complete
 
    Archived 3 changes:
@@ -156,18 +159,20 @@ This skill allows you to batch-archive changes, handling spec conflicts intellig
    Spec sync summary:
    - 4 delta specs synced to main specs
    - 1 conflict resolved (auth: applied both in chronological order)
-   ```
+```text
 
    If any failures:
-   ```
+
+```text
    Failed 1 change:
    - some-change: Archive directory already exists
-   ```
+```text
 
-**Conflict Resolution Examples**
+### Conflict Resolution Examples
 
 Example 1: Only one implemented
-```
+
+```text
 Conflict: specs/auth/spec.md touched by [add-oauth, add-jwt]
 
 Checking add-oauth:
@@ -179,10 +184,11 @@ Checking add-jwt:
 - Searching codebase... no JWT implementation found
 
 Resolution: Only add-oauth is implemented. Will sync add-oauth specs only.
-```
+```text
 
 Example 2: Both implemented
-```
+
+```text
 Conflict: specs/api/spec.md touched by [add-rest-api, add-graphql]
 
 Checking add-rest-api (created 2026-01-10):
@@ -195,11 +201,11 @@ Checking add-graphql (created 2026-01-15):
 
 Resolution: Both implemented. Will apply add-rest-api specs first,
 then add-graphql specs (chronological order, newer takes precedence).
-```
+```text
 
-**Output On Success**
+### Output On Success
 
-```
+```text
 ## Bulk Archive Complete
 
 Archived N changes:
@@ -209,11 +215,11 @@ Archived N changes:
 Spec sync summary:
 - N delta specs synced to main specs
 - No conflicts (or: M conflicts resolved)
-```
+```text
 
-**Output On Partial Success**
+### Output On Partial Success
 
-```
+```text
 ## Bulk Archive Complete (partial)
 
 Archived N changes:
@@ -224,17 +230,18 @@ Skipped M changes:
 
 Failed K changes:
 - <change-3>: Archive directory already exists
-```
+```text
 
-**Output When No Changes**
+### Output When No Changes
 
-```
+```text
 ## No Changes to Archive
 
 No active changes found. Create a new change to get started.
-```
+```text
 
-**Guardrails**
+### Guardrails
+
 - Allow any number of changes (1+ is fine, 2+ is the typical use case)
 - Always prompt for selection, never auto-select
 - Detect spec conflicts early and resolve by checking codebase
