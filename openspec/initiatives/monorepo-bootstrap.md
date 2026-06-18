@@ -147,10 +147,12 @@ and refactor (packaging) stays separate from behavior change (IR hardening).
 
 Beyond the two bootstrap cuts, the ladder continues:
 
-- **`define-program-ir`** — fully drafted, and it builds on the contract package. It hard-depends on
-  `bootstrap-workspace-and-contracts`: the IR types and serializability invariant extend
-  `@indra/runtime-contracts`, and the Effect-Schema validator and load-time checks evolve
-  `@indra/runtime-core`'s existing validation pass.
+- **`validate-program-at-load`** — the load-time validation spine salvaged from the dissolved
+  `define-program-ir`. It builds on `framework-native-contracts`: the typed structure and typed
+  inference references reduce validation to a residue — structural well-formedness, branch totality,
+  actor-reference resolution, and initial-state completeness — checked before the conductor spawns.
+  The versioned IR document, name registry, and serializability invariant are dropped as
+  language-era framing.
 - **`own-inference`** — swaps BAML for an Effect-Schema adapter behind the same port; it builds on
   `extract-inference-adapter`.
 - **Docs** — a central `docs/` page documenting every boundary and contract, retiring the word

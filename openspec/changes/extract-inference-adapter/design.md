@@ -47,4 +47,4 @@ Rollback is a git revert; nothing is published and no data migrates.
 ## Open Questions
 
 - **`experiments/` home** — sits under the adapter for now; revisit if it grows its own concerns.
-- **Result-shape ownership long-term** — `WelcomeResult` lives in contracts now; `define-program-ir` and `own-inference` may reshape how inference result types are defined and validated.
+- **Result-shape ownership long-term** — `WelcomeResult` lives in contracts now; `framework-native-contracts` and `own-inference` may reshape how inference result types are defined and validated.

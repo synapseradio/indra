@@ -14,7 +14,7 @@ After `bootstrap-workspace-and-contracts` stands up the workspace, the BAML adap
 ### Non-Goals
 
 - Replacing BAML with an Effect-Schema inference adapter. That swap is the later `own-inference` change, against the port this one isolates.
-- Hardening the contract into a versioned, validated IR — that is `define-program-ir`.
+- Hardening the contract into a versioned, serializable IR document. That framing is dropped as language-era; load-time validation of the typed program lives in `validate-program-at-load`.
 
 ## Capabilities
 
