@@ -1,6 +1,8 @@
 # INDRA
 
-INDRA is a language for choreographing reasoning. You describe a thinking process — who speaks, in what voice, what they ask, what they decide — and a deterministic runtime carries out that choreography while a language model supplies judgment at the points you mark for it. The structure you write runs the same way every time. The judgment is the model's, and it happens only inside the bounded inference points you place by hand.
+INDRA is a framework for building agent systems you can refactor. Every agent is a sealed actor: typed input in, a typed value out, its working context private and unreadable from outside. The boundary that isolates an actor is the same boundary that hides how it works, so you can replace one agent with an entire company of agents behind a stable interface, and no caller and no other agent can tell the difference or be contaminated by the change. A deterministic runtime carries out the choreography you write, and a language model supplies judgment only at the bounded, typed points you place by hand. The structure runs the same way every time.
+
+You write that choreography in a DSL that compiles to INDRA's runtime, the first a TypeScript embedded DSL. The DSL is a surface; the guarantees live in the framework beneath it, so anything that compiles to INDRA's intermediate representation inherits them. Isolation between agents is one such guarantee, and it holds before a program runs: a choreography in which one agent could read another's private context is rejected at load time rather than hoped about at runtime.
 
 The name is **I**nferential **N**arrative **D**riven **R**easoning **A**ctors. The idea underneath it is that human insight and machine inference are complementary. People weave context into meaning and recognize what matters; inference engines read and generate at a scale and speed people cannot. When the two are combined, each unburdened by the other's limits, they can reach insights neither would reach alone. INDRA is built to make that combination something you can write down, compose, and run.
 
@@ -8,7 +10,7 @@ One consequence of that framing shapes the whole design: the sophistication of a
 
 ## What an INDRA program looks like
 
-An INDRA program is built from actors that take turns, personas they speak through, a shared world they coordinate in, and inference points where the model supplies a judgment. Here is a step from the tree-of-thought reasoning module. It adopts a persona, speaks in that voice, asks the model to choose a direction, and writes the model's choice into the shared world:
+An INDRA program is built from actors that take turns, personas they speak through, a shared world they coordinate in, and inference points where the model supplies a judgment. Here is a step from a tree-of-thought module. It adopts a persona, speaks in that voice, asks the model to choose a direction, and writes the model's choice into the shared world:
 
 ```indra
   step:
@@ -31,7 +33,7 @@ The human takes part in the same way any actor does. An actor awaits the human e
                 &context.ponder.topic: &user.latest
 ```
 
-For the full language — actors, personas, the `<...>` inference channel, `&context`, `say:`/`await:`/`return:`, and the human as a first-class actor — read [docs/language.md](docs/language.md).
+For everything an INDRA program can express — actors, personas, the `<...>` inference channel, `&context`, `say:`/`await:`/`return:`, and the human as a first-class actor — read [docs/language.md](docs/language.md).
 
 ## What runs today
 
@@ -39,7 +41,7 @@ The deterministic runtime is a TypeScript program that executes INDRA. Its offli
 
 The program the runtime executes today is a hand-authored syntax tree, not a `.in` file parsed from disk. A walking skeleton proves the architecture end to end through all of its layers before breadth is added on top. How to install, generate the inference client, and run the offline suite and a live turn is documented in [runtime/README.md](runtime/README.md).
 
-What is built today and what is planned are kept distinct throughout the documentation, so a reader is never misled about which is which. The toolchain that grows outward from the language — a parser producing a spanned syntax tree, module resolution, a command-line runner, an agent-integrated REPL, and editor support — is described in [docs/toolchain.md](docs/toolchain.md).
+What is built today and what is planned are kept distinct throughout the documentation, so a reader is never misled about which is which. The toolchain that grows outward from the framework — a parser producing a spanned syntax tree, module resolution, a command-line runner, an agent-integrated REPL, and editor support — is described in [docs/toolchain.md](docs/toolchain.md).
 
 ## The legacy corpus
 
@@ -55,4 +57,4 @@ The live system lives apart from all of this: `runtime/` is the deterministic Ty
 
 ## Where to go next
 
-Read [docs/index.md](docs/index.md) for a map of the documentation. Read [docs/language.md](docs/language.md) to learn the language. Read [runtime/README.md](runtime/README.md) to run what exists today. Read [docs/principles.md](docs/principles.md) for the reasoning the whole design rests on.
+Read [docs/index.md](docs/index.md) for a map of the documentation. Read [docs/language.md](docs/language.md) to learn how an INDRA program is written. Read [runtime/README.md](runtime/README.md) to run what exists today. Read [docs/principles.md](docs/principles.md) for the reasoning the whole design rests on.
