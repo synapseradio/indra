@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=./node_modules/lefthook/schema.json
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "*.{js,jsx,ts,tsx,mjs,cjs,json,jsonc}"
+      run: bun run lint:staged {staged_files}
+      stage_fixed: true
+    markdownlint:
+      glob: "*.md"
+      run: bun run lint:docs {staged_files}
+    check-types:
+      run: bun run check:types
+
+pre-push:
+  parallel: false
+  commands:
+    test:
+      run: bun run test
