@@ -26,3 +26,17 @@
 
 - [ ] 5.1 Replace the `&signals` namespace recording with a typed runtime-owned signal record (depends on `framework-native-contracts`)
 - [ ] 5.2 Add a test that a program write to the signal record is a type error at author time
+
+## 6. Control mechanics (implements existing `interpreter-runtime` requirements)
+
+- [ ] 6.1 Implement `say: to: <target>` routing — dispatch the next turn to the named component, not always the entry actor (`interpreter-runtime` "A say action routes control"); route `say:` to `@user`/host as emitted output that yields for input
+- [ ] 6.2 Implement resumption from the await point — on the awaited `return:`, store the value in `store_in:` or `&result`, then resume the awaiting actor from the action after the `await:` with its pre-await state restored, rather than finalizing (`interpreter-runtime` "Delegation is a call stack with resumption")
+- [ ] 6.3 Add tests: `say: to: @B` dispatches @B next; `await: @B` followed by further actions resumes A after the await and does not finalize A; a return without `store_in:` is readable at `&result`
+
+## 7. User-command surface (implements existing `signal-system` requirements)
+
+- [ ] 7.1 Translate user input beginning with `*` into a `{id, source, payload: {command, args}}` signal object before processing
+- [ ] 7.2 Implement `*trace` as a visibility-only toggle that gates diagnostic printing and never changes control flow or error recording
+- [ ] 7.3 Implement deterministic `*help` routing — the active actor's declared help handler if it ran and emitted, otherwise the global help message — with no model judgment
+- [ ] 7.4 Execute an `instruction` payload only as the restricted subset (`read_file_directive`, `set_block`, `emit_action`, `log_action`); raise `instruction_failed` and resume the actor on a parse failure or a disallowed construct
+- [ ] 7.5 Add tests: a `*trace on` input translates to the specified signal object; a program runs identically with trace on and off; `*help` falls back to global help with no declared handler; a disallowed instruction raises `instruction_failed` without executing
