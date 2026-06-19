@@ -15,5 +15,13 @@ pre-commit:
 pre-push:
   parallel: false
   commands:
+    biome:
+      glob: "*.{js,jsx,ts,tsx,mjs,cjs,json,jsonc}"
+      run: bun run lint:staged {push_files}
+    markdownlint:
+      glob: "*.md"
+      run: bun run lint:docs:fix {push_files}
+    check-types:
+      run: bun run check:types
     test:
       run: bun run test
