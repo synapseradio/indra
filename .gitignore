@@ -221,6 +221,9 @@ tmbootpicker.efi
 # Generated BAML client
 baml_client/
 
+# Graphify knowledge-graph output (generated artifact, not source)
+graphify-out/
+
 # Thinkies persistence data (local, not committed)
 .thinkies/
 

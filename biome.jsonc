@@ -9,7 +9,14 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/dist", "!**/baml_client", "!legacy", "!**/*.md"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/baml_client",
+      "!legacy",
+      "!**/*.md",
+      "!graphify-out"
+    ]
   },
   "formatter": {
     "enabled": true,
