@@ -226,3 +226,6 @@ baml_client/
 
 # Local Claude Code settings (machine-specific, not shared)
 .claude/settings.local.json
+
+notes
+.notes
