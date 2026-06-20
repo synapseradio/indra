@@ -20,8 +20,10 @@ import { PACKAGES } from "../../../scripts/scaffold/manifest.ts";
 //     include-scoped resolver: vite-tsconfig-paths applies each package's `~/*`
 //     mapping only to that package's own files.
 //
-// tsc still resolves built `.d.ts` across packages via project references; this
-// alias map is the test runner's concern only.
+// This map resolves cross-package specifiers to source either way, so it does
+// not keep dependencies pointing one direction; a green test run is no evidence
+// they do. That is `tsc -b`'s job: a package's tsconfig references only the
+// packages it depends on, so an import going the other way fails to compile.
 
 // Repo root, three directories up from this file (vitest -> configs -> packages).
 const repoRoot = new URL("../../../", import.meta.url);

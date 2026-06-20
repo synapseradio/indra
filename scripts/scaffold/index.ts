@@ -14,7 +14,9 @@
  *
  *   list                         list every package in the manifest
  *   all                          scaffold every package
- *   package <key>                scaffold one package (all parts + dirs)
+ *   package <key>                scaffold one package: package.json, the src/
+ *                                test/aggregate/build tsconfigs, rslib.config.ts,
+ *                                vitest.config.ts, README.md, and the src/ + test/ dirs
  *   package-json <key>           regenerate one package.json
  *   tsconfig <key> [--kind K]    regenerate tsconfigs (K: src|test|aggregate|build)
  *   rslib <key>                  regenerate one rslib.config.ts
