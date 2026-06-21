@@ -68,12 +68,12 @@ Validation SHALL check each actor against its own scope and each call site again
 - **WHEN** a spawn site selects an actor's identity from a runtime value but declares the inherited frame and inbound crossing shapes
 - **THEN** validation checks the spawned actor against the declared scope regardless of which identity is selected
 
-### Requirement: One inference leaf is one voice
+### Requirement: One inference leaf is one inference call
 
-A single inference leaf SHALL render exactly one voice. Composition that combines more than one voice SHALL be expressed as distinct actors exchanging crossings, above the leaf, never as multiple voices collapsed into a single leaf. Single-voice prompt assembly below the leaf is one actor's private monologue and is not a crossing.
+A single inference leaf SHALL be exactly one inference call: one consultation of the model. Composition that combines more than one inference result SHALL be expressed as distinct actors exchanging crossings, above the leaf, never as multiple inference calls collapsed into a single leaf. Prompt-string assembly below the leaf — composing one call's prompt from fragments — is internal to that inference call and is not a crossing.
 
-#### Scenario: Multi-voice composition is not a single leaf
+#### Scenario: Multi-result composition is not a single leaf
 
-- **WHEN** a choreography composes two personas' contributions
-- **THEN** each persona is a distinct actor with its own inference leaf
+- **WHEN** a choreography composes the contributions of two inference calls
+- **THEN** each is a distinct actor with its own inference leaf
 - **AND** their contributions meet through a typed crossing, not inside one prompt

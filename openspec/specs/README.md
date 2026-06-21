@@ -1,5 +1,7 @@
 # INDRA specs
 
+**These specs are in flux.** INDRA is in exploratory phases.
+
 INDRA is a TypeScript agentic framework with a deterministic runtime. The invariants that make it worth using — determinism, protection of runtime-owned state, the typed inference boundary, and isolation between actors — live in the **framework**, never in any surface a program is written in. A developer writes against a typed actor model: actors, their guarded turn logic, the typed values they hold, and the typed inference points where a model supplies judgment. A surface language, were one added later, would be a front-end that constructs that same typed actor model and inherits whatever guarantees the model carries; the framework runs the model, not the surface.
 
 The capabilities below are grouped by the distinction between the framework and the surface a program is authored in. The grouping is an organizing principle, not a directory structure — OpenSpec discovers each capability as a flat `specs/<id>/spec.md`, and capabilities introduced by changes under `openspec/changes/` are placed in the same groups. Not every invariant named above is fully specified yet; the capability specs are the source of truth for what the framework enforces today, and the changes under `openspec/changes/` are where the rest is being defined.
