@@ -211,7 +211,7 @@ the Garnock-Jones corpus ([glossary](https://syndicate-lang.org/doc/glossary),
 | Dataspace + Observe-by-pattern | A consumer declares a pattern and reacts; context assembled by fact observation. Because a subscription is itself an assertion, peers can observe observations | Adopt; visibility bounded by capability |
 | Capability + attenuation | Fixes which facts an actor may observe and assert; isolation as a composable control | Adopt; adapts today's flat crossing |
 | Facet + fate-sharing | A sub-task's facts have a principled lifetime, established and torn down with the conversation | Adapt |
-| Transactional turn | Commit on success; the determinism boundary around the call | Adopt — commit-on-success is already specified (`interpreter-runtime` turn-boundary commit, `:9`); roll-back-and-retract-on-crash is designed, not yet specified |
+| Transactional turn | Commit on success; the determinism boundary around the call | Adopt — commit-on-success is already specified (`framework-core-runtime` turn-boundary commit, `:9`); roll-back-and-retract-on-crash is designed, not yet specified |
 | Supervision via retraction | A retracted assertion signals failure; a supervisor restarts | Adapt — today's typed-failure-to-supervisor becomes failure-as-retraction |
 | Handle + caused-by trace | Provenance for emergent runs; the debugging record | Adopt |
 | Dataflow field/block | Fine-grained reactive recompute; maps onto private state plus guard re-evaluation | Adapt |
@@ -308,7 +308,7 @@ same deterministic dispatch rule.
 A spreadsheet forbids a circular reference. An open discussion is circular: one actor asserts, a second
 reacts and asserts, the first reacts to the second. Once cyclic observation is allowed, "when does
 iteration stop" returns, which is the bounded-iteration problem the current
-`interpreter-runtime/spec.md:101` already reifies as an explicit iteration frame with a hard iteration
+`framework-core-runtime/spec.md:101` already reifies as an explicit iteration frame with a hard iteration
 cap. That reification is the mechanism to keep. The open decision is whether the model permits cyclic
 observation at all, and if so what bounds its convergence.
 
@@ -341,7 +341,9 @@ model changes are archived and their thinking harvested, and the mechanics artif
 
 ### Model specs — re-found on SAM, with targeted deletions
 
-- `interpreter-runtime` keeps the turn cycle and transactional boundary commit (the SAM turn, `:9`), the
+- `framework-core-runtime`, renamed from `interpreter-runtime` because the "interpreter" name encodes the
+  rejected language framing and the framework's deterministic execution core is a runtime, not an
+  interpreter, keeps the turn cycle and transactional boundary commit (the SAM turn, `:9`), the
   total deterministic expression evaluator (`:82`), halt-not-gated-by-trace (`:115`), the
   one-generic-interpreter-reads-data idea (`:67`), and loop-frame reification as a determinism mechanism
   (`:101`). It drops the delegation call stack with `await:` / `store_in:` / `&result` (`:38`),

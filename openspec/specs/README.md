@@ -10,9 +10,8 @@ The capabilities below are grouped by the distinction between the framework and 
 
 The execution model and the invariants it enforces.
 
-- **interpreter-runtime** — the deterministic execution engine: the conductor, the single canonical turn cycle, totality validation, the delegation call stack, `say:` routing, and the one generic interpreter actor parameterized by data.
+- **framework-core-runtime** — the deterministic execution core: the single canonical turn cycle, the deterministic dispatch rule that orders turns, supervision through assertion retraction, total side-effect-free expression evaluation, and the one generic interpreter actor parameterized by data.
 - **context-state** — the state model: the staged-versus-immediate write semantics, the atomic turn-boundary commit, and the protection of runtime-owned state from program writes.
-- **inference-layer** — the generative surface: every inference point a typed function whose output shape is declared rather than parsed from prose, with personas as data records and pure `<...>` calls executed as deterministic host functions.
 - **signal-system** — how signals and user `*commands` are received, delivered to a mailbox, and observed at turn boundaries, including the classification of every user input as a signal, an awaited response, or an interjection.
 
 ## Framework — workspace and build
